@@ -15,7 +15,7 @@ public class Grapher2 implements EntryPoint {
 	 */
 	public void onModuleLoad() {
 		Label label = new Label();
-		label.setText("hi");
+		label.setText("hi there");
 		
 		mainLayout.add(label);
 
