@@ -48,7 +48,9 @@ public class GraphWidget extends Surface {
 		GWT.log("handle mouse wheel event");
 		GraphAxis axis = findAxis(event.getX(), event.getY());
 		if (axis != null) {
-			axis.zoom(Math.pow(1.001, event.getDeltaY()));
+			double zoomFactor = Math.pow(1.001, event.getDeltaY());
+			double zoomAbout = axis.unproject(new Vector2(event.getX(), event.getY()));
+			axis.zoom(zoomFactor, zoomAbout);
 			paint();
 			GWT.log("found axes to zoom");
 		} else {
@@ -62,10 +64,10 @@ public class GraphWidget extends Surface {
 		graphWidth = width - yAxesWidth;
 		graphHeight = height - xAxesWidth;
 		Vector2 xAxesBegin = new Vector2(0, graphHeight);
-		layoutAxes(xAxes, graphWidth, xAxesBegin, Basis.xRightYUp);
+		layoutAxes(xAxes, graphWidth, xAxesBegin, Basis.xDownYRight);
 		
 		Vector2 yAxesBegin = new Vector2(graphWidth, graphHeight);
-		layoutAxes(yAxes, graphHeight, yAxesBegin, Basis.xDownYRight);
+		layoutAxes(yAxes, graphHeight, yAxesBegin, Basis.xRightYUp);
 	}
 	
 	
@@ -81,6 +83,7 @@ public class GraphWidget extends Surface {
 	private void layoutAxes(ArrayList<GraphAxis> axes, double length, Vector2 begin, Basis basis) {
 		Vector2 offset = begin;
 		for (int i=0; i < axes.size(); i++) {
+			GWT.log("layout " + String.valueOf(i) + ": " + String.valueOf(offset.getX()));
 			axes.get(i).layout(offset, length);
 			offset = offset.add(basis.x.scale(axisMargin + axes.get(i).getWidth()));
 		}

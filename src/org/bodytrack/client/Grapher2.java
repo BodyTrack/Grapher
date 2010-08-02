@@ -35,10 +35,17 @@ public class Grapher2 implements EntryPoint {
 				Basis.xDownYRight, 
 				  10   // width, in pixels
 				  ));
+		
 		gw.addYAxis(new GraphAxis(-1, 1, // min, max value
 				Basis.xRightYUp,
 				  10   // width, in pixels
 				  ));
+
+		gw.addYAxis(new GraphAxis(0, 10, // min, max value
+				Basis.xRightYUp,
+				  10   // width, in pixels
+				  ));
+		
 		gw.paint();
 	}
 }

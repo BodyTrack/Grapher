@@ -10,10 +10,10 @@ import gwt.g2d.client.math.Vector2;
 //import java.util.Date;
 // TODO: implement date
 public class GraphAxis {
-	public double major_tick_min_spacing_pixels = 100;
-    public double major_tick_width_pixels = 6;
+	public double major_tick_min_spacing_pixels = 50;
+    public double major_tick_width_pixels = 8;
 
-    public double minor_tick_min_spacing_pixels = 20;
+    public double minor_tick_min_spacing_pixels = 10;
     public double minor_tick_width_pixels = 3;
 
 	private double min, max;
@@ -106,8 +106,9 @@ public class GraphAxis {
 		return bounds.contains(x,y);
 	}
 
-	public void zoom(double factor) {
-		this.max = (this.max-this.min)*factor + this.min;
+	public void zoom(double factor, double about) {
+		this.min = about + factor * (this.min-about);
+		this.max = about + factor * (this.max-about);
 		rescale();
 	}
 }
