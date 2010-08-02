@@ -1,14 +1,13 @@
 package org.bodytrack.client;
 
-import java.util.Date;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.user.client.Window;
 
 import gwt.g2d.client.graphics.DirectShapeRenderer;
 import gwt.g2d.client.graphics.Surface;
 import gwt.g2d.client.math.Vector2;
 
+//import java.util.Date;
 // TODO: implement date
 public class GraphAxis {
 	public double major_tick_min_spacing_pixels = 100;
@@ -21,6 +20,7 @@ public class GraphAxis {
 	private Basis basis;
 	private Vector2 begin;
 	private double width, length, scale;
+	private BBox bounds;
 	
 	GraphAxis(double min, double max, Basis basis, double width) {
 		this.min = min;
@@ -32,7 +32,16 @@ public class GraphAxis {
 	public void layout(Vector2 begin, double length) {
 		this.begin = begin;
 		this.length = length;
+		rescale();
+	}
+	
+	private void rescale() {
 		this.scale = length / (this.max - this.min);
+		Vector2 vWidth = new Vector2(basis.x.scale(this.width));
+		Vector2 vLength = new Vector2(basis.y.scale(this.length));
+		Vector2 end = this.begin.add(vWidth).add(vLength);
+		bounds = new BBox(new Vector2(Math.min(begin.getX(), end.getX()),Math.min(begin.getY(), end.getY())),
+				          new Vector2(Math.max(begin.getX(), end.getX()),Math.max(begin.getY(), end.getY())));				
 	}
 	
 	public double project1D(double value) {
@@ -47,7 +56,7 @@ public class GraphAxis {
 	
 	public void paint(Surface surface) {
 		DirectShapeRenderer renderer = new DirectShapeRenderer(surface);
-	    
+	    renderer.beginPath();
 		renderer.drawLineSegment(project2D(this.min), project2D(this.max));
 		
 
@@ -57,7 +66,7 @@ public class GraphAxis {
 	    double minorTickSize = computeTickSize(minor_tick_min_spacing_pixels);
 	    renderTicks(renderer, minorTickSize, minor_tick_width_pixels);
 	    	
-		renderer.stroke();		    
+		renderer.stroke();
 	}
 	
 	private void renderTicks(DirectShapeRenderer renderer, double tickValue,
@@ -66,7 +75,7 @@ public class GraphAxis {
 		for (double y = Math.ceil(this.min / tickValue) * tickValue;
 				y <= (Math.floor(this.max / tickValue) + epsilon) * tickValue;
 				y += tickValue) {
-			GWT.log("GraphAxis.render_ticks: tick at " + String.valueOf(y));
+			//GWT.log("GraphAxis.render_ticks: tick at " + String.valueOf(y));
 	
 			renderer.drawLineSegment(project2D(y),	project2D(y).add(this.basis.x.scale(tickWidthPixels)));
 		}
@@ -91,5 +100,14 @@ public class GraphAxis {
 
 	public double getWidth() {
 		return width;
+	}
+	
+	public boolean contains(int x, int y) {
+		return bounds.contains(x,y);
+	}
+
+	public void zoom(double factor) {
+		this.max = (this.max-this.min)*factor + this.min;
+		rescale();
 	}
 }
