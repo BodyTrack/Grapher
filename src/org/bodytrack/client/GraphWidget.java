@@ -45,16 +45,12 @@ public class GraphWidget extends Surface {
 	}
 	
 	private void handleMouseWheelEvent(MouseWheelEvent event) {
-		GWT.log("handle mouse wheel event");
 		GraphAxis axis = findAxis(event.getX(), event.getY());
 		if (axis != null) {
-			double zoomFactor = Math.pow(1.001, event.getDeltaY());
+			double zoomFactor = Math.pow(1.003, event.getDeltaY());
 			double zoomAbout = axis.unproject(new Vector2(event.getX(), event.getY()));
 			axis.zoom(zoomFactor, zoomAbout);
 			paint();
-			GWT.log("found axes to zoom");
-		} else {
-			GWT.log("no axes to zoom");
 		}
 	}
 
@@ -83,7 +79,6 @@ public class GraphWidget extends Surface {
 	private void layoutAxes(ArrayList<GraphAxis> axes, double length, Vector2 begin, Basis basis) {
 		Vector2 offset = begin;
 		for (int i=0; i < axes.size(); i++) {
-			GWT.log("layout " + String.valueOf(i) + ": " + String.valueOf(offset.getX()));
 			axes.get(i).layout(offset, length);
 			offset = offset.add(basis.x.scale(axisMargin + axes.get(i).getWidth()));
 		}
@@ -91,7 +86,6 @@ public class GraphWidget extends Surface {
 
 	public void paint() {
 		layout();
-		GWT.log("clearing background to black?");
 		this.clear();
 		//this.clearRectangle(0,0,400,400);
 		//this.setFillStyle(new Color((int) (Random.nextDouble() * 255), 128, 128));

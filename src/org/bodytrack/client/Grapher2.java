@@ -33,12 +33,12 @@ public class Grapher2 implements EntryPoint {
 	private void setupGraphWidget() {
 		gw.addXAxis(new GraphAxis(0, 100, // min, max values
 				Basis.xDownYRight, 
-				  10   // width, in pixels
+				  30   // width, in pixels
 				  ));
 		
 		gw.addYAxis(new GraphAxis(-1, 1, // min, max value
 				Basis.xRightYUp,
-				  10   // width, in pixels
+				  30   // width, in pixels
 				  ));
 
 		gw.addYAxis(new GraphAxis(0, 10, // min, max value

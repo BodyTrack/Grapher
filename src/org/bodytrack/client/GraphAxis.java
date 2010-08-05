@@ -2,9 +2,12 @@ package org.bodytrack.client;
 
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.i18n.client.NumberFormat;
 
 import gwt.g2d.client.graphics.DirectShapeRenderer;
 import gwt.g2d.client.graphics.Surface;
+import gwt.g2d.client.graphics.TextAlign;
+import gwt.g2d.client.graphics.TextBaseline;
 import gwt.g2d.client.math.Vector2;
 
 //import java.util.Date;
@@ -62,6 +65,7 @@ public class GraphAxis {
 
 	    double majorTickSize = computeTickSize(major_tick_min_spacing_pixels);
 	    renderTicks(renderer, majorTickSize, major_tick_width_pixels);
+	    renderTickLabels(surface, majorTickSize, major_tick_width_pixels+3);
 
 	    double minorTickSize = computeTickSize(minor_tick_min_spacing_pixels);
 	    renderTicks(renderer, minorTickSize, minor_tick_width_pixels);
@@ -69,16 +73,39 @@ public class GraphAxis {
 		renderer.stroke();
 	}
 	
-	private void renderTicks(DirectShapeRenderer renderer, double tickValue,
-			double tickWidthPixels) {
+	private void renderTicks(DirectShapeRenderer renderer, double tickValue, double tickWidthPixels) {
 		double epsilon = 1e-10;
 		for (double y = Math.ceil(this.min / tickValue) * tickValue;
 				y <= (Math.floor(this.max / tickValue) + epsilon) * tickValue;
 				y += tickValue) {
-			//GWT.log("GraphAxis.render_ticks: tick at " + String.valueOf(y));
 	
 			renderer.drawLineSegment(project2D(y),	project2D(y).add(this.basis.x.scale(tickWidthPixels)));
 		}
+	}
+
+	private void renderTickLabels(Surface surface, double tickValue, double tickWidthPixels) {
+        boolean textParallelToAxis = (basis.x.getX() == 0);
+        if (textParallelToAxis) {
+        	surface.setTextAlign(TextAlign.CENTER);
+        	surface.setTextBaseline(TextBaseline.MIDDLE);
+        } else {
+        	surface.setTextAlign(TextAlign.LEFT);
+        	surface.setTextBaseline(TextBaseline.MIDDLE);
+        }
+		double epsilon = 1e-10;
+		for (double y = Math.ceil(this.min / tickValue) * tickValue;
+				y <= (Math.floor(this.max / tickValue) + epsilon) * tickValue;
+				y += tickValue) {
+	
+			renderTickLabel(surface, y, tickWidthPixels);
+		}
+	}
+
+	private void renderTickLabel(Surface surface, double y, double labelOffsetPixels) {
+		// .setFont("italic 30px sans-serif")
+        String label = NumberFormat.getDecimalFormat().format(y);
+        if (label.equals("-0")) label="0";
+        surface.fillText(label, project2D(y).add(this.basis.x.scale(labelOffsetPixels)));
 	}
 
 	public double computeTickSize(double min_pixels) {
