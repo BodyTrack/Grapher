@@ -4,10 +4,13 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Document;
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.event.dom.client.MouseDownHandler;
 import com.google.gwt.event.dom.client.MouseMoveEvent;
 import com.google.gwt.event.dom.client.MouseMoveHandler;
+import com.google.gwt.event.dom.client.MouseOutEvent;
+import com.google.gwt.event.dom.client.MouseOutHandler;
 import com.google.gwt.event.dom.client.MouseUpEvent;
 import com.google.gwt.event.dom.client.MouseUpHandler;
 import com.google.gwt.event.dom.client.MouseWheelEvent;
@@ -55,6 +58,10 @@ public class GraphWidget extends Surface {
 
 		this.addMouseUpHandler(new MouseUpHandler() {
 			public void onMouseUp(MouseUpEvent event) { handleMouseUpEvent(event); }
+		});		
+		
+		this.addMouseOutHandler(new MouseOutHandler() {
+			public void onMouseOut(MouseOutEvent event) { handleMouseOutEvent(event); }
 		});
 	}
 
@@ -98,6 +105,12 @@ public class GraphWidget extends Surface {
 	}
 
 	private void handleMouseUpEvent(MouseUpEvent event) {
+		if (mouseDragAxis != null) {
+			mouseDragAxis = null;
+		}
+	}
+
+	private void handleMouseOutEvent(MouseOutEvent event) {
 		if (mouseDragAxis != null) {
 			mouseDragAxis = null;
 		}
