@@ -18,15 +18,10 @@ public class Grapher2 implements EntryPoint {
 	 * This is the entry point method.
 	 */
 	public void onModuleLoad() {
-		Label label = new Label();
-		label.setText("hi there");
-		
-		mainLayout.add(label);
 		mainLayout.add(gw);
 				
 		RootPanel.get("graph").add(mainLayout);
 		
-		//surface.fillBackground(KnownColor.BLUE);
 		setupGraphWidget();
 	}
 	
@@ -43,8 +38,9 @@ public class Grapher2 implements EntryPoint {
 
 		gw.addYAxis(new GraphAxis(0, 10, // min, max value
 				Basis.xRightYUp,
-				  10   // width, in pixels
+				  30   // width, in pixels
 				  ));
+		
 		
 		gw.paint();
 	}

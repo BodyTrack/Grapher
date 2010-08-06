@@ -10,4 +10,7 @@ public class BBox {
 	public boolean contains(double x, double y) {
 		return min.getX() <= x && x < max.getX() && min.getY() <= y && y < max.getY();
 	}
+	public boolean contains(Vector2 pos) {
+		return contains(pos.getX(), pos.getY());
+	}
 }

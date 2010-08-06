@@ -4,8 +4,15 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.event.dom.client.MouseDownEvent;
+import com.google.gwt.event.dom.client.MouseDownHandler;
+import com.google.gwt.event.dom.client.MouseMoveEvent;
+import com.google.gwt.event.dom.client.MouseMoveHandler;
+import com.google.gwt.event.dom.client.MouseUpEvent;
+import com.google.gwt.event.dom.client.MouseUpHandler;
 import com.google.gwt.event.dom.client.MouseWheelEvent;
 import com.google.gwt.event.dom.client.MouseWheelHandler;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Random;
 import com.google.gwt.user.client.Window;
 
@@ -23,6 +30,7 @@ public class GraphWidget extends Surface {
 	
 	private int width, height;
 	private int axisMargin;
+	private int graphMargin = 5;
 
 	private int graphWidth, graphHeight;
 	
@@ -35,34 +43,75 @@ public class GraphWidget extends Surface {
 		this.addMouseWheelHandler(new MouseWheelHandler() {
 			public void onMouseWheel(MouseWheelEvent event) { handleMouseWheelEvent(event); }
 		});
+	
+		this.addMouseDownHandler(new MouseDownHandler() {
+			public void onMouseDown(MouseDownEvent event) { handleMouseDownEvent(event); }
+		});
+
+		this.addMouseMoveHandler(new MouseMoveHandler() {
+			public void onMouseMove(MouseMoveEvent event) { handleMouseMoveEvent(event); }
+
+		});
+
+		this.addMouseUpHandler(new MouseUpHandler() {
+			public void onMouseUp(MouseUpEvent event) { handleMouseUpEvent(event); }
+		});
 	}
 
-	GraphAxis findAxis(int x, int y) {
+	GraphAxis findAxis(Vector2 pos) {
 		for (int i=0; i < allAxes.size(); i++) {
-			if (allAxes.get(i).contains(x,y)) return allAxes.get(i);
+			if (allAxes.get(i).contains(pos)) return allAxes.get(i);
 		}
 		return null;
 	}
 	
 	private void handleMouseWheelEvent(MouseWheelEvent event) {
-		GraphAxis axis = findAxis(event.getX(), event.getY());
+		Vector2 eventLoc = new Vector2(event.getX(), event.getY());
+		GraphAxis axis = findAxis(eventLoc);
 		if (axis != null) {
 			double zoomFactor = Math.pow(1.003, event.getDeltaY());
-			double zoomAbout = axis.unproject(new Vector2(event.getX(), event.getY()));
+			double zoomAbout = axis.unproject(eventLoc);
 			axis.zoom(zoomFactor, zoomAbout);
 			paint();
+		}
+	}
+
+	private GraphAxis mouseDragAxis;
+	private Vector2 mouseDragLastPos;
+	
+	private void handleMouseDownEvent(MouseDownEvent event) {
+		Vector2 pos = new Vector2(event.getX(), event.getY());
+		GraphAxis axis = findAxis(pos);
+		if (axis != null) {
+			mouseDragAxis = axis;
+			mouseDragLastPos = pos;
+		}
+	}
+	
+	private void handleMouseMoveEvent(MouseMoveEvent event) {
+		Vector2 pos = new Vector2(event.getX(), event.getY());
+		if (mouseDragAxis != null) {
+			mouseDragAxis.drag(mouseDragLastPos, pos);
+			mouseDragLastPos = pos;
+			paint();
+		}
+	}
+
+	private void handleMouseUpEvent(MouseUpEvent event) {
+		if (mouseDragAxis != null) {
+			mouseDragAxis = null;
 		}
 	}
 
 	private void layout() {
 		int xAxesWidth = calculateAxesWidth(xAxes);
 		int yAxesWidth = calculateAxesWidth(yAxes);
-		graphWidth = width - yAxesWidth;
-		graphHeight = height - xAxesWidth;
-		Vector2 xAxesBegin = new Vector2(0, graphHeight);
+		graphWidth = width - graphMargin - yAxesWidth;
+		graphHeight = height - graphMargin - xAxesWidth;
+		Vector2 xAxesBegin = new Vector2(graphMargin, graphHeight+graphMargin);
 		layoutAxes(xAxes, graphWidth, xAxesBegin, Basis.xDownYRight);
 		
-		Vector2 yAxesBegin = new Vector2(graphWidth, graphHeight);
+		Vector2 yAxesBegin = new Vector2(graphWidth+graphMargin, graphHeight+graphMargin);
 		layoutAxes(yAxes, graphHeight, yAxesBegin, Basis.xRightYUp);
 	}
 	

@@ -129,13 +129,20 @@ public class GraphAxis {
 		return width;
 	}
 	
-	public boolean contains(int x, int y) {
-		return bounds.contains(x,y);
+	public boolean contains(Vector2 pos) {
+		return bounds.contains(pos);
 	}
 
 	public void zoom(double factor, double about) {
 		this.min = about + factor * (this.min-about);
 		this.max = about + factor * (this.max-about);
+		rescale();
+	}
+
+	public void drag(Vector2 from, Vector2 to) {
+		double motion = unproject(from) - unproject(to);
+		this.min += motion;
+		this.max += motion;
 		rescale();
 	}
 }
