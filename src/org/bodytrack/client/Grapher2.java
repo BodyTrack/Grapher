@@ -26,7 +26,7 @@ public class Grapher2 implements EntryPoint {
 	}
 	
 	private void setupGraphWidget() {
-		gw.addXAxis(new GraphAxis(0, 100, // min, max values
+		gw.addXAxis(new TimeGraphAxis(0, 24*3600*365*10, // min, max values
 				Basis.xDownYRight, 
 				  30   // width, in pixels
 				  ));

@@ -13,16 +13,19 @@ import gwt.g2d.client.math.Vector2;
 //import java.util.Date;
 // TODO: implement date
 public class GraphAxis {
-	public double major_tick_min_spacing_pixels = 50;
-    public double major_tick_width_pixels = 8;
+	public double majorTickMinSpacingPixels = 50;
+    public double majorTickWidthPixels = 8;
 
-    public double minor_tick_min_spacing_pixels = 10;
-    public double minor_tick_width_pixels = 3;
+    public double minorTickMinSpacingPixels = 10;
+    public double minorTickWidthPixels = 3;
 
-	private double min, max;
-	private Basis basis;
+	protected double min;
+	protected double max;
+	protected Basis basis;
 	private Vector2 begin;
-	private double width, length, scale;
+	private double width;
+	protected double length;
+	private double scale;
 	private BBox bounds;
 	
 	GraphAxis(double min, double max, Basis basis, double width) {
@@ -63,27 +66,31 @@ public class GraphAxis {
 		renderer.drawLineSegment(project2D(this.min), project2D(this.max));
 		
 
-	    double majorTickSize = computeTickSize(major_tick_min_spacing_pixels);
-	    renderTicks(renderer, majorTickSize, major_tick_width_pixels);
-	    renderTickLabels(surface, majorTickSize, major_tick_width_pixels+3);
+	    double majorTickSize = computeTickSize(majorTickMinSpacingPixels);
+	    renderTicks(renderer, majorTickSize, majorTickWidthPixels);
+	    renderTickLabels(surface, majorTickSize, majorTickWidthPixels+3);
 
-	    double minorTickSize = computeTickSize(minor_tick_min_spacing_pixels);
-	    renderTicks(renderer, minorTickSize, minor_tick_width_pixels);
+	    double minorTickSize = computeTickSize(minorTickMinSpacingPixels);
+	    renderTicks(renderer, minorTickSize, minorTickWidthPixels);
 	    	
 		renderer.stroke();
 	}
 	
-	private void renderTicks(DirectShapeRenderer renderer, double tickValue, double tickWidthPixels) {
+	protected void renderTicks(DirectShapeRenderer renderer, double tickValue, double tickWidthPixels) {
+		renderTicks(renderer, tickValue, tickWidthPixels, 0.0);
+	}
+
+	protected void renderTicks(DirectShapeRenderer renderer, double tickValue, double tickWidthPixels, double offset) {
 		double epsilon = 1e-10;
-		for (double y = Math.ceil(this.min / tickValue) * tickValue;
-				y <= (Math.floor(this.max / tickValue) + epsilon) * tickValue;
+		for (double y = Math.ceil((this.min-offset) / tickValue) * tickValue + offset;
+				y <= (Math.floor((this.max-offset) / tickValue) + epsilon) * tickValue + offset;
 				y += tickValue) {
 	
 			renderer.drawLineSegment(project2D(y),	project2D(y).add(this.basis.x.scale(tickWidthPixels)));
 		}
 	}
-
-	private void renderTickLabels(Surface surface, double tickValue, double tickWidthPixels) {
+	
+	protected void renderTickLabels(Surface surface, double tickValue, double tickWidthPixels) {
         boolean textParallelToAxis = (basis.x.getX() == 0);
         if (textParallelToAxis) {
         	surface.setTextAlign(TextAlign.CENTER);
@@ -100,29 +107,34 @@ public class GraphAxis {
 			renderTickLabel(surface, y, tickWidthPixels);
 		}
 	}
-
-	private void renderTickLabel(Surface surface, double y, double labelOffsetPixels) {
-		// .setFont("italic 30px sans-serif")
+	protected void renderTickLabel(Surface surface, double y, double labelOffsetPixels) {
         String label = NumberFormat.getDecimalFormat().format(y);
         if (label.equals("-0")) label="0";
+		renderTickLabel(surface, y, labelOffsetPixels, label);
+	}
+
+	protected void renderTickLabel(Surface surface, double y, double labelOffsetPixels, String label) {
+		// .setFont("italic 30px sans-serif")
         surface.fillText(label, project2D(y).add(this.basis.x.scale(labelOffsetPixels)));
 	}
 
-	public double computeTickSize(double min_pixels) {
-		double min_delta = (this.max-this.min) * (min_pixels/this.length);
-		double min_delta_mantissa = min_delta / Math.pow(10, Math.floor(Math.log10(min_delta)));
-		// Round min_delta up to nearest (1,2,5)
-		double actual_delta_mantissa;
-		if (min_delta_mantissa > 5) {
-			actual_delta_mantissa = 10;
-		} else if (min_delta_mantissa > 2) {
-			actual_delta_mantissa = 5;
-		} else if (min_delta_mantissa > 1) {
-			actual_delta_mantissa = 2;
+	public double computeTickSize(double minPixels) { return computeTickSize(minPixels, 1.0); }
+	
+	public double computeTickSize(double minPixels, double unitSize) {
+		double minDelta = (this.max-this.min) * (minPixels/this.length) / unitSize;
+		double minDeltaMantissa = minDelta / Math.pow(10, Math.floor(Math.log10(minDelta)));
+		// Round minDelta up to nearest (1,2,5)
+		double actualDeltaMantissa;
+		if (minDeltaMantissa > 5) {
+			actualDeltaMantissa = 10;
+		} else if (minDeltaMantissa > 2) {
+			actualDeltaMantissa = 5;
+		} else if (minDeltaMantissa > 1) {
+			actualDeltaMantissa = 2;
 		} else {
-			actual_delta_mantissa = 1;
+			actualDeltaMantissa = 1;
 		}
-		return min_delta * (actual_delta_mantissa / min_delta_mantissa);
+		return minDelta * (actualDeltaMantissa / minDeltaMantissa);
 	}
 
 	public double getWidth() {
