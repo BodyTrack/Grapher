@@ -67,11 +67,11 @@ public class GraphAxis {
 		
 
 	    double majorTickSize = computeTickSize(majorTickMinSpacingPixels);
-	    renderTicks(majorTickSize, null, surface, renderer, majorTickWidthPixels, new DefaultLabelFormatter());
+	    renderTicks(0, majorTickSize, null, surface, renderer, majorTickWidthPixels, new DefaultLabelFormatter());
 	    //renderTickLabels(surface, majorTickSize, majorTickWidthPixels+3);
 
 	    double minorTickSize = computeTickSize(minorTickMinSpacingPixels);
-	    renderTicks(minorTickSize, null, surface, renderer, minorTickWidthPixels, null);
+	    renderTicks(0, minorTickSize, null, surface, renderer, minorTickWidthPixels, null);
 	    	
 		renderer.stroke();
 	}
@@ -113,37 +113,80 @@ public class GraphAxis {
 			return Math.round((val-offset) / tickSize) * tickSize + offset; 
 		}
 	}
+
+	final int JUSTIFY_MIN = 0;
+	final int JUSTIFY_MED = 1;
+	final int JUSTIFY_MAX = 2;
 	
-	protected void renderTicks(double tickSize, TickGenerator tickGen, Surface surface, DirectShapeRenderer renderer, double tickWidthPixels, LabelFormatter formatter) {
-		if (tickGen == null) {
-			tickGen = new TickGenerator(tickSize, 0);
-		}
+	protected double setupText(Surface surface, int justify) {
+	    boolean textParallelToAxis = (Math.abs(basis.x.getX()) < Math.abs(basis.x.getY()));
+	    double labelOffsetPixels = 0;
+	    if (textParallelToAxis) {
+	    	final TextAlign align[]={TextAlign.LEFT, TextAlign.CENTER, TextAlign.RIGHT};
+	    	surface.setTextAlign(align[justify]);
+	    	surface.setTextBaseline(TextBaseline.TOP);
+	    } else {
+	        surface.setTextAlign(TextAlign.LEFT);
+	        final TextBaseline baseline[]={TextBaseline.BOTTOM, TextBaseline.MIDDLE, TextBaseline.TOP};
+	        surface.setTextBaseline(baseline[justify]);
+	        labelOffsetPixels = 3;
+	    }
+		return labelOffsetPixels;
+	}
+
+	protected void renderTicks(double offsetPixels, double tickSize, TickGenerator tickGen, Surface surface, DirectShapeRenderer renderer, double tickWidthPixels, LabelFormatter formatter) {
+		if (tickGen == null) tickGen = new TickGenerator(tickSize, 0);
 		
-		int labelOffsetPixels = 0;
-		if (formatter != null) {
-	        boolean textParallelToAxis = (Math.abs(basis.x.getX()) < Math.abs(basis.x.getY()));
-	        if (textParallelToAxis) {
-	        	surface.setTextAlign(TextAlign.CENTER);
-	        	surface.setTextBaseline(TextBaseline.TOP);
-	        	labelOffsetPixels = 0;
-	        } else {
-	        	surface.setTextAlign(TextAlign.LEFT);
-	        	surface.setTextBaseline(TextBaseline.MIDDLE);
-	        	labelOffsetPixels = 3;
-	        }
-		}
+		double labelOffsetPixels = formatter == null ? 0 : setupText(surface, JUSTIFY_MED) + offsetPixels;
 		
-		for (double y = tickGen.nextTick(this.min); y <= this.max; y = tickGen.nextTick()) {
-			renderer.drawLineSegment(project2D(y),	project2D(y).add(this.basis.x.scale(tickWidthPixels)));
-			if (formatter != null) {
-				renderTickLabel(surface, y, tickWidthPixels+labelOffsetPixels, formatter);
-			}
-			
+		for (double tick = tickGen.nextTick(this.min); tick <= this.max; tick = tickGen.nextTick()) {
+			renderTick(renderer, tick, offsetPixels+tickWidthPixels);
+			if (formatter != null) renderTickLabel(surface, tick, tickWidthPixels+labelOffsetPixels, formatter);
 		}
 	}
 	
-	protected void renderTickLabel(Surface surface, double y, double labelOffsetPixels, LabelFormatter formatter) {
-		renderTickLabel(surface, y, labelOffsetPixels, formatter.format(y));
+	protected void renderTicksInlineLabels(double offsetPixels, double tickSize, TickGenerator tickGen, Surface surface, DirectShapeRenderer renderer, double tickWidthPixels, LabelFormatter formatter) {
+		if (tickGen == null) tickGen = new TickGenerator(tickSize, 0);
+		
+		double labelOffsetPixels = setupText(surface, JUSTIFY_MED) + offsetPixels;
+		
+		double tick = tickGen.nextTick(this.min);
+		
+		if (tick > this.max) {
+			// No ticks are visible
+			// Draw one inline label in the middle
+			renderTickLabel(surface, (this.min + this.max) / 2., labelOffsetPixels, formatter);
+			return;
+		}
+		
+		int pixelMargin = 100;  // TODO: fix this
+		if (project1D(tick) >= pixelMargin) {
+			// Draw label for before first tick, justified to the minimum of axis (left or bottom)
+			setupText(surface, JUSTIFY_MIN);
+			renderTickLabel(surface, this.min, labelOffsetPixels, formatter);
+			setupText(surface, JUSTIFY_MED);
+		}
+		
+		while (true) {
+			renderTick(renderer, tick, tickWidthPixels+offsetPixels);
+			double nextTick = tickGen.nextTick();
+			if (nextTick > this.max) break;
+			renderTickLabel(surface, (tick + nextTick) / 2., labelOffsetPixels, formatter);
+			tick = nextTick;
+		}
+		if (length - project1D(tick) >= pixelMargin) {
+			// Draw label for after last tick, justified to maximum of axis (right or top)
+			setupText(surface, JUSTIFY_MAX);
+			renderTickLabel(surface, this.max, labelOffsetPixels, formatter);
+		}
+	}
+	
+	protected void renderTick(DirectShapeRenderer renderer, double tick, double tickWidthPixels) {
+		renderer.drawLineSegment(project2D(tick),	project2D(tick).add(this.basis.x.scale(tickWidthPixels)));
+	}
+	
+	protected void renderTickLabel(Surface surface, double tick, double labelOffsetPixels, LabelFormatter formatter) {
+		renderTickLabel(surface, tick, labelOffsetPixels, formatter.format(tick));
 	}
 
 	protected void renderTickLabel(Surface surface, double y, double labelOffsetPixels, String label) {

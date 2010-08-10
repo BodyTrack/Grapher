@@ -18,11 +18,6 @@ public class TimeGraphAxis extends GraphAxis {
 		super(min, max, basis, width);
 	}
 	
-	private final int YEAR=1;
-	private final int MONTH=2;
-	private final int DAY=3;
-	private final int SECOND=4;
-	
 	final long secondsInHour = 3600;
 	final long secondsInDay = secondsInHour * 24;
 	final long secondsInWeek = secondsInDay * 7;
@@ -189,15 +184,6 @@ public class TimeGraphAxis extends GraphAxis {
 		renderer.drawLineSegment(project2D(this.min), project2D(this.max));
 		double epsilon = 1e-10;
 		
-		double inlineYearPixels = 30;
-		double inlineMonthPixels = 30;
-		double dayPixels = 50;
-		double inlineDayTickWidthPixels = 40;
-		double timePixels = 50;
-		double secondsInDay = 86400;
-		double secondsInYear = secondsInDay * 365;
-		double secondsInMonth = secondsInYear / 12;
-
 		// Year out of line
 		// Year inline
 		// Month out of line ; Year inline 
@@ -206,142 +192,40 @@ public class TimeGraphAxis extends GraphAxis {
 		// DOW DOM inline ; Month inline ; Year inline
 		// HH:MM[:SS[.NNN]] on tick ; DOW DOM inline ;  Month inline ; Year inline 
 
+		double pixelOffset = 0;
 		
-		double timeMajorTickSize = computeTimeTickSize(timePixels);
+		double timeMajorPixels = 50;
+		double timeMinorPixels = 5;
+		double timeMajorTickSize = computeTimeTickSize(timeMajorPixels);
+		double timeMinorTickWidthPixels;
+		double timeLabelHeight;
 		if (timeMajorTickSize <= 3600*12 + epsilon) {
-			renderTicks(timeMajorTickSize, createDateTickGenerator(timeMajorTickSize), surface, renderer, majorTickWidthPixels, new TimeLabelFormatter());
-
-			double timeMinorTickSize = computeTimeTickSize(timePixels / 5);
-			renderTicks(timeMinorTickSize, createDateTickGenerator(timeMinorTickSize), surface, renderer, minorTickWidthPixels, null);
-		}
-		
-		double dayMajorTickSize = Math.max(secondsInDay, computeTimeTickSize(dayPixels));
-		if (dayMajorTickSize <= secondsInWeek) {
-			renderTicks(dayMajorTickSize, createDateTickGenerator(dayMajorTickSize), surface, renderer, inlineDayTickWidthPixels, new DayLabelFormatter());
-			double dayMinorTickSize = Math.max(secondsInDay, computeTimeTickSize(dayPixels/7.));
-			renderTicks(dayMinorTickSize, createDateTickGenerator(dayMinorTickSize), surface, renderer, minorTickWidthPixels, null);
-		}
-		
-		if (false) {
-		// Months
-		double monthTickSize = computeTickSize(inlineMonthPixels, secondsInMonth);
-		if (monthTickSize <= 1 - epsilon) {
-			
-		}
-		
-		
-		// Years
-		double yearTickSize = computeTickSize(inlineYearPixels, secondsInYear);
-		GWT.log("yearTickSize=" + yearTickSize);
-		
-		
-		if (yearTickSize >= 1 - epsilon) {
-			boolean in_line = (yearTickSize < 1 + epsilon);
-			// Draw years out of line
-			// TODO: draw ticks with (deltaYear, deltaMonth, deltaDay, deltaHour)
-			// deltaMin, deltaSec?
-			double majorTickSize = yearTickSize;
-			
-			double m = in_line ? majorTickWidthPixels * 2 : majorTickWidthPixels;
-			renderDateTicks(renderer, majorTickSize, YEAR, m);
-			renderDateTicks(renderer, majorTickSize, YEAR, m, 1, 0);
-			double l = in_line ? minorTickWidthPixels : majorTickWidthPixels;
-			renderDateTickLabels(surface, majorTickSize, YEAR, l, 0, 6);
-			
-			double minorTickSize = computeTickSize(inlineYearPixels/5, secondsInYear);
-			minorTickSize = Math.max(1, minorTickSize);
-			renderDateTicks(renderer, minorTickSize, YEAR, minorTickWidthPixels);
-			renderDateTicks(renderer, minorTickSize, YEAR, minorTickWidthPixels, 1, 0);
-			
-			
+			renderTicks(pixelOffset, timeMajorTickSize, createDateTickGenerator(timeMajorTickSize), surface, renderer, majorTickWidthPixels, new TimeLabelFormatter());
+			timeMinorTickWidthPixels = minorTickWidthPixels;
+			timeLabelHeight = 10;
 		} else {
-			GWT.log("years not out of line");
+			timeMinorTickWidthPixels = majorTickWidthPixels;
+			timeLabelHeight = 0;
 		}
+		double timeMinorTickSize = computeTimeTickSize(timeMinorPixels);
+		if (timeMinorTickSize <= 3600*12 + epsilon) {
+			renderTicks(pixelOffset, timeMinorTickSize, createDateTickGenerator(timeMinorTickSize), surface, renderer, timeMinorTickWidthPixels, null);			
+			pixelOffset += 12 + timeLabelHeight;
 		}
 		
-	    if (false) {
-	    	double majorTickSize = computeTickSize(majorTickMinSpacingPixels);
-	    	//renderTicks(renderer, majorTickSize, majorTickWidthPixels);
-	    	//renderTickLabels(surface, majorTickSize, majorTickWidthPixels+3);
-
-	    	double minorTickSize = computeTickSize(minorTickMinSpacingPixels);
-	    	//renderTicks(renderer, minorTickSize, minorTickWidthPixels);
-	    }
-	    
+		
+		double dayPixels = 50;
+		double inlineDayTickWidthPixels = 15;
+		double dayMajorTickSize = Math.max(secondsInDay, computeTimeTickSize(dayPixels));
+		if (dayMajorTickSize == secondsInDay) {
+			renderTicksInlineLabels(pixelOffset, dayMajorTickSize, createDateTickGenerator(dayMajorTickSize), surface, renderer, inlineDayTickWidthPixels, new DayLabelFormatter());
+			double dayMinorTickSize = Math.max(secondsInDay, computeTimeTickSize(dayPixels/7.));
+			renderTicks(pixelOffset, dayMinorTickSize, createDateTickGenerator(dayMinorTickSize), surface, renderer, minorTickWidthPixels, null);
+			pixelOffset += inlineDayTickWidthPixels;
+		}
+		
 		renderer.stroke();
 	}
-
-	private void renderDateTicks(DirectShapeRenderer renderer, double tickValue, int tickUnit, double tickWidthPixels) {
-		renderDateTicks(renderer, tickValue, tickUnit, tickWidthPixels, 0, 0);
-	}
-
-	private void renderDateTicks(DirectShapeRenderer renderer, double tickValue, int tickUnit, double tickWidthPixels, double unitOffset, double subUnitOffset) {
-		// Compute location of first tick
-		Date d = new Date((long) (this.min * 1000));
-		double epsilon = 1e-10;
-		
-		switch (tickUnit) {
-		case YEAR:
-			d.setMonth((int)Math.round(subUnitOffset));  d.setDate(1);
-			d.setYear((int)Math.round(Math.ceil((d.getYear()+1900-unitOffset) / tickValue - epsilon) * tickValue + unitOffset - 1900));
-			break;
-		case SECOND:
-			// Round down to nearest second
-			d.setTime(d.getTime() / 1000 * 1000);
-			break;
-		default:
-			Window.alert("renderDateTicks: bad unit");
-			return;
-		}
-		
-		//GWT.log("ticks " + tickWidthPixels + " " + (d.getYear()+1900) + " " + tickValue);
-		
-		for (; true; advanceDate(d, tickUnit, tickValue)) {
-			double y = d.getTime()/1000.;
-			if (y < this.min) continue; 
-			if (y > this.max) break;
-			//GWT.log("renderDateTick " + d);
-			renderer.drawLineSegment(project2D(y),project2D(y).add(this.basis.x.scale(tickWidthPixels)));
-		}
-		
-	}
-
-	private void renderDateTickLabels(Surface surface, double tickValue, int tickUnit, double tickWidthPixels) {
-		renderDateTickLabels(surface, tickValue, tickUnit, tickWidthPixels);
-	}
-	
-	private void renderDateTickLabels(Surface surface, double tickValue, int tickUnit, double tickWidthPixels, double unitOffset, double subUnitOffset) {
-    	surface.setTextAlign(TextAlign.CENTER);
-    	surface.setTextBaseline(TextBaseline.TOP);
-
-    	// Compute location of first tick
-		Date d = new Date((long) (this.min * 1000));
-		
-		if (tickUnit == YEAR) {
-			d.setMonth((int)subUnitOffset);  d.setDate(1);
-			d.setYear((int)Math.round((Math.floor((d.getYear()-unitOffset) / tickValue) * tickValue + unitOffset)));
-		}
-		
-		for (; true; advanceDate(d, tickUnit, tickValue)) {
-			double y = d.getTime()/1000.;
-			//GWT.log("renderDateTickLabels " + d);
-			if (y < this.min) continue; 
-			if (y > this.max) break;
-			String label="";
-			if (tickUnit == YEAR) label = String.valueOf(d.getYear()+1900);
-			renderTickLabel(surface, y, tickWidthPixels, label);
-		}
-		
-	}
-
-	
-	private void advanceDate(Date d, int unit, double value) {
-		if (unit == YEAR) {
-			d.setYear(d.getYear()+(int)Math.round(value));
-		}
-		
-	}
-
 }
 
 
