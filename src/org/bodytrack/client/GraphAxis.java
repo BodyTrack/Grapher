@@ -67,50 +67,83 @@ public class GraphAxis {
 		
 
 	    double majorTickSize = computeTickSize(majorTickMinSpacingPixels);
-	    renderTicks(renderer, majorTickSize, majorTickWidthPixels);
-	    renderTickLabels(surface, majorTickSize, majorTickWidthPixels+3);
+	    renderTicks(majorTickSize, null, surface, renderer, majorTickWidthPixels, new DefaultLabelFormatter());
+	    //renderTickLabels(surface, majorTickSize, majorTickWidthPixels+3);
 
 	    double minorTickSize = computeTickSize(minorTickMinSpacingPixels);
-	    renderTicks(renderer, minorTickSize, minorTickWidthPixels);
+	    renderTicks(minorTickSize, null, surface, renderer, minorTickWidthPixels, null);
 	    	
 		renderer.stroke();
 	}
 	
-	protected void renderTicks(DirectShapeRenderer renderer, double tickValue, double tickWidthPixels) {
-		renderTicks(renderer, tickValue, tickWidthPixels, 0.0);
+	abstract class LabelFormatter {
+		abstract String format(double value);
 	}
 
-	protected void renderTicks(DirectShapeRenderer renderer, double tickValue, double tickWidthPixels, double offset) {
-		double epsilon = 1e-10;
-		for (double y = Math.ceil((this.min-offset) / tickValue) * tickValue + offset;
-				y <= (Math.floor((this.max-offset) / tickValue) + epsilon) * tickValue + offset;
-				y += tickValue) {
+	class DefaultLabelFormatter extends LabelFormatter {
+		String format(double value) {
+	       String label = NumberFormat.getDecimalFormat().format(value);
+	        if (label.equals("-0")) label="0";
+	        return label;
+		}
+	}
 	
+	class TickGenerator {
+		private double tickSize;
+		private double offset;
+		private double currentTick = 0.0;
+		
+		TickGenerator(double tickSize, double offset) {
+			this.tickSize = tickSize;
+			this.offset = offset;
+		}
+		double nextTick(double min) {
+			currentTick = closestTick(min - tickSize);
+			while (currentTick < min) advanceTick();
+			return currentTick;
+		}
+		double nextTick() {
+			advanceTick();
+			return currentTick;
+		}
+		void advanceTick() {
+			currentTick = closestTick(currentTick + tickSize);
+		}
+		double closestTick(double val) {
+			return Math.round((val-offset) / tickSize) * tickSize + offset; 
+		}
+	}
+	
+	protected void renderTicks(double tickSize, TickGenerator tickGen, Surface surface, DirectShapeRenderer renderer, double tickWidthPixels, LabelFormatter formatter) {
+		if (tickGen == null) {
+			tickGen = new TickGenerator(tickSize, 0);
+		}
+		
+		int labelOffsetPixels = 0;
+		if (formatter != null) {
+	        boolean textParallelToAxis = (Math.abs(basis.x.getX()) < Math.abs(basis.x.getY()));
+	        if (textParallelToAxis) {
+	        	surface.setTextAlign(TextAlign.CENTER);
+	        	surface.setTextBaseline(TextBaseline.TOP);
+	        	labelOffsetPixels = 0;
+	        } else {
+	        	surface.setTextAlign(TextAlign.LEFT);
+	        	surface.setTextBaseline(TextBaseline.MIDDLE);
+	        	labelOffsetPixels = 3;
+	        }
+		}
+		
+		for (double y = tickGen.nextTick(this.min); y <= this.max; y = tickGen.nextTick()) {
 			renderer.drawLineSegment(project2D(y),	project2D(y).add(this.basis.x.scale(tickWidthPixels)));
+			if (formatter != null) {
+				renderTickLabel(surface, y, tickWidthPixels+labelOffsetPixels, formatter);
+			}
+			
 		}
 	}
 	
-	protected void renderTickLabels(Surface surface, double tickValue, double tickWidthPixels) {
-        boolean textParallelToAxis = (basis.x.getX() == 0);
-        if (textParallelToAxis) {
-        	surface.setTextAlign(TextAlign.CENTER);
-        	surface.setTextBaseline(TextBaseline.MIDDLE);
-        } else {
-        	surface.setTextAlign(TextAlign.LEFT);
-        	surface.setTextBaseline(TextBaseline.MIDDLE);
-        }
-		double epsilon = 1e-10;
-		for (double y = Math.ceil(this.min / tickValue) * tickValue;
-				y <= (Math.floor(this.max / tickValue) + epsilon) * tickValue;
-				y += tickValue) {
-	
-			renderTickLabel(surface, y, tickWidthPixels);
-		}
-	}
-	protected void renderTickLabel(Surface surface, double y, double labelOffsetPixels) {
-        String label = NumberFormat.getDecimalFormat().format(y);
-        if (label.equals("-0")) label="0";
-		renderTickLabel(surface, y, labelOffsetPixels, label);
+	protected void renderTickLabel(Surface surface, double y, double labelOffsetPixels, LabelFormatter formatter) {
+		renderTickLabel(surface, y, labelOffsetPixels, formatter.format(y));
 	}
 
 	protected void renderTickLabel(Surface surface, double y, double labelOffsetPixels, String label) {

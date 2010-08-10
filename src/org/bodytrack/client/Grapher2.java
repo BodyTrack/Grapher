@@ -1,6 +1,8 @@
 package org.bodytrack.client;
 
 
+import java.util.Date;
+
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
@@ -26,11 +28,17 @@ public class Grapher2 implements EntryPoint {
 	}
 	
 	private void setupGraphWidget() {
-		gw.addXAxis(new TimeGraphAxis(0, 24*3600*365*10, // min, max values
-				Basis.xDownYRight, 
-				  30   // width, in pixels
-				  ));
-		
+//		gw.addXAxis(new TimeGraphAxis(0, 24*3600*365*10, // min, max values
+//		Basis.xDownYRight, 
+//		  30   // width, in pixels
+//		  ));
+
+		gw.addXAxis(new TimeGraphAxis((new Date()).getTime()/1000., 
+				                      86400 + (new Date()).getTime()/1000., // min, max values
+				                      Basis.xDownYRight, 
+		                              60   // width, in pixels
+		  ));
+
 		gw.addYAxis(new GraphAxis(-1, 1, // min, max value
 				Basis.xRightYUp,
 				  30   // width, in pixels
