@@ -1,7 +1,6 @@
 package org.bodytrack.client;
 
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.i18n.client.NumberFormat;
 
 import gwt.g2d.client.graphics.DirectShapeRenderer;

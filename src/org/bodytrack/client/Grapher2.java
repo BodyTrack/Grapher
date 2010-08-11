@@ -2,9 +2,7 @@ package org.bodytrack.client;
 
 
 import java.util.Date;
-
 import com.google.gwt.core.client.EntryPoint;
-import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
@@ -32,7 +30,7 @@ public class Grapher2 implements EntryPoint {
 //		Basis.xDownYRight, 
 //		  30   // width, in pixels
 //		  ));
-
+		
 		gw.addXAxis(new TimeGraphAxis((new Date()).getTime()/1000., 
 				                      86400 + (new Date()).getTime()/1000., // min, max values
 				                      Basis.xDownYRight, 

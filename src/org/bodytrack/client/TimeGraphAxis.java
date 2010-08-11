@@ -1,18 +1,12 @@
 package org.bodytrack.client;
 
 
-import java.util.Calendar;
 import java.util.Date;
-
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.i18n.client.NumberFormat;
-import com.google.gwt.user.client.Window;
-
 import gwt.g2d.client.graphics.DirectShapeRenderer;
 import gwt.g2d.client.graphics.Surface;
-import gwt.g2d.client.graphics.TextAlign;
-import gwt.g2d.client.graphics.TextBaseline;
 
+@SuppressWarnings("deprecation")
 public class TimeGraphAxis extends GraphAxis {
 	TimeGraphAxis(double min, double max, Basis basis, double width) {
 		super(min, max, basis, width);

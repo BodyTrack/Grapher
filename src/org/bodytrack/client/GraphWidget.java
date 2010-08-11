@@ -1,10 +1,6 @@
 package org.bodytrack.client;
 
 import java.util.ArrayList;
-import java.util.Date;
-
-import com.google.gwt.core.client.GWT;
-import com.google.gwt.dom.client.Document;
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.event.dom.client.MouseDownHandler;
 import com.google.gwt.event.dom.client.MouseMoveEvent;
@@ -15,13 +11,6 @@ import com.google.gwt.event.dom.client.MouseUpEvent;
 import com.google.gwt.event.dom.client.MouseUpHandler;
 import com.google.gwt.event.dom.client.MouseWheelEvent;
 import com.google.gwt.event.dom.client.MouseWheelHandler;
-import com.google.gwt.event.shared.HandlerRegistration;
-import com.google.gwt.user.client.Random;
-import com.google.gwt.user.client.Window;
-
-import gwt.g2d.client.graphics.Color;
-import gwt.g2d.client.graphics.DirectShapeRenderer;
-import gwt.g2d.client.graphics.KnownColor;
 import gwt.g2d.client.graphics.Surface;
 import gwt.g2d.client.math.Vector2;
 
