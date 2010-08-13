@@ -10,37 +10,36 @@ import gwt.g2d.client.graphics.Surface;
 public class TimeGraphAxis extends GraphAxis {
 	TimeGraphAxis(double min, double max, Basis basis, double width) {
 		super(min, max, basis, width);
+		minRange = -2147483640;
+		maxRange = 2147483640;
 	}
 	
 	final long secondsInHour = 3600;
 	final long secondsInDay = secondsInHour * 24;
 	final long secondsInWeek = secondsInDay * 7;
-	final long secondsInYear = (long)Math.round(secondsInDay * 365.24);
+	final long secondsInYear = 31556926;
 	final long secondsInMonth = (long)Math.round(secondsInYear / 12.);
 	
 	final double timeTickSizes[][] = {
-			{1, 5, 15, 30},                     // 1, 5, 15, 30 seconds
-			{60*1, 60*5, 60*15, 60*30},         // 1, 5, 15, 30 mins
-			{3600*1, 3600*3, 3600*6, 3600*12},   // 1, 3, 6, 12 hours
-			{secondsInDay},
-			{secondsInWeek},
-			{secondsInMonth},
-			{secondsInYear}
+			{1, 5, 15, 30},                                            // 1, 5, 15, 30 seconds
+			{60*1, 60*5, 60*15, 60*30},                                // 1, 5, 15, 30 mins
+			{3600*1, 3600*3, 3600*6, 3600*12},                         // 1, 3, 6, 12 hours
+			{secondsInDay},                                            // 1 day
+			{secondsInWeek},                                           // 1 weeks
+			{secondsInMonth, secondsInMonth * 3, secondsInMonth * 6},  // 1, 3, 6 months
+			{secondsInYear}                                            // 1 year
 	};
 	
 	public double computeTimeTickSize(double minPixels) {
-		return computeTimeTickSize(minPixels, 0.);
-	}
-	
-	public double computeTimeTickSize(double minPixels, double minTickSize) {
-		double minDelta = Math.max(minTickSize, (this.max-this.min) * (minPixels/this.length));
+		//double minDelta = Math.max(minTickSize, (this.max-this.min) * (minPixels/this.length));
+		double minDelta = (this.max-this.min) * (minPixels/this.length);
 		if (minDelta < 1) return computeTickSize(minPixels);
 		for (int unit = 0; unit < timeTickSizes.length; unit++) {
 			for (int i = 0; i < timeTickSizes[unit].length; i++) {
 				if (timeTickSizes[unit][i] >= minDelta) return timeTickSizes[unit][i];
 			}
 		}
-		return 1;
+		return computeTickSize(minPixels, secondsInYear) * secondsInYear;
 	}
 	
 	// Like computeTimeTickSize, but constrain the minimum size of the tick like so:
@@ -62,7 +61,7 @@ public class TimeGraphAxis extends GraphAxis {
 						// Don't go smaller than major tick's unit
 						minTickSize = timeTickSizes[unit][0];
 					}
-					return computeTimeTickSize(minPixels, minTickSize);
+					return Math.max(minTickSize, computeTimeTickSize(minPixels));
 				}
 			}
 		}
@@ -105,6 +104,21 @@ public class TimeGraphAxis extends GraphAxis {
 		}
 	}	
 
+	class MonthLabelFormatter extends LabelFormatter {
+		final String[] months = {"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"};
+		String format(double time) {
+			Date d = new Date((long) Math.round(time*1000.));
+			return months[d.getMonth()];
+		}
+	}	
+
+	class YearLabelFormatter extends LabelFormatter {
+		String format(double time) {
+			Date d = new Date((long) Math.round(time*1000.));
+			return String.valueOf(d.getYear()+1900);
+		}
+	}	
+
 	TickGenerator createDateTickGenerator(double tickSize) {
 		int nHours = (int) Math.round(tickSize / secondsInHour);
 		if (nHours <= 1) return null;
@@ -113,10 +127,10 @@ public class TimeGraphAxis extends GraphAxis {
 		if (nDays == 1) return new DayTickGenerator();
 		int nWeeks = (int) Math.round(tickSize / secondsInWeek);
 		if (nWeeks == 1) return new WeekTickGenerator();
-//		int nMonths = (int) Math.round(tickSize / secondsInMonth);
-//		if (nMonths < 12) return new MonthTickGenerator(nMonths);
-//		int nYears = (int) Math.round(tickSize / secondsInYear);
-		return null;
+		int nMonths = (int) Math.round(tickSize / secondsInMonth);
+		if (nMonths < 12) return new MonthTickGenerator(nMonths);
+		int nYears = (int) Math.round(tickSize / secondsInYear);
+		return new YearTickGenerator(nYears);
 	}
 	
 
@@ -141,6 +155,69 @@ public class TimeGraphAxis extends GraphAxis {
 		return ret;			
 	}
 
+	// Not perfectly accurate around the middle of the month;  goes to beginning of this month
+	// if day < 15, otherwise beginning of next month
+//	double closestMonth(double time) {
+//		Date timeDate = new Date((long) (time*1000));
+//		
+//		if (timeDate.getDate() >= 15) {
+//			// Advance to next month
+//			timeDate.setDate(1);
+//			if (timeDate.getMonth() == 11) {
+//				// Advance to January of next year
+//				timeDate.setMonth(0);
+//				timeDate.setYear(timeDate.getYear() + 1);
+//			} else {
+//				timeDate.setMonth(timeDate.getMonth() + 1);
+//			}
+//		}
+//
+//		// Move to beginning of this month
+//		timeDate.setDate(1);
+//		timeDate.setHours(0);
+//		return closestDay(timeDate.getTime() / 1000);
+//	}
+
+	class YearTickGenerator extends MonthTickGenerator {
+		private int tickSizeYears;
+		
+		YearTickGenerator(int tickSizeYears) {
+			super(12 * tickSizeYears);
+			this.tickSizeYears = tickSizeYears;
+		}
+	}
+	
+	class MonthTickGenerator extends TickGenerator {
+		private int tickSizeMonths;
+		
+		MonthTickGenerator(int tickSizeMonths) {
+			super(secondsInMonth * tickSizeMonths, 0);
+			this.tickSizeMonths = tickSizeMonths;
+		}
+
+		int divideFloor(int numerator, int divisor) {
+		    if (numerator < 0) {
+		    	return -(((Math.abs(divisor) - numerator - 1)) / divisor);
+		    } else {
+		    	return numerator / divisor;
+		    }
+		}
+		
+		double closestTick(double time) {
+			Date timeDate = new Date((long) (time*1000));
+			
+			double monthsSince1970 = timeDate.getYear() * 12 + timeDate.getMonth() + (timeDate.getDate() * secondsInDay / secondsInMonth);
+			
+			int tickMonthsSince1970 = (int)Math.round(monthsSince1970 / tickSizeMonths) * tickSizeMonths;
+			
+			int tickYear = divideFloor(tickMonthsSince1970, 12);
+			int tickMonth = tickMonthsSince1970 - tickYear * 12; 
+			Date tickDate = new Date(tickYear, tickMonth, 1);
+			
+			return Math.round(tickDate.getTime() / 1000);
+		}
+	}
+	
 	class WeekTickGenerator extends TickGenerator {
 		WeekTickGenerator() {
 			super(secondsInWeek, 0);
@@ -181,17 +258,11 @@ public class TimeGraphAxis extends GraphAxis {
 		double closestTick(double time) {
 			Date timeDate = new Date((long) (time*1000));
 			double hour = timeDate.getHours() + timeDate.getMinutes() / 30. + timeDate.getSeconds() / 1800.;
+			
 			int closestHour = (int)Math.round(hour / tickSizeHours) * tickSizeHours;
 			if (closestHour == 24) {
-				// Midnight of next day
-				// Advance day by moving to one min before midnight
-				timeDate.setHours(23);
-				timeDate.setMinutes(59);
-				timeDate.setSeconds(59);
-				// Advance 12 hours
-				timeDate.setTime(timeDate.getTime() + 86400 * 500);
-				// Move back to zero hour, beginning of day
-				timeDate.setHours(0);
+				// Midnight of next day.  Advance time and return closest beginning of day
+				return closestDay(time + (24-hour) * secondsInHour);
 			} else {
 				timeDate.setHours(closestHour);
 			}
@@ -241,17 +312,43 @@ public class TimeGraphAxis extends GraphAxis {
 			renderTicks(pixelOffset, timeMinorTickSize, createDateTickGenerator(timeMinorTickSize), surface, renderer, minorTickWidthPixels, null);
 			pixelOffset += 12 + timeLabelHeight;
 		}		
+
+		double inlineTickWidthPixels = 15;
 		
-		double dayPixels = 50;
-		double inlineDayTickWidthPixels = 15;
-		double dayMajorTickSize = Math.max(secondsInDay, computeTimeTickSize(dayPixels));
+		double dayMajorPixels = 50;
+		double dayMinorPixels = 7;
+		double dayMajorTickSize = Math.max(secondsInDay, computeTimeTickSize(dayMajorPixels));
+		double dayMinorTickSize = Math.max(secondsInDay, computeTimeTickSize(dayMinorPixels));
 		if (dayMajorTickSize == secondsInDay) {
-			renderTicksInlineLabels(pixelOffset, dayMajorTickSize, createDateTickGenerator(dayMajorTickSize), surface, renderer, inlineDayTickWidthPixels, new DayLabelFormatter());
-			double dayMinorTickSize = Math.max(secondsInDay, computeTimeTickSize(dayPixels/7.));
+			renderTicksRangeLabelInline(pixelOffset, dayMajorTickSize, createDateTickGenerator(dayMajorTickSize), surface, renderer, inlineTickWidthPixels, new DayLabelFormatter());
 			renderTicks(pixelOffset, dayMinorTickSize, createDateTickGenerator(dayMinorTickSize), surface, renderer, minorTickWidthPixels, null);
-			pixelOffset += inlineDayTickWidthPixels;
+			pixelOffset += inlineTickWidthPixels;
+		} else if (dayMajorTickSize == secondsInWeek) {
+			renderTicksRangeLabel(pixelOffset, dayMajorTickSize, createDateTickGenerator(dayMajorTickSize), createDateTickGenerator(secondsInDay), surface, renderer, majorTickWidthPixels, new DayLabelFormatter());
+			renderTicks(pixelOffset, dayMinorTickSize, createDateTickGenerator(dayMinorTickSize), surface, renderer, minorTickWidthPixels, null);
+			pixelOffset += 22;			
 		}
 		
+		double monthPixels = 30;
+		double monthTickSize = Math.max(secondsInMonth, computeTimeTickSize(monthPixels));
+		if (monthTickSize == secondsInMonth) {
+			renderTicksRangeLabelInline(pixelOffset, monthTickSize, createDateTickGenerator(monthTickSize), surface, renderer, inlineTickWidthPixels, new MonthLabelFormatter());
+			pixelOffset += inlineTickWidthPixels;
+		} else if (monthTickSize < secondsInYear-epsilon) {
+			renderTicksRangeLabel(pixelOffset, monthTickSize, createDateTickGenerator(monthTickSize), createDateTickGenerator(secondsInMonth), surface, renderer, majorTickWidthPixels, new MonthLabelFormatter());
+			pixelOffset += 22;			
+		}
+
+		double yearPixels = 40;
+		double yearTickSize = Math.max(secondsInYear, computeTimeTickSize(yearPixels));
+		if (yearTickSize == secondsInYear) {
+			renderTicksRangeLabelInline(pixelOffset, yearTickSize, createDateTickGenerator(yearTickSize), surface, renderer, inlineTickWidthPixels, new YearLabelFormatter());
+			pixelOffset += inlineTickWidthPixels;
+		} else {
+			renderTicksRangeLabel(pixelOffset, yearTickSize, createDateTickGenerator(yearTickSize), createDateTickGenerator(secondsInYear), surface, renderer, majorTickWidthPixels, new YearLabelFormatter());
+			pixelOffset += 22;			
+		}
+
 		renderer.stroke();
 	}
 

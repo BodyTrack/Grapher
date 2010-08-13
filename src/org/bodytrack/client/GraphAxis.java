@@ -1,8 +1,8 @@
 package org.bodytrack.client;
 
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.i18n.client.NumberFormat;
-
 import gwt.g2d.client.graphics.DirectShapeRenderer;
 import gwt.g2d.client.graphics.Surface;
 import gwt.g2d.client.graphics.TextAlign;
@@ -20,6 +20,13 @@ public class GraphAxis {
 
 	protected double min;
 	protected double max;
+	
+	protected boolean hasMinRange = false;
+	protected double minRange = 1e-100;
+	
+	protected boolean hasMaxRange = false;
+	protected double maxRange = 1e+100;
+	
 	protected Basis basis;
 	private Vector2 begin;
 	private double width;
@@ -136,15 +143,15 @@ public class GraphAxis {
 	protected void renderTicks(double offsetPixels, double tickSize, TickGenerator tickGen, Surface surface, DirectShapeRenderer renderer, double tickWidthPixels, LabelFormatter formatter) {
 		if (tickGen == null) tickGen = new TickGenerator(tickSize, 0);
 		
-		double labelOffsetPixels = formatter == null ? 0 : setupText(surface, JUSTIFY_MED) + offsetPixels;
+		double labelOffsetPixels = formatter == null ? 0 : setupText(surface, JUSTIFY_MED) + offsetPixels + tickWidthPixels;
 		
 		for (double tick = tickGen.nextTick(this.min); tick <= this.max; tick = tickGen.nextTick()) {
 			renderTick(renderer, tick, offsetPixels+tickWidthPixels);
-			if (formatter != null) renderTickLabel(surface, tick, tickWidthPixels+labelOffsetPixels, formatter);
+			if (formatter != null) renderTickLabel(surface, tick, labelOffsetPixels, formatter);
 		}
 	}
 	
-	protected void renderTicksInlineLabels(double offsetPixels, double tickSize, TickGenerator tickGen, Surface surface, DirectShapeRenderer renderer, double tickWidthPixels, LabelFormatter formatter) {
+	protected void renderTicksRangeLabelInline(double offsetPixels, double tickSize, TickGenerator tickGen, Surface surface, DirectShapeRenderer renderer, double tickWidthPixels, LabelFormatter formatter) {
 		if (tickGen == null) tickGen = new TickGenerator(tickSize, 0);
 		
 		double labelOffsetPixels = setupText(surface, JUSTIFY_MED) + offsetPixels;
@@ -177,6 +184,23 @@ public class GraphAxis {
 			// Draw label for after last tick, justified to maximum of axis (right or top)
 			setupText(surface, JUSTIFY_MAX);
 			renderTickLabel(surface, this.max, labelOffsetPixels, formatter);
+		}
+	}
+	
+	protected void renderTicksRangeLabel(double offsetPixels, double tickSize, TickGenerator tickGen, TickGenerator endOfRangeGenerator, Surface surface, DirectShapeRenderer renderer, double tickWidthPixels, LabelFormatter formatter) {
+		if (tickGen == null) tickGen = new TickGenerator(tickSize, 0);
+		
+		double labelOffsetPixels = setupText(surface, JUSTIFY_MED) + offsetPixels + tickWidthPixels;
+		
+		double minTick = tickGen.nextTick(this.min-tickSize*1.5);
+		
+		while (minTick <= this.max) {
+			if (this.min <= minTick) renderTick(renderer, minTick, tickWidthPixels + offsetPixels);
+			endOfRangeGenerator.nextTick(minTick);
+			double maxTick = endOfRangeGenerator.nextTick();
+			if (this.min <= maxTick && maxTick <= this.max) renderTick(renderer, maxTick, tickWidthPixels + offsetPixels);
+			if (this.min <= minTick && maxTick <= this.max) renderTickLabel(surface, (minTick+maxTick)/2., labelOffsetPixels, formatter);
+			minTick = tickGen.nextTick();
 		}
 	}
 	
@@ -219,17 +243,33 @@ public class GraphAxis {
 	public boolean contains(Vector2 pos) {
 		return bounds.contains(pos);
 	}
+	
+	protected void uncheckedTranslate(double motion) {
+		this.min += motion;
+		this.max += motion;
+	}
 
+	protected void clampToRange() {
+		// First, try to translate to put in range
+		uncheckedTranslate(Math.max(0, minRange - this.min));
+		uncheckedTranslate(Math.min(0, maxRange - this.max));
+		
+		// Second, truncate to range
+		this.min = Math.max(this.min, minRange);
+		this.max = Math.min(this.max, maxRange);
+	}
+	
 	public void zoom(double factor, double about) {
 		this.min = about + factor * (this.min-about);
 		this.max = about + factor * (this.max-about);
+		clampToRange();
 		rescale();
 	}
 
 	public void drag(Vector2 from, Vector2 to) {
 		double motion = unproject(from) - unproject(to);
-		this.min += motion;
-		this.max += motion;
+		uncheckedTranslate(motion);
+		clampToRange();
 		rescale();
 	}
 }

@@ -34,7 +34,7 @@ public class Grapher2 implements EntryPoint {
 		gw.addXAxis(new TimeGraphAxis((new Date()).getTime()/1000., 
 				                      86400 + (new Date()).getTime()/1000., // min, max values
 				                      Basis.xDownYRight, 
-		                              60   // width, in pixels
+		                              70   // width, in pixels
 		  ));
 
 		gw.addYAxis(new GraphAxis(-1, 1, // min, max value
