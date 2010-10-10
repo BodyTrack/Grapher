@@ -1,1 +1,14 @@
+# Compiled files
 *.class
+*.js
+
+# GWT specific information
+war/WEB-INF/classes/
+war/WEB-INF/lib/
+
+# Information exported to the website repo
+war/grapher2/
+
+# Things that the OS or an editor might leave in a directory
+*.swp # vim and some other programs
+*~    # emacs
