@@ -6,6 +6,10 @@
 war/WEB-INF/classes/
 war/WEB-INF/lib/
 
+# Eclipse information
+.settings/
+.metadata/
+
 # Information exported to the website repo
 war/grapher2/
 
