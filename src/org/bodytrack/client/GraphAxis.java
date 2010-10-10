@@ -1,6 +1,9 @@
 package org.bodytrack.client;
 
 
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+
 import gwt.g2d.client.graphics.DirectShapeRenderer;
 import gwt.g2d.client.graphics.Surface;
 import gwt.g2d.client.graphics.TextAlign;
@@ -34,6 +37,10 @@ public class GraphAxis {
 	private double scale;
 	private BBox bounds;
 
+	final static int JUSTIFY_MIN = 0;
+	final static int JUSTIFY_MED = 1;
+	final static int JUSTIFY_MAX = 2;
+
 	GraphAxis(double min, double max, Basis basis, double width) {
 		this.min = min;
 		this.max = max;
@@ -59,7 +66,7 @@ public class GraphAxis {
 	}
 
 	public double project1D(double value) {
-		return (value-this.min) * scale;
+		return (value - this.min) * scale;
 	}
 
 	public Vector2 project2D(double value) {
@@ -71,20 +78,21 @@ public class GraphAxis {
 	}
 
 	public void paint(Surface surface) {
-		DirectShapeRenderer renderer = new DirectShapeRenderer(surface);
-		renderer.beginPath();
-		renderer.drawLineSegment(project2D(this.min), project2D(this.max));
+		Canvas canvas = new Canvas(surface);
+		canvas.getRenderer().beginPath();
+		canvas.getRenderer().drawLineSegment(
+				project2D(this.min), project2D(this.max));
 
 		double majorTickSize = computeTickSize(majorTickMinSpacingPixels);
-		renderTicks(0, majorTickSize, null, surface, renderer,
+		renderTicks(0, majorTickSize, null, canvas,
 				majorTickWidthPixels, new DefaultLabelFormatter());
 		//renderTickLabels(surface, majorTickSize, majorTickWidthPixels+3);
 
 		double minorTickSize = computeTickSize(minorTickMinSpacingPixels);
-		renderTicks(0, minorTickSize, null, surface, renderer,
+		renderTicks(0, minorTickSize, null, canvas,
 				minorTickWidthPixels, null);
 
-		renderer.stroke();
+		canvas.getRenderer().stroke();
 	}
 
 	abstract class LabelFormatter {
@@ -94,7 +102,10 @@ public class GraphAxis {
 	class DefaultLabelFormatter extends LabelFormatter {
 		String format(double value) {
 			String label = NumberFormat.getDecimalFormat().format(value);
-			if (label.equals("-0")) label="0";
+
+			if (label.equals("-0"))
+				label="0";
+
 			return label;
 		}
 	}
@@ -111,7 +122,10 @@ public class GraphAxis {
 
 		double nextTick(double min) {
 			currentTick = closestTick(min - tickSize);
-			while (currentTick < min) advanceTick();
+
+			while (currentTick < min)
+				advanceTick();
+
 			return currentTick;
 		}
 
@@ -129,9 +143,107 @@ public class GraphAxis {
 		}
 	}
 
-	final int JUSTIFY_MIN = 0;
-	final int JUSTIFY_MED = 1;
-	final int JUSTIFY_MAX = 2;
+	/**
+	 * Wrapper class for TickGenerator that allows iteration.
+	 */
+	private class IterableTickGenerator implements Iterable<Double> {
+		private TickGenerator gen;
+		private double maxValue;
+		private double minWidth;
+
+		/**
+		 * Builds a new IterableTickGenerator wrapping the specified
+		 * TickGenerator.
+		 *
+		 * @param gen
+		 * 		the TickGenerator this IterableTickGenerator should wrap
+		 * @param maxValue
+		 * 		the maximum value of a tick this should return in
+		 * 		iteration
+		 */
+		/* public IterableTickGenerator(TickGenerator gen, double maxValue) {
+			this(gen, maxValue, 0.0);
+		} */
+
+		/**
+		 * Builds a new IterableTickGenerator wrapping the specified
+		 * TickGenerator.
+		 *
+		 * @param gen
+		 * 		the TickGenerator this IterableTickGenerator should wrap
+		 * @param maxValue
+		 * 		the maximum value of a tick this should return in
+		 * 		iteration
+		 * @param minWidth
+		 * 		the minimum distance between successive ticks
+		 */
+		public IterableTickGenerator(TickGenerator gen, double maxValue,
+				double minWidth) {
+			this.gen = gen;
+			this.maxValue = maxValue;
+			this.minWidth = minWidth;
+		}
+
+		@Override
+		public Iterator<Double> iterator() {
+			return new TickGeneratorIterator();
+		}
+
+		private class TickGeneratorIterator implements Iterator<Double> {
+			private double prevTick = 0.0;
+
+			/**
+			 * Returns <tt>true</tt> iff the most recently returned tick is
+			 * less than or equal to maxValue (which was passed into the
+			 * IterableTickGenerator constructor).
+			 *
+			 * @return
+			 * 		<tt>true</tt> iff most recently returned tick is
+			 * 		less than or equal to maxValue (which was passed
+			 * 		into the IterableTickGenerator constructor)
+			 */
+			@Override
+			public boolean hasNext() {
+				return prevTick < maxValue;
+			}
+
+			/**
+			 * Returns the next tick.
+			 *
+			 * @throws NoSuchElementException
+			 * 		if there are no more ticks available (users of this class
+			 * 		can test for this by calling
+			 * 		{@link TickGeneratorIterator#hasNext() hasNext()}
+			 * @return
+			 * 		a Double obtained by calling nextTick() on the
+			 * 		TickGenerator specified in the constructor to this
+			 * 		IterableTickGenerator
+			 */
+			@Override
+			public Double next() {
+				if (! hasNext())
+					throw new NoSuchElementException("No more ticks to show");
+
+				if (minWidth > 0.0)
+					return gen.nextTick(minWidth);
+
+				return gen.nextTick();
+			}
+
+			/**
+			 * Always throws a
+			 * {@linkplain java.lang.UnsupportedOperationException}
+			 *
+			 * @throws UnsupportedOperationException
+			 * 		always
+			 */
+			@Override
+			public void remove() {
+				throw new UnsupportedOperationException(
+				"Cannot remove from this iterator");
+			}
+		}
+	}
 
 	protected double setupText(Surface surface, int justify) {
 		boolean textParallelToAxis =
@@ -158,25 +270,33 @@ public class GraphAxis {
 	}
 
 	protected void renderTicks(double offsetPixels, double tickSize,
-			TickGenerator tickGen, Surface surface,
-			DirectShapeRenderer renderer, double tickWidthPixels,
+			TickGenerator tickGen, Canvas canvas, double tickWidthPixels,
 			LabelFormatter formatter) {
 		if (tickGen == null) tickGen = new TickGenerator(tickSize, 0);
 
 		double labelOffsetPixels = formatter == null ? 0
-				: setupText(surface, JUSTIFY_MED) + offsetPixels + tickWidthPixels;
+				: setupText(canvas.getSurface(), JUSTIFY_MED)
+				+ offsetPixels + tickWidthPixels;
 
-		for (double tick = tickGen.nextTick(this.min); tick <= this.max; tick = tickGen.nextTick()) {
-			renderTick(renderer, tick, offsetPixels+tickWidthPixels);
+		IterableTickGenerator gen =
+			new IterableTickGenerator(tickGen, this.max, this.min);
+
+		for (double tick: gen) {
+			renderTick(canvas.getRenderer(), tick,
+					offsetPixels+tickWidthPixels);
+
 			if (formatter != null)
-				renderTickLabel(surface, tick, labelOffsetPixels, formatter);
+				renderTickLabel(canvas.getSurface(), tick,
+						labelOffsetPixels, formatter);
 		}
 	}
 
 	protected void renderTicksRangeLabelInline(double offsetPixels,
-			double tickSize, TickGenerator tickGen, Surface surface,
-			DirectShapeRenderer renderer, double tickWidthPixels,
-			LabelFormatter formatter) {
+			double tickSize, TickGenerator tickGen, Canvas canvas,
+			double tickWidthPixels, LabelFormatter formatter) {
+		Surface surface = canvas.getSurface();
+		DirectShapeRenderer renderer = canvas.getRenderer();
+
 		if (tickGen == null)
 			tickGen = new TickGenerator(tickSize, 0);
 
@@ -224,15 +344,17 @@ public class GraphAxis {
 
 	protected void renderTicksRangeLabel(double offsetPixels, double tickSize,
 			TickGenerator tickGen, TickGenerator endOfRangeGenerator,
-			Surface surface, DirectShapeRenderer renderer,
-			double tickWidthPixels, LabelFormatter formatter) {
+			Canvas canvas, double tickWidthPixels, LabelFormatter formatter) {
+		Surface surface = canvas.getSurface();
+		DirectShapeRenderer renderer = canvas.getRenderer();
+
 		if (tickGen == null)
 			tickGen = new TickGenerator(tickSize, 0);
 
 		double labelOffsetPixels = setupText(surface, JUSTIFY_MED)
 		+ offsetPixels + tickWidthPixels;
 
-		double minTick = tickGen.nextTick(this.min-tickSize*1.5);
+		double minTick = tickGen.nextTick(this.min - tickSize * 1.5);
 
 		while (minTick <= this.max) {
 			if (this.min <= minTick)
