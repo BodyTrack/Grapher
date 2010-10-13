@@ -1,6 +1,5 @@
 package org.bodytrack.client;
 
-
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -95,11 +94,11 @@ public class GraphAxis {
 		canvas.getRenderer().stroke();
 	}
 
-	abstract class LabelFormatter {
+	static abstract class LabelFormatter {
 		abstract String format(double value);
 	}
 
-	class DefaultLabelFormatter extends LabelFormatter {
+	static class DefaultLabelFormatter extends LabelFormatter {
 		String format(double value) {
 			String label = NumberFormat.getDecimalFormat().format(value);
 
@@ -110,7 +109,7 @@ public class GraphAxis {
 		}
 	}
 
-	class TickGenerator {
+	static class TickGenerator {
 		private double tickSize;
 		private double offset;
 		private double currentTick = 0.0;
@@ -139,14 +138,18 @@ public class GraphAxis {
 		}
 
 		double closestTick(double val) {
-			return Math.round((val - offset) / tickSize) * tickSize + offset;
+			return Math.round((val - offset) / tickSize) * tickSize
+                + offset;
 		}
 	}
 
 	/**
 	 * Wrapper class for TickGenerator that allows iteration.
+	 * 
+	 * Note that the tick generation will go one beyond the maximum value
+	 * requested in the constructor and will show one extra tick.
 	 */
-	private class IterableTickGenerator implements Iterable<Double> {
+	static class IterableTickGenerator implements Iterable<Double> {
 		private TickGenerator gen;
 		private double maxValue;
 		private double minWidth;
@@ -240,7 +243,7 @@ public class GraphAxis {
 			@Override
 			public void remove() {
 				throw new UnsupportedOperationException(
-				"Cannot remove from this iterator");
+					"Cannot remove from this iterator");
 			}
 		}
 	}

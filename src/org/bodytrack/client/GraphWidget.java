@@ -1,6 +1,8 @@
 package org.bodytrack.client;
 
 import java.util.ArrayList;
+import java.util.List;
+
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.event.dom.client.MouseDownHandler;
 import com.google.gwt.event.dom.client.MouseMoveEvent;
@@ -15,10 +17,11 @@ import gwt.g2d.client.graphics.Surface;
 import gwt.g2d.client.math.Vector2;
 
 public class GraphWidget extends Surface {
-
-	private ArrayList<GraphAxis> xAxes = new ArrayList<GraphAxis>();
-	private ArrayList<GraphAxis> yAxes = new ArrayList<GraphAxis>();
-	private ArrayList<GraphAxis> allAxes = new ArrayList<GraphAxis>();
+	private List<GraphAxis> xAxes = new ArrayList<GraphAxis>();
+	private List<GraphAxis> yAxes = new ArrayList<GraphAxis>();
+	private List<GraphAxis> allAxes = new ArrayList<GraphAxis>();
+	
+	private List<DataPlot> dataPlots;
 
 	private int width, height;
 	private int axisMargin;
@@ -34,6 +37,8 @@ public class GraphWidget extends Surface {
 		this.width = width;
 		this.height = height;
 		this.axisMargin = axisMargin;
+		
+		dataPlots = new ArrayList<DataPlot>();
 
 		this.addMouseWheelHandler(new MouseWheelHandler() {
 			@Override
@@ -57,12 +62,14 @@ public class GraphWidget extends Surface {
 		});
 
 		this.addMouseUpHandler(new MouseUpHandler() {
+			@Override
 			public void onMouseUp(MouseUpEvent event) {
 				handleMouseUpEvent(event);
 			}
 		});
 
 		this.addMouseOutHandler(new MouseOutHandler() {
+			@Override
 			public void onMouseOut(MouseOutEvent event) {
 				handleMouseOutEvent(event);
 			}
@@ -70,9 +77,9 @@ public class GraphWidget extends Surface {
 	}
 
 	GraphAxis findAxis(Vector2 pos) {
-		for (int i=0; i < allAxes.size(); i++) {
-			if (allAxes.get(i).contains(pos))
-				return allAxes.get(i);
+		for (GraphAxis axis: allAxes) {
+			if (axis.contains(pos))
+				return axis;
 		}
 
 		return null;
@@ -134,7 +141,7 @@ public class GraphWidget extends Surface {
 		layoutAxes(yAxes, graphHeight, yAxesBegin, Basis.xRightYUp);
 	}
 
-	private int calculateAxesWidth(ArrayList<GraphAxis> axes) {
+	private int calculateAxesWidth(List<GraphAxis> axes) {
 		int ret = 0;
 
 		for (int i=0; i < axes.size(); i++) {
@@ -147,15 +154,15 @@ public class GraphWidget extends Surface {
 		return ret;
 	}
 
-	private void layoutAxes(ArrayList<GraphAxis> axes, double length,
+	private void layoutAxes(List<GraphAxis> axes, double length,
 			Vector2 begin, Basis basis) {
 		Vector2 offset = begin;
 
-		for (int i=0; i < axes.size(); i++) {
-			axes.get(i).layout(offset, length);
+		for (GraphAxis axis: axes) {
+			axis.layout(offset, length);
 
 			offset = offset.add(
-					basis.x.scale(axisMargin + axes.get(i).getWidth()));
+					basis.x.scale(axisMargin + axis.getWidth()));
 		}
 	}
 
@@ -168,7 +175,10 @@ public class GraphWidget extends Surface {
 		//this.fillRectangle(0,0,500,500);
 		this.save();
 		this.translate(.5, .5);
-		for (int i=0; i < allAxes.size(); i++) allAxes.get(i).paint(this);
+
+		for (GraphAxis axis: allAxes)
+			axis.paint(this);
+
 		this.restore();
 
 		//DirectShapeRenderer renderer = new DirectShapeRenderer(this);
@@ -182,12 +192,41 @@ public class GraphWidget extends Surface {
 	}
 
 	public void addXAxis(GraphAxis graphAxis) {
+		if (xAxes.contains(graphAxis))
+			return;
+
 		xAxes.add(graphAxis);
 		allAxes.add(graphAxis);
 	}
 
 	public void addYAxis(GraphAxis graphAxis) {
+		if (yAxes.contains(graphAxis))
+			return;
+
 		yAxes.add(graphAxis);
 		allAxes.add(graphAxis);
+	}
+	
+	/**
+	 * Adds plot to the list of data plots to be drawn.
+	 * 
+	 * Note that a plot can only be added once to this internal list.
+	 * 
+	 * @param plot
+	 * 		the plot to add to the list of plots to be drawn
+	 */
+	public void addDataPlot(DataPlot plot) {
+		if (! dataPlots.contains(plot))
+			dataPlots.add(plot);
+	}
+	
+	/**
+	 * Removes plot from the list of data plots to be drawn.
+	 * 
+	 * @param plot
+	 * 		the plot to remove from the list of plots to be drawn
+	 */
+	public void removeDataPlot(DataPlot plot) {
+		dataPlots.remove(plot);
 	}
 }
