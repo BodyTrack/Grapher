@@ -78,10 +78,10 @@ public class TimeGraphAxis extends GraphAxis {
 			int microseconds = (int) Math.round(1000000 * (time - whole));
 
 			Date d = new Date((long) (whole*1000.));
-
+			
 			String ret = NumberFormat.getFormat("00").format(d.getHours())
-			+ ":" +	NumberFormat.getFormat("00").format(d.getMinutes());
-
+				+ ":" +	NumberFormat.getFormat("00").format(d.getMinutes());
+			
 			int seconds = d.getSeconds();
 			if (seconds != 0 || microseconds != 0) {
 				ret += ":" + NumberFormat.getFormat("00").format(seconds);
@@ -141,7 +141,7 @@ public class TimeGraphAxis extends GraphAxis {
 	double closestDay(double time) {
 		Date timeDate = new Date((long) (time*1000));
 		double hour = timeDate.getHours() + timeDate.getMinutes() / 30.0
-		+ timeDate.getSeconds() / 1800.;
+			+ timeDate.getSeconds() / 1800.;
 		if (hour >= 12) {
 			// Advance day by moving to one min before midnight
 			timeDate.setHours(23);
@@ -330,6 +330,7 @@ public class TimeGraphAxis extends GraphAxis {
 						majorTickWidthPixels, null);
 				timeLabelHeight = 0;
 			}
+
 			double timeMinorTickSize =
 				computeTimeMinorTickSize(timeMinorPixels, timeMajorTickSize);
 
