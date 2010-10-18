@@ -145,14 +145,11 @@ public class GraphAxis {
 
 	/**
 	 * Wrapper class for TickGenerator that allows iteration.
-	 * 
-	 * Note that the tick generation will go one beyond the maximum value
-	 * requested in the constructor and will show one extra tick.
 	 */
 	static class IterableTickGenerator implements Iterable<Double> {
 		private TickGenerator gen;
 		private double maxValue;
-		private double minWidth;
+		private double minValue;
 
 		/**
 		 * Builds a new IterableTickGenerator wrapping the specified
@@ -160,31 +157,23 @@ public class GraphAxis {
 		 *
 		 * @param gen
 		 * 		the TickGenerator this IterableTickGenerator should wrap
+		 * @param minValue
+		 * 		the minimum (starting) value of a tick
 		 * @param maxValue
 		 * 		the maximum value of a tick this should return in
 		 * 		iteration
+		 * @throws NullPointerException
+		 * 		if gen is <tt>null</tt>
 		 */
-		/* public IterableTickGenerator(TickGenerator gen, double maxValue) {
-			this(gen, maxValue, 0.0);
-		} */
+		public IterableTickGenerator(TickGenerator gen, double minValue,
+				double maxValue) {
+			if (gen == null)
+				throw new NullPointerException(
+					"TickGenerator cannot be null");
 
-		/**
-		 * Builds a new IterableTickGenerator wrapping the specified
-		 * TickGenerator.
-		 *
-		 * @param gen
-		 * 		the TickGenerator this IterableTickGenerator should wrap
-		 * @param maxValue
-		 * 		the maximum value of a tick this should return in
-		 * 		iteration
-		 * @param minWidth
-		 * 		the minimum distance between successive ticks
-		 */
-		public IterableTickGenerator(TickGenerator gen, double maxValue,
-				double minWidth) {
 			this.gen = gen;
+			this.minValue = minValue;
 			this.maxValue = maxValue;
-			this.minWidth = minWidth;
 		}
 
 		@Override
@@ -193,21 +182,30 @@ public class GraphAxis {
 		}
 
 		private class TickGeneratorIterator implements Iterator<Double> {
-			private double prevTick = 0.0;
+			private double currTick;
+			private double nextTick;
 
 			/**
-			 * Returns <tt>true</tt> iff the most recently returned tick is
-			 * less than or equal to maxValue (which was passed into the
-			 * IterableTickGenerator constructor).
+			 * Primes the ticks to return.
+			 */
+			public TickGeneratorIterator() {
+				currTick = 0.0;
+				nextTick = gen.nextTick(minValue);
+			}
+
+			/**
+			 * Returns <tt>true</tt> iff the next tick returned from
+			 * {@link #next()} would be less than or equal to maxValue
+			 * (which was passed into the IterableTickGenerator constructor).
 			 *
 			 * @return
-			 * 		<tt>true</tt> iff most recently returned tick is
+			 * 		<tt>true</tt> iff the next tick would be
 			 * 		less than or equal to maxValue (which was passed
 			 * 		into the IterableTickGenerator constructor)
 			 */
 			@Override
 			public boolean hasNext() {
-				return prevTick < maxValue;
+				return nextTick <= maxValue;
 			}
 
 			/**
@@ -227,10 +225,11 @@ public class GraphAxis {
 				if (! hasNext())
 					throw new NoSuchElementException("No more ticks to show");
 
-				if (minWidth > 0.0)
-					return gen.nextTick(minWidth);
+				currTick = nextTick;
 
-				return gen.nextTick();
+				nextTick = gen.nextTick();
+
+				return currTick;
 			}
 
 			/**
@@ -282,11 +281,11 @@ public class GraphAxis {
 				+ offsetPixels + tickWidthPixels;
 
 		IterableTickGenerator gen =
-			new IterableTickGenerator(tickGen, this.max, this.min);
+			new IterableTickGenerator(tickGen, this.min, this.max);
 
 		for (double tick: gen) {
 			renderTick(canvas.getRenderer(), tick,
-					offsetPixels+tickWidthPixels);
+					offsetPixels + tickWidthPixels);
 
 			if (formatter != null)
 				renderTickLabel(canvas.getSurface(), tick,
