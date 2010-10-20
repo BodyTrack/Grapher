@@ -77,7 +77,7 @@ public class GraphAxis {
 	}
 
 	public void paint(Surface surface) {
-		Canvas canvas = new Canvas(surface);
+		Canvas canvas = Canvas.buildCanvas(surface);
 		canvas.getRenderer().beginPath();
 		canvas.getRenderer().drawLineSegment(
 				project2D(this.min), project2D(this.max));
@@ -92,6 +92,14 @@ public class GraphAxis {
 				minorTickWidthPixels, null);
 
 		canvas.getRenderer().stroke();
+	}
+
+	public double getMin() {
+		return min;
+	}
+
+	public double getMax() {
+		return max;
 	}
 
 	static abstract class LabelFormatter {

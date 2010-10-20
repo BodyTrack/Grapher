@@ -31,13 +31,16 @@ public class TimeGraphAxis extends GraphAxis {
 	public double computeTimeTickSize(double minPixels) {
 		//double minDelta = Math.max(minTickSize,
 		// (this.max - this.min) * (minPixels / this.length));
-		double minDelta = (this.max-this.min) * (minPixels/this.length);
-		if (minDelta < 1) return computeTickSize(minPixels);
-		for (int unit = 0; unit < timeTickSizes.length; unit++) {
-			for (int i = 0; i < timeTickSizes[unit].length; i++) {
-				if (timeTickSizes[unit][i] >= minDelta) return timeTickSizes[unit][i];
-			}
-		}
+		double minDelta = (this.max - this.min) * (minPixels / this.length);
+
+		if (minDelta < 1)
+			return computeTickSize(minPixels);
+
+		for (int unit = 0; unit < timeTickSizes.length; unit++)
+			for (int i = 0; i < timeTickSizes[unit].length; i++)
+				if (timeTickSizes[unit][i] >= minDelta)
+					return timeTickSizes[unit][i];
+
 		return computeTickSize(minPixels, secondsInYear) * secondsInYear;
 	}
 
@@ -67,7 +70,6 @@ public class TimeGraphAxis extends GraphAxis {
 		}
 		return computeTimeTickSize(minPixels);
 	}
-
 
 	class TimeLabelFormatter extends LabelFormatter {
 		String format(double time) {
@@ -293,7 +295,7 @@ public class TimeGraphAxis extends GraphAxis {
 	}
 
 	public void paint(Surface surface) {
-		Canvas canvas = new Canvas(surface);
+		Canvas canvas = Canvas.buildCanvas(surface);
 		canvas.getRenderer().beginPath();
 		canvas.getRenderer().drawLineSegment(
 				project2D(this.min), project2D(this.max));
