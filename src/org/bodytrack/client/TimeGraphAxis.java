@@ -10,6 +10,7 @@ public class TimeGraphAxis extends GraphAxis {
 		super(min, max, basis, width);
 		minRange = -2147483640;
 		maxRange = 2147483640;
+		hasMinRange = hasMaxRange = true;
 	}
 
 	final long secondsInHour = 3600;

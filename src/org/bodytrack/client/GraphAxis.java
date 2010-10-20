@@ -24,7 +24,7 @@ public class GraphAxis {
 	protected double max;
 
 	protected boolean hasMinRange = false;
-	protected double minRange = 1e-100;
+	protected double minRange = -1e+100;
 
 	protected boolean hasMaxRange = false;
 	protected double maxRange = 1e+100;
@@ -447,8 +447,8 @@ public class GraphAxis {
 		uncheckedTranslate(Math.min(0, maxRange - this.max));
 
 		// Second, truncate to range
-		this.min = Math.max(this.min, minRange);
-		this.max = Math.min(this.max, maxRange);
+		if (hasMinRange) this.min = Math.max(this.min, minRange);
+		if (hasMaxRange) this.max = Math.min(this.max, maxRange);
 	}
 
 	public void zoom(double factor, double about) {
