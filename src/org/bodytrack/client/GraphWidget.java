@@ -262,6 +262,9 @@ public class GraphWidget extends Surface {
 	 * 		the plot to remove from the list of plots to be drawn
 	 */
 	public void removeDataPlot(DataPlot plot) {
+		// TODO: implement this, removing plot from dataPlots and
+		// removing the axes of plot if and only if those axes are
+		// not referenced by any other DataPlot
 		throw new UnsupportedOperationException(
 			"Plot removal not currently implemented");
 	}

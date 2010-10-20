@@ -186,6 +186,24 @@ public class DataPlot {
 		canvas.getRenderer().beginPath();
 
 		for (PlottablePoint point: dataPoints) {
+			// Don't draw points too far to the left or right
+			if (point.getDate() < xAxis.getMin()
+					|| point.getDate() > xAxis.getMax()) {
+				// Make sure we don't draw lines between points
+				// that aren't adjacent
+				prevX = prevY = Double.MIN_VALUE;
+				continue;
+			}
+
+			// Don't draw points too high or low to be rendered
+			if (point.getValue() < yAxis.getMin()
+					|| point.getValue() > yAxis.getMax()) {
+				// Make sure we don't draw lines between points
+				// that aren't adjacent
+				prevX = prevY = Double.MIN_VALUE;
+				continue;
+			}
+
 			double x = xAxis.project2D(point.getDate()).getX();
 			double y = yAxis.project2D(point.getValue()).getY();
 

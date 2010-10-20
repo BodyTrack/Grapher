@@ -30,12 +30,15 @@ public class Grapher2 implements EntryPoint {
 	}
 
 	private void setupGraphWidget() {
-		// This is not the most general code, but it is good for a demo
+		// This is not the most general code, but it is fine for a demo
 
 		gw = new GraphWidget(400, 400, 10);
 
-		GraphAxis time = new TimeGraphAxis((new Date()).getTime()/1000.0,
-				86400 + (new Date()).getTime()/1000.0, // min, max values
+		GraphAxis time = new TimeGraphAxis(
+				(new Date()).getTime()/1000.0,
+					// current time
+				600 + (new Date()).getTime()/1000.0,
+					// 10 minutes after current time
 				Basis.xDownYRight,
 				70);					// width, in pixels
 
