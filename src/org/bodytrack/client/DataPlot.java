@@ -248,7 +248,7 @@ public class DataPlot {
 	 */
 	private int computeCurrentLevel() {
 		double xAxisWidth = xAxis.getMax() - xAxis.getMin();
-		int dataPointWidth = (int) (xAxisWidth / GrapherTile.TILE_WIDTH);
+		double dataPointWidth = xAxisWidth / GrapherTile.TILE_WIDTH;
 
 		// Add 1 so that the whole area will be covered
 		return log2(dataPointWidth) + 1;
@@ -262,8 +262,14 @@ public class DataPlot {
 	 * @return
 	 * 		the floor of the log (base 2) of n
 	 */
-	private int log2(int n) {
-		return (int) (Math.log(n) / Math.log(2));
+	private int log2(double x) {
+		if (x == 0)
+			return 0;
+
+		if (x < 0)
+			return -1 * log2(-x);
+
+		return (int) (Math.log(x) / Math.log(2));
 	}
 
 	/**
