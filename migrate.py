@@ -44,7 +44,7 @@ def copyWidgets():
     for value in WIDGET_DIRECTORIES.itervalues():
         pCall('git add %s' % value)
 
-    pCall(r'git commit -m "Automatic widget update from commit %s"'
+    pCall(r'git commit -m "Automatic grapher update from commit %s"'
         % commitTag)
 
 def checkGit(path):
