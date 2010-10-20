@@ -17,11 +17,16 @@ import gwt.g2d.client.graphics.Surface;
 import gwt.g2d.client.math.Vector2;
 
 public class GraphWidget extends Surface {
-	private List<GraphAxis> xAxes = new ArrayList<GraphAxis>();
-	private List<GraphAxis> yAxes = new ArrayList<GraphAxis>();
-	private List<GraphAxis> allAxes = new ArrayList<GraphAxis>();
-	
+	private static final double MOUSE_WHEEL_ZOOM_RATE = 1.003;
+
 	private List<DataPlot> dataPlots;
+
+	/* xAxes and yAxes provide redundant information - the list
+	 * of all axes used by all the plots in dataPlots.  This is
+	 * for performance reasons.
+	 */
+	private List<GraphAxis> xAxes;
+	private List<GraphAxis> yAxes;
 
 	private int width, height;
 	private int axisMargin;
@@ -32,13 +37,15 @@ public class GraphWidget extends Surface {
 	private GraphAxis mouseDragAxis;
 	private Vector2 mouseDragLastPos;
 
-	GraphWidget(int width, int height, int axisMargin) {
+	public GraphWidget(int width, int height, int axisMargin) {
 		super(width, height);
 		this.width = width;
 		this.height = height;
 		this.axisMargin = axisMargin;
-		
+
 		dataPlots = new ArrayList<DataPlot>();
+		xAxes = new ArrayList<GraphAxis>();
+		yAxes = new ArrayList<GraphAxis>();
 
 		this.addMouseWheelHandler(new MouseWheelHandler() {
 			@Override
@@ -77,7 +84,12 @@ public class GraphWidget extends Surface {
 	}
 
 	GraphAxis findAxis(Vector2 pos) {
-		for (GraphAxis axis: allAxes) {
+		for (GraphAxis axis: xAxes) {
+			if (axis.contains(pos))
+				return axis;
+		}
+
+		for (GraphAxis axis: yAxes) {
 			if (axis.contains(pos))
 				return axis;
 		}
@@ -88,12 +100,15 @@ public class GraphWidget extends Surface {
 	private void handleMouseWheelEvent(MouseWheelEvent event) {
 		Vector2 eventLoc = new Vector2(event.getX(), event.getY());
 		GraphAxis axis = findAxis(eventLoc);
+
 		if (axis != null) {
-			double zoomFactor = Math.pow(1.003, event.getDeltaY());
+			double zoomFactor = Math.pow(MOUSE_WHEEL_ZOOM_RATE,
+				event.getDeltaY());
 			double zoomAbout = axis.unproject(eventLoc);
 			axis.zoom(zoomFactor, zoomAbout);
-			paint();
 		}
+
+		paint();
 	}
 
 	private void handleMouseDownEvent(MouseDownEvent event) {
@@ -104,27 +119,34 @@ public class GraphWidget extends Surface {
 			mouseDragAxis = axis;
 			mouseDragLastPos = pos;
 		}
+
+		paint();
 	}
 
 	private void handleMouseMoveEvent(MouseMoveEvent event) {
 		Vector2 pos = new Vector2(event.getX(), event.getY());
+
 		if (mouseDragAxis != null) {
 			mouseDragAxis.drag(mouseDragLastPos, pos);
 			mouseDragLastPos = pos;
-			paint();
-		}
+		} /*else {
+			for (DataPlot plot: dataPlots)
+				plot.drag(mouseDragLastPos, pos);
+		} */
+
+		paint();
 	}
 
 	private void handleMouseUpEvent(MouseUpEvent event) {
-		if (mouseDragAxis != null) {
-			mouseDragAxis = null;
-		}
+		mouseDragAxis = null;
+
+		paint();
 	}
 
 	private void handleMouseOutEvent(MouseOutEvent event) {
-		if (mouseDragAxis != null) {
-			mouseDragAxis = null;
-		}
+		mouseDragAxis = null;
+
+		paint();
 	}
 
 	private void layout() {
@@ -176,8 +198,8 @@ public class GraphWidget extends Surface {
 		this.save();
 		this.translate(.5, .5);
 
-		for (GraphAxis axis: allAxes)
-			axis.paint(this);
+		for (DataPlot plot: dataPlots)
+			plot.paint();
 
 		this.restore();
 
@@ -191,20 +213,24 @@ public class GraphWidget extends Surface {
 		//renderer.stroke();
 	}
 
-	public void addXAxis(GraphAxis graphAxis) {
-		if (xAxes.contains(graphAxis))
-			return;
-
-		xAxes.add(graphAxis);
-		allAxes.add(graphAxis);
-	}
-
-	public void addYAxis(GraphAxis graphAxis) {
-		if (yAxes.contains(graphAxis))
-			return;
-
-		yAxes.add(graphAxis);
-		allAxes.add(graphAxis);
+	/**
+	 * Returns <tt>true</tt> if and only if this widget holds a
+	 * <strong>reference</strong> to axis.
+	 *
+	 * In other words, this will not return <tt>true</tt> unless
+	 * this GraphWidget contains the exact GraphAxis object axis,
+	 * regardless of whether this contains an axis identical
+	 * to (but with a different memory location from) axis.
+	 *
+	 * @param axis
+	 * 		the {@link org.bodytrack.client.GraphAxis GraphAxis}
+	 * 		for which to look
+	 * @return
+	 * 		<tt>true</tt> iff this GraphWidget holds a reference
+	 * 		to axis
+	 */
+	public boolean refersToAxis(GraphAxis axis) {
+		return xAxes.contains(axis) || yAxes.contains(axis);
 	}
 	
 	/**
@@ -218,6 +244,15 @@ public class GraphWidget extends Surface {
 	public void addDataPlot(DataPlot plot) {
 		if (! dataPlots.contains(plot))
 			dataPlots.add(plot);
+
+		// TODO: Check for bug if the same axis is both an X-axis
+		// and a Y-axis, which should never happen in reality
+
+		if (! xAxes.contains(plot.getXAxis()))
+			xAxes.add(plot.getXAxis());
+
+		if (! yAxes.contains(plot.getYAxis()))
+			yAxes.add(plot.getYAxis());
 	}
 	
 	/**
@@ -227,6 +262,7 @@ public class GraphWidget extends Surface {
 	 * 		the plot to remove from the list of plots to be drawn
 	 */
 	public void removeDataPlot(DataPlot plot) {
-		dataPlots.remove(plot);
+		throw new UnsupportedOperationException(
+			"Plot removal not currently implemented");
 	}
 }
