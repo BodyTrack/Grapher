@@ -1,27 +1,28 @@
 package org.bodytrack.client;
 
-import java.util.Date;
-
 /**
  * A class holding a date and value, which makes the value easy to graph.
  * 
- * The date is stored as a {@linkplain java.util.Date}, and the value
+ * The date is stored as a <tt>double</tt>, and the value
  * is stored as a <tt>double</tt>.  Objects of this class are mutable,
  * and therefore not thread-safe.  However, since GWT compiles Java code
  * to JavaScript, which does not support threading, thread-safety is not
  * an issue.
  */
 public class PlottablePoint {
-	private Date myDate;
+	private double myDate;
 	private double myValue;
 	
 	/**
-	 * Saves a reference to date and a copy of value in this PlottablePoint.
+	 * Saves copies of date and value in this PlottablePoint.
 	 * 
 	 * @param date
+	 * 		the date for this PlottablePoint, represented as the number
+	 * 		of seconds since 1/1/1970 (the epoch)
 	 * @param value
+	 * 		the value of this PlottablePoint
 	 */
-	public PlottablePoint(Date date, double value) {
+	public PlottablePoint(double date, double value) {
 		myDate = date;
 		myValue = value;
 	}
@@ -32,7 +33,7 @@ public class PlottablePoint {
 	 * @return
 	 * 		the date for this PlottablePoint
 	 */
-	public Date getDate() {
+	public double getDate() {
 		return myDate;
 	}
 
@@ -42,7 +43,7 @@ public class PlottablePoint {
 	 * @param date
 	 * 		the date to set for this PlottablePoint
 	 */
-	public void setDate(Date date) {
+	public void setDate(double date) {
 		myDate = date;
 	}
 

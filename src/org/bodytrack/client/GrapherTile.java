@@ -1,7 +1,6 @@
 package org.bodytrack.client;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import com.google.gwt.core.client.JavaScriptObject;
@@ -52,7 +51,8 @@ public class GrapherTile extends JavaScriptObject {
 	 * 		a GrapherTile object with the same data as is found in json
 	 */
 	public static native GrapherTile buildTile(String json) /*-{
-		return eval(json);
+		eval("var tile = " + json);
+		return tile;
 	}-*/;
 	
 	/**
@@ -79,26 +79,33 @@ public class GrapherTile extends JavaScriptObject {
 	 * @param url
 	 * 		the URL from which to retrieve the data
 	 * @param destination
-	 * 		the {@link java.util.List List} into which this method will
-	 * 		add the tile when the tile is loaded from the server
+	 * 		the {@link java.util.List List} into which this method
+	 * 		will add the tile when the tile is loaded from the server
 	 */
 	public static void retrieveTile(String url,
 			final List<GrapherTile> destination) {		
 		// Send request to server and catch any errors.
-		RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, url);
+		RequestBuilder builder =
+			new RequestBuilder(RequestBuilder.GET, url);
 		
 		try {
 			builder.sendRequest(null, new RequestCallback() {
 				@Override
-				public void onError(Request request, Throwable exception) { }
+				public void onError(Request request,
+						Throwable exception) {
+					// Need sensible way to handle this error
+				}
 				
 				@Override
-				public void onResponseReceived(Request request, Response response) {
+				public void onResponseReceived(Request request,
+						Response response) {
 					if (response.getStatusCode() == 200)
 						destination.add(buildTile(response.getText()));
 				}
 			});
-		} catch (RequestException e) { }
+		} catch (RequestException e) {
+			// Need sensible way to handle this error
+		}
 	}
 	
 	/**
@@ -177,7 +184,10 @@ public class GrapherTile extends JavaScriptObject {
 			else if (fieldNames[i].equalsIgnoreCase("mean"))
 				meanIndex = i;
 		}
-		
+
+		if (timeIndex < 0 || meanIndex < 0)
+			return null;
+
 		List<PlottablePoint> result = new ArrayList<PlottablePoint>();
 		JsArray<JsArrayNumber> dataPoints = getData();
 		
@@ -187,9 +197,7 @@ public class GrapherTile extends JavaScriptObject {
 			double time = dataPoint.get(timeIndex);
 			double mean = dataPoint.get(meanIndex);
 			
-			Date sampleDate = new Date((long) time);
-			
-			result.add(new PlottablePoint(sampleDate, mean));
+			result.add(new PlottablePoint(time, mean));
 		}
 		
 		return result;
