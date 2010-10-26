@@ -81,4 +81,32 @@ public class Canvas {
 	public DirectShapeRenderer getRenderer() {
 		return renderer;
 	}
+
+	// --------------------------------------------------------------
+	// Copies of Surface methods
+	// --------------------------------------------------------------
+
+	// --------------------------------------------------------------
+	// Copies of DirectShapeRenderer methods
+	// --------------------------------------------------------------
+
+	/**
+	 * Is exactly equivalent to a call to getRenderer().beginPath().
+	 *
+	 * @return
+	 * 		the DirectShapeRenderer used for the beginPath call
+	 */
+	public DirectShapeRenderer beginPath() {
+		return renderer.beginPath();
+	}
+
+	/**
+	 * Is exactly equivalent to a call to getRenderer().stroke().
+	 *
+	 * @return
+	 * 		the DirectShapeRenderer used for the stroke call
+	 */
+	public DirectShapeRenderer stroke() {
+		return renderer.stroke();
+	}
 }
