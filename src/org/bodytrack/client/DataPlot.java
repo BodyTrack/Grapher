@@ -3,6 +3,7 @@ package org.bodytrack.client;
 import gwt.g2d.client.math.Vector2;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -23,14 +24,15 @@ public class DataPlot {
 	
 	// Values related to getting new values from the server
 	private String baseUrl;
-	private GrapherTile currentData;
+	private List<GrapherTile> currentData;
 	private List<GrapherTile> pendingData;
 	private boolean waitingOnTile;
 
 	// Determining whether or not we should retrieve more data from
 	// the server
 	private int currentLevel;
-	private int currentOffset;
+	private int currentMinOffset;
+	private int currentMaxOffset;
 	
 	/**
 	 * Main constructor for the DataPlot object.
@@ -78,11 +80,12 @@ public class DataPlot {
 		pendingData = new ArrayList<GrapherTile>();
 
 		// The data will be pulled in with the checkForFetch call
-		currentData = null;
+		currentData = new ArrayList<GrapherTile>();
 		waitingOnTile = false;
 
 		currentLevel = Integer.MIN_VALUE;
-		currentOffset = Integer.MIN_VALUE;
+		currentMinOffset = Integer.MAX_VALUE;
+		currentMaxOffset = Integer.MIN_VALUE;
 
 		checkForFetch();
 	}
@@ -107,15 +110,42 @@ public class DataPlot {
 	 */
 	private void checkForFetch() {
 		int correctLevel = computeCurrentLevel();
-		int correctOffset = computeOffset(correctLevel);
+		int correctMinOffset = computeMinOffset(correctLevel);
+		int correctMaxOffset = computeMaxOffset(correctLevel);
 
-		if (correctLevel != currentLevel
-				|| correctOffset != currentOffset)
-			fetchFromServer(correctLevel, correctOffset);
+		if (correctLevel != currentLevel) {
+			for (int i = correctMinOffset; i <= correctMaxOffset; i++)
+				fetchFromServer(correctLevel, i);
+		} else if (correctMinOffset < currentMinOffset)
+			fetchFromServer(correctLevel, correctMinOffset);
+		else if (correctMaxOffset > currentMaxOffset)
+			fetchFromServer(correctLevel, correctMaxOffset);
 
 		// This way we don't fetch the same data multiple times
 		currentLevel = correctLevel;
-		currentOffset = correctOffset;
+		currentMinOffset = correctMinOffset;
+		currentMaxOffset = correctMaxOffset;
+
+		// Remove for any data out of range, but only if we are not
+		// waiting on the data that is in range
+		if (waitingOnTile)
+			return;
+
+		Iterator<GrapherTile> it = currentData.iterator();
+
+		while (it.hasNext()) {
+			GrapherTile curr = it.next();
+
+			int level = curr.getLevel();
+			int offset = curr.getOffset();
+
+			if (level != currentLevel) // Wrong level
+				it.remove();
+			else if (offset < currentMinOffset - 1) // Too far left
+				it.remove();
+			else if (offset > currentMaxOffset + 1) // Too far right
+				it.remove();
+		}
 	}
 
 	private void fetchFromServer(int level, int offset) {
@@ -139,13 +169,10 @@ public class DataPlot {
 
 		// If we have received data from the server
 		if (pendingData.size() > 0) {
-			// Take most recently retrieved tile, and get rid of
-			// all extra data
-			currentData = pendingData.get(pendingData.size() - 1);
+			// Pull all the data out of the tile
+			for (GrapherTile tile: pendingData)
+				currentData.add(tile);
 			pendingData.clear();
-
-			currentLevel = currentData.getLevel();
-			currentOffset = currentData.getOffset();
 
 			waitingOnTile = false;
 		}
@@ -175,49 +202,51 @@ public class DataPlot {
 			throw new NullPointerException(
 				"currentData cannot be null");
 
-		double prevX = Double.MIN_VALUE;
-		double prevY = Double.MIN_VALUE;
+		for (GrapherTile tile: currentData) {
+			double prevX = Double.MIN_VALUE;
+			double prevY = Double.MIN_VALUE;
 
-		List<PlottablePoint> dataPoints = currentData.getDataPoints();
+			List<PlottablePoint> dataPoints = tile.getDataPoints();
 
-		if (dataPoints == null)
-			return;
-
-		canvas.getRenderer().beginPath();
-
-		for (PlottablePoint point: dataPoints) {
-			// Don't draw points too far to the left or right
-			if (point.getDate() < xAxis.getMin()
-					|| point.getDate() > xAxis.getMax()) {
-				// Make sure we don't draw lines between points
-				// that aren't adjacent
-				prevX = prevY = Double.MIN_VALUE;
+			if (dataPoints == null)
 				continue;
+
+			canvas.beginPath();
+
+			for (PlottablePoint point: dataPoints) {
+				// Don't draw points too far to the left or right
+				if (point.getDate() < xAxis.getMin()
+						|| point.getDate() > xAxis.getMax()) {
+					// Make sure we don't draw lines between points
+					// that aren't adjacent
+					prevX = prevY = Double.MIN_VALUE;
+					continue;
+				}
+
+				// Don't draw points too high or low to be rendered
+				if (point.getValue() < yAxis.getMin()
+						|| point.getValue() > yAxis.getMax()) {
+					// Make sure we don't draw lines between points
+					// that aren't adjacent
+					prevX = prevY = Double.MIN_VALUE;
+					continue;
+				}
+
+				double x = xAxis.project2D(point.getDate()).getX();
+				double y = yAxis.project2D(point.getValue()).getY();
+
+				// Draw this part of the line, reaching to all points
+				// except the first (the first point has a line coming from
+				// it, but not to it)
+				if (prevX != Double.MIN_VALUE && prevY != Double.MIN_VALUE)
+					canvas.getRenderer().drawLineSegment(prevX, prevY, x, y);
+
+				prevX = x;
+				prevY = y;
 			}
 
-			// Don't draw points too high or low to be rendered
-			if (point.getValue() < yAxis.getMin()
-					|| point.getValue() > yAxis.getMax()) {
-				// Make sure we don't draw lines between points
-				// that aren't adjacent
-				prevX = prevY = Double.MIN_VALUE;
-				continue;
-			}
-
-			double x = xAxis.project2D(point.getDate()).getX();
-			double y = yAxis.project2D(point.getValue()).getY();
-
-			// Draw this part of the line, reaching to all points
-			// except the first (the first point has a line coming from
-			// it, but not to it)
-			if (prevX != Double.MIN_VALUE && prevY != Double.MIN_VALUE)
-				canvas.getRenderer().drawLineSegment(prevX, prevY, x, y);
-
-			prevX = x;
-			prevY = y;
+			canvas.stroke();
 		}
-
-		canvas.getRenderer().stroke();
 	}
 
 	/**
@@ -250,8 +279,7 @@ public class DataPlot {
 		double xAxisWidth = xAxis.getMax() - xAxis.getMin();
 		double dataPointWidth = xAxisWidth / GrapherTile.TILE_WIDTH;
 
-		// Add 1 so that the whole area will be covered
-		return log2(dataPointWidth) + 1;
+		return log2(dataPointWidth);
 	}
 
 	/**
@@ -273,9 +301,9 @@ public class DataPlot {
 	}
 
 	/**
-	 * Returns the offset at which this X-axis is operating.
+	 * Returns the offset at which the left edge of the X-axis is operating.
 	 *
-	 * Returns the offset of the tile in which the middle value
+	 * Returns the offset of the tile in which the minimum value
 	 * of the X-axis is found.
 	 *
 	 * @param level
@@ -285,13 +313,35 @@ public class DataPlot {
 	 * 		the current offset of the X-axis, based on level
 	 * 		and the private variable xAxis
 	 */
-	private int computeOffset(int level) {
-		double middle = 0.5 * (xAxis.getMin() + xAxis.getMax());
+	private int computeMinOffset(int level) {
+		double min = xAxis.getMin();
+
+		int tileWidth = getTileWidth(level);
+
+		// Tile offset computation
+		return (int) (min / tileWidth);
+	}
+
+	/**
+	 * Returns the offset at which the right edge of the X-axis is operating.
+	 *
+	 * Returns the offset of the tile in which the maximum value
+	 * of the X-axis is found.
+	 *
+	 * @param level
+	 * 		the level at which we assume we are operating when calculating
+	 * 		offsets
+	 * @return
+	 * 		the current offset of the X-axis, based on level
+	 * 		and the private variable xAxis
+	 */
+	private int computeMaxOffset(int level) {
+		double max = xAxis.getMax();
 
 		int tileWidth = getTileWidth(level);
 
 		// Tile number computation
-		return (int) (middle / tileWidth);
+		return (int) (max / tileWidth);
 	}
 
 	/**
