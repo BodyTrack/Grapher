@@ -17,7 +17,8 @@ import gwt.g2d.client.graphics.Surface;
 import gwt.g2d.client.math.Vector2;
 
 public class GraphWidget extends Surface {
-	private static final double MOUSE_WHEEL_ZOOM_RATE = 1.003;
+	private static final double MOUSE_WHEEL_ZOOM_RATE_MAC = 1.003;
+	private static final double MOUSE_WHEEL_ZOOM_RATE_PC = 1.1;
 
 	private List<DataPlot> dataPlots;
 
@@ -36,6 +37,7 @@ public class GraphWidget extends Surface {
 
 	private GraphAxis mouseDragAxis;
 	private Vector2 mouseDragLastPos;
+	private double mouseWheelZoomRate;
 
 	public GraphWidget(int width, int height, int axisMargin) {
 		super(width, height);
@@ -81,7 +83,31 @@ public class GraphWidget extends Surface {
 				handleMouseOutEvent(event);
 			}
 		});
+
+		mouseWheelZoomRate = shouldZoomMac()
+			? MOUSE_WHEEL_ZOOM_RATE_MAC
+			: MOUSE_WHEEL_ZOOM_RATE_PC;
 	}
+
+	/**
+	 * Tells whether this application should use the Mac scroll wheel ratio.
+	 *
+	 * Checks the <tt>navigator.platform</tt> property in JavaScript to
+	 * determine if this code is on a Mac or not, and returns <tt>true</tt>
+	 * iff the best guess is Mac.  If this property cannot be read, returns
+	 * <tt>false</tt>.
+	 *
+	 * @return
+	 * 		<tt>true</tt> if and only if the <tt>navigator.platform</tt>
+	 * 		property contains the string &quot;Mac&quot;
+	 */
+	private native boolean shouldZoomMac() /*-{
+		// Don't do anything unless navigator.platform is available
+		if (! ($doc.navigator && $doc.navigator.platform))
+			return false;
+
+		return $doc.navigator.platform.matches(/mac/i);
+	}-*/;
 
 	GraphAxis findAxis(Vector2 pos) {
 		for (GraphAxis axis: xAxes) {
@@ -102,7 +128,7 @@ public class GraphWidget extends Surface {
 		GraphAxis axis = findAxis(eventLoc);
 
 		if (axis != null) {
-			double zoomFactor = Math.pow(MOUSE_WHEEL_ZOOM_RATE,
+			double zoomFactor = Math.pow(mouseWheelZoomRate,
 				event.getDeltaY());
 			double zoomAbout = axis.unproject(eventLoc);
 			axis.zoom(zoomFactor, zoomAbout);
