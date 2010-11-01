@@ -20,14 +20,15 @@ import com.google.gwt.http.client.Response;
  */
 public class GrapherTile extends JavaScriptObject {
 	/**
-	 * The "width" of a tile.
+	 * The width of a tile, in data points.
 	 * 
 	 * <p>Each tile is defined to encompass all data in a time range
 	 * equal to {@code Math.pow(2, level) * TILE_WIDTH} seconds.</p>
 	 */
 	public static final int TILE_WIDTH = 512;
-	
+
 	// Overlay types always have protected, zero-arg constructors
+	// with empty bodies
 	protected GrapherTile() { }
 	
 	/**
@@ -123,7 +124,7 @@ public class GrapherTile extends JavaScriptObject {
 	public final native int getLevel() /*-{
 		return this.level;
 	}-*/;
-	
+
 	/**
 	 * Returns the offset from the epoch at which this tile is found.
 	 * 
@@ -138,7 +139,7 @@ public class GrapherTile extends JavaScriptObject {
 	public final native int getOffset() /*-{
 		return this.offset;
 	}-*/;
-	
+
 	/**
 	 * Returns the list of field names for this tile.
 	 * 
@@ -148,7 +149,7 @@ public class GrapherTile extends JavaScriptObject {
 	public final native String[] getFields() /*-{
 		return this.fields;
 	}-*/;
-	
+
 	/**
 	 * Returns the data stored in this tile.
 	 * 
@@ -159,7 +160,7 @@ public class GrapherTile extends JavaScriptObject {
 	public final native JsArray<JsArrayNumber> getData() /*-{
 		return this.data;
 	}-*/;
-	
+
 	/**
 	 * Returns the data points that should be graphed for this GrapherTile.
 	 * 
@@ -175,9 +176,9 @@ public class GrapherTile extends JavaScriptObject {
 	public final List<PlottablePoint> getDataPoints() {
 		int timeIndex = -1;
 		int meanIndex = -1;
-		
+
 		String[] fieldNames = getFields();
-		
+
 		for (int i = 0; i < fieldNames.length; i++) {
 			if (fieldNames[i].equalsIgnoreCase("time"))
 				timeIndex = i;
@@ -190,16 +191,27 @@ public class GrapherTile extends JavaScriptObject {
 
 		List<PlottablePoint> result = new ArrayList<PlottablePoint>();
 		JsArray<JsArrayNumber> dataPoints = getData();
-		
+
 		for (int i = 0; i < dataPoints.length(); i++) {
 			JsArrayNumber dataPoint = dataPoints.get(i);
-			
+
 			double time = dataPoint.get(timeIndex);
 			double mean = dataPoint.get(meanIndex);
-			
+
 			result.add(new PlottablePoint(time, mean));
 		}
-		
+
 		return result;
+	}
+
+	/**
+	 * Returns a TileDescription that describes this tile.
+	 *
+	 * @return
+	 * 		a {@link org.bodytrack.client.TileDescription TileDescription}
+	 * 		that describes the level and offset for this tile
+	 */
+	public final TileDescription getDescription() {
+		return new TileDescription(getLevel(), getOffset());
 	}
 }

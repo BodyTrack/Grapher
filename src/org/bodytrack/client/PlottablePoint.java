@@ -3,11 +3,11 @@ package org.bodytrack.client;
 /**
  * A class holding a date and value, which makes the value easy to graph.
  * 
- * The date is stored as a <tt>double</tt>, and the value
- * is stored as a <tt>double</tt>.  Objects of this class are mutable,
- * and therefore not thread-safe.  However, since GWT compiles Java code
- * to JavaScript, which does not support threading, thread-safety is not
- * an issue.
+ * The date is stored as a <tt>double</tt>, and the value is stored as a
+ * <tt>double</tt>.  Once created, objects of this class are designed to
+ * be immutable, although in JavaScript all objects are mutable, and are
+ * subject to change if an attacker can exploit a cross-site scripting
+ * vulnerability.
  */
 public class PlottablePoint {
 	private double myDate;
@@ -38,16 +38,6 @@ public class PlottablePoint {
 	}
 
 	/**
-	 * Sets the date of this PlottablePoint.
-	 * 
-	 * @param date
-	 * 		the date to set for this PlottablePoint
-	 */
-	public void setDate(double date) {
-		myDate = date;
-	}
-
-	/**
 	 * Returns the value of this PlottablePoint.
 	 * 
 	 * @return
@@ -55,15 +45,5 @@ public class PlottablePoint {
 	 */
 	public double getValue() {
 		return myValue;
-	}
-
-	/**
-	 * Sets the value of this PlottablePoint.
-	 * 
-	 * @param value
-	 * 		the value to set for this PlottablePoint
-	 */
-	public void setMyValue(double value) {
-		myValue = value;
 	}
 }

@@ -3,12 +3,14 @@ package org.bodytrack.client;
 import gwt.g2d.client.math.Vector2;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Represents a single set of data, along with its associated axes.
- * 
+ *
  * Has the ability to draw itself and its axes on a
  * {@link org.bodytrack.client.Canvas Canvas} object, and to update
  * the positions of its dots based on the zoom level.  Also, if the
@@ -17,23 +19,29 @@ import java.util.List;
  * and redraw the data whenever the data comes in from the server.
  */
 public class DataPlot {
+	/**
+	 * The maximum size we allow currentData to be before we consider
+	 * pruning away unnecessary data.
+	 */
+	private static final int MAX_CURRENT_DATA_SIZE = 1024;
+
 	private GraphWidget container;
 	private GraphAxis xAxis;
 	private GraphAxis yAxis;
 	private Canvas canvas;
-	
+
 	// Values related to getting new values from the server
 	private String baseUrl;
 	private List<GrapherTile> currentData;
+	private Set<TileDescription> pendingDescriptions;
 	private List<GrapherTile> pendingData;
-	private boolean waitingOnTile;
 
 	// Determining whether or not we should retrieve more data from
 	// the server
 	private int currentLevel;
 	private int currentMinOffset;
 	private int currentMaxOffset;
-	
+
 	/**
 	 * Main constructor for the DataPlot object.
 	 * 
@@ -69,19 +77,19 @@ public class DataPlot {
 				|| yAxis == null || url == null)
 			throw new NullPointerException(
 				"Cannot have a null container, axis, or url");
-		
+
 		this.container = container;
 		this.xAxis = xAxis;
 		this.yAxis = yAxis;
-		
+
 		baseUrl = url;
 
 		canvas = Canvas.buildCanvas(this.container);
-		pendingData = new ArrayList<GrapherTile>();
 
 		// The data will be pulled in with the checkForFetch call
+		pendingData = new ArrayList<GrapherTile>();
+		pendingDescriptions = new HashSet<TileDescription>();
 		currentData = new ArrayList<GrapherTile>();
-		waitingOnTile = false;
 
 		currentLevel = Integer.MIN_VALUE;
 		currentMinOffset = Integer.MAX_VALUE;
@@ -100,7 +108,7 @@ public class DataPlot {
 	public void drag(Vector2 from, Vector2 to) {
 		xAxis.drag(from, to);
 		yAxis.drag(from, to);
-		
+
 		checkForFetch();
 	}
 	
@@ -127,8 +135,11 @@ public class DataPlot {
 		currentMaxOffset = correctMaxOffset;
 
 		// Remove for any data out of range, but only if we are not
-		// waiting on the data that is in range
-		if (waitingOnTile)
+		// waiting on the data that is in range and we do not have
+		// enough available space to store our data
+		// TODO: Put more intelligent pruning in place
+		if (pendingDescriptions.size() > 0
+				|| currentData.size() < MAX_CURRENT_DATA_SIZE)
 			return;
 
 		Iterator<GrapherTile> it = currentData.iterator();
@@ -148,12 +159,30 @@ public class DataPlot {
 		}
 	}
 
+	/**
+	 * Fetches the specified tile from the server.
+	 *
+	 * Note that this checks the pendingDescriptions instance variable
+	 * to determine if this tile has already been requested.  If so,
+	 * does not request anything from the server.
+	 *
+	 * @param level
+	 * 		the level of the tile to fetch
+	 * @param offset
+	 * 		the offset of the tile to fetch
+	 */
 	private void fetchFromServer(int level, int offset) {
-		String url = baseUrl + level + "." + offset + ".json";
+		TileDescription desc = new TileDescription(level, offset);
 
+		// Ensures we don't fetch the same tile twice unnecessarily
+		if (pendingDescriptions.contains(desc))
+			return;
+
+		String url = baseUrl + level + "." + offset + ".json";
 		GrapherTile.retrieveTile(url, pendingData);
 
-		waitingOnTile = true;
+		// Make sure we don't fetch this again unnecessarily
+		pendingDescriptions.add(desc);
 	}
 
 	/**
@@ -170,22 +199,19 @@ public class DataPlot {
 		// If we have received data from the server
 		if (pendingData.size() > 0) {
 			// Pull all the data out of the tile
-			for (GrapherTile tile: pendingData)
+			for (GrapherTile tile: pendingData) {
 				currentData.add(tile);
+
+				// Make sure we don't still mark this as pending
+				pendingDescriptions.remove(new TileDescription(
+					tile.getLevel(), tile.getOffset()));
+			}
+
 			pendingData.clear();
-
-			waitingOnTile = false;
 		}
 
-		// If we still have nothing to draw
-		if (currentData == null) {
-			if (! waitingOnTile)
-				checkForFetch();
-
-			return;
-		}
-
-		paintAllDataPoints();
+		if (currentData != null)
+			paintAllDataPoints();
 
 		checkForFetch();
 	}
@@ -197,6 +223,9 @@ public class DataPlot {
 	 * 		if currentData is <tt>null</tt>.  Since this is a private
 	 * 		method, we should see no problems with this
 	 */
+	// TODO: run through all the current tiles twice - once to see how
+	// detailed we can draw at each level, and once to draw the
+	// tiles that are important
 	private void paintAllDataPoints() {
 		if (currentData == null)
 			throw new NullPointerException(
@@ -316,7 +345,7 @@ public class DataPlot {
 	private int computeMinOffset(int level) {
 		double min = xAxis.getMin();
 
-		int tileWidth = getTileWidth(level);
+		double tileWidth = getTileWidth(level);
 
 		// Tile offset computation
 		return (int) (min / tileWidth);
@@ -338,7 +367,7 @@ public class DataPlot {
 	private int computeMaxOffset(int level) {
 		double max = xAxis.getMax();
 
-		int tileWidth = getTileWidth(level);
+		double tileWidth = getTileWidth(level);
 
 		// Tile number computation
 		return (int) (max / tileWidth);
@@ -352,9 +381,7 @@ public class DataPlot {
 	 * @return
 	 * 		the width of a tile at the given level
 	 */
-	private int getTileWidth(int level) {
-		// A tile is (1 << currentLevel) seconds per data point,
-		// times up to GrapherTile.TILE_WIDTH data points
-		return (1 << level) * GrapherTile.TILE_WIDTH;
+	private double getTileWidth(int level) {
+		return (new TileDescription(level, 0)).getTileWidth();
 	}
 }
