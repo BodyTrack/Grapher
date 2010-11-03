@@ -26,6 +26,7 @@ public class GraphWidget extends Surface {
 	 * of all axes used by all the plots in dataPlots.  This is
 	 * for performance reasons.
 	 */
+	// TODO: enforce minimum zoom on X-axes
 	private List<GraphAxis> xAxes;
 	private List<GraphAxis> yAxes;
 
@@ -37,7 +38,9 @@ public class GraphWidget extends Surface {
 
 	private GraphAxis mouseDragAxis;
 	private Vector2 mouseDragLastPos;
-	private double mouseWheelZoomRate;
+
+	// Once a GraphWidget object is instantiated, this doesn't change
+	private final double mouseWheelZoomRate;
 
 	public GraphWidget(int width, int height, int axisMargin) {
 		super(width, height);
@@ -106,7 +109,7 @@ public class GraphWidget extends Surface {
 		if (! ($doc.navigator && $doc.navigator.platform))
 			return false;
 
-		return $doc.navigator.platform.matches(/mac/i);
+		return $doc.navigator.platform.matches(/.*(mac|Mac)/i);
 	}-*/;
 
 	GraphAxis findAxis(Vector2 pos) {
@@ -139,12 +142,9 @@ public class GraphWidget extends Surface {
 
 	private void handleMouseDownEvent(MouseDownEvent event) {
 		Vector2 pos = new Vector2(event.getX(), event.getY());
-		GraphAxis axis = findAxis(pos);
 
-		if (axis != null) {
-			mouseDragAxis = axis;
-			mouseDragLastPos = pos;
-		}
+		mouseDragAxis = findAxis(pos);
+		mouseDragLastPos = pos;
 
 		paint();
 	}
@@ -152,25 +152,33 @@ public class GraphWidget extends Surface {
 	private void handleMouseMoveEvent(MouseMoveEvent event) {
 		Vector2 pos = new Vector2(event.getX(), event.getY());
 
-		if (mouseDragAxis != null) {
-			mouseDragAxis.drag(mouseDragLastPos, pos);
+		if (mouseDragLastPos != null) {
+			if (mouseDragAxis != null)
+				mouseDragAxis.drag(mouseDragLastPos, pos);
+			else {
+				for (GraphAxis xAxis: xAxes)
+					xAxis.drag(mouseDragLastPos, pos);
+
+				for (GraphAxis yAxis: yAxes)
+					yAxis.drag(mouseDragLastPos, pos);
+			}
+
 			mouseDragLastPos = pos;
-		} /*else {
-			for (DataPlot plot: dataPlots)
-				plot.drag(mouseDragLastPos, pos);
-		} */
+		}
 
 		paint();
 	}
 
 	private void handleMouseUpEvent(MouseUpEvent event) {
 		mouseDragAxis = null;
+		mouseDragLastPos = null;
 
 		paint();
 	}
 
 	private void handleMouseOutEvent(MouseOutEvent event) {
 		mouseDragAxis = null;
+		mouseDragLastPos = null;
 
 		paint();
 	}
