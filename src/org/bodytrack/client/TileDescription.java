@@ -86,7 +86,8 @@ public class TileDescription {
 	 * This method of computing hash codes works best when level and
 	 * offset both fit in 16 bits (they are both between -32768 and
 	 * 32767, inclusive).  This should be the case for most instances
-	 * of this class.
+	 * of this class.  Note that this method still works even when
+	 * level and offset do not both fit in 16 bits, though.
 	 *
 	 * @return
 	 * 		an integer that will be the same for objects that are equal,

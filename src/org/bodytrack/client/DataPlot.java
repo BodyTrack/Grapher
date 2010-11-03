@@ -4,7 +4,6 @@ import gwt.g2d.client.math.Vector2;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -30,6 +29,9 @@ public class DataPlot {
 	private GraphAxis yAxis;
 	private Canvas canvas;
 
+	private int minLevel;
+	private boolean shouldZoomIn;
+
 	// Values related to getting new values from the server
 	private String baseUrl;
 	private List<GrapherTile> currentData;
@@ -43,7 +45,7 @@ public class DataPlot {
 	private int currentMaxOffset;
 
 	/**
-	 * Main constructor for the DataPlot object.
+	 * Constructor for the DataPlot object that allows unlimited zoom.
 	 * 
 	 * The parameter url is the trickiest to get right.  This parameter
 	 * should be the <strong>beginning</strong> (the text up to, but
@@ -54,7 +56,7 @@ public class DataPlot {
 	 * {@link org.bodytrack.client.GrapherTile#retrieveTile(String, List)
 	 *  GrapherTile.retriveTile()}, an untrusted connection could allow
 	 * unauthorized access to all of a user's data.
-	 * 
+	 *
 	 * @param container
 	 * 		the {@link org.bodytrack.client.GraphWidget GraphWidget} on
 	 * 		which this DataPlot will draw itself and its axes
@@ -73,6 +75,42 @@ public class DataPlot {
 	 */
 	public DataPlot(GraphWidget container, GraphAxis xAxis, GraphAxis yAxis,
 			String url) {
+		this(container, xAxis, yAxis, url, Integer.MIN_VALUE);
+	}
+
+	/**
+	 * Main constructor for the DataPlot object.
+	 *
+	 * The parameter url is the trickiest to get right.  This parameter
+	 * should be the <strong>beginning</strong> (the text up to, but
+	 * not including, the &lt;level&gt;.&lt;offset&gt;.json part of the
+	 * URL to fetch) of the URL which will be used to get more data.
+	 * Note that this <strong>must</strong> be a trusted BodyTrack
+	 * URL.  As described in the documentation for
+	 * {@link org.bodytrack.client.GrapherTile#retrieveTile(String, List)
+	 *  GrapherTile.retriveTile()}, an untrusted connection could allow
+	 * unauthorized access to all of a user's data.
+	 *
+	 * @param container
+	 * 		the {@link org.bodytrack.client.GraphWidget GraphWidget} on
+	 * 		which this DataPlot will draw itself and its axes
+	 * @param xAxis
+	 * 		the X-axis along which this data set will be aligned when
+	 * 		drawn.  Usually this is a
+	 * 		{@link org.bodytrack.client.TimeGraphAxis TimeGraphAxis}
+	 * @param yAxis
+	 * 		the Y-axis along which this data set will be aligned when
+	 * 		drawn
+	 * @param url
+	 * 		the beginning of the URL for fetching this data with Ajax
+	 * 		calls
+	 * @param minLevel
+	 * 		the minimum level to which the user will be allowed to zoom
+	 * @throws NullPointerException
+	 * 		if container, xAxis, yAxis, or url is <tt>null</tt>
+	 */
+	public DataPlot(GraphWidget container, GraphAxis xAxis, GraphAxis yAxis,
+			String url, int minLevel) {
 		if (container == null || xAxis == null
 				|| yAxis == null || url == null)
 			throw new NullPointerException(
@@ -81,8 +119,9 @@ public class DataPlot {
 		this.container = container;
 		this.xAxis = xAxis;
 		this.yAxis = yAxis;
-
 		baseUrl = url;
+		shouldZoomIn = true;
+		this.minLevel = minLevel;
 
 		canvas = Canvas.buildCanvas(this.container);
 
@@ -98,11 +137,25 @@ public class DataPlot {
 		checkForFetch();
 	}
 
-	public void zoom(double factor, double about) {
-		xAxis.zoom(factor, about);
-		yAxis.zoom(factor, about);
+	/**
+	 * Returns <tt>true</tt> if and only if the X-axis is allowed to
+	 * zoom in farther, based on the zoom policy of this DataPlot.
+	 *
+	 * @return
+	 * 		<tt>true</tt> if the X-axis should be allowed to
+	 * 		zoom in more, <tt>false</tt> otherwise
+	 */
+	public boolean shouldZoomIn() {
+		return shouldZoomIn;
+	}
 
-		checkForFetch();
+	public void zoom(double factor, double about) {
+		if (shouldZoomIn || factor >= 1) {
+			xAxis.zoom(factor, about);
+			yAxis.zoom(factor, about);
+		}
+
+		shouldZoomIn = checkForFetch();
 	}
 
 	public void drag(Vector2 from, Vector2 to) {
@@ -111,12 +164,17 @@ public class DataPlot {
 
 		checkForFetch();
 	}
-	
+
 	/**
 	 * Checks for and performs a fetch for data from the server if
 	 * necessary.
+	 *
+	 * @return
+	 * 		<tt>true</tt> if the user should be allowed to zoom past
+	 * 		this point, <tt>false</tt> if the user shouldn't be allowed
+	 * 		to zoom past this point
 	 */
-	private void checkForFetch() {
+	private boolean checkForFetch() {
 		int correctLevel = computeCurrentLevel();
 		int correctMinOffset = computeMinOffset(correctLevel);
 		int correctMaxOffset = computeMaxOffset(correctLevel);
@@ -140,8 +198,9 @@ public class DataPlot {
 		// TODO: Put more intelligent pruning in place
 		if (pendingDescriptions.size() > 0
 				|| currentData.size() < MAX_CURRENT_DATA_SIZE)
-			return;
+			return correctLevel > minLevel;
 
+		/*
 		Iterator<GrapherTile> it = currentData.iterator();
 
 		while (it.hasNext()) {
@@ -157,6 +216,9 @@ public class DataPlot {
 			else if (offset > currentMaxOffset + 1) // Too far right
 				it.remove();
 		}
+		*/
+
+		return correctLevel > minLevel;
 	}
 
 	/**
@@ -210,28 +272,20 @@ public class DataPlot {
 			pendingData.clear();
 		}
 
-		if (currentData != null)
-			paintAllDataPoints();
+		paintAllDataPoints();
 
 		checkForFetch();
 	}
 
 	/**
-	 * Renders all the data points in currentData.
-	 *
-	 * @throws NullPointerException
-	 * 		if currentData is <tt>null</tt>.  Since this is a private
-	 * 		method, we should see no problems with this
+	 * Renders all the salient data points in currentData.
 	 */
-	// TODO: run through all the current tiles twice - once to see how
-	// detailed we can draw at each level, and once to draw the
-	// tiles that are important
 	private void paintAllDataPoints() {
-		if (currentData == null)
-			throw new NullPointerException(
-				"currentData cannot be null");
+		// TODO: improve the algorithm for getting the best resolution tile
+		// Current algorithm is O(n m), where n is the currentData.length()
+		// and m is getBestResolutionTiles.length()
 
-		for (GrapherTile tile: currentData) {
+		for (GrapherTile tile: getBestResolutionTiles()) {
 			double prevX = Double.MIN_VALUE;
 			double prevY = Double.MIN_VALUE;
 
@@ -276,6 +330,69 @@ public class DataPlot {
 
 			canvas.stroke();
 		}
+	}
+
+	/**
+	 * Returns a sorted list of all best resolution tiles available.
+	 *
+	 * @return
+	 * 		a sorted list of all the best resolution tiles in
+	 * 		currentData
+	 */
+	private List<GrapherTile> getBestResolutionTiles() {
+		List<GrapherTile> best = new ArrayList<GrapherTile>();
+
+		// When minTime and maxTime are used in calculations, they are
+		// used to make the calculations scale-independent
+		double minTime = xAxis.getMin();
+		double maxTime = xAxis.getMax();
+
+		double maxCoveredTime = minTime;
+
+		while (maxCoveredTime <= maxTime) {
+			GrapherTile bestAtCurrTime = getBestResolutionTileAt(
+				maxCoveredTime + (maxTime - minTime) * 1e-6);
+			// We need to move a little to the right of the current time
+			// so we don't get the same tile twice
+
+			if (bestAtCurrTime == null) {
+				maxCoveredTime += (maxTime - minTime) * 1e-3;
+			} else {
+				best.add(bestAtCurrTime);
+
+				maxCoveredTime =
+					bestAtCurrTime.getDescription().getMaxTime();
+			}
+		}
+
+		return best;
+	}
+
+	/**
+	 * Returns the best-resolution tile that covers the specified
+	 * point.
+	 *
+	 * @param time
+	 * 		the time which must be covered by the tile
+	 * @return
+	 * 		the best-resolution (lowest-level) tile which has min value
+	 * 		less than or equal to time, and max value greater than or
+	 * 		equal to time, or <tt>null</tt> if no such tile exists
+	 */
+	private GrapherTile getBestResolutionTileAt(double time) {
+		GrapherTile best = null;
+
+		for (GrapherTile tile: currentData) {
+			TileDescription desc = tile.getDescription();
+
+			if (desc.getMinTime() > time || desc.getMaxTime() < time)
+				continue;
+
+			if (best == null || desc.getLevel() < best.getLevel())
+				best = tile;
+		}
+
+		return best;
 	}
 
 	/**
