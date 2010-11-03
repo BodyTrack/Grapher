@@ -45,7 +45,8 @@ public class Grapher2 implements EntryPoint {
 				30);							// width, in pixels
 
 		plot = new DataPlot(gw, time, value,
-			"/tiles/" + getUserId() + "/" + getChannelNames().get(0) + "/");
+			"/tiles/" + getUserId() + "/" + getChannelNames().get(0) + "/",
+			-3);
 
 		gw.addDataPlot(plot);
 

@@ -1,7 +1,5 @@
 package org.bodytrack.client;
 
-import gwt.g2d.client.math.Vector2;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -134,7 +132,7 @@ public class DataPlot {
 		currentMinOffset = Integer.MAX_VALUE;
 		currentMaxOffset = Integer.MIN_VALUE;
 
-		checkForFetch();
+		shouldZoomIn = checkForFetch();
 	}
 
 	/**
@@ -147,22 +145,6 @@ public class DataPlot {
 	 */
 	public boolean shouldZoomIn() {
 		return shouldZoomIn;
-	}
-
-	public void zoom(double factor, double about) {
-		if (shouldZoomIn || factor >= 1) {
-			xAxis.zoom(factor, about);
-			yAxis.zoom(factor, about);
-		}
-
-		shouldZoomIn = checkForFetch();
-	}
-
-	public void drag(Vector2 from, Vector2 to) {
-		xAxis.drag(from, to);
-		yAxis.drag(from, to);
-
-		checkForFetch();
 	}
 
 	/**
@@ -262,6 +244,9 @@ public class DataPlot {
 		if (pendingData.size() > 0) {
 			// Pull all the data out of the tile
 			for (GrapherTile tile: pendingData) {
+				if (tile == null)
+					continue;
+
 				currentData.add(tile);
 
 				// Make sure we don't still mark this as pending
@@ -274,7 +259,7 @@ public class DataPlot {
 
 		paintAllDataPoints();
 
-		checkForFetch();
+		shouldZoomIn = checkForFetch();
 	}
 
 	/**

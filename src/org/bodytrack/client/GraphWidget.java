@@ -26,7 +26,6 @@ public class GraphWidget extends Surface {
 	 * of all axes used by all the plots in dataPlots.  This is
 	 * for performance reasons.
 	 */
-	// TODO: enforce minimum zoom on X-axes
 	private List<GraphAxis> xAxes;
 	private List<GraphAxis> yAxes;
 
@@ -127,14 +126,26 @@ public class GraphWidget extends Surface {
 	}
 
 	private void handleMouseWheelEvent(MouseWheelEvent event) {
+		// TODO: enforce minimum zoom on X-axes
+		// Have to check all DataPlot objects to see if at least one
+		// of them allows more zooming
+
 		Vector2 eventLoc = new Vector2(event.getX(), event.getY());
 		GraphAxis axis = findAxis(eventLoc);
 
+		double zoomFactor = Math.pow(mouseWheelZoomRate,
+			event.getDeltaY());
+
 		if (axis != null) {
-			double zoomFactor = Math.pow(mouseWheelZoomRate,
-				event.getDeltaY());
 			double zoomAbout = axis.unproject(eventLoc);
 			axis.zoom(zoomFactor, zoomAbout);
+		} else {
+			// Zoom on all Y-axes
+
+			for (GraphAxis yAxis: yAxes) {
+				double zoomAbout = yAxis.unproject(eventLoc);
+				yAxis.zoom(zoomFactor, zoomAbout);
+			}
 		}
 
 		paint();
@@ -156,6 +167,8 @@ public class GraphWidget extends Surface {
 			if (mouseDragAxis != null)
 				mouseDragAxis.drag(mouseDragLastPos, pos);
 			else {
+				// Drag on all axes
+
 				for (GraphAxis xAxis: xAxes)
 					xAxis.drag(mouseDragLastPos, pos);
 
