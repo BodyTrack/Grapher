@@ -364,9 +364,12 @@ public class DataPlot {
 
 		double maxCoveredTime = minTime;
 
+		int bestLevel = computeCurrentLevel();
+
 		while (maxCoveredTime <= maxTime) {
 			GrapherTile bestAtCurrTime = getBestResolutionTileAt(
-				maxCoveredTime + (maxTime - minTime) * 1e-6);
+				maxCoveredTime + (maxTime - minTime) * 1e-6,
+				bestLevel);
 			// We need to move a little to the right of the current time
 			// so we don't get the same tile twice
 
@@ -389,12 +392,14 @@ public class DataPlot {
 	 *
 	 * @param time
 	 * 		the time which must be covered by the tile
+	 * @param bestLevel
+	 * 		the level to which we want the returned tile to be close
 	 * @return
 	 * 		the best-resolution (lowest-level) tile which has min value
 	 * 		less than or equal to time, and max value greater than or
 	 * 		equal to time, or <tt>null</tt> if no such tile exists
 	 */
-	private GrapherTile getBestResolutionTileAt(double time) {
+	private GrapherTile getBestResolutionTileAt(double time, int bestLevel) {
 		GrapherTile best = null;
 
 		for (GrapherTile tile: currentData) {
@@ -403,8 +408,16 @@ public class DataPlot {
 			if (desc.getMinTime() > time || desc.getMaxTime() < time)
 				continue;
 
-			if (best == null || desc.getLevel() < best.getLevel())
+			if (best == null)
 				best = tile;
+			else if(Math.abs(desc.getLevel() - bestLevel) <
+					Math.abs(best.getLevel() - bestLevel))
+				best = tile;
+			else if (Math.abs(desc.getLevel() - bestLevel) ==
+					Math.abs(best.getLevel() - bestLevel)) {
+				if (desc.getLevel() < best.getLevel())
+					best = tile;
+			}
 		}
 
 		return best;
