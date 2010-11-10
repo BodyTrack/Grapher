@@ -1,5 +1,7 @@
 package org.bodytrack.client;
 
+import gwt.g2d.client.graphics.Color;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -17,17 +19,45 @@ import java.util.Set;
  */
 public class DataPlot {
 	/**
+	 * The color black, as a G2D Color object.
+	 */
+	public static final Color BLACK = new Color(0, 0, 0);
+
+	/**
+	 * The color red, as a G2D Color object.
+	 */
+	public static final Color RED = new Color(0xFF, 0, 0);
+
+	/**
+	 * The color green, as a G2D Color object.
+	 */
+	public static final Color GREEN = new Color(0, 0x80, 0);
+
+	/**
+	 * The color blue, as a G2D Color object.
+	 */
+	public static final Color BLUE = new Color(0, 0, 0xFF);
+
+	/**
 	 * The maximum size we allow currentData to be before we consider
 	 * pruning away unnecessary data.
 	 */
 	private static final int MAX_CURRENT_DATA_SIZE = 1024;
+
+	/**
+	 * Never render a point with value less than this - use anything
+	 * less as a sentinel.
+	 */
+	private static final double MIN_DRAWABLE_VALUE = -1e300;
 
 	private GraphWidget container;
 	private GraphAxis xAxis;
 	private GraphAxis yAxis;
 	private Canvas canvas;
 
-	private int minLevel;
+	private final int minLevel;
+	private final Color color;
+
 	private boolean shouldZoomIn;
 
 	// Values related to getting new values from the server
@@ -73,7 +103,7 @@ public class DataPlot {
 	 */
 	public DataPlot(GraphWidget container, GraphAxis xAxis, GraphAxis yAxis,
 			String url) {
-		this(container, xAxis, yAxis, url, Integer.MIN_VALUE);
+		this(container, xAxis, yAxis, url, Integer.MIN_VALUE, BLACK);
 	}
 
 	/**
@@ -104,15 +134,18 @@ public class DataPlot {
 	 * 		calls
 	 * @param minLevel
 	 * 		the minimum level to which the user will be allowed to zoom
+	 * @param color
+	 * 		the color in which to draw these data points (note that
+	 * 		the axes are always drawn in black)
 	 * @throws NullPointerException
-	 * 		if container, xAxis, yAxis, or url is <tt>null</tt>
+	 * 		if container, xAxis, yAxis, url, or color is <tt>null</tt>
 	 */
 	public DataPlot(GraphWidget container, GraphAxis xAxis, GraphAxis yAxis,
-			String url, int minLevel) {
+			String url, int minLevel, Color color) {
 		if (container == null || xAxis == null
-				|| yAxis == null || url == null)
+				|| yAxis == null || url == null || color == null)
 			throw new NullPointerException(
-				"Cannot have a null container, axis, or url");
+				"Cannot have a null container, axis, url, or color");
 
 		this.container = container;
 		this.xAxis = xAxis;
@@ -120,6 +153,8 @@ public class DataPlot {
 		baseUrl = url;
 		shouldZoomIn = true;
 		this.minLevel = minLevel;
+
+		this.color = color;
 
 		canvas = Canvas.buildCanvas(this.container);
 
@@ -233,6 +268,8 @@ public class DataPlot {
 	 * Paints this DataPlot on the stored GraphWidget.
 	 */
 	public void paint() {
+		canvas.getSurface().setStrokeStyle(BLACK);
+
 		// Draw the axes in all cases
 		// TODO: Possibly (for performance reasons) make sure that
 		// the same axes never get painted multiple times (one option
@@ -257,6 +294,8 @@ public class DataPlot {
 			pendingData.clear();
 		}
 
+		canvas.getSurface().setStrokeStyle(color);
+
 		paintAllDataPoints();
 
 		shouldZoomIn = checkForFetch();
@@ -271,8 +310,8 @@ public class DataPlot {
 		// and m is getBestResolutionTiles.length()
 
 		for (GrapherTile tile: getBestResolutionTiles()) {
-			double prevX = Double.MIN_VALUE;
-			double prevY = Double.MIN_VALUE;
+			double prevX = - Double.MAX_VALUE;
+			double prevY = - Double.MAX_VALUE;
 
 			List<PlottablePoint> dataPoints = tile.getDataPoints();
 
@@ -287,7 +326,7 @@ public class DataPlot {
 						|| point.getDate() > xAxis.getMax()) {
 					// Make sure we don't draw lines between points
 					// that aren't adjacent
-					prevX = prevY = Double.MIN_VALUE;
+					prevX = prevY = - Double.MAX_VALUE;
 					continue;
 				}
 
@@ -296,7 +335,7 @@ public class DataPlot {
 						|| point.getValue() > yAxis.getMax()) {
 					// Make sure we don't draw lines between points
 					// that aren't adjacent
-					prevX = prevY = Double.MIN_VALUE;
+					prevX = prevY = - Double.MAX_VALUE;
 					continue;
 				}
 
@@ -306,7 +345,7 @@ public class DataPlot {
 				// Draw this part of the line, reaching to all points
 				// except the first (the first point has a line coming from
 				// it, but not to it)
-				if (prevX != Double.MIN_VALUE && prevY != Double.MIN_VALUE)
+				if (prevX > MIN_DRAWABLE_VALUE && prevY > MIN_DRAWABLE_VALUE)
 					canvas.getRenderer().drawLineSegment(prevX, prevY, x, y);
 
 				prevX = x;
