@@ -1,6 +1,11 @@
 package org.bodytrack.client;
 
 
+import gwt.g2d.client.graphics.Color;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.user.client.ui.RootPanel;
@@ -15,7 +20,12 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 public class Grapher2 implements EntryPoint {
 	private VerticalPanel mainLayout;
 	private GraphWidget gw;
-	private DataPlot plot;
+	private List<DataPlot> plots;
+
+	private static final Color[] DATA_PLOT_COLORS = {DataPlot.BLACK,
+													DataPlot.GREEN,
+													DataPlot.BLUE,
+													DataPlot.RED};
 
 	/**
 	 * This is the entry point method.
@@ -30,25 +40,36 @@ public class Grapher2 implements EntryPoint {
 	}
 
 	private void setupGraphWidget() {
-		gw = new GraphWidget(400, 400, 10);
+		int axisMargin = getAxisMargin();
+
+		gw = new GraphWidget(getGrapherWidth(),
+			getGrapherHeight(), axisMargin);
 
 		GraphAxis time = new TimeGraphAxis(
 				getInitialStartTime(),
 				getInitialEndTime(),
 				Basis.xDownYRight,
-				70);					// width, in pixels
+				axisMargin * 7);				// width, in pixels
 
 		// TODO: Determine these min and max values on the fly, perhaps
 		// by fetching a tile and pulling in that data
 		GraphAxis value = new GraphAxis(-1, 1,	// min, max value
 				Basis.xRightYUp,
-				30);							// width, in pixels
+				axisMargin * 3);				// width, in pixels
 
-		plot = new DataPlot(gw, time, value,
-			"/tiles/" + getUserId() + "/" + getChannelNames().get(0) + "/",
-			-3);
+		plots = new ArrayList<DataPlot>();
 
-		gw.addDataPlot(plot);
+		int userid  = getUserId();
+		JsArrayString channels = getChannelNames();
+
+		for (int i = 0; i < channels.length(); i++) {
+			DataPlot plot = new DataPlot(gw, time, value,
+				"/tiles/" + userid + "/" + channels.get(i) + "/",
+				-3, DATA_PLOT_COLORS[i % DATA_PLOT_COLORS.length]);
+
+			gw.addDataPlot(plot);
+			plots.add(plot);
+		}
 
 		gw.paint();
 	}
@@ -188,6 +209,96 @@ public class Grapher2 implements EntryPoint {
 	private native int getUserId() /*-{
 		var DEFAULT_VALUE = 0;
 		var KEY = "user_id";
+
+		if (! $wnd.initializeGrapher) {
+			return DEFAULT_VALUE;
+		}
+
+		var data = $wnd.initializeGrapher();
+
+		if (! (data && data[KEY])) {
+			return DEFAULT_VALUE;
+		}
+
+		return data[KEY];
+	}-*/;
+
+	/**
+	 * Returns the width the grapher should be, or 400 if that parameter
+	 * is missing or cannot be determined.
+	 *
+	 * Calls the window.initializeGrapher() function from JavaScript,
+	 * and checks the return value for a widget_width key.  If such
+	 * a key is found, returns the value (which is an integer)
+	 * corresponding to that key.  Otherwise, returns 400.
+	 *
+	 * @return
+	 * 		the integer width to use for the grapher, as determined
+	 * 		from the return value of window.initializeGrapher()
+	 */
+	private native int getGrapherWidth() /*-{
+		var DEFAULT_VALUE = 400;
+		var KEY = "widget_width";
+
+		if (! $wnd.initializeGrapher) {
+			return DEFAULT_VALUE;
+		}
+
+		var data = $wnd.initializeGrapher();
+
+		if (! (data && data[KEY])) {
+			return DEFAULT_VALUE;
+		}
+
+		return data[KEY];
+	}-*/;
+
+	/**
+	 * Returns the height the grapher should be, or 400 if that parameter
+	 * is missing or cannot be determined.
+	 *
+	 * Calls the window.initializeGrapher() function from JavaScript,
+	 * and checks the return value for a widget_height key.  If such
+	 * a key is found, returns the value (which is an integer)
+	 * corresponding to that key.  Otherwise, returns 400.
+	 *
+	 * @return
+	 * 		the integer height to use for the grapher, as determined
+	 * 		from the return value of window.initializeGrapher()
+	 */
+	private native int getGrapherHeight() /*-{
+		var DEFAULT_VALUE = 400;
+		var KEY = "widget_height";
+
+		if (! $wnd.initializeGrapher) {
+			return DEFAULT_VALUE;
+		}
+
+		var data = $wnd.initializeGrapher();
+
+		if (! (data && data[KEY])) {
+			return DEFAULT_VALUE;
+		}
+
+		return data[KEY];
+	}-*/;
+
+	/**
+	 * Returns the axis margin the page says the grapher should use, or
+	 * 10 if that parameter is missing or cannot be determined.
+	 *
+	 * Calls the window.initializeGrapher() function from JavaScript,
+	 * and checks the return value for an axis_margin key.  If such
+	 * a key is found, returns the value (which is an integer)
+	 * corresponding to that key.  Otherwise, returns 10.
+	 *
+	 * @return
+	 * 		the integer axis margin to use for the grapher, as determined
+	 * 		from the return value of window.initializeGrapher()
+	 */
+	private native int getAxisMargin() /*-{
+		var DEFAULT_VALUE = 10;
+		var KEY = "axis_margin";
 
 		if (! $wnd.initializeGrapher) {
 			return DEFAULT_VALUE;
