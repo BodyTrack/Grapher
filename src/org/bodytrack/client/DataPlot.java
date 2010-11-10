@@ -18,25 +18,16 @@ import java.util.Set;
  * and redraw the data whenever the data comes in from the server.
  */
 public class DataPlot {
-	/**
-	 * The color black, as a G2D Color object.
+	/*
+	 * All the following colors should have exactly the same values that
+	 * their CSS counterparts by the same name do.
 	 */
-	public static final Color BLACK = new Color(0, 0, 0);
-
-	/**
-	 * The color red, as a G2D Color object.
-	 */
-	public static final Color RED = new Color(0xFF, 0, 0);
-
-	/**
-	 * The color green, as a G2D Color object.
-	 */
-	public static final Color GREEN = new Color(0, 0x80, 0);
-
-	/**
-	 * The color blue, as a G2D Color object.
-	 */
-	public static final Color BLUE = new Color(0, 0, 0xFF);
+	public static final Color BLACK = new Color(0x00, 0x00, 0x00);
+	public static final Color DARK_GRAY = new Color(0xA9, 0xA9, 0xA9);
+	public static final Color GRAY = new Color(0x80, 0x80, 0x80);
+	public static final Color RED = new Color(0xFF, 0x00, 0x00);
+	public static final Color GREEN = new Color(0x00, 0x80, 0x00);
+	public static final Color BLUE = new Color(0x00, 0x00, 0xFF);
 
 	/**
 	 * The maximum size we allow currentData to be before we consider
@@ -268,7 +259,7 @@ public class DataPlot {
 	 * Paints this DataPlot on the stored GraphWidget.
 	 */
 	public void paint() {
-		canvas.getSurface().setStrokeStyle(BLACK);
+		canvas.getSurface().setStrokeStyle(DARK_GRAY);
 
 		// Draw the axes in all cases
 		// TODO: Possibly (for performance reasons) make sure that

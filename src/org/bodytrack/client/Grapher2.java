@@ -51,18 +51,21 @@ public class Grapher2 implements EntryPoint {
 				Basis.xDownYRight,
 				axisMargin * 7);				// width, in pixels
 
-		// TODO: Determine these min and max values on the fly, perhaps
-		// by fetching a tile and pulling in that data
-		GraphAxis value = new GraphAxis(-1, 1,	// min, max value
-				Basis.xRightYUp,
-				axisMargin * 3);				// width, in pixels
-
 		plots = new ArrayList<DataPlot>();
 
 		int userid  = getUserId();
 		JsArrayString channels = getChannelNames();
 
 		for (int i = 0; i < channels.length(); i++) {
+			double initialMin = getInitialMin(channels.get(i));
+			double initialMax = getInitialMax(channels.get(i));
+
+			GraphAxis value = new GraphAxis(
+					initialMin > -1e100 ? initialMin : -1,
+					initialMax > -1e100 ? initialMax : 1,
+					Basis.xRightYUp,
+					axisMargin * 3);				// width, in pixels
+
 			DataPlot plot = new DataPlot(gw, time, value,
 				"/tiles/" + userid + "/" + channels.get(i) + "/",
 				-3, DATA_PLOT_COLORS[i % DATA_PLOT_COLORS.length]);
@@ -172,7 +175,7 @@ public class Grapher2 implements EntryPoint {
 	 * of strings) corresponding to that key.
 	 *
 	 * @return
-	 * 		a {@link com.google.core.gwt.client.JsArrayString
+	 * 		a {@link com.google.gwt.core.client.JsArrayString
 	 * 		JsArrayString} with all the names of channels offered
 	 * 		by the return value of window.initializeGrapher()
 	 */
@@ -311,5 +314,63 @@ public class Grapher2 implements EntryPoint {
 		}
 
 		return data[KEY];
+	}-*/;
+
+	/**
+	 * Returns the minimum value for the axes when the channel
+	 * channelName is showing.
+	 *
+	 * Uses the channel_specs field in the return value of
+	 * window.initializeGrapher() if possible, and -1e308 otherwise.
+	 *
+	 * @return
+	 * 		the Y-value to show as the initial minimum of the
+	 * 		plot for the data
+	 */
+	private native double getInitialMin(String channelName) /*-{
+		var DEFAULT_VALUE = -1e308;
+		var KEY_1 = "channel_specs";
+		var KEY_2 = "min_val";
+
+		if (! $wnd.initializeGrapher) {
+			return DEFAULT_VALUE;
+		}
+
+		var data = $wnd.initializeGrapher();
+
+		if (! (data && data[KEY_1] && data[KEY_1][channelName])) {
+			return DEFAULT_VALUE;
+		}
+
+		return data[KEY_1][channelName][KEY_2];
+	}-*/;
+
+	/**
+	 * Returns the maximum value for the axes when the channel
+	 * channelName is showing.
+	 *
+	 * Uses the channel_specs field in the return value of
+	 * window.initializeGrapher() if possible, and -1e308 otherwise.
+	 *
+	 * @return
+	 * 		the Y-value to show as the initial maximum of the
+	 * 		plot for the data
+	 */
+	private native double getInitialMax(String channelName) /*-{
+		var DEFAULT_VALUE = -1e308;
+		var KEY_1 = "channel_specs";
+		var KEY_2 = "max_val";
+
+		if (! $wnd.initializeGrapher) {
+			return DEFAULT_VALUE;
+		}
+
+		var data = $wnd.initializeGrapher();
+
+		if (! (data && data[KEY_1] && data[KEY_1][channelName])) {
+			return DEFAULT_VALUE;
+		}
+
+		return data[KEY_1][channelName][KEY_2];
 	}-*/;
 }
