@@ -105,10 +105,10 @@ public class GraphWidget extends Surface {
 	 */
 	private native boolean shouldZoomMac() /*-{
 		// Don't do anything unless navigator.platform is available
-		if (! ($doc.navigator && $doc.navigator.platform))
+		if (! $wnd.navigator && $wnd.navigator.platform)
 			return false;
 
-		return $doc.navigator.platform.matches(/.*(mac|Mac)/i);
+		return $wnd.navigator.platform.toString().match(/.*mac/i);
 	}-*/;
 
 	GraphAxis findAxis(Vector2 pos) {
