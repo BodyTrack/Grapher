@@ -1,7 +1,11 @@
 package org.bodytrack.client;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Set;
 
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.event.dom.client.MouseDownHandler;
@@ -22,12 +26,13 @@ public class GraphWidget extends Surface {
 
 	private List<DataPlot> dataPlots;
 
-	/* xAxes and yAxes provide redundant information - the list
-	 * of all axes used by all the plots in dataPlots.  This is
-	 * for performance reasons.
+	/* xAxes and yAxes provide the reverse mapping from
+	 * dataPlots.get(i).getXAxis() and dataPlots.get(i).getYAxis().
+	 * They map from axes to sets of data plots associated with
+	 * those axes
 	 */
-	private List<GraphAxis> xAxes;
-	private List<GraphAxis> yAxes;
+	private Map<GraphAxis, List<DataPlot>> xAxes;
+	private Map<GraphAxis, List<DataPlot>> yAxes;
 
 	private int width, height;
 	private int axisMargin;
@@ -48,8 +53,8 @@ public class GraphWidget extends Surface {
 		this.axisMargin = axisMargin;
 
 		dataPlots = new ArrayList<DataPlot>();
-		xAxes = new ArrayList<GraphAxis>();
-		yAxes = new ArrayList<GraphAxis>();
+		xAxes = new HashMap<GraphAxis, List<DataPlot>>();
+		yAxes = new HashMap<GraphAxis, List<DataPlot>>();
 
 		this.addMouseWheelHandler(new MouseWheelHandler() {
 			@Override
@@ -112,12 +117,12 @@ public class GraphWidget extends Surface {
 	}-*/;
 
 	GraphAxis findAxis(Vector2 pos) {
-		for (GraphAxis axis: xAxes) {
+		for (GraphAxis axis: xAxes.keySet()) {
 			if (axis.contains(pos))
 				return axis;
 		}
 
-		for (GraphAxis axis: yAxes) {
+		for (GraphAxis axis: yAxes.keySet()) {
 			if (axis.contains(pos))
 				return axis;
 		}
@@ -126,10 +131,6 @@ public class GraphWidget extends Surface {
 	}
 
 	private void handleMouseWheelEvent(MouseWheelEvent event) {
-		// TODO: enforce minimum zoom on X-axes
-		// Have to check all DataPlot objects to see if at least one
-		// of them allows more zooming
-
 		Vector2 eventLoc = new Vector2(event.getX(), event.getY());
 		GraphAxis axis = findAxis(eventLoc);
 
@@ -137,12 +138,26 @@ public class GraphWidget extends Surface {
 			event.getDeltaY());
 
 		if (axis != null) {
-			double zoomAbout = axis.unproject(eventLoc);
-			axis.zoom(zoomFactor, zoomAbout);
+			boolean canZoomIn = true;
+
+			// Enforce minimum zoom: if any axis allows zooming,
+			// the user is able to zoom on the X-axis
+			if (xAxes.containsKey(axis)) {
+				canZoomIn = false;
+
+				for (DataPlot plot: xAxes.get(axis))
+					if (plot.shouldZoomIn())
+						canZoomIn = true;
+			}
+
+			if (zoomFactor < 1 && canZoomIn) {
+				double zoomAbout = axis.unproject(eventLoc);
+				axis.zoom(zoomFactor, zoomAbout);
+			}
 		} else {
 			// Zoom on all Y-axes
 
-			for (GraphAxis yAxis: yAxes) {
+			for (GraphAxis yAxis: yAxes.keySet()) {
 				double zoomAbout = yAxis.unproject(eventLoc);
 				yAxis.zoom(zoomFactor, zoomAbout);
 			}
@@ -169,10 +184,10 @@ public class GraphWidget extends Surface {
 			else {
 				// Drag on all axes
 
-				for (GraphAxis xAxis: xAxes)
+				for (GraphAxis xAxis: xAxes.keySet())
 					xAxis.drag(mouseDragLastPos, pos);
 
-				for (GraphAxis yAxis: yAxes)
+				for (GraphAxis yAxis: yAxes.keySet())
 					yAxis.drag(mouseDragLastPos, pos);
 			}
 
@@ -197,33 +212,38 @@ public class GraphWidget extends Surface {
 	}
 
 	private void layout() {
-		int xAxesWidth = calculateAxesWidth(xAxes);
-		int yAxesWidth = calculateAxesWidth(yAxes);
+		int xAxesWidth = calculateAxesWidth(xAxes.keySet());
+		int yAxesWidth = calculateAxesWidth(yAxes.keySet());
 		graphWidth = width - graphMargin - yAxesWidth;
 		graphHeight = height - graphMargin - xAxesWidth;
 		Vector2 xAxesBegin = new Vector2(graphMargin,
 			graphHeight + graphMargin);
-		layoutAxes(xAxes, graphWidth, xAxesBegin, Basis.xDownYRight);
+		layoutAxes(xAxes.keySet(), graphWidth, xAxesBegin,
+			Basis.xDownYRight);
 
 		Vector2 yAxesBegin = new Vector2(graphWidth+graphMargin,
 			graphHeight + graphMargin);
-		layoutAxes(yAxes, graphHeight, yAxesBegin, Basis.xRightYUp);
+		layoutAxes(yAxes.keySet(), graphHeight, yAxesBegin,
+			Basis.xRightYUp);
 	}
 
-	private int calculateAxesWidth(List<GraphAxis> axes) {
-		int ret = 0;
+	private int calculateAxesWidth(Set<GraphAxis> axes) {
+		if (axes.size() == 0)
+			return 0;
 
-		for (int i=0; i < axes.size(); i++) {
-			ret += axes.get(i).getWidth();
+		int ret = -axisMargin;
+		// Don't want to add the margin an extra time for the first
+		// axis, so we subtract once initially, and we know that, by
+		// the return statement, ret will be positive because we
+		// checked whether axes contains any elements
 
-			if (i > 0)
-				ret += axisMargin;
-		}
+		for (GraphAxis axis: axes)
+			ret += axis.getWidth() + axisMargin;
 
 		return ret;
 	}
 
-	private void layoutAxes(List<GraphAxis> axes, double length,
+	private void layoutAxes(Set<GraphAxis> axes, double length,
 			Vector2 begin, Basis basis) {
 		Vector2 offset = begin;
 
@@ -277,7 +297,7 @@ public class GraphWidget extends Surface {
 	 * 		to axis
 	 */
 	public boolean refersToAxis(GraphAxis axis) {
-		return xAxes.contains(axis) || yAxes.contains(axis);
+		return xAxes.containsKey(axis) || yAxes.containsKey(axis);
 	}
 	
 	/**
@@ -287,19 +307,34 @@ public class GraphWidget extends Surface {
 	 * 
 	 * @param plot
 	 * 		the plot to add to the list of plots to be drawn
+	 * @throws NullPointerException
+	 * 		if plot is <tt>null</tt>
 	 */
 	public void addDataPlot(DataPlot plot) {
+		if (plot == null)
+			throw new NullPointerException("Cannot add a null DataPlot");
+
 		if (! dataPlots.contains(plot))
 			dataPlots.add(plot);
+		else
+			return;
 
 		// TODO: Check for bug if the same axis is both an X-axis
 		// and a Y-axis, which should never happen in reality
 
-		if (! xAxes.contains(plot.getXAxis()))
-			xAxes.add(plot.getXAxis());
+		if (! xAxes.containsKey(plot.getXAxis())) {
+			List<DataPlot> axisList = new ArrayList<DataPlot>();
+			axisList.add(plot);
+			xAxes.put(plot.getXAxis(), axisList);
+		} else
+			xAxes.get(plot.getXAxis()).add(plot);
 
-		if (! yAxes.contains(plot.getYAxis()))
-			yAxes.add(plot.getYAxis());
+		if (! yAxes.containsKey(plot.getYAxis())) {
+			List<DataPlot> axisList = new ArrayList<DataPlot>();
+			axisList.add(plot);
+			yAxes.put(plot.getYAxis(), axisList);
+		} else
+			yAxes.get(plot.getYAxis()).add(plot);
 	}
 	
 	/**
@@ -307,12 +342,34 @@ public class GraphWidget extends Surface {
 	 * 
 	 * @param plot
 	 * 		the plot to remove from the list of plots to be drawn
+	 * @throws NullPointerException
+	 * 		if plot is <tt>null</tt>
+	 * @throws NoSuchElementException
+	 * 		if plot is not one of the
+	 * 		{@link org.bodytrack.client.DataPlot DataPlot} objects
+	 * 		referenced by this GraphWidget
 	 */
 	public void removeDataPlot(DataPlot plot) {
-		// TODO: implement this, removing plot from dataPlots and
-		// removing the axes of plot if and only if those axes are
-		// not referenced by any other DataPlot
-		throw new UnsupportedOperationException(
-			"Plot removal not currently implemented");
+		if (plot == null)
+			throw new NullPointerException("Cannot remove null DataPlot");
+
+		if (! dataPlots.contains(plot))
+			throw new NoSuchElementException("Cannot remove DataPlot "
+				+ "that is not used in this GraphWidget");
+
+		GraphAxis xAxis = plot.getXAxis();
+		GraphAxis yAxis = plot.getYAxis();
+
+		dataPlots.remove(plot);
+
+		if (xAxes.get(xAxis).size() > 1)
+			xAxes.get(xAxis).remove(plot);
+		else
+			xAxes.remove(xAxis);
+
+		if (yAxes.get(yAxis).size() > 1)
+			yAxes.get(yAxis).remove(plot);
+		else
+			yAxes.remove(yAxis);
 	}
 }
