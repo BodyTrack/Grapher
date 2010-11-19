@@ -64,10 +64,22 @@ public class GraphAxis {
 						Math.max(begin.getY(), end.getY())));
 	}
 
-	public double project1D(double value) {
+	private double project1D(double value) {
 		return (value - this.min) * scale;
 	}
 
+	/**
+	 * Returns a Vector2 with the correct X- or Y-coordinate (X-coordinate
+	 * if this is an X-axis, Y-coordinate if this is a Y-axis) for
+	 * drawing a point.
+	 *
+	 * @param value
+	 * 		the value the user sees on the axis
+	 * @return
+	 * 		a {@link gwt.g2d.client.math.Vector2 Vector2} with one
+	 * 		coordinate correct for drawing the specified value relative
+	 * 		to this axis
+	 */
 	public Vector2 project2D(double value) {
 		return begin.add(basis.y.scale(project1D(value)));
 	}
