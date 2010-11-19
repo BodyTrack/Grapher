@@ -2,6 +2,7 @@ package org.bodytrack.client;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -180,10 +181,46 @@ public class GraphWidget extends Surface {
 	private void handleMouseMoveEvent(MouseMoveEvent event) {
 		Vector2 pos = new Vector2(event.getX(), event.getY());
 
+		// True if and only if at least one DataPlot is highlighted
+		boolean highlighted = false;
+		Set<DataPlot> highlightedPlots = new HashSet<DataPlot>();
+
+		// First check for already-highlighted plots, if we are
+		// dragging
+		if (mouseDragLastPos != null) {
+			for (DataPlot plot: dataPlots) {
+				if (plot.isHighlighted()) {
+					highlighted = true;
+					highlightedPlots.add(plot);
+				}
+			}
+		}
+
+		// We are not dragging anything
+		if (! highlighted) {
+			// Highlight the appropriate points on the axes
+			for (DataPlot plot: dataPlots) {
+				plot.unhighlight();
+
+				if (plot.highlightIfNear(pos, HIGHLIGHT_DISTANCE_THRESHOLD)) {
+					highlighted = true;
+					highlightedPlots.add(plot);
+				}
+			}
+		}
+
 		if (mouseDragLastPos != null) {
 			if (mouseDragAxis != null)
 				mouseDragAxis.drag(mouseDragLastPos, pos);
-			else {
+			else if (highlighted) {
+				// Only drag the axes matched with the highlighted
+				// data plot(s)
+
+				for (DataPlot plot: highlightedPlots) {
+					plot.getXAxis().drag(mouseDragLastPos, pos);
+					plot.getYAxis().drag(mouseDragLastPos, pos);
+				}
+			} else {
 				// Drag on all axes
 
 				for (GraphAxis xAxis: xAxes.keySet())
@@ -194,12 +231,6 @@ public class GraphWidget extends Surface {
 			}
 
 			mouseDragLastPos = pos;
-		} else {
-			// Highlight the appropriate points on the axes
-			for (DataPlot plot: dataPlots) {
-				plot.unhighlight();
-				plot.highlightIfNear(pos, HIGHLIGHT_DISTANCE_THRESHOLD);
-			}
 		}
 
 		paint();
