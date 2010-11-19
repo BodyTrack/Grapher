@@ -197,7 +197,7 @@ public class GraphWidget extends Surface {
 		} else {
 			// Highlight the appropriate points on the axes
 			for (DataPlot plot: dataPlots) {
-				plot.removeHighlightedPoints();
+				plot.unhighlight();
 				plot.highlightIfNear(pos, HIGHLIGHT_DISTANCE_THRESHOLD);
 			}
 		}

@@ -31,9 +31,9 @@ public class DataPlot {
 	public static final Color BLUE = new Color(0x00, 0x00, 0xFF);
 	public static final Color YELLOW = new Color(0xFF, 0xFF, 0x00);
 
-	// These two constants are used when highlighting points
-	private static final int HIGHLIGHT_POINT_RADIUS = 3;
-	private static final Color HIGHLIGHT_COLOR = YELLOW;
+	// These two constants are used when highlighting this plot
+	private static final int NORMAL_STROKE_WIDTH = 1;
+	private static final int HIGHLIGHT_STROKE_WIDTH = 3;
 
 	/**
 	 * The maximum size we allow currentData to be before we consider
@@ -70,7 +70,7 @@ public class DataPlot {
 	private int currentMaxOffset;
 
 	// Points to highlight in future invocations of paint
-	private List<PlottablePoint> highlightedPoints;
+	private boolean highlighted;
 
 	/**
 	 * Constructor for the DataPlot object that allows unlimited zoom.
@@ -167,7 +167,7 @@ public class DataPlot {
 		currentMinOffset = Integer.MAX_VALUE;
 		currentMaxOffset = Integer.MIN_VALUE;
 
-		highlightedPoints = new ArrayList<PlottablePoint>();
+		highlighted = false;
 
 		shouldZoomIn = checkForFetch();
 	}
@@ -293,12 +293,16 @@ public class DataPlot {
 
 		// Draw data points
 		canvas.getSurface().setStrokeStyle(color);
+		canvas.getSurface().setLineWidth(highlighted
+			? HIGHLIGHT_STROKE_WIDTH : NORMAL_STROKE_WIDTH);
+
 		paintAllDataPoints();
 
-		// Draw highlight points
-		canvas.getSurface().setStrokeStyle(HIGHLIGHT_COLOR);
-		paintAllHighlightedPoints();
+		// Clean up after ourselves
+		canvas.getSurface().setStrokeStyle(BLACK);
+		canvas.getSurface().setLineWidth(NORMAL_STROKE_WIDTH);
 
+		// Make sure we shouldn't get any more info from the server
 		shouldZoomIn = checkForFetch();
 	}
 
@@ -353,20 +357,6 @@ public class DataPlot {
 				prevX = x;
 				prevY = y;
 			}
-
-			canvas.stroke();
-		}
-	}
-
-	/**
-	 * Renders all the points in highlightedPoints.
-	 */
-	private void paintAllHighlightedPoints() {
-		for (PlottablePoint point: highlightedPoints) {
-			double x = xAxis.project2D(point.getDate()).getX();
-			double y = yAxis.project2D(point.getValue()).getY();
-
-			canvas.getRenderer().drawCircle(x, y, HIGHLIGHT_POINT_RADIUS);
 
 			canvas.stroke();
 		}
@@ -618,6 +608,10 @@ public class DataPlot {
 			double time = point.getDate();
 			double val = point.getValue();
 
+			// Only check for proximity to points we can see
+			if (time < xAxis.getMin() || time > xAxis.getMax())
+				continue;
+
 			if (time >= minTime && time <= maxTime
 					&& val >= minValue && val <= maxValue) {
 
@@ -665,33 +659,32 @@ public class DataPlot {
 	}
 
 	/**
-	 * Highlights the specified point in future
+	 * Highlights this DataPlot in future
 	 * {@link DataPlot#paint() paint} calls.
-	 *
-	 * Note that it is not required that this point actually be part
-	 * of the data held by this DataPlot - it is possible to have
-	 * a DataPlot highlight an arbitrary point.
-	 *
-	 * @param point
-	 * 		the {@link org.bodytrack.client.PlottablePoint
-	 * 		PlottablePoint} to highlight
-	 * @throws NullPointerException
-	 * 		if point is <tt>null</tt>
 	 */
-	public void highlightPoint(PlottablePoint point) {
-		if (point == null)
-			throw new NullPointerException(
-				"Null highlighted point not allowed");
-
-		highlightedPoints.add(point);
+	public void highlight() {
+		highlighted = true;
 	}
 
 	/**
-	 * Stops highlighting all points that were previously marked as
-	 * highlighted.
+	 * Tells whether or not this DataPlot is highlighted.
+	 *
+	 * If {@link #highlight()} has been called since the constructor
+	 * and since the last call to {@link #unhighlight()}, returns
+	 * <tt>true</tt>.  Otherwise, returns <tt>false</tt>.
+	 *
+	 * @return
+	 * 		<tt>true</tt> if and only if this DataPlot is highlighted
 	 */
-	public void removeHighlightedPoints() {
-		highlightedPoints.clear();
+	public boolean isHighlighted() {
+		return highlighted;
+	}
+
+	/**
+	 * Stops highlighting this DataPlot.
+	 */
+	public void unhighlight() {
+		highlighted = false;
 	}
 
 	/**
@@ -705,7 +698,7 @@ public class DataPlot {
 	 * public boolean highlightIfNear(Vector2 pos, double threshold) {
 	 * 	PlottablePoint point = DataPlot.this.closest(pos, threshold);
 	 * 	if (point != null)
-	 * 		DataPlot.this.highlightPoint(point);
+	 * 		DataPlot.this.highlight();
 	 * 	return point != null;
 	 * }
 	 * </pre>
@@ -730,7 +723,7 @@ public class DataPlot {
 	public boolean highlightIfNear(Vector2 pos, double threshold) {
 		PlottablePoint point = DataPlot.this.closest(pos, threshold);
 		if (point != null)
-			DataPlot.this.highlightPoint(point);
+			DataPlot.this.highlight();
 
 		return point != null;
 	}
