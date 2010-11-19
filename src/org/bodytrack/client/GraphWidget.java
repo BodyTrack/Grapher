@@ -158,11 +158,31 @@ public class GraphWidget extends Surface {
 				axis.zoom(zoomFactor, zoomAbout);
 			}
 		} else {
-			// Zoom on all Y-axes
+			// We are in the main viewing area
 
-			for (GraphAxis yAxis: yAxes.keySet()) {
-				double zoomAbout = yAxis.unproject(eventLoc);
-				yAxis.zoom(zoomFactor, zoomAbout);
+			boolean highlighted = false;
+			Set<DataPlot> highlightedPlots = new HashSet<DataPlot>();
+
+			for (DataPlot plot: dataPlots) {
+				if (plot.isHighlighted()) {
+					highlighted = true;
+					highlightedPlots.add(plot);
+				}
+			}
+
+			if (highlighted) {
+				// Only move the axes for highlighted data plot(s)
+				for (DataPlot plot: highlightedPlots) {
+					GraphAxis yAxis = plot.getYAxis();
+					double zoomAbout = yAxis.unproject(eventLoc);
+					yAxis.zoom(zoomFactor, zoomAbout);
+				}
+			} else {
+				// Zoom all Y-axes
+				for (GraphAxis yAxis: yAxes.keySet()) {
+					double zoomAbout = yAxis.unproject(eventLoc);
+					yAxis.zoom(zoomFactor, zoomAbout);
+				}
 			}
 		}
 
