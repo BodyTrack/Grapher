@@ -1,6 +1,7 @@
 package org.bodytrack.client;
 
 import gwt.g2d.client.graphics.Color;
+import gwt.g2d.client.math.Vector2;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -19,8 +20,8 @@ import java.util.Set;
  */
 public class DataPlot {
 	/*
-	 * All the following colors should have exactly the same values that
-	 * their CSS counterparts by the same name do.
+	 * All the following colors should have exactly the same values as
+	 * their CSS counterparts by the same (lowecase) name.
 	 */
 	public static final Color BLACK = new Color(0x00, 0x00, 0x00);
 	public static final Color DARK_GRAY = new Color(0xA9, 0xA9, 0xA9);
@@ -28,6 +29,11 @@ public class DataPlot {
 	public static final Color RED = new Color(0xFF, 0x00, 0x00);
 	public static final Color GREEN = new Color(0x00, 0x80, 0x00);
 	public static final Color BLUE = new Color(0x00, 0x00, 0xFF);
+	public static final Color YELLOW = new Color(0xFF, 0xFF, 0x00);
+
+	// These two constants are used when highlighting points
+	private static final int HIGHLIGHT_POINT_RADIUS = 3;
+	private static final Color HIGHLIGHT_COLOR = YELLOW;
 
 	/**
 	 * The maximum size we allow currentData to be before we consider
@@ -62,6 +68,9 @@ public class DataPlot {
 	private int currentLevel;
 	private int currentMinOffset;
 	private int currentMaxOffset;
+
+	// Points to highlight in future invocations of paint
+	private List<PlottablePoint> highlightedPoints;
 
 	/**
 	 * Constructor for the DataPlot object that allows unlimited zoom.
@@ -157,6 +166,8 @@ public class DataPlot {
 		currentLevel = Integer.MIN_VALUE;
 		currentMinOffset = Integer.MAX_VALUE;
 		currentMaxOffset = Integer.MIN_VALUE;
+
+		highlightedPoints = new ArrayList<PlottablePoint>();
 
 		shouldZoomIn = checkForFetch();
 	}
@@ -257,16 +268,11 @@ public class DataPlot {
 
 	/**
 	 * Paints this DataPlot on the stored GraphWidget.
+	 *
+	 * Does not draw the axes associated with this DataPlot.
 	 */
 	public void paint() {
 		canvas.getSurface().setStrokeStyle(DARK_GRAY);
-
-		// Draw the axes in all cases
-		// TODO: Possibly (for performance reasons) make sure that
-		// the same axes never get painted multiple times (one option
-		// is to paint axes only in GraphWidget, and not here)
-		xAxis.paint(canvas.getSurface());
-		yAxis.paint(canvas.getSurface());
 
 		// If we have received data from the server
 		if (pendingData.size() > 0) {
@@ -285,9 +291,13 @@ public class DataPlot {
 			pendingData.clear();
 		}
 
+		// Draw data points
 		canvas.getSurface().setStrokeStyle(color);
-
 		paintAllDataPoints();
+
+		// Draw highlight points
+		canvas.getSurface().setStrokeStyle(HIGHLIGHT_COLOR);
+		paintAllHighlightedPoints();
 
 		shouldZoomIn = checkForFetch();
 	}
@@ -299,6 +309,9 @@ public class DataPlot {
 		// TODO: improve the algorithm for getting the best resolution tile
 		// Current algorithm is O(n m), where n is the currentData.length()
 		// and m is getBestResolutionTiles.length()
+		// Could use a cache for the best resolution tiles, but would
+		// have to be careful to drop the cache if we pan or zoom too much,
+		// and definitely if we pull in more data
 
 		for (GrapherTile tile: getBestResolutionTiles()) {
 			double prevX = - Double.MAX_VALUE;
@@ -333,15 +346,27 @@ public class DataPlot {
 				double x = xAxis.project2D(point.getDate()).getX();
 				double y = yAxis.project2D(point.getValue()).getY();
 
-				// Draw this part of the line, reaching to all points
-				// except the first (the first point has a line coming from
-				// it, but not to it)
+				// Draw this part of the line
 				if (prevX > MIN_DRAWABLE_VALUE && prevY > MIN_DRAWABLE_VALUE)
 					canvas.getRenderer().drawLineSegment(prevX, prevY, x, y);
 
 				prevX = x;
 				prevY = y;
 			}
+
+			canvas.stroke();
+		}
+	}
+
+	/**
+	 * Renders all the points in highlightedPoints.
+	 */
+	private void paintAllHighlightedPoints() {
+		for (PlottablePoint point: highlightedPoints) {
+			double x = xAxis.project2D(point.getDate()).getX();
+			double y = yAxis.project2D(point.getValue()).getY();
+
+			canvas.getRenderer().drawCircle(x, y, HIGHLIGHT_POINT_RADIUS);
 
 			canvas.stroke();
 		}
@@ -528,5 +553,185 @@ public class DataPlot {
 	 */
 	private double getTileWidth(int level) {
 		return (new TileDescription(level, 0)).getTileWidth();
+	}
+
+	/**
+	 * Returns a PlottablePoint if and only if there is a point, part of
+	 * this DataPlot, within threshold pixels of pos.  Otherwise, returns
+	 * <tt>null</tt>.
+	 *
+	 * This actually builds a square of 2 * threshold pixels on each
+	 * side, centered at pos, and checks if there is a data point within
+	 * that square, but that is a minor detail that should not affect
+	 * the workings of this method.
+	 *
+	 * @param pos
+	 *		the mouse position from which to check proximity to a data
+	 *		point
+	 * @param threshold
+	 * 		the maximum distance pos can be from a data point to be
+	 * 		considered &quot;near&quot; to it
+	 * @return
+	 * 		<tt>null</tt> if there is no point within threshold pixels
+	 * 		of pos, or one of the points, if there is such a point
+	 * @throws IllegalArgumentException
+	 * 		if threshold is negative
+	 */
+	public PlottablePoint closest(Vector2 pos, double threshold) {
+		if (threshold < 0)
+			throw new IllegalArgumentException(
+				"Cannot work with a negative distance");
+
+		double x = pos.getX();
+		double y = pos.getY();
+
+		// Build a square for checking location
+		Vector2 topLeft = new Vector2(x - threshold, y - threshold);
+		Vector2 bottomRight = new Vector2(x + threshold, y + threshold);
+
+		// Now convert that square into a square of times and values
+		double minTime = xAxis.unproject(topLeft);
+		double maxTime = xAxis.unproject(bottomRight);
+		double minValue = yAxis.unproject(bottomRight);
+		double maxValue = yAxis.unproject(topLeft);
+
+		double centerTime = xAxis.unproject(pos);
+		double centerVal = xAxis.unproject(pos);
+
+		// Get the tiles to check
+		int correctLevel = computeCurrentLevel();
+
+		GrapherTile bestTileMinTime =
+			getBestResolutionTileAt(minTime, correctLevel);
+		GrapherTile bestTileMaxTime =
+			getBestResolutionTileAt(maxTime, correctLevel);
+
+		PlottablePoint closest = null;
+		double shortestDistanceSq = Double.MAX_VALUE;
+
+		// Now see if there is a data point in our square
+		List<PlottablePoint> points = bestTileMinTime != null
+			? bestTileMinTime.getDataPoints()
+			: new ArrayList<PlottablePoint>();
+
+		for (PlottablePoint point: points) {
+			double time = point.getDate();
+			double val = point.getValue();
+
+			if (time >= minTime && time <= maxTime
+					&& val >= minValue && val <= maxValue) {
+
+				// Compute the square of the distance to pos
+				double distanceSq =
+					(time - centerTime) * (time - centerTime)
+					+ (val - centerVal) * (val - centerVal);
+
+				if (distanceSq < shortestDistanceSq) {
+					closest = point;
+					shortestDistanceSq = distanceSq;
+				}
+			}
+		}
+
+		if (bestTileMinTime != bestTileMaxTime) {
+			// This is unlikely but possible, especially if threshold
+			// is large
+
+			points = bestTileMaxTime != null
+				? bestTileMaxTime.getDataPoints()
+				: new ArrayList<PlottablePoint>();
+
+			for (PlottablePoint point: points) {
+				double time = point.getDate();
+				double val = point.getValue();
+
+				if (time >= minTime && time <= maxTime
+						&& val >= minValue && val <= maxValue) {
+
+					// Compute the square of the distance to pos
+					double distanceSq =
+						(time - centerTime) * (time - centerTime)
+						+ (val - centerVal) * (val - centerVal);
+
+					if (distanceSq < shortestDistanceSq) {
+						closest = point;
+						shortestDistanceSq = distanceSq;
+					}
+				}
+			}
+		}
+
+		return closest;
+	}
+
+	/**
+	 * Highlights the specified point in future
+	 * {@link DataPlot#paint() paint} calls.
+	 *
+	 * Note that it is not required that this point actually be part
+	 * of the data held by this DataPlot - it is possible to have
+	 * a DataPlot highlight an arbitrary point.
+	 *
+	 * @param point
+	 * 		the {@link org.bodytrack.client.PlottablePoint
+	 * 		PlottablePoint} to highlight
+	 * @throws NullPointerException
+	 * 		if point is <tt>null</tt>
+	 */
+	public void highlightPoint(PlottablePoint point) {
+		if (point == null)
+			throw new NullPointerException(
+				"Null highlighted point not allowed");
+
+		highlightedPoints.add(point);
+	}
+
+	/**
+	 * Stops highlighting all points that were previously marked as
+	 * highlighted.
+	 */
+	public void removeHighlightedPoints() {
+		highlightedPoints.clear();
+	}
+
+	/**
+	 * Highlights the appropriate points on the axes if and only if
+	 * this DataPlot contains a point within threshold pixels of pos.
+	 *
+	 * <p>This method is defined to act exactly as if it were
+	 * implemented as
+	 *
+	 * <pre>
+	 * public boolean highlightIfNear(Vector2 pos, double threshold) {
+	 * 	PlottablePoint point = DataPlot.this.closest(pos, threshold);
+	 * 	if (point != null)
+	 * 		DataPlot.this.highlightPoint(point);
+	 * 	return point != null;
+	 * }
+	 * </pre>
+	 * </p>
+	 *
+	 * <p>However, this method may be implemented in any way that
+	 * accomplishes the same aims as the code.  Note that, in particular,
+	 * this method is not required to call overridden forms of isNear and
+	 * highlightPoints.</p>
+	 *
+	 * @param pos
+	 * 		the position at which the mouse is hovering, and from which
+	 * 		we want to derive our highlighting
+	 * @param threshold
+	 * 		the maximum distance the mouse can be from a point, while
+	 * 		still causing the highlighting effect
+	 * @return
+	 * 		<tt>true</tt> if and only if this highlights the axes
+	 * @throws IllegalArgumentException
+	 * 		if threshold is negative
+	 */
+	public boolean highlightIfNear(Vector2 pos, double threshold) {
+		PlottablePoint point = DataPlot.this.closest(pos, threshold);
+		if (point != null)
+			DataPlot.this.highlightPoint(point);
+
+		return point != null;
 	}
 }

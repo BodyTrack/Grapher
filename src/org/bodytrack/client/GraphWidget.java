@@ -24,6 +24,8 @@ public class GraphWidget extends Surface {
 	private static final double MOUSE_WHEEL_ZOOM_RATE_MAC = 1.003;
 	private static final double MOUSE_WHEEL_ZOOM_RATE_PC = 1.1;
 
+	private static final double HIGHLIGHT_DISTANCE_THRESHOLD = 5;
+
 	private List<DataPlot> dataPlots;
 
 	/* xAxes and yAxes provide the reverse mapping from
@@ -150,7 +152,7 @@ public class GraphWidget extends Surface {
 						canZoomIn = true;
 			}
 
-			if (zoomFactor < 1 && canZoomIn) {
+			if (zoomFactor >= 1 || canZoomIn) {
 				double zoomAbout = axis.unproject(eventLoc);
 				axis.zoom(zoomFactor, zoomAbout);
 			}
@@ -192,6 +194,12 @@ public class GraphWidget extends Surface {
 			}
 
 			mouseDragLastPos = pos;
+		} else {
+			// Highlight the appropriate points on the axes
+			for (DataPlot plot: dataPlots) {
+				plot.removeHighlightedPoints();
+				plot.highlightIfNear(pos, HIGHLIGHT_DISTANCE_THRESHOLD);
+			}
 		}
 
 		paint();
@@ -258,26 +266,21 @@ public class GraphWidget extends Surface {
 	public void paint() {
 		layout();
 		this.clear();
-		//this.clearRectangle(0,0,400,400);
-		//this.setFillStyle(new Color(
-		//		(int) (Random.nextDouble() * 255), 128, 128));
-		//this.fillRectangle(0,0,500,500);
 		this.save();
 		this.translate(.5, .5);
 
+		// Draw the axes in all cases
+		for (GraphAxis xAxis: xAxes.keySet())
+			xAxis.paint(this);
+
+		for (GraphAxis yAxis: yAxes.keySet())
+			yAxis.paint(this);
+
+		// Now draw the data
 		for (DataPlot plot: dataPlots)
 			plot.paint();
 
 		this.restore();
-
-		//DirectShapeRenderer renderer = new DirectShapeRenderer(this);
-		//renderer.beginPath();
-
-		//for (double x = 0; x < 400; x++) {
-		//	double y = 200+200*Math.sin(x*.1);
-		//	renderer.drawLineTo(x,y);
-		//}
-		//renderer.stroke();
 	}
 
 	/**
