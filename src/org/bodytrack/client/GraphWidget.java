@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.event.dom.client.MouseDownHandler;
@@ -206,7 +207,8 @@ public class GraphWidget extends Surface {
 		Set<DataPlot> highlightedPlots = new HashSet<DataPlot>();
 
 		// First check for already-highlighted plots, if we are
-		// dragging
+		// dragging the mouse.  We don't want to highlight new plots
+		// if we are dragging.
 		if (mouseDragLastPos != null) {
 			for (DataPlot plot: dataPlots) {
 				if (plot.isHighlighted()) {
@@ -227,6 +229,10 @@ public class GraphWidget extends Surface {
 					highlightedPlots.add(plot);
 				}
 			}
+
+			// Now we handle highlighting of the axes
+			setAxisHighlighting(xAxes);
+			setAxisHighlighting(yAxes);
 		}
 
 		if (mouseDragLastPos != null) {
@@ -254,6 +260,32 @@ public class GraphWidget extends Surface {
 		}
 
 		paint();
+	}
+
+	/**
+	 * Highlights each axis in axes.keySet() if and only if there exists
+	 * some DataPlot in axes.get(axis) that is highlighted.
+	 *
+	 * In other words, each axis is highlighted if and only if it is
+	 * associated with a DataPlot that is highlighted as well.
+	 *
+	 * @param axes
+	 * 		the map (probably either the xAxes or yAxes instance variable)
+	 * 		of axes to sets of DataPlot objects, which describes the
+	 * 		relationship between data plots and axes
+	 */
+	private void setAxisHighlighting(Map<GraphAxis, List<DataPlot>> axes) {
+		for (Entry<GraphAxis, List<DataPlot>> entry: axes.entrySet()) {
+			// Highlight an axis if any one of the plots associated
+			// with that axis is highlighted
+			entry.getKey().unhighlight();
+
+			for (DataPlot plot: entry.getValue())
+				if (plot.isHighlighted()) {
+					entry.getKey().highlight();
+					break;
+				}
+		}
 	}
 
 	private void handleMouseUpEvent(MouseUpEvent event) {
