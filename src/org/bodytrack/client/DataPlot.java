@@ -661,9 +661,22 @@ public class DataPlot {
 	/**
 	 * Highlights this DataPlot in future
 	 * {@link DataPlot#paint() paint} calls.
+	 *
+	 * Note that this does not highlight the axes associated with this
+	 * DataPlot.
 	 */
 	public void highlight() {
 		highlighted = true;
+	}
+
+	/**
+	 * Stops highlighting this DataPlot.
+	 *
+	 * Note that this does not affect the highlighting status on the
+	 * axes associated with this DataPlot.
+	 */
+	public void unhighlight() {
+		highlighted = false;
 	}
 
 	/**
@@ -678,13 +691,6 @@ public class DataPlot {
 	 */
 	public boolean isHighlighted() {
 		return highlighted;
-	}
-
-	/**
-	 * Stops highlighting this DataPlot.
-	 */
-	public void unhighlight() {
-		highlighted = false;
 	}
 
 	/**
