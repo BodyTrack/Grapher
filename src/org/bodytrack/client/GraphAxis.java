@@ -3,6 +3,7 @@ package org.bodytrack.client;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+import gwt.g2d.client.graphics.Color;
 import gwt.g2d.client.graphics.DirectShapeRenderer;
 import gwt.g2d.client.graphics.Surface;
 import gwt.g2d.client.graphics.TextAlign;
@@ -36,6 +37,11 @@ public class GraphAxis {
 	private double scale;
 	private BBox bounds;
 
+	// For determining whether to highlight this GraphAxis
+	private boolean highlighted;
+	protected static final Color NORMAL_COLOR = DataPlot.DARK_GRAY;
+	protected static final Color HIGHLIGHTED_COLOR = DataPlot.BLACK;
+
 	final static int JUSTIFY_MIN = 0;
 	final static int JUSTIFY_MED = 1;
 	final static int JUSTIFY_MAX = 2;
@@ -45,6 +51,7 @@ public class GraphAxis {
 		this.max = max;
 		this.basis = basis;
 		this.width = width;
+		highlighted = false;
 	}
 
 	public void layout(Vector2 begin, double length) {
@@ -88,8 +95,43 @@ public class GraphAxis {
 		return this.min + (point.subtract(begin).dot(basis.y) / scale);
 	}
 
+	/**
+	 * Marks this GraphAxis as highlighted.
+	 */
+	public void highlight() {
+		highlighted = true;
+	}
+
+	/**
+	 * Marks this GraphAxis as not highlighted.
+	 */
+	public void unhighlight() {
+		highlighted = false;
+	}
+
+	/**
+	 * Returns <tt>true</tt> if and only if this GraphAxis is marked as
+	 * highlighted.
+	 *
+	 * @return
+	 * 		<tt>true</tt> if and only if {@link #highlight()} has been
+	 * 		called since this GraphAxis was constructed, and
+	 * 		{@link #unhighlight()} has not been called since the last
+	 * 		call to highlight
+	 */
+	public boolean isHighlighted() {
+		return highlighted;
+	}
+
 	public void paint(Surface surface) {
 		Canvas canvas = Canvas.buildCanvas(surface);
+
+		// Pick the color to use, based on highlighting status
+		if (isHighlighted())
+			canvas.getSurface().setStrokeStyle(HIGHLIGHTED_COLOR);
+		else
+			canvas.getSurface().setStrokeStyle(NORMAL_COLOR);
+
 		canvas.getRenderer().beginPath();
 		canvas.getRenderer().drawLineSegment(
 				project2D(this.min), project2D(this.max));
@@ -104,6 +146,9 @@ public class GraphAxis {
 				minorTickWidthPixels, null);
 
 		canvas.getRenderer().stroke();
+
+		// Clean up after ourselves
+		canvas.getSurface().setStrokeStyle(DataPlot.BLACK);
 	}
 
 	public double getMin() {

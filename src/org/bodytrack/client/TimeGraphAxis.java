@@ -297,6 +297,13 @@ public class TimeGraphAxis extends GraphAxis {
 
 	public void paint(Surface surface) {
 		Canvas canvas = Canvas.buildCanvas(surface);
+
+		// Pick the color to use, based on highlighting status
+		if (isHighlighted())
+			canvas.getSurface().setStrokeStyle(HIGHLIGHTED_COLOR);
+		else
+			canvas.getSurface().setStrokeStyle(NORMAL_COLOR);
+
 		canvas.getRenderer().beginPath();
 		canvas.getRenderer().drawLineSegment(
 				project2D(this.min), project2D(this.max));
@@ -407,6 +414,9 @@ public class TimeGraphAxis extends GraphAxis {
 		}
 
 		canvas.getRenderer().stroke();
+
+		// Clean up after ourselves
+		canvas.getSurface().setStrokeStyle(DataPlot.BLACK);
 	}
 }
 
