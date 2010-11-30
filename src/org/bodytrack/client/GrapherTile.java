@@ -14,11 +14,16 @@ import com.google.gwt.http.client.Response;
 
 /**
  * Represents a single "tile" of data.
- * 
- * An overlay type for a generic data tile.  This data type can be loaded
- * from JSON using the {@link #buildTile(String)} method.
+ *
+ * <p>An overlay type for a generic data tile.  This data type can be loaded
+ * from JSON using the {@link #buildTile(String)} method.</p>
+ *
+ * <p>Note that this class is final because GWT requires that all method
+ * calls on an overlay type be resolved at compile time.  We had the choice
+ * between making the class final and making all public instance methods
+ * final.  We opted for the former option.</p>
  */
-public class GrapherTile extends JavaScriptObject {
+public final class GrapherTile extends JavaScriptObject {
 	/**
 	 * The width of a tile, in data points.
 	 * 
@@ -105,7 +110,8 @@ public class GrapherTile extends JavaScriptObject {
 				}
 			});
 		} catch (RequestException e) {
-			// Need sensible way to handle this error
+			// No sensible way to handle this error, except by not
+			// adding any tile to response
 		}
 	}
 	
@@ -121,7 +127,7 @@ public class GrapherTile extends JavaScriptObject {
 	 * @return
 	 * 		the level of resolution at which this tile operates
 	 */
-	public final native int getLevel() /*-{
+	public native int getLevel() /*-{
 		return this.level;
 	}-*/;
 
@@ -136,7 +142,7 @@ public class GrapherTile extends JavaScriptObject {
 	 * @return
 	 * 		the offset value for this tile
 	 */
-	public final native int getOffset() /*-{
+	public native int getOffset() /*-{
 		return this.offset;
 	}-*/;
 
@@ -146,7 +152,7 @@ public class GrapherTile extends JavaScriptObject {
 	 * @return
 	 * 		the list of field names for this tile
 	 */
-	public final native String[] getFields() /*-{
+	public native String[] getFields() /*-{
 		return this.fields;
 	}-*/;
 
@@ -157,7 +163,7 @@ public class GrapherTile extends JavaScriptObject {
 	 * 		the data stored in this tile, as a two-dimensional array of
 	 * 		double-precision values
 	 */
-	public final native JsArray<JsArrayNumber> getData() /*-{
+	public native JsArray<JsArrayNumber> getData() /*-{
 		return this.data;
 	}-*/;
 
@@ -173,7 +179,7 @@ public class GrapherTile extends JavaScriptObject {
 	 * 		&quot;mean&quot; are not elements of the array returned
 	 * 		by {@link #getFields() getFields()}).
 	 */
-	public final List<PlottablePoint> getDataPoints() {
+	public List<PlottablePoint> getDataPoints() {
 		int timeIndex = -1;
 		int meanIndex = -1;
 
@@ -211,7 +217,7 @@ public class GrapherTile extends JavaScriptObject {
 	 * 		a {@link org.bodytrack.client.TileDescription TileDescription}
 	 * 		that describes the level and offset for this tile
 	 */
-	public final TileDescription getDescription() {
+	public TileDescription getDescription() {
 		return new TileDescription(getLevel(), getOffset());
 	}
 }
