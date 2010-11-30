@@ -9,14 +9,22 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Represents a single set of data, along with its associated axes.
+ * Represents a single set of data, along with references to its
+ * associated axes.
  *
- * Has the ability to draw itself and its axes on a
+ * <p>Has the ability to draw itself and its axes on a
  * {@link org.bodytrack.client.Canvas Canvas} object, and to update
  * the positions of its dots based on the zoom level.  Also, if the
  * zoom level changes enough, the {@link #zoom(double, double) zoom()}
  * method will automatically fetch the data from the server via Ajax
- * and redraw the data whenever the data comes in from the server.
+ * and redraw the data whenever the data comes in from the server.</p>
+ *
+ * <p>A class that wishes to inherit this class can override
+ * {@link #paintAllDataPoints()}, but the easiest way to modify functionality
+ * it to override {@link #paintDataPoint()}.  This function is responsible
+ * for painting a single point on this DataPlot.  Highlighting, zooming,
+ * and the Ajax calls for pulling extra data will be handled automatically
+ * by this class.</p>
  */
 public class DataPlot {
 	/*
@@ -44,8 +52,11 @@ public class DataPlot {
 	/**
 	 * Never render a point with value less than this - use anything
 	 * less as a sentinel.
+	 *
+	 * <p>This value is intended to be used by subclasses as a sentinel
+	 * value.</p>
 	 */
-	private static final double MIN_DRAWABLE_VALUE = -1e300;
+	protected static final double MIN_DRAWABLE_VALUE = -1e300;
 
 	private GraphWidget container;
 	private GraphAxis xAxis;
@@ -185,6 +196,18 @@ public class DataPlot {
 	}
 
 	/**
+	 * Gives subclasses a reference to the
+	 * {@link org.bodytrack.client.Canvas Canvas} object on which they
+	 * can draw.
+	 *
+	 * @return
+	 * 		the Canvas on which this DataPlot draws
+	 */
+	protected Canvas getCanvas() {
+		return canvas;
+	}
+
+	/**
 	 * Checks for and performs a fetch for data from the server if
 	 * necessary.
 	 *
@@ -269,11 +292,13 @@ public class DataPlot {
 	/**
 	 * Paints this DataPlot on the stored GraphWidget.
 	 *
-	 * Does not draw the axes associated with this DataPlot.
+	 * <p>Does not draw the axes associated with this DataPlot.</p>
+	 *
+	 * <p>Note that it is <strong>not</strong> recommended that a subclass
+	 * override this method.  Instead, it is recommended that a subclass
+	 * override the {@link #paintAllDataPoints()} method.</p>
 	 */
 	public void paint() {
-		canvas.getSurface().setStrokeStyle(DARK_GRAY);
-
 		// If we have received data from the server
 		if (pendingData.size() > 0) {
 			// Pull all the data out of the tile
@@ -309,7 +334,7 @@ public class DataPlot {
 	/**
 	 * Renders all the salient data points in currentData.
 	 */
-	private void paintAllDataPoints() {
+	protected void paintAllDataPoints() {
 		// TODO: improve the algorithm for getting the best resolution tile
 		// Current algorithm is O(n m), where n is the currentData.length()
 		// and m is getBestResolutionTiles.length()
@@ -352,7 +377,7 @@ public class DataPlot {
 
 				// Draw this part of the line
 				if (prevX > MIN_DRAWABLE_VALUE && prevY > MIN_DRAWABLE_VALUE)
-					canvas.getRenderer().drawLineSegment(prevX, prevY, x, y);
+					paintDataPoint(prevX, prevY, x, y);
 
 				prevX = x;
 				prevY = y;
@@ -360,6 +385,28 @@ public class DataPlot {
 
 			canvas.stroke();
 		}
+	}
+
+	/**
+	 * Draws a single data point on the graph.
+	 *
+	 * @param prevX
+	 * 		the previous X-value, which will be greater than
+	 * 		MIN_DRAWABLE_VALUE
+	 * @param prevY
+	 * 		the previous Y-value, which will be greater than
+	 * 		MIN_DRAWABLE_VALUE
+	 * @param x
+	 * 		the current X-value, which will be greater than
+	 * 		MIN_DRAWABLE_VALUE
+	 * @param y
+	 * 		the current Y-value, which will be greater than
+	 * 		MIN_DRAWABLE_VALUE
+	 * @see #MIN_DRAWABLE_VALUE
+	 */
+	protected void paintDataPoint(double prevX, double prevY,
+			double x, double y) {
+		canvas.getRenderer().drawLineSegment(prevX, prevY, x, y);
 	}
 
 	/**
@@ -708,12 +755,15 @@ public class DataPlot {
 	 * 	return point != null;
 	 * }
 	 * </pre>
+	 *
 	 * </p>
 	 *
 	 * <p>However, this method may be implemented in any way that
 	 * accomplishes the same aims as the code.  Note that, in particular,
 	 * this method is not required to call overridden forms of isNear and
-	 * highlightPoints.</p>
+	 * highlightPoints.  However, this method is not a final method, so
+	 * a subclass implementation of this method may call an overridden
+	 * form of closest and highlight.</p>
 	 *
 	 * @param pos
 	 * 		the position at which the mouse is hovering, and from which
