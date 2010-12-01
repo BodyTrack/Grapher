@@ -53,7 +53,7 @@ public class Grapher2 implements EntryPoint {
 
 		plots = new ArrayList<DataPlot>();
 
-		int userid  = getUserId();
+		int userid = getUserId();
 		JsArrayString channels = getChannelNames();
 
 		for (int i = 0; i < channels.length(); i++) {

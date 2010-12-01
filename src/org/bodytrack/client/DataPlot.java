@@ -15,16 +15,22 @@ import java.util.Set;
  * <p>Has the ability to draw itself and its axes on a
  * {@link org.bodytrack.client.Canvas Canvas} object, and to update
  * the positions of its dots based on the zoom level.  Also, if the
- * zoom level changes enough, the {@link #zoom(double, double) zoom()}
- * method will automatically fetch the data from the server via Ajax
- * and redraw the data whenever the data comes in from the server.</p>
+ * zoom level or position of the X-axis changes enough, this class will
+ * automatically fetch the data from the server via Ajax and redraw
+ * the data whenever it comes in from the server.</p>
  *
  * <p>A class that wishes to inherit this class can override
- * {@link #paintAllDataPoints()}, but the easiest way to modify functionality
- * it to override {@link #paintDataPoint()}.  This function is responsible
- * for painting a single point on this DataPlot.  Highlighting, zooming,
- * and the Ajax calls for pulling extra data will be handled automatically
- * by this class.</p>
+ * {@link DataPlot#paintAllDataPoints()}, but the easiest way to modify
+ * functionality it to override {@link DataPlot#paintDataPoint()}.
+ * This function is responsible for painting a single point on this
+ * DataPlot.  Highlighting, zooming, and the Ajax calls for pulling
+ * extra data will be handled automatically by this class.</p>
+ *
+ * <p>A classes that wishes to inherit this class may also wish to
+ * override {@link DataPlot#getDataPoints(GrapherTile)}, which
+ * determines the points that {@link DataPlot#paintAllDataPoints()}
+ * will draw, and the order in which paintAllDataPoints will draw
+ * them.</p>
  */
 public class DataPlot {
 	/*
@@ -38,6 +44,19 @@ public class DataPlot {
 	public static final Color GREEN = new Color(0x00, 0x80, 0x00);
 	public static final Color BLUE = new Color(0x00, 0x00, 0xFF);
 	public static final Color YELLOW = new Color(0xFF, 0xFF, 0x00);
+
+	/**
+	 * The default color, which classes should set as the stroke color
+	 * if wishing to &quot;clean up after themselves&quot; when done
+	 * changing colors and drawing.
+	 */
+	public static final Color DEFAULT_COLOR = BLACK;
+
+	/**
+	 * The default alpha value, which classes should <em>always</em>
+	 * set as the alpha after changing alpha on a Canvas.
+	 */
+	public static final double DEFAULT_ALPHA = 1.0;
 
 	// These two constants are used when highlighting this plot
 	private static final int NORMAL_STROKE_WIDTH = 1;
@@ -346,7 +365,7 @@ public class DataPlot {
 			double prevX = - Double.MAX_VALUE;
 			double prevY = - Double.MAX_VALUE;
 
-			List<PlottablePoint> dataPoints = tile.getDataPoints();
+			List<PlottablePoint> dataPoints = getDataPoints(tile);
 
 			if (dataPoints == null)
 				continue;
@@ -385,6 +404,22 @@ public class DataPlot {
 
 			canvas.stroke();
 		}
+	}
+
+	/**
+	 * Returns the ordered list of points this DataPlot should draw
+	 * in {@link #paintAllDataPoints()}.
+	 *
+	 * @param tile
+	 * 		the {@link org.bodytrack.client.GrapherTile GrapherTile}
+	 * 		from which to pull the data points
+	 * @return
+	 * 		a list of
+	 * 		{@link org.bodytrack.client.PlottablePoint PlottablePoint}
+	 * 		objects to be drawn by paintAllDataPoints
+	 */
+	protected List<PlottablePoint> getDataPoints(GrapherTile tile) {
+		return tile.getDataPoints();
 	}
 
 	/**
