@@ -400,6 +400,9 @@ public class DataPlot {
 	/**
 	 * Draws a single data point on the graph.
 	 *
+	 * Note that this method has as preconditions that
+	 * {@code prevX < x} and that {@code prevY < y}.
+	 *
 	 * @param prevX
 	 * 		the previous X-value, which will be greater than
 	 * 		MIN_DRAWABLE_VALUE

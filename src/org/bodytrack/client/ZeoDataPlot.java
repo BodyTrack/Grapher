@@ -1,6 +1,8 @@
 package org.bodytrack.client;
 
 import gwt.g2d.client.graphics.Color;
+import gwt.g2d.client.graphics.DirectShapeRenderer;
+import gwt.g2d.client.graphics.Surface;
 import gwt.g2d.client.graphics.canvas.CanvasElement;
 
 /**
@@ -86,8 +88,11 @@ public class ZeoDataPlot extends DataPlot {
 		if (color == NO_DATA_COLOR)
 			return;
 
-		Canvas canvas = getCanvas();
 		GraphAxis yAxis = getYAxis();
+
+		Canvas canvas = getCanvas();
+		Surface surface = canvas.getSurface();
+		DirectShapeRenderer renderer = canvas.getRenderer();
 
 		// The Y-value in units on the Y-axis corresponding to the lowest
 		// point to draw on the rectangle
@@ -104,20 +109,44 @@ public class ZeoDataPlot extends DataPlot {
 			prevX, y, x - prevX, y - minDrawY);
 		*/
 
+		// Define variables for the corners, making variable names
+		// explicit so the code is clear
+		// GWT will optimize away these variables, so there will be
+		// no performance issues from these
+		double leftX = prevX;
+		double rightX = x;
+		double bottomY = minDrawY;
+		double topY = y;
+
 		// Draw the Zeo plot with the specified color
-		canvas.getSurface().setGlobalAlpha(ZEO_ALPHA);
-		canvas.getSurface().setStrokeStyle(color);
-		canvas.getRenderer().drawRect(prevX, y, x - prevX, y - minDrawY);
+		surface.setGlobalAlpha(ZEO_ALPHA);
+		surface.setFillStyle(color);
 
-		// TODO: Draw lines around rectangles
+		renderer.drawRect(leftX, topY,
+			rightX - leftX, topY - bottomY);
 
-		// Clean up after ourselves
-		canvas.getSurface().setGlobalAlpha(Canvas.DEFAULT_ALPHA);
-		canvas.getSurface().setStrokeStyle(Canvas.DEFAULT_COLOR);
+		// Draw lines around rectangles
+		// We go clockwise, starting at the top left corner
+		surface.setGlobalAlpha(Canvas.DEFAULT_ALPHA);
+		surface.setFillStyle(Canvas.DEFAULT_COLOR);
+
+		double oldLineWidth = surface.getLineWidth();
+		surface.setLineWidth(isHighlighted()
+			? HIGHLIGHT_STROKE_WIDTH : NORMAL_STROKE_WIDTH);
+
+		renderer.drawLineSegment(leftX, topY, rightX, topY);
+		renderer.drawLineSegment(rightX, topY, rightX, bottomY);
+		renderer.drawLineSegment(rightX, bottomY, leftX, bottomY);
+		renderer.drawLineSegment(leftX, bottomY, leftX, topY);
+
+		// Clean up after ourselves - it is preferable to put things
+		// back the way they were rather than setting the values to
+		// defaults
+		surface.setLineWidth(oldLineWidth);
 	}
 
+	// Currently unused method that is also unimplemented
 	private String getCanvasId(CanvasElement canvas) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
