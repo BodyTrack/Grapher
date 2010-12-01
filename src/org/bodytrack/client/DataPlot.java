@@ -373,6 +373,10 @@ public class DataPlot {
 				if (prevX > MIN_DRAWABLE_VALUE && prevY > MIN_DRAWABLE_VALUE)
 					paintDataPoint(prevX, prevY, x, y);
 
+				// TODO: beautify this code
+				canvas.getRenderer().drawCircle(x, y, 0.5 * (highlighted
+						? HIGHLIGHT_STROKE_WIDTH : NORMAL_STROKE_WIDTH));
+
 				prevX = x;
 				prevY = y;
 			}
@@ -646,7 +650,7 @@ public class DataPlot {
 		double maxValue = yAxis.unproject(topLeft);
 
 		double centerTime = xAxis.unproject(pos);
-		double centerVal = xAxis.unproject(pos);
+		double centerValue = xAxis.unproject(pos);
 
 		// Get the tiles to check
 		int correctLevel = computeCurrentLevel();
@@ -656,15 +660,70 @@ public class DataPlot {
 		GrapherTile bestTileMaxTime =
 			getBestResolutionTileAt(maxTime, correctLevel);
 
+		PlottablePoint closest = getClosestPoint(bestTileMinTime,
+			minTime, maxTime, minValue, maxValue, centerTime,
+			centerValue);
+
+		// pos is right on the border between two tiles
+		if (bestTileMinTime != bestTileMaxTime) {
+			// This is unlikely but possible, especially if threshold
+			// is large
+
+			PlottablePoint closestMaxTime = getClosestPoint(
+				bestTileMaxTime, minTime, maxTime, minValue,
+				maxValue, centerTime, centerValue);
+
+			double distClosestSq = getDistanceSquared(closest,
+				centerTime, centerValue);
+			double distClosestMaxTimeSq = getDistanceSquared(closest,
+				centerTime, centerValue);
+
+			if (distClosestMaxTimeSq < distClosestSq)
+				return closestMaxTime;
+		}
+
+		return closest;
+	}
+
+	/**
+	 * Helper method for {@link DataPlot#closest(Vector2, double)}.
+	 *
+	 * This method has a lot of similar parameters, which is normally
+	 * poor style, but it is an internal helper method, so this is
+	 * OK.
+	 *
+	 * @param tile
+	 * 		the {@link org.bodytrack.client.GrapherTile GrapherTile}
+	 * 		in which to search for the closest point
+	 * @param minTime
+	 * 		the minimum time at which we consider points
+	 * @param maxTime
+	 * 		the maximum time at which we consider points
+	 * @param minValue
+	 * 		the minimum value of a point for us to consider it
+	 * @param maxValue
+	 * 		the maximum value of a point at which we will consider it
+	 * @param centerTime
+	 * 		the time to which we will try to make our point close
+	 * @param centerValue
+	 * 		the value to which we will try to make our point close
+	 * @return
+	 * 		the point closest to (centerTime, centerValue)
+	 * 		in getDataPoints(tile), as long as that point is within the
+	 * 		square determined by (minTime, minValue) and
+	 * 		(maxTime, maxValue) and visible to the user.  If there is no
+	 * 		such point, returns <tt>null</tt>
+	 */
+	private PlottablePoint getClosestPoint(GrapherTile tile,
+			double minTime, double maxTime, double minValue,
+			double maxValue, double centerTime, double centerValue) {
+		if (tile == null)
+			return null;
+
 		PlottablePoint closest = null;
 		double shortestDistanceSq = Double.MAX_VALUE;
 
-		// Now see if there is a data point in our square
-		List<PlottablePoint> points = bestTileMinTime != null
-			? bestTileMinTime.getDataPoints()
-			: new ArrayList<PlottablePoint>();
-
-		for (PlottablePoint point: points) {
+		for (PlottablePoint point: getDataPoints(tile)) {
 			double time = point.getDate();
 			double val = point.getValue();
 
@@ -672,13 +731,14 @@ public class DataPlot {
 			if (time < xAxis.getMin() || time > xAxis.getMax())
 				continue;
 
+			// Only check for proximity to points within the desired
+			// range
 			if (time >= minTime && time <= maxTime
-					&& val >= minValue && val <= maxValue) {
+				&& val >= minValue && val <= maxValue) {
 
 				// Compute the square of the distance to pos
-				double distanceSq =
-					(time - centerTime) * (time - centerTime)
-					+ (val - centerVal) * (val - centerVal);
+				double distanceSq = getDistanceSquared(point,
+					centerTime, centerValue);
 
 				if (distanceSq < shortestDistanceSq) {
 					closest = point;
@@ -687,35 +747,25 @@ public class DataPlot {
 			}
 		}
 
-		if (bestTileMinTime != bestTileMaxTime) {
-			// This is unlikely but possible, especially if threshold
-			// is large
-
-			points = bestTileMaxTime != null
-				? bestTileMaxTime.getDataPoints()
-				: new ArrayList<PlottablePoint>();
-
-			for (PlottablePoint point: points) {
-				double time = point.getDate();
-				double val = point.getValue();
-
-				if (time >= minTime && time <= maxTime
-						&& val >= minValue && val <= maxValue) {
-
-					// Compute the square of the distance to pos
-					double distanceSq =
-						(time - centerTime) * (time - centerTime)
-						+ (val - centerVal) * (val - centerVal);
-
-					if (distanceSq < shortestDistanceSq) {
-						closest = point;
-						shortestDistanceSq = distanceSq;
-					}
-				}
-			}
-		}
-
 		return closest;
+	}
+
+	/**
+	 * Returns the square of the distance from point to (time, value).
+	 *
+	 * @param point
+	 * @param time
+	 * @param value
+	 * @return
+	 */
+	// TODO: FINISH DOCUMENTING
+	private double getDistanceSquared(PlottablePoint point,
+			double time, double value) {
+		double pointTime = point.getDate();
+		double pointValue = point.getValue();
+
+		return (time - pointTime) * (time - pointTime)
+			+ (value - pointValue) * (value - pointValue);
 	}
 
 	/**
