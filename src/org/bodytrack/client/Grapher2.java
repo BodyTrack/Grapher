@@ -22,10 +22,10 @@ public class Grapher2 implements EntryPoint {
 	private GraphWidget gw;
 	private List<DataPlot> plots;
 
-	private static final Color[] DATA_PLOT_COLORS = {DataPlot.BLACK,
-													DataPlot.GREEN,
-													DataPlot.BLUE,
-													DataPlot.RED};
+	private static final Color[] DATA_PLOT_COLORS = {Canvas.BLACK,
+													Canvas.GREEN,
+													Canvas.BLUE,
+													Canvas.RED};
 
 	/**
 	 * This is the entry point method.

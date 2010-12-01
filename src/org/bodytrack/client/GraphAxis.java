@@ -39,8 +39,8 @@ public class GraphAxis {
 
 	// For determining whether to highlight this GraphAxis
 	private boolean highlighted;
-	protected static final Color NORMAL_COLOR = DataPlot.DARK_GRAY;
-	protected static final Color HIGHLIGHTED_COLOR = DataPlot.BLACK;
+	protected static final Color NORMAL_COLOR = Canvas.DARK_GRAY;
+	protected static final Color HIGHLIGHTED_COLOR = Canvas.BLACK;
 
 	final static int JUSTIFY_MIN = 0;
 	final static int JUSTIFY_MED = 1;
@@ -148,7 +148,7 @@ public class GraphAxis {
 		canvas.getRenderer().stroke();
 
 		// Clean up after ourselves
-		canvas.getSurface().setStrokeStyle(DataPlot.BLACK);
+		canvas.getSurface().setStrokeStyle(Canvas.DEFAULT_COLOR);
 	}
 
 	public double getMin() {

@@ -33,34 +33,9 @@ import java.util.Set;
  * them.</p>
  */
 public class DataPlot {
-	/*
-	 * All the following colors should have exactly the same values as
-	 * their CSS counterparts by the same (lowecase) name.
-	 */
-	public static final Color BLACK = new Color(0x00, 0x00, 0x00);
-	public static final Color DARK_GRAY = new Color(0xA9, 0xA9, 0xA9);
-	public static final Color GRAY = new Color(0x80, 0x80, 0x80);
-	public static final Color RED = new Color(0xFF, 0x00, 0x00);
-	public static final Color GREEN = new Color(0x00, 0x80, 0x00);
-	public static final Color BLUE = new Color(0x00, 0x00, 0xFF);
-	public static final Color YELLOW = new Color(0xFF, 0xFF, 0x00);
-
-	/**
-	 * The default color, which classes should set as the stroke color
-	 * if wishing to &quot;clean up after themselves&quot; when done
-	 * changing colors and drawing.
-	 */
-	public static final Color DEFAULT_COLOR = BLACK;
-
-	/**
-	 * The default alpha value, which classes should <em>always</em>
-	 * set as the alpha after changing alpha on a Canvas.
-	 */
-	public static final double DEFAULT_ALPHA = 1.0;
-
 	// These two constants are used when highlighting this plot
-	private static final int NORMAL_STROKE_WIDTH = 1;
-	private static final int HIGHLIGHT_STROKE_WIDTH = 3;
+	protected static final int NORMAL_STROKE_WIDTH = 1;
+	protected static final int HIGHLIGHT_STROKE_WIDTH = 3;
 
 	/**
 	 * The maximum size we allow currentData to be before we consider
@@ -133,7 +108,7 @@ public class DataPlot {
 	 */
 	public DataPlot(GraphWidget container, GraphAxis xAxis, GraphAxis yAxis,
 			String url) {
-		this(container, xAxis, yAxis, url, Integer.MIN_VALUE, BLACK);
+		this(container, xAxis, yAxis, url, Integer.MIN_VALUE, Canvas.BLACK);
 	}
 
 	/**
@@ -343,7 +318,7 @@ public class DataPlot {
 		paintAllDataPoints();
 
 		// Clean up after ourselves
-		canvas.getSurface().setStrokeStyle(BLACK);
+		canvas.getSurface().setStrokeStyle(Canvas.DEFAULT_COLOR);
 		canvas.getSurface().setLineWidth(NORMAL_STROKE_WIDTH);
 
 		// Make sure we shouldn't get any more info from the server

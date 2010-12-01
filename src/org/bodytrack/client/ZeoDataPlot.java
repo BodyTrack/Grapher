@@ -48,7 +48,7 @@ public class ZeoDataPlot extends DataPlot {
 	public ZeoDataPlot(GraphWidget container, GraphAxis xAxis,
 			GraphAxis yAxis, String url, int minLevel) {
 		super(container, xAxis, yAxis, url, minLevel,
-			DataPlot.DEFAULT_COLOR);
+			Canvas.DEFAULT_COLOR);
 	}
 
 	/**
@@ -104,16 +104,16 @@ public class ZeoDataPlot extends DataPlot {
 			prevX, y, x - prevX, y - minDrawY);
 		*/
 
-		// Draw the Zeo plot with the specified
+		// Draw the Zeo plot with the specified color
 		canvas.getSurface().setGlobalAlpha(ZEO_ALPHA);
 		canvas.getSurface().setStrokeStyle(color);
 		canvas.getRenderer().drawRect(prevX, y, x - prevX, y - minDrawY);
 
-		// TODO: Draw lines around the rectangles
+		// TODO: Draw lines around rectangles
 
 		// Clean up after ourselves
-		canvas.getSurface().setGlobalAlpha(DataPlot.DEFAULT_ALPHA);
-		canvas.getSurface().setStrokeStyle(DataPlot.DEFAULT_COLOR);
+		canvas.getSurface().setGlobalAlpha(Canvas.DEFAULT_ALPHA);
+		canvas.getSurface().setStrokeStyle(Canvas.DEFAULT_COLOR);
 	}
 
 	private String getCanvasId(CanvasElement canvas) {

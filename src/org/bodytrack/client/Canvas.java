@@ -3,6 +3,7 @@ package org.bodytrack.client;
 import java.util.HashMap;
 import java.util.Map;
 
+import gwt.g2d.client.graphics.Color;
 import gwt.g2d.client.graphics.DirectShapeRenderer;
 import gwt.g2d.client.graphics.Surface;
 
@@ -22,6 +23,31 @@ import gwt.g2d.client.graphics.Surface;
  * system, only one DirectShapeRenderer is created per Surface.</p>
  */
 public class Canvas {
+	/*
+	 * All the following colors should have exactly the same values as
+	 * their CSS counterparts by the same (lowercase) name.
+	 */
+	public static final Color BLACK = new Color(0x00, 0x00, 0x00);
+	public static final Color DARK_GRAY = new Color(0xA9, 0xA9, 0xA9);
+	public static final Color GRAY = new Color(0x80, 0x80, 0x80);
+	public static final Color RED = new Color(0xFF, 0x00, 0x00);
+	public static final Color GREEN = new Color(0x00, 0x80, 0x00);
+	public static final Color BLUE = new Color(0x00, 0x00, 0xFF);
+	public static final Color YELLOW = new Color(0xFF, 0xFF, 0x00);
+
+	/**
+	 * The default color, which classes should set as the stroke color
+	 * if wishing to &quot;clean up after themselves&quot; when done
+	 * changing colors and drawing.
+	 */
+	public static final Color DEFAULT_COLOR = BLACK;
+
+	/**
+	 * The default alpha value, which classes should <em>always</em>
+	 * set as the alpha after changing alpha on a Canvas.
+	 */
+	public static final double DEFAULT_ALPHA = 1.0;
+
 	private Surface surface;
 	private DirectShapeRenderer renderer;
 
