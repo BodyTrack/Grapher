@@ -24,7 +24,12 @@ public class ZeoDataPlot extends DataPlot {
 	/**
 	 * The alpha value used when drawing rectangles for Zeo plots.
 	 */
-	private static final double ZEO_ALPHA = 0.5;
+	private static final double NORMAL_ALPHA = 0.4;
+
+	/**
+	 * The alpha used when drawing rectangles for highlighted Zeo plots.
+	 */
+	private static final double HIGHLIGHTED_ALPHA = 0.5;
 
 	/**
 	 * Initializes this ZeoDataPlot with the specified parameters.
@@ -118,8 +123,11 @@ public class ZeoDataPlot extends DataPlot {
 		double bottomY = minDrawY;
 		double topY = y;
 
+		boolean highlighted = isHighlighted();
+
 		// Draw the Zeo plot with the specified color
-		surface.setGlobalAlpha(ZEO_ALPHA);
+		surface.setGlobalAlpha(highlighted
+			? HIGHLIGHTED_ALPHA : NORMAL_ALPHA);
 		surface.setFillStyle(color);
 
 		renderer.drawRect(leftX, topY,
@@ -131,7 +139,7 @@ public class ZeoDataPlot extends DataPlot {
 		surface.setFillStyle(Canvas.DEFAULT_COLOR);
 
 		double oldLineWidth = surface.getLineWidth();
-		surface.setLineWidth(isHighlighted()
+		surface.setLineWidth(highlighted
 			? HIGHLIGHT_STROKE_WIDTH : NORMAL_STROKE_WIDTH);
 
 		renderer.drawLineSegment(leftX, topY, rightX, topY);

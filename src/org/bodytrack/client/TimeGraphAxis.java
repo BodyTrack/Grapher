@@ -416,7 +416,7 @@ public class TimeGraphAxis extends GraphAxis {
 		canvas.getRenderer().stroke();
 
 		// Clean up after ourselves
-		canvas.getSurface().setStrokeStyle(DataPlot.BLACK);
+		canvas.getSurface().setStrokeStyle(Canvas.DEFAULT_COLOR);
 	}
 }
 
