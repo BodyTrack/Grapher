@@ -382,7 +382,7 @@ public class Grapher2 implements EntryPoint {
 	 * 		the supplied min_level, or -20 if no such value exists
 	 */
 	private native int getMinLevel() /*-{
-		var DEFAULT_VALUE = -20;
+		var DEFAULT_VALUE = -1000;
 		var KEY = "min_level";
 
 		if (! $wnd.initializeGrapher) {
