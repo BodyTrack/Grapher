@@ -21,10 +21,11 @@ import java.util.Set;
  *
  * <p>A class that wishes to inherit this class can override
  * {@link DataPlot#paintAllDataPoints()}, but the easiest way to modify
- * functionality it to override {@link DataPlot#paintDataPoint()}.
- * This function is responsible for painting a single point on this
- * DataPlot.  Highlighting, zooming, and the Ajax calls for pulling
- * extra data will be handled automatically by this class.</p>
+ * functionality it to override {@link DataPlot#paintDataPoint()} and
+ * {@link DataPlot#paintEdgePoint(double, double)}.  These two functions
+ * are responsible for painting a single point on this DataPlot.
+ * This (parent) class will automatically handle highlighting, zooming,
+ * and the Ajax calls for pulling extra data from the server.</p>
  *
  * <p>A classes that wishes to inherit this class may also wish to
  * override {@link DataPlot#getDataPoints(GrapherTile)}, which
@@ -372,10 +373,8 @@ public class DataPlot {
 				// Draw this part of the line
 				if (prevX > MIN_DRAWABLE_VALUE && prevY > MIN_DRAWABLE_VALUE)
 					paintDataPoint(prevX, prevY, x, y);
-
-				// TODO: beautify this code
-				canvas.getRenderer().drawCircle(x, y, 0.5 * (highlighted
-						? HIGHLIGHT_STROKE_WIDTH : NORMAL_STROKE_WIDTH));
+				else
+					paintEdgePoint(x, y);
 
 				prevX = x;
 				prevY = y;
@@ -383,6 +382,22 @@ public class DataPlot {
 
 			canvas.stroke();
 		}
+	}
+
+	/**
+	 * Paints a left edge point for a segment of the plot.
+	 *
+	 * This is only called for the left edge of a plot segment.  This
+	 * particular implementation draws a small dot.
+	 *
+	 * @param x
+	 * 		the X-coordinate of the point to draw
+	 * @param y
+	 * 		the Y-coordinate of the point to draw
+	 */
+	protected void paintEdgePoint(double x, double y) {
+		canvas.getRenderer().drawCircle(x, y,
+			canvas.getSurface().getLineWidth());
 	}
 
 	/**
