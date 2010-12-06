@@ -55,6 +55,7 @@ public class Grapher2 implements EntryPoint {
 
 		int userid = getUserId();
 		JsArrayString channels = getChannelNames();
+		int minLevel = getMinLevel();
 
 		for (int i = 0; i < channels.length(); i++) {
 			double initialMin = getInitialMin(channels.get(i));
@@ -68,7 +69,7 @@ public class Grapher2 implements EntryPoint {
 
 			DataPlot plot = new DataPlot(gw, time, value,
 				"/tiles/" + userid + "/" + channels.get(i) + "/",
-				-3, DATA_PLOT_COLORS[i % DATA_PLOT_COLORS.length]);
+				minLevel, DATA_PLOT_COLORS[i % DATA_PLOT_COLORS.length]);
 
 			gw.addDataPlot(plot);
 			plots.add(plot);
@@ -372,5 +373,28 @@ public class Grapher2 implements EntryPoint {
 		}
 
 		return data[KEY_1][channelName][KEY_2];
+	}-*/;
+
+	/**
+	 * Returns the supplied min_level variable from window.initializeGrapher.
+	 *
+	 * @return
+	 * 		the supplied min_level, or -20 if no such value exists
+	 */
+	private native int getMinLevel() /*-{
+		var DEFAULT_VALUE = -20;
+		var KEY = "min_level";
+
+		if (! $wnd.initializeGrapher) {
+			return DEFAULT_VALUE;
+		}
+
+		var data = $wnd.initializeGrapher();
+
+		if (! (data && data[KEY])) {
+			return DEFAULT_VALUE;
+		}
+
+		return data[KEY];
 	}-*/;
 }
