@@ -3,7 +3,6 @@ package org.bodytrack.client;
 import gwt.g2d.client.graphics.Color;
 import gwt.g2d.client.graphics.DirectShapeRenderer;
 import gwt.g2d.client.graphics.Surface;
-import gwt.g2d.client.graphics.canvas.CanvasElement;
 
 /**
  * Represents a data plot for Zeo data.
@@ -152,43 +151,6 @@ public class ZeoDataPlot extends DataPlot {
 		// defaults
 		surface.setLineWidth(oldLineWidth);
 	}
-
-	// Currently unused method that is also unimplemented
-	private String getCanvasId(CanvasElement canvas) {
-		return null;
-	}
-
-	/**
-	 * Draws a rectangle on the specified canvas, all without changing
-	 * the fill style of the canvas.
-	 *
-	 * @param canvasId
-	 * @param red
-	 * @param green
-	 * @param blue
-	 * @param alpha
-	 * @param xTop
-	 * @param yTop
-	 * @param width
-	 * @param height
-	 */
-	private native void drawRectangle(String canvasId, int red,
-			int green, int blue, double alpha, double xTop, double yTop,
-			double width, double height) /*-{
-		if (alpha < 0 || alpha > 1 || width <= 0 || height <= 0)
-			return;
-
-		var canvas = $doc.getElementById(canvasName);
-		var context = canvas.getContext('2d');
-
-		var oldFillStyle = context.fillStyle;
-
-		context.fillStyle = 'rgba(' + red + ', ' + green + ', '
-			+ blue + ', ' + alpha + ')';
-		context.fillRect(xTop, yTop, width, height);
-
-		context.fillStyle = oldFillStyle;
-	}-*/;
 
 	/**
 	 * Returns the color to use to draw the specified value for a Zeo plot.
