@@ -39,6 +39,11 @@ public class DataPlot {
 	protected static final int HIGHLIGHT_STROKE_WIDTH = 3;
 
 	/**
+	 * The radius to use when drawing a dot on the grapher.
+	 */
+	protected static final double DOT_RADIUS = 0.5;
+	
+	/**
 	 * The maximum size we allow currentData to be before we consider
 	 * pruning away unnecessary data.
 	 */
@@ -396,8 +401,7 @@ public class DataPlot {
 	 * 		the Y-coordinate of the point to draw
 	 */
 	protected void paintEdgePoint(double x, double y) {
-		canvas.getRenderer().drawCircle(x, y,
-			canvas.getSurface().getLineWidth());
+		canvas.getRenderer().drawCircle(x, y, DOT_RADIUS);
 	}
 
 	/**
