@@ -168,6 +168,22 @@ public final class GrapherTile extends JavaScriptObject {
 	}-*/;
 
 	/**
+	 * Returns the value of the optional sample_width parameter in a tile.
+	 *
+	 * Currently, this is a field only used by the Zeo data.
+	 *
+	 * @return
+	 * 		the value of the sample_width field for this tile, or -1 if
+	 * 		such a field is not present
+	 */
+	public native int getSampleWidth() /*-{
+		if (! this.sample_width)
+			return -1;
+
+		return this.sample_width;
+	}-*/;
+
+	/**
 	 * Returns the data points that should be graphed for this GrapherTile.
 	 * 
 	 * @return
