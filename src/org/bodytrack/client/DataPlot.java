@@ -46,7 +46,7 @@ public class DataPlot {
 
 	/**
 	 * Never render a point with value less than this - use anything
-	 * less as a sentinel.
+	 * less as a sentinel for &quot;data point not present&quot;.
 	 *
 	 * <p>This value is intended to be used by subclasses as a sentinel
 	 * value.</p>
@@ -331,7 +331,7 @@ public class DataPlot {
 	 */
 	protected void paintAllDataPoints() {
 		// TODO: improve the algorithm for getting the best resolution tile
-		// Current algorithm is O(n m), where n is the currentData.length()
+		// Current algorithm is O(n m), where n is currentData.length()
 		// and m is getBestResolutionTiles.length()
 		// Could use a cache for the best resolution tiles, but would
 		// have to be careful to drop the cache if we pan or zoom too much,
@@ -403,6 +403,11 @@ public class DataPlot {
 	/**
 	 * Returns the ordered list of points this DataPlot should draw
 	 * in {@link #paintAllDataPoints()}.
+	 *
+	 * It is acceptable, and not considered an error, if this or a subclass
+	 * implementation returns <tt>null</tt>.  Such a return should simply
+	 * be taken as a sign that the specified tile contains no data points
+	 * that paintAllDataPoints should draw.
 	 *
 	 * @param tile
 	 * 		the {@link org.bodytrack.client.GrapherTile GrapherTile}
@@ -769,11 +774,14 @@ public class DataPlot {
 	 * Returns the square of the distance from point to (time, value).
 	 *
 	 * @param point
+	 * 		the first of the two points
 	 * @param time
+	 * 		the time for the second point
 	 * @param value
+	 * 		the distance for the second point
 	 * @return
+	 * 		the square of the distance from point to (time, value)
 	 */
-	// TODO: FINISH DOCUMENTING
 	private double getDistanceSquared(PlottablePoint point,
 			double time, double value) {
 		double pointTime = point.getDate();
