@@ -1,14 +1,21 @@
 package org.bodytrack.client;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import gwt.g2d.client.graphics.Color;
 import gwt.g2d.client.graphics.DirectShapeRenderer;
 import gwt.g2d.client.graphics.Surface;
 
 /**
  * Represents a data plot for Zeo data.
+ *
+ * Overrides the getDataPoints, paintEdgePoint, and paintDataPoint methods
+ * of DataPlot, allowing this class to take advantage of the capabilities
+ * of DataPlot without much code.
+ *
+ * @see org.bodytrack.client.DataPlot DataPlot
  */
-// TODO: See if the implementation of paintDataPoint works properly, or if
-// more needs to be done (i.e. the native drawRectangle method)
 public class ZeoDataPlot extends DataPlot {
 	private static final Color WAKE_COLOR = new Color(0xFF, 0x45, 0x00);
 	private static final Color REM_COLOR = new Color(0x90, 0xEE, 0x90);
@@ -56,6 +63,76 @@ public class ZeoDataPlot extends DataPlot {
 		super(container, xAxis, yAxis, url, minLevel,
 			Canvas.DEFAULT_COLOR);
 	}
+
+	/**
+	 * Returns the ordered list of points this DataPlot should draw
+	 * in {@link DataPlot#paintAllDataPoints()}.
+	 *
+	 * This method processes all the points returned by
+	 * {@code tile.getDataPoints()}, so that all the points (except the
+	 * first in each group) represent top right corners of bars.  This
+	 * is necessary because the
+	 * {@link ZeoDataPlot#paintDataPoint(double, double, double, double)}
+	 * method uses the top right corner of a bar when drawing a point.
+	 *
+	 * @param tile
+	 * 		the {@link org.bodytrack.client.GrapherTile GrapherTile}
+	 * 		from which to pull the data points
+	 * @return
+	 * 		a list of
+	 * 		{@link org.bodytrack.client.PlottablePoint PlottablePoint}
+	 * 		objects to be drawn by paintAllDataPoints
+	 */
+	@Override
+	protected List<PlottablePoint> getDataPoints(GrapherTile tile) {
+		List<PlottablePoint> points = tile.getDataPoints();
+
+		List<PlottablePoint> transformedPoints =
+			new ArrayList<PlottablePoint>();
+
+		double width = tile.getSampleWidth();
+		if (width <= 0)
+			return null;
+
+		// An optimizing compiler should do this anyway, but we want
+		// to make sure we are safe
+		double halfWidth = width / 2.0;
+
+		PlottablePoint prev = null;
+
+		for (PlottablePoint point: points) {
+			double time = point.getDate();
+			double mean = point.getValue();
+
+			if (mean < MIN_DRAWABLE_VALUE) {
+				prev = null;
+				continue;
+			}
+
+			if (prev == null) {
+				// Left edge
+				// Add two points - the two edges for the first bar
+
+				transformedPoints.add(
+					new PlottablePoint(time - halfWidth, mean));
+				transformedPoints.add(
+					new PlottablePoint(time + halfWidth, mean));
+			} else {
+				// Not on the left edge
+				transformedPoints.add(
+					new PlottablePoint(time + halfWidth, mean));
+			}
+		}
+
+		return transformedPoints;
+	}
+
+	/**
+	 * Implemented here as a no-op, since we handle the edges properly
+	 * in paintDataPoint.
+	 */
+	@Override
+	protected void paintEdgePoint(double x, double y) {}
 
 	/**
 	 * Paints the specified data point as a translucent rectangle.
