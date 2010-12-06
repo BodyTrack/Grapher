@@ -760,6 +760,13 @@ public class DataPlot {
 			if (time >= minTime && time <= maxTime
 				&& val >= minValue && val <= maxValue) {
 
+				// If we don't have a value for closest, any point
+				// in the specified range is closer
+				if (closest == null) {
+					closest = point;
+					continue;
+				}
+
 				// Compute the square of the distance to pos
 				double distanceSq = getDistanceSquared(point,
 					centerTime, centerValue);
@@ -784,10 +791,14 @@ public class DataPlot {
 	 * @param value
 	 * 		the distance for the second point
 	 * @return
-	 * 		the square of the distance from point to (time, value)
+	 * 		the square of the distance from point to (time, value), or
+	 * 		{@link Double#MAX_VALUE} if point is <tt>null</tt>
 	 */
 	private double getDistanceSquared(PlottablePoint point,
 			double time, double value) {
+		if (point == null)
+			return Double.MAX_VALUE;
+
 		double pointTime = point.getDate();
 		double pointValue = point.getValue();
 
