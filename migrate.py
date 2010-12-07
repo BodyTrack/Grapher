@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 
+import os
 import os.path
 import subprocess
 import shutil
@@ -36,7 +37,7 @@ def copyWidgets():
             shutil.rmtree(dest)
 
         # 'git rm' the old version
-        olddir = pCall('pwd')
+        olddir = os.path.abspath(os.path.curdir)
         os.chdir(OUTPUT_DIRECTORY)
         pCall('git rm -rf %s' % value)
         os.chdir(olddir)
@@ -118,10 +119,12 @@ def pCall(cmd):
 
     output = process.communicate()
 
-    if output[0]:
-        print '%s\n' % output[0]
+    stdOutput = output[0]
 
-    return output[0]
+    if stdOutput:
+        print '%s\n' % stdOutput
+
+    return stdOutput
 
 if __name__ == '__main__':
     copyWidgets()
