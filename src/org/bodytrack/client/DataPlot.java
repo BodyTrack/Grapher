@@ -699,8 +699,9 @@ public class DataPlot {
 
 			double distClosestSq = getDistanceSquared(closest,
 				centerTime, centerValue);
-			double distClosestMaxTimeSq = getDistanceSquared(closest,
-				centerTime, centerValue);
+			double distClosestMaxTimeSq =
+				getDistanceSquared(closestMaxTime, centerTime,
+				centerValue);
 
 			if (distClosestMaxTimeSq < distClosestSq)
 				return closestMaxTime;
