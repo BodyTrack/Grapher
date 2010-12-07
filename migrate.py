@@ -19,7 +19,7 @@ def copyWidgets():
     '''
     shouldContinue = checkGit(WIDGETS_REPO_PATH) \
         and checkGit(WEBSITE_REPO_PATH)
-    
+
     commitTag = getCommitTag(WIDGETS_REPO_PATH)
 
     if not shouldContinue:
@@ -35,12 +35,18 @@ def copyWidgets():
         if os.path.exists(dest):
             shutil.rmtree(dest)
 
+        # 'git rm' the old version
+        olddir = pCall('pwd')
+        os.chdir(OUTPUT_DIRECTORY)
+        pCall('git rm -rf %s' % value)
+        os.chdir(olddir)
+
         # Now copy over current version
         shutil.copytree(src, dest)
 
     # Make a commit on the website repo
     os.chdir(OUTPUT_DIRECTORY)
-    
+
     for value in WIDGET_DIRECTORIES.itervalues():
         pCall('git add %s' % value)
 
@@ -62,8 +68,7 @@ def checkGit(path):
         print 'git output in repository %s:' % path
         print 'If we attempt to copy widgets without a fully committed ' \
               'repository, there is a chance of data loss'
-        for line in committed:
-            print line
+        print '\n'.join([line for line in committed])
         shouldContinue = raw_input(
             'Do you want to continue (y/n)? ').lower() == 'y'
 
@@ -76,10 +81,9 @@ def gitIsCommitted(path):
     gitProcess = subprocess.Popen('git status'.split(),
                                   stdout = subprocess.PIPE,
                                   cwd = path)
-    output = gitProcess.stdout
+    output = gitProcess.communicate()
 
-    linesList = list(output.readlines())
-    output.close()
+    linesList = output[0].split('\n')
 
     for line in linesList:
         if 'Changes to be committed' in line:
@@ -107,10 +111,17 @@ def getCommitTag(path):
 
 def pCall(cmd):
     '''
-    Calls cmd
+    Calls cmd and returns the standard output from cmd
     '''
     print cmd
-    subprocess.call(cmd, shell = True)
+    process = subprocess.Popen(cmd, shell = True)
+
+    output = process.communicate()
+
+    if output[0]:
+        print '%s\n' % output[0]
+
+    return output[0]
 
 if __name__ == '__main__':
     copyWidgets()
