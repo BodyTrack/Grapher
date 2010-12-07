@@ -103,19 +103,36 @@ public class GraphWidget extends Surface {
 	/**
 	 * Tells whether this application should use the Mac scroll wheel ratio.
 	 *
-	 * Checks the <tt>navigator.platform</tt> property in JavaScript to
+	 * <p>Checks the <tt>navigator.platform</tt> property in JavaScript to
 	 * determine if this code is on a Mac or not, and returns <tt>true</tt>
 	 * iff the best guess is Mac.  If this property cannot be read, returns
-	 * <tt>false</tt>.
+	 * <tt>false</tt>.</p>
+	 *
+	 * <p>However, there is a twist: Google Chrome seems to zoom
+	 * Windows-style, regardless of platform.  Thus, this checks for
+	 * Google Chrome, and returns <tt>false</tt>, regardless of platform,
+	 * if the browser appears to be Google Chrome.</p>
 	 *
 	 * @return
-	 * 		<tt>true</tt> if and only if the <tt>navigator.platform</tt>
-	 * 		property contains the string &quot;Mac&quot;
+	 * 		<tt>true</tt> if and only if the grapher should zoom
+	 * 		Mac-style
 	 */
 	private native boolean shouldZoomMac() /*-{
 		// Don't do anything unless navigator.platform is available
 		if (! $wnd.navigator && $wnd.navigator.platform)
 			return false;
+
+		// Chrome seems to zoom Windows-style, regardless of platform
+		if ($wnd.navigator.userAgent) {
+			// Chrome seems to have a userAgent value with WebKit and
+			// Chrome as substrings (we have to be careful, since Safari
+			// is also based on WebKit)
+
+			var platform = $wnd.navigator.platform;
+
+			return platform.indexOf("Chrome") > 0
+				&& platform.indexOf("WebKit") > 0;
+		}
 
 		return $wnd.navigator.platform.toString().match(/.*mac/i);
 	}-*/;
