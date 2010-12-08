@@ -108,10 +108,10 @@ public class GraphWidget extends Surface {
 	 * iff the best guess is Mac.  If this property cannot be read, returns
 	 * <tt>false</tt>.</p>
 	 *
-	 * <p>However, there is a twist: Google Chrome seems to zoom
+	 * <p>However, there is a twist: Google Chrome and Firefox seem to zoom
 	 * Windows-style, regardless of platform.  Thus, this checks for
-	 * Google Chrome, and returns <tt>false</tt>, regardless of platform,
-	 * if the browser appears to be Google Chrome.</p>
+	 * Safari, and only returns <tt>true</tt> if the browser appears to be
+	 * Safari on the Mac.</p>
 	 *
 	 * @return
 	 * 		<tt>true</tt> if and only if the grapher should zoom
@@ -122,22 +122,20 @@ public class GraphWidget extends Surface {
 		if (! $wnd.navigator && $wnd.navigator.platform)
 			return false;
 
-		var isChrome = false;
+		var isSafari = false;
 
-		// Chrome seems to zoom Windows-style, regardless of platform
-		if ($wnd.navigator.userAgent) {
-			// Chrome seems to have a userAgent value with WebKit and
-			// Chrome as substrings (we have to be careful, since Safari
-			// is also based on WebKit)
+		// Safari zooms Mac-style, but Chrome and Firefox zoom
+		// Windows-style on the Mac
+		if ($wnd.navigator.vendor) {
+			// Chrome has vendor "Google Inc.", Safari has vendor
+			// "Apple Computer Inc.", and Firefox 3.5 appears
+			// to have no navigator.vendor
 
-			var agent = $wnd.navigator.userAgent;
-
-			isChrome = agent.indexOf("Chrome") >= 0
-				&& agent.indexOf("WebKit") >= 0;
+			isSafari =
+				$wnd.navigator.vendor.indexOf("Apple Computer") >= 0;
 		}
 
-		return $wnd.navigator.platform.toString().match(/.*mac/i)
-			&& (! isChrome);
+		return isSafari && $wnd.navigator.platform.match(/.*mac/i);
 	}-*/;
 
 	GraphAxis findAxis(Vector2 pos) {
