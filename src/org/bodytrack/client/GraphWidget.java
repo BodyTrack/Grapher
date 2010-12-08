@@ -122,19 +122,22 @@ public class GraphWidget extends Surface {
 		if (! $wnd.navigator && $wnd.navigator.platform)
 			return false;
 
+		var isChrome = false;
+
 		// Chrome seems to zoom Windows-style, regardless of platform
 		if ($wnd.navigator.userAgent) {
 			// Chrome seems to have a userAgent value with WebKit and
 			// Chrome as substrings (we have to be careful, since Safari
 			// is also based on WebKit)
 
-			var platform = $wnd.navigator.platform;
+			var agent = $wnd.navigator.userAgent;
 
-			return platform.indexOf("Chrome") > 0
-				&& platform.indexOf("WebKit") > 0;
+			isChrome = agent.indexOf("Chrome") >= 0
+				&& agent.indexOf("WebKit") >= 0;
 		}
 
-		return $wnd.navigator.platform.toString().match(/.*mac/i);
+		return $wnd.navigator.platform.toString().match(/.*mac/i)
+			&& (! isChrome);
 	}-*/;
 
 	GraphAxis findAxis(Vector2 pos) {
