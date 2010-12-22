@@ -301,7 +301,7 @@ public class DataPlot {
 	public void paint() {
 		// If we have received data from the server
 		if (pendingData.size() > 0) {
-			// Pull all the data out of the tile
+			// Pull all the data out of pendingData
 			for (GrapherTile tile: pendingData) {
 				if (tile == null)
 					continue;
@@ -337,7 +337,7 @@ public class DataPlot {
 	protected void paintAllDataPoints() {
 		// TODO: improve the algorithm for getting the best resolution tile
 		// Current algorithm is O(n m), where n is currentData.length()
-		// and m is getBestResolutionTiles.length()
+		// and m is getBestResolutionTiles().length()
 		// Could use a cache for the best resolution tiles, but would
 		// have to be careful to drop the cache if we pan or zoom too much,
 		// and definitely if we pull in more data
@@ -662,11 +662,6 @@ public class DataPlot {
 
 		double x = pos.getX();
 		double y = pos.getY();
-
-		// Don't highlight anything if mouse is out of range
-		if (x < xAxis.getMin() || x > xAxis.getMax()
-				|| y < yAxis.getMin() || y > yAxis.getMax())
-			return null;
 
 		// Build a square for checking location
 		Vector2 topLeft = new Vector2(x - threshold, y - threshold);
