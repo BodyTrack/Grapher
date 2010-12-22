@@ -119,7 +119,7 @@ public class GraphWidget extends Surface {
 	 */
 	private native boolean shouldZoomMac() /*-{
 		// Don't do anything unless navigator.platform is available
-		if (! $wnd.navigator && $wnd.navigator.platform)
+		if (! ($wnd.navigator && $wnd.navigator.platform))
 			return false;
 
 		var isSafari = false;
