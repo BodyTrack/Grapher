@@ -663,6 +663,11 @@ public class DataPlot {
 		double x = pos.getX();
 		double y = pos.getY();
 
+		// Don't highlight anything if mouse is out of range
+		if (x < xAxis.getMin() || x > xAxis.getMax()
+				|| y < yAxis.getMin() || y > yAxis.getMax())
+			return null;
+
 		// Build a square for checking location
 		Vector2 topLeft = new Vector2(x - threshold, y - threshold);
 		Vector2 bottomRight = new Vector2(x + threshold, y + threshold);
@@ -754,6 +759,8 @@ public class DataPlot {
 
 			// Only check for proximity to points we can see
 			if (time < xAxis.getMin() || time > xAxis.getMax())
+				continue;
+			if (val < yAxis.getMin() || val > yAxis.getMax())
 				continue;
 
 			// Only check for proximity to points within the desired
