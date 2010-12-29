@@ -57,6 +57,10 @@ public class Grapher2 implements EntryPoint {
 		JsArrayString channels = getChannelNames();
 		int minLevel = getMinLevel();
 
+		// This is used to ensure the plots are added in the
+		// right order (Zeo first, default type last)
+		List<DataPlot> temporaryPlots = new ArrayList<DataPlot>();
+
 		for (int i = 0; i < channels.length(); i++) {
 			double initialMin = getInitialMin(channels.get(i));
 			double initialMax = getInitialMax(channels.get(i));
@@ -67,10 +71,28 @@ public class Grapher2 implements EntryPoint {
 					Basis.xRightYUp,
 					axisMargin * 3);				// width, in pixels
 
-			DataPlot plot = new DataPlot(gw, time, value,
-				"/tiles/" + userid + "/" + channels.get(i) + "/",
-				minLevel, DATA_PLOT_COLORS[i % DATA_PLOT_COLORS.length]);
+			DataPlot plot;
 
+			if ("zeo".equals(getChartType(channels.get(i)))) {
+				plot = new DataPlot(gw, time, value,
+						"/tiles/" + userid + "/"
+						+ channels.get(i) + "/",
+						minLevel,
+						DATA_PLOT_COLORS[i % DATA_PLOT_COLORS.length]);
+				temporaryPlots.add(plot);
+			}
+			else {
+				plot = new ZeoDataPlot(gw, time, value,
+						"/tiles/" + userid + "/"
+						+ channels.get(i) + "/",
+						minLevel);
+				temporaryPlots.add(0, plot);
+			}
+		}
+
+		// Now actually add the plots to the GraphWidget and to
+		// our global list of visible plots
+		for (DataPlot plot: temporaryPlots) {
 			gw.addDataPlot(plot);
 			plots.add(plot);
 		}
@@ -361,6 +383,38 @@ public class Grapher2 implements EntryPoint {
 		var DEFAULT_VALUE = -1e308;
 		var KEY_1 = "channel_specs";
 		var KEY_2 = "max_val";
+
+		if (! $wnd.initializeGrapher) {
+			return DEFAULT_VALUE;
+		}
+
+		var data = $wnd.initializeGrapher();
+
+		if (! (data && data[KEY_1] && data[KEY_1][channelName])) {
+			return DEFAULT_VALUE;
+		}
+
+		return data[KEY_1][channelName][KEY_2];
+	}-*/;
+
+	/**
+	 * Returns the chart type that should be used when the channel
+	 * channelName is showing.
+	 *
+	 * Uses the channel_specs field in the return value of
+	 * window.initializeGrapher() if possible, and returns
+	 * &quot;default&quot; otherwise (also returns &quot;default&quot;
+	 * if there is no type field in the channel_specs field for the
+	 * specified channel.
+	 *
+	 * @return
+	 * 		the Y-value to show as the initial maximum of the
+	 * 		plot for the data
+	 */
+	private native double getChartType(String channelName) /*-{
+		var DEFAULT_VALUE = "default";
+		var KEY_1 = "channel_specs";
+		var KEY_2 = "type";
 
 		if (! $wnd.initializeGrapher) {
 			return DEFAULT_VALUE;
