@@ -12,8 +12,6 @@ import gwt.g2d.client.math.Vector2;
 
 import com.google.gwt.i18n.client.NumberFormat;
 
-//import java.util.Date;
-// TODO: implement date
 public class GraphAxis {
 	public double majorTickMinSpacingPixels = 50;
 	public double majorTickWidthPixels = 8;
@@ -386,7 +384,7 @@ public class GraphAxis {
 			tickGen = new TickGenerator(tickSize, 0);
 
 		double labelOffsetPixels = setupText(surface, JUSTIFY_MED)
-		+ offsetPixels;
+			+ offsetPixels;
 
 		double tick = tickGen.nextTick(this.min);
 
