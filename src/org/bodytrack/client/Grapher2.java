@@ -46,10 +46,11 @@ public class Grapher2 implements EntryPoint {
 			getGrapherHeight(), axisMargin);
 
 		GraphAxis time = new TimeGraphAxis(
-				getInitialStartTime(),
-				getInitialEndTime(),
-				Basis.xDownYRight,
-				axisMargin * 7);				// width, in pixels
+			getInitialStartTime(),
+			getInitialEndTime(),
+			Basis.xDownYRight,
+			axisMargin * 7,
+			true);
 
 		plots = new ArrayList<DataPlot>();
 
@@ -66,10 +67,11 @@ public class Grapher2 implements EntryPoint {
 			double initialMax = getInitialMax(channels.get(i));
 
 			GraphAxis value = new GraphAxis(
-					initialMin > -1e100 ? initialMin : -1,
-					initialMax > -1e100 ? initialMax : 1,
-					Basis.xRightYUp,
-					axisMargin * 3);				// width, in pixels
+				initialMin > -1e100 ? initialMin : -1,
+				initialMax > -1e100 ? initialMax : 1,
+				Basis.xRightYUp,
+				axisMargin * 3,
+				true);
 
 			DataPlot plot;
 

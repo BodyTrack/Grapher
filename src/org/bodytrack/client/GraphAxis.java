@@ -37,6 +37,8 @@ public class GraphAxis {
 	private double scale;
 	private BBox bounds;
 
+	private boolean isXAxis;
+
 	// For determining whether to highlight this GraphAxis
 	private boolean highlighted;
 	protected static final Color NORMAL_COLOR = Canvas.DARK_GRAY;
@@ -46,11 +48,27 @@ public class GraphAxis {
 	final static int JUSTIFY_MED = 1;
 	final static int JUSTIFY_MAX = 2;
 
-	GraphAxis(double min, double max, Basis basis, double width) {
+	/**
+	 * Same as the other constructor, but attempts to guess whether this
+	 * is an X-axis by examining basis.
+	 *
+	 * @param min
+	 * @param max
+	 * @param basis
+	 * @param width
+	 */
+	public GraphAxis(double min, double max, Basis basis, double width) {
+		this(min, max, basis, width, Basis.xDownYRight.equals(basis));
+	}
+
+	public GraphAxis(double min, double max, Basis basis, double width,
+			boolean isXAxis) {
 		this.min = min;
 		this.max = max;
 		this.basis = basis;
 		this.width = width;
+		this.isXAxis = isXAxis;
+
 		highlighted = false;
 	}
 
@@ -513,6 +531,8 @@ public class GraphAxis {
 		this.max = about + factor * (this.max - about);
 		clampToRange();
 		rescale();
+
+		publishBounds();
 	}
 
 	public void drag(Vector2 from, Vector2 to) {
@@ -520,5 +540,23 @@ public class GraphAxis {
 		uncheckedTranslate(motion);
 		clampToRange();
 		rescale();
+
+		publishBounds();
+	}
+
+	/**
+	 * Uses an InfoPublisher to publish the min and max values to
+	 * the rest of the webpage.
+	 *
+	 * <p> Note that this method is intended to be used by
+	 * subclasses.</p>
+	 */
+	protected void publishBounds() {
+		InfoPublisher pub = InfoPublisher.getInstance();
+
+		if (isXAxis)
+			pub.publishXAxisBounds(min, max);
+		else
+			pub.publishYAxisBounds(min, max);
 	}
 }
