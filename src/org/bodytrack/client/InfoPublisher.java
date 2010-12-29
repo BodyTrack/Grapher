@@ -36,8 +36,8 @@ public class InfoPublisher {
 	 */
 	private native void initialize() /*-{
 		window.grapherState = {};
-		window.grapherState.xAxis = {};
-		window.grapherState.yAxis = {};
+		window.grapherState['x_axis'] = {};
+		window.grapherState['y_axis'] = {};
 	}-*/;
 
 	/**
@@ -59,8 +59,8 @@ public class InfoPublisher {
 	 * 		the current max value for the X-axis
 	 */
 	public native void publishXAxisBounds(double min, double max) /*-{
-		window.grapherState.xAxis.min = min;
-		window.grapherState.xAxis.max = max;
+		window.grapherState['x_axis']['min'] = min;
+		window.grapherState['x_axis']['max'] = max;
 	}-*/;
 
 	/**
@@ -72,7 +72,7 @@ public class InfoPublisher {
 	 * 		the current max value for the Y-axis
 	 */
 	public native void publishYAxisBounds(double min, double max) /*-{
-		window.grapherState.yAxis.min = min;
-		window.grapherState.yAxis.max = max;
+		window.grapherState['y_axis']['min'] = min;
+		window.grapherState['y_axis']['max'] = max;
 	}-*/;
 }
