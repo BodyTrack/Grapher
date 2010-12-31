@@ -13,9 +13,6 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
- *
- * This is currently a "Hello World" with a sine wave drawn on a
- * set of axes.
  */
 public class Grapher2 implements EntryPoint {
 	private VerticalPanel mainLayout;
@@ -76,18 +73,18 @@ public class Grapher2 implements EntryPoint {
 			DataPlot plot;
 
 			if ("zeo".equals(getChartType(channels.get(i)))) {
+				plot = new ZeoDataPlot(gw, time, value,
+						"/tiles/" + userid + "/"
+						+ channels.get(i) + "/",
+						minLevel);
+				temporaryPlots.add(plot);
+			}
+			else {
 				plot = new DataPlot(gw, time, value,
 						"/tiles/" + userid + "/"
 						+ channels.get(i) + "/",
 						minLevel,
 						DATA_PLOT_COLORS[i % DATA_PLOT_COLORS.length]);
-				temporaryPlots.add(plot);
-			}
-			else {
-				plot = new ZeoDataPlot(gw, time, value,
-						"/tiles/" + userid + "/"
-						+ channels.get(i) + "/",
-						minLevel);
 				temporaryPlots.add(0, plot);
 			}
 		}
