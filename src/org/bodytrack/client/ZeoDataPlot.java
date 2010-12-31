@@ -81,7 +81,9 @@ public class ZeoDataPlot extends DataPlot {
 	 * @return
 	 * 		a list of
 	 * 		{@link org.bodytrack.client.PlottablePoint PlottablePoint}
-	 * 		objects to be drawn by paintAllDataPoints
+	 * 		objects to be drawn by paintAllDataPoints, which may be
+	 * 		empty (this will be the case if no sample width is available
+	 * 		for tile)
 	 */
 	@Override
 	protected List<PlottablePoint> getDataPoints(GrapherTile tile) {
@@ -92,7 +94,7 @@ public class ZeoDataPlot extends DataPlot {
 
 		double width = tile.getSampleWidth();
 		if (width <= 0)
-			return null;
+			return new ArrayList<PlottablePoint>();
 
 		// An optimizing compiler should do this anyway, but we want
 		// to make sure we are safe
@@ -183,19 +185,14 @@ public class ZeoDataPlot extends DataPlot {
 		// draw on the rectangle
 		double minDrawY = yAxis.project2D(minDrawUnits).getY();
 
-		/*
-		// We will resort to this if need be
-		drawRectangle(getCanvasId(canvas.getSurface().getCanvas()),
-			color.getR(), color.getG(), color.getB(), ZEO_ALPHA,
-			prevX, y, x - prevX, y - minDrawY);
-		*/
-
 		// Define variables for the corners, making variable names
 		// explicit so the code is clear
 		// GWT will optimize away these variables, so there will be
 		// no performance issues from these
-		double leftX = prevX;
-		double rightX = x;
+		// Also, this allows us to ensure the bounds on the X-axis are
+		// correct
+		double leftX = Math.max(prevX, getXAxis().getMin());
+		double rightX = Math.min(x, getXAxis().getMax());
 		double bottomY = minDrawY;
 		double topY = y;
 
