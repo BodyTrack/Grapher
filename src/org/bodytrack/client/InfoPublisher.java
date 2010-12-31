@@ -35,9 +35,9 @@ public class InfoPublisher {
 	 * window.grapherState global variable.
 	 */
 	private native void initialize() /*-{
-		window.grapherState = {};
-		window.grapherState['x_axis'] = {};
-		window.grapherState['y_axis'] = {};
+		$wnd.grapherState = {};
+		$wnd.grapherState['x_axis'] = {};
+		$wnd.grapherState['y_axis'] = {};
 	}-*/;
 
 	/**
@@ -59,8 +59,8 @@ public class InfoPublisher {
 	 * 		the current max value for the X-axis
 	 */
 	public native void publishXAxisBounds(double min, double max) /*-{
-		window.grapherState['x_axis']['min'] = min;
-		window.grapherState['x_axis']['max'] = max;
+		$wnd.grapherState['x_axis']['min'] = min;
+		$wnd.grapherState['x_axis']['max'] = max;
 	}-*/;
 
 	/**
@@ -72,7 +72,7 @@ public class InfoPublisher {
 	 * 		the current max value for the Y-axis
 	 */
 	public native void publishYAxisBounds(double min, double max) /*-{
-		window.grapherState['y_axis']['min'] = min;
-		window.grapherState['y_axis']['max'] = max;
+		$wnd.grapherState['y_axis']['min'] = min;
+		$wnd.grapherState['y_axis']['max'] = max;
 	}-*/;
 }
