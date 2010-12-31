@@ -3,12 +3,12 @@ package org.bodytrack.client;
 /**
  * A class that describes a tile, whether arrived or in transit.
  *
- * Encapsulates a (level, offset) pair.  Note that objects of this
+ * <p>Encapsulates a (level, offset) pair.  Note that objects of this
  * class are immutable, at least in Java.  In JavaScript, it is
  * certainly possible for an attacker to modify objects of this
- * class, if that attacker can introduce cross-site scripting.
+ * class, if that attacker can introduce cross-site scripting.</p>
  */
-public class TileDescription {
+public final class TileDescription {
 	private int level;
 	private int offset;
 

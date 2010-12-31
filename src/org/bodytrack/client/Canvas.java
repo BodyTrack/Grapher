@@ -22,7 +22,7 @@ import gwt.g2d.client.graphics.Surface;
  * <p>This class is instance-controlled for efficiency: under this
  * system, only one DirectShapeRenderer is created per Surface.</p>
  */
-public class Canvas {
+public final class Canvas {
 	/*
 	 * All the following colors should have exactly the same values as
 	 * their CSS counterparts by the same (lowercase) name.
@@ -79,9 +79,7 @@ public class Canvas {
 			return instances.get(s);
 
 		Canvas result = new Canvas();
-
 		result.surface = s;
-
 		result.renderer = new DirectShapeRenderer(result.surface);
 
 		return result;
@@ -111,6 +109,7 @@ public class Canvas {
 	// --------------------------------------------------------------
 	// Copies of Surface methods
 	// --------------------------------------------------------------
+	// None here yet!
 
 	// --------------------------------------------------------------
 	// Copies of DirectShapeRenderer methods

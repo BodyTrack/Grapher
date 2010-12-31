@@ -529,7 +529,6 @@ public class GraphAxis {
 		this.max = about + factor * (this.max - about);
 		clampToRange();
 		rescale();
-
 		publishBounds();
 	}
 
@@ -538,7 +537,6 @@ public class GraphAxis {
 		uncheckedTranslate(motion);
 		clampToRange();
 		rescale();
-
 		publishBounds();
 	}
 

@@ -21,7 +21,7 @@ package org.bodytrack.client;
  * no harm in guarantees that only hold for a single-threaded
  * program.</p>
  */
-public class InfoPublisher {
+public final class InfoPublisher {
 	private static final InfoPublisher INSTANCE = new InfoPublisher();
 
 	// Don't make constructors for this class available to the

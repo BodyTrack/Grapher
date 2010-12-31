@@ -3,13 +3,13 @@ package org.bodytrack.client;
 /**
  * A class holding a date and value, which makes the value easy to graph.
  * 
- * The date is stored as a <tt>double</tt>, and the value is stored as a
+ * <p>The date is stored as a <tt>double</tt>, and the value is stored as a
  * <tt>double</tt>.  Once created, objects of this class are designed to
  * be immutable, although in JavaScript all objects are mutable, and are
  * subject to change if an attacker can exploit a cross-site scripting
- * vulnerability.
+ * vulnerability.</p>
  */
-public class PlottablePoint {
+public final class PlottablePoint {
 	private double myDate;
 	private double myValue;
 	
