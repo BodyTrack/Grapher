@@ -21,10 +21,10 @@ import gwt.g2d.client.math.Vector2;
  */
 public final class BoundedDrawingBox {
 	private Canvas canvas;
-	private double minX;
-	private double minY;
-	private double maxX;
-	private double maxY;
+	private double xMin;
+	private double yMin;
+	private double xMax;
+	private double yMax;
 
 	/**
 	 * Creates a new BoundedDrawingBox.
@@ -55,10 +55,10 @@ public final class BoundedDrawingBox {
 				"Illegal bounds: min value greater than max");
 
 		this.canvas = canvas;
-		this.minX = minX;
-		this.minY = minY;
-		this.maxX = maxX;
-		this.maxY = maxY;
+		this.xMin = minX;
+		this.yMin = minY;
+		this.xMax = maxX;
+		this.yMax = maxY;
 	}
 
 	/**
@@ -166,7 +166,7 @@ public final class BoundedDrawingBox {
 
 		if (x1 == x2) {
 			// Vertical line
-			getCanvas().getRenderer().drawLineSegment(x1, minY, x1, maxY);
+			getCanvas().getRenderer().drawLineSegment(x1, yMin, x1, yMax);
 			return;
 		}
 
@@ -175,7 +175,7 @@ public final class BoundedDrawingBox {
 		if (slope == 0) {
 			// Optimization: don't do anything extra if the slope is 0
 
-			getCanvas().getRenderer().drawLineSegment(minX, y1, maxX, y2);
+			getCanvas().getRenderer().drawLineSegment(xMin, y1, xMax, y2);
 			return;
 		}
 
@@ -196,22 +196,22 @@ public final class BoundedDrawingBox {
 		Vector2 topIntercept = getIntersect(
 			new Vector2(x1, y1),
 			slope,
-			new Vector2(0.0, maxY),
+			new Vector2(0.0, yMax),
 			0.0);
 		Vector2 rightIntercept = getIntersect(
 			new Vector2(x1, y1),
 			slope,
-			new Vector2(maxX, 0.0),
+			new Vector2(xMax, 0.0),
 			Double.POSITIVE_INFINITY);
 		Vector2 bottomIntercept = getIntersect(
 			new Vector2(x1, y1),
 			slope,
-			new Vector2(0.0, minY),
+			new Vector2(0.0, yMin),
 			0.0);
 		Vector2 leftIntercept = getIntersect(
 			new Vector2(x1, y1),
 			slope,
-			new Vector2(minX, 0.0),
+			new Vector2(xMin, 0.0),
 			Double.POSITIVE_INFINITY);
 
 		Vector2 in, out;
@@ -269,10 +269,10 @@ public final class BoundedDrawingBox {
 			// Vertical line: we know x2 is safe because x1 is
 			// safe, so we just set y2
 
-			if (y2 < minY)
-				y2 = minY;
+			if (y2 < yMin)
+				y2 = yMin;
 			else
-				y2 = maxY;
+				y2 = yMax;
 		} else {
 			// Non-vertical line: we can calculate slope in this case
 
@@ -281,10 +281,10 @@ public final class BoundedDrawingBox {
 			if (slope == 0) {
 				// Horizontal line: y2 is safe, so just set x2
 
-				if (x2 < minX)
-					x2 = minX;
+				if (x2 < xMin)
+					x2 = xMin;
 				else
-					x2 = maxX;
+					x2 = xMax;
 			} else if (slope > 0) {
 				// Upward-sloping line: we know (x2, y2) must be
 				// separated from (x1, y1) by either the right or
@@ -295,13 +295,13 @@ public final class BoundedDrawingBox {
 				Vector2 rightIntercept = getIntersect(
 					new Vector2(x1, y1),
 					slope,
-					new Vector2(maxX, 0.0),
+					new Vector2(xMax, 0.0),
 					Double.POSITIVE_INFINITY);
 
 				Vector2 topIntercept = getIntersect(
 					new Vector2(x1, y1),
 					slope,
-					new Vector2(0.0, maxY),
+					new Vector2(0.0, yMax),
 					0.0);
 
 				if (inBounds(rightIntercept)) {
@@ -323,13 +323,13 @@ public final class BoundedDrawingBox {
 				Vector2 leftIntercept = getIntersect(
 					new Vector2(x1, y1),
 					slope,
-					new Vector2(minX, 0.0),
+					new Vector2(xMin, 0.0),
 					Double.POSITIVE_INFINITY);
 
 				Vector2 bottomIntercept = getIntersect(
 					new Vector2(x1, y1),
 					slope,
-					new Vector2(0.0, minY),
+					new Vector2(0.0, yMin),
 					0.0);
 
 				if (inBounds(leftIntercept)) {
@@ -422,7 +422,7 @@ public final class BoundedDrawingBox {
 	 * 		<tt>true</tt> if and only if (x, y) is in bounds
 	 */
 	private boolean inBounds(double x, double y) {
-		return x >= minX && x <= maxX && y >= minY && y <= maxY;
+		return x >= xMin && x <= xMax && y >= yMin && y <= yMax;
 	}
 
 	/**
