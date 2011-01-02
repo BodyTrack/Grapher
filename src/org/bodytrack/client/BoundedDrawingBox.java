@@ -26,6 +26,9 @@ public final class BoundedDrawingBox {
 	private double xMax;
 	private double yMax;
 
+	// General tolerance for double equality
+	private static final Double TOLERANCE = 1e-6;
+
 	/**
 	 * Creates a new BoundedDrawingBox.
 	 *
@@ -265,21 +268,26 @@ public final class BoundedDrawingBox {
 				"Invalid endpoints: this is designed to calculate "
 				+ "an endpoint with the first point in bounds");
 
-		if (x1 == x2) {
+		double slope = (y2 - y1) / (x2 - x1);
+
+		if (doubleEquals(x1, x2) || Double.isInfinite(slope)) {
 			// Vertical line: we know x2 is safe because x1 is
 			// safe, so we just set y2
+			// The second part of this clause tests for overflow, even if
+			// x1 and x2 are not quite equal
+
+			x2 = x1;
 
 			if (y2 < yMin)
 				y2 = yMin;
 			else
 				y2 = yMax;
 		} else {
-			// Non-vertical line: we can calculate slope in this case
+			// Non-vertical line: we can use slope in this case
 
-			double slope = (y2 - y1) / (x2 - x1);
-
-			if (slope == 0) {
+			if (doubleEquals(slope, 0.0)) {
 				// Horizontal line: y2 is safe, so just set x2
+				y2 = y1;
 
 				if (x2 < xMin)
 					x2 = xMin;
@@ -436,5 +444,28 @@ public final class BoundedDrawingBox {
 	 */
 	private boolean inBounds(Vector2 point) {
 		return inBounds(point.getX(), point.getY());
+	}
+
+	/**
+	 * Tells if a and b are equal, within TOLERANCE.
+	 *
+	 * <p>Note that this does not really define an equality
+	 * relationship, since it is not transitive.  It is possible
+	 * to define doubles a, b, and c such that
+	 * {@code doubleEquals(a, b)} and {@code doubleEquals(b, c)} are
+	 * both true, but {@code doubleEquals(a, c)} is false.  Thus,
+	 * this method should be used with care.</p>
+	 *
+	 * @param a
+	 * 		some double value to be compared
+	 * @param b
+	 * 		some other double value to be compared
+	 * @return
+	 * 		<tt>true</tt> if and only if a and b are within
+	 * 		TOLERANCE of each other
+	 * @see #TOLERANCE
+	 */
+	private static boolean doubleEquals(double a, double b) {
+		return Math.abs(a - b) < TOLERANCE;
 	}
 }
