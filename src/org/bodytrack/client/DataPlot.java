@@ -22,7 +22,7 @@ import java.util.Set;
  * <p>A class that wishes to inherit this class can override
  * {@link DataPlot#paintAllDataPoints()}, but the easiest way to modify
  * functionality it to override {@link DataPlot#paintDataPoint()} and
- * {@link DataPlot#paintEdgePoint(double, double)}.  These two functions
+ * {@link DataPlot#paintEdgePoint(BoundedDrawingBox, double, double)}.  These two functions
  * are responsible for painting a single point on this DataPlot.
  * This (parent) class will automatically handle highlighting, zooming,
  * and the Ajax calls for pulling extra data from the server.</p>
@@ -390,9 +390,9 @@ public class DataPlot {
 
 				// Draw this part of the line
 				if (prevX > MIN_DRAWABLE_VALUE && prevY > MIN_DRAWABLE_VALUE)
-					paintDataPoint(prevX, prevY, x, y);
+					paintDataPoint(drawing, prevX, prevY, x, y);
 				else
-					paintEdgePoint(x, y);
+					paintEdgePoint(drawing, x, y);
 
 				prevX = x;
 				prevY = y;
@@ -400,21 +400,6 @@ public class DataPlot {
 
 			canvas.stroke();
 		}
-	}
-
-	/**
-	 * Paints a left edge point for a segment of the plot.
-	 *
-	 * This is only called for the left edge of a plot segment.  This
-	 * particular implementation draws a small dot.
-	 *
-	 * @param x
-	 * 		the X-coordinate of the point to draw
-	 * @param y
-	 * 		the Y-coordinate of the point to draw
-	 */
-	protected void paintEdgePoint(double x, double y) {
-		canvas.getRenderer().drawCircle(x, y, DOT_RADIUS);
 	}
 
 	/**
@@ -439,11 +424,39 @@ public class DataPlot {
 	}
 
 	/**
+	 * Paints a left edge point for a segment of the plot.
+	 *
+	 * This is only called for the left edge of a plot segment.  This
+	 * particular implementation draws a small dot.
+	 *
+	 * @param drawing
+	 * 		the
+	 * 		{@link org.bodytrack.client.BoundedDrawingBox BoundedDrawingBox}
+	 * 		that should constrain the drawing.  Forwarding graphics calls
+	 * 		through drawing will ensure that everything draws up to the edge
+	 * 		but no farther.
+	 * @param x
+	 * 		the X-coordinate of the point to draw
+	 * @param y
+	 * 		the Y-coordinate of the point to draw
+	 */
+	protected void paintEdgePoint(BoundedDrawingBox drawing, double x,
+			double y) {
+		drawing.drawDot(x, y, DOT_RADIUS);
+	}
+
+	/**
 	 * Draws a single data point on the graph.
 	 *
 	 * Note that this method has as preconditions that
 	 * {@code prevX < x} and that {@code prevY < y}.
 	 *
+	 * @param drawing
+	 * 		the
+	 * 		{@link org.bodytrack.client.BoundedDrawingBox BoundedDrawingBox}
+	 * 		that should constrain the drawing.  Forwarding graphics calls
+	 * 		through drawing will ensure that everything draws up to the edge
+	 * 		but no farther.
 	 * @param prevX
 	 * 		the previous X-value, which will be greater than
 	 * 		MIN_DRAWABLE_VALUE
@@ -456,11 +469,12 @@ public class DataPlot {
 	 * @param y
 	 * 		the current Y-value, which will be greater than
 	 * 		MIN_DRAWABLE_VALUE
+	 *
 	 * @see #MIN_DRAWABLE_VALUE
 	 */
-	protected void paintDataPoint(double prevX, double prevY,
-			double x, double y) {
-		canvas.getRenderer().drawLineSegment(prevX, prevY, x, y);
+	protected void paintDataPoint(BoundedDrawingBox drawing, double prevX,
+			double prevY, double x, double y) {
+		drawing.drawLineSegment(prevX, prevY, x, y);
 	}
 
 	/**
