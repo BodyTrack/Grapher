@@ -376,15 +376,6 @@ public class DataPlot {
 					continue;
 				}
 
-				// Don't draw points too high or low to be rendered
-				if (point.getValue() < yAxis.getMin()
-						|| point.getValue() > yAxis.getMax()) {
-					// Make sure we don't draw lines between points
-					// that aren't adjacent
-					prevX = prevY = - Double.MAX_VALUE;
-					continue;
-				}
-
 				double x = xAxis.project2D(point.getDate()).getX();
 				double y = yAxis.project2D(point.getValue()).getY();
 
@@ -448,8 +439,7 @@ public class DataPlot {
 	/**
 	 * Draws a single data point on the graph.
 	 *
-	 * Note that this method has as preconditions that
-	 * {@code prevX < x} and that {@code prevY < y}.
+	 * Note that this method has as a precondition that {@code prevX < x}.
 	 *
 	 * @param drawing
 	 * 		the
