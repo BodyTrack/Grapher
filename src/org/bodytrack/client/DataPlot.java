@@ -342,6 +342,19 @@ public class DataPlot {
 		// have to be careful to drop the cache if we pan or zoom too much,
 		// and definitely if we pull in more data
 
+		// Although maxY and minY appear to be switched, this is actually
+		// the correct way to define these variables, since we draw the
+		// Y-axis from bottom to top but pixel values increase from top
+		// to bottom.  Thus, the max Y-value is associated with the min
+		// axis value, and vice versa.
+		double minX = xAxis.project2D(xAxis.getMin()).getX();
+		double maxY = yAxis.project2D(yAxis.getMin()).getY();
+		double maxX = xAxis.project2D(xAxis.getMax()).getX();
+		double minY = yAxis.project2D(yAxis.getMax()).getY();
+
+		BoundedDrawingBox drawing =
+			new BoundedDrawingBox(canvas, minX, minY, maxX, maxY);
+
 		for (GrapherTile tile: getBestResolutionTiles()) {
 			double prevX = - Double.MAX_VALUE;
 			double prevY = - Double.MAX_VALUE;
