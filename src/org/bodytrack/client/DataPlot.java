@@ -42,7 +42,7 @@ public class DataPlot {
 	 * The radius to use when drawing a dot on the grapher.
 	 */
 	protected static final double DOT_RADIUS = 0.5;
-	
+
 	/**
 	 * The maximum size we allow currentData to be before we consider
 	 * pruning away unnecessary data.
@@ -379,11 +379,20 @@ public class DataPlot {
 				double x = xAxis.project2D(point.getDate()).getX();
 				double y = yAxis.project2D(point.getValue()).getY();
 
+				boolean shouldDraw = true;
+
+				if (x < MIN_DRAWABLE_VALUE || y < MIN_DRAWABLE_VALUE)
+					// Don't draw a boundary point
+					shouldDraw = false;
+
 				// Draw this part of the line
-				if (prevX > MIN_DRAWABLE_VALUE && prevY > MIN_DRAWABLE_VALUE)
-					paintDataPoint(drawing, prevX, prevY, x, y);
-				else
-					paintEdgePoint(drawing, x, y);
+				if (shouldDraw) {
+					if (prevX > MIN_DRAWABLE_VALUE
+							&& prevY > MIN_DRAWABLE_VALUE)
+						paintDataPoint(drawing, prevX, prevY, x, y);
+					else
+						paintEdgePoint(drawing, x, y);
+				}
 
 				prevX = x;
 				prevY = y;
