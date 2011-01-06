@@ -200,22 +200,22 @@ public final class BoundedDrawingBox {
 			y2 = temp;
 		}
 
-		Vector2 topIntercept = getIntersect(
+		Vector2 topIntercept = getIntersection(
 			new Vector2(x1, y1),
 			slope,
 			new Vector2(0.0, yMax),
 			0.0);
-		Vector2 rightIntercept = getIntersect(
+		Vector2 rightIntercept = getIntersection(
 			new Vector2(x1, y1),
 			slope,
 			new Vector2(xMax, 0.0),
 			Double.POSITIVE_INFINITY);
-		Vector2 bottomIntercept = getIntersect(
+		Vector2 bottomIntercept = getIntersection(
 			new Vector2(x1, y1),
 			slope,
 			new Vector2(0.0, yMin),
 			0.0);
-		Vector2 leftIntercept = getIntersect(
+		Vector2 leftIntercept = getIntersection(
 			new Vector2(x1, y1),
 			slope,
 			new Vector2(xMin, 0.0),
@@ -337,13 +337,13 @@ public final class BoundedDrawingBox {
 				// geometry, but, for computer drawing, the separation
 				// is really at the right or bottom edge)
 
-				Vector2 rightIntercept = getIntersect(
+				Vector2 rightIntercept = getIntersection(
 					new Vector2(x1, y1),
 					slope,
 					new Vector2(xMax, 0.0),
 					Double.POSITIVE_INFINITY);
 
-				Vector2 topIntercept = getIntersect(
+				Vector2 topIntercept = getIntersection(
 					new Vector2(x1, y1),
 					slope,
 					new Vector2(0.0, yMax),
@@ -365,13 +365,13 @@ public final class BoundedDrawingBox {
 				// geometry, but, for computer drawing, the separation
 				// is really at the left or top edge)
 
-				Vector2 leftIntercept = getIntersect(
+				Vector2 leftIntercept = getIntersection(
 					new Vector2(x1, y1),
 					slope,
 					new Vector2(xMin, 0.0),
 					Double.POSITIVE_INFINITY);
 
-				Vector2 bottomIntercept = getIntersect(
+				Vector2 bottomIntercept = getIntersection(
 					new Vector2(x1, y1),
 					slope,
 					new Vector2(0.0, yMin),
@@ -417,7 +417,7 @@ public final class BoundedDrawingBox {
 	 * 		the unique point of intersection between the two lines, or
 	 * 		<tt>null</tt> if the lines are parallel.
 	 */
-	private Vector2 getIntersect(Vector2 point1, double slope1,
+	private Vector2 getIntersection(Vector2 point1, double slope1,
 			Vector2 point2, double slope2) {
 		if (slope1 == slope2)
 			return null;
@@ -439,7 +439,7 @@ public final class BoundedDrawingBox {
 			return new Vector2(x, y);
 		} else if (Double.isInfinite(slope2))
 			// Same intercept if we switch the lines
-			return getIntersect(point2, slope2, point1, slope1);
+			return getIntersection(point2, slope2, point1, slope1);
 
 		// Now for the general case, with neither line vertical
 
@@ -504,10 +504,10 @@ public final class BoundedDrawingBox {
 	 * 		some other double value to be compared
 	 * @return
 	 * 		<tt>true</tt> if and only if a and b are within
-	 * 		TOLERANCE of each other
+	 * 		TOLERANCE of each other, as a proportion of a
 	 * @see #TOLERANCE
 	 */
 	private static boolean doubleEquals(double a, double b) {
-		return Math.abs(a - b) < TOLERANCE;
+		return Math.abs((a - b) / a) < TOLERANCE;
 	}
 }
