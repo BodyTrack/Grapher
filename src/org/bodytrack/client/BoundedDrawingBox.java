@@ -1,5 +1,8 @@
 package org.bodytrack.client;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import gwt.g2d.client.math.Vector2;
 
 /**
@@ -167,119 +170,7 @@ public final class BoundedDrawingBox {
 
 		// Now we know both points are out of bounds
 
-		// See if we really should draw the line
-		if (! lineCrossesBounds(x1, y1, x2, y2))
-			return;
-
-		if (x1 == x2) {
-			// Vertical line
-			getCanvas().getRenderer().drawLineSegment(x1, yMin, x1, yMax);
-			return;
-		}
-
-		double slope = (y2 - y1) / (x2 - x1);
-
-		if (slope == 0) {
-			// Optimization: don't do anything extra if the slope is 0
-
-			getCanvas().getRenderer().drawLineSegment(xMin, y1, xMax, y2);
-			return;
-		}
-
-		if (x1 > x2) {
-			// We ensure that x1 < x2, which allows a consistent
-			// set of values.  To do this, we swap (x1, y1) and
-			// (x2, y2) if x1 > x2
-
-			double temp = x1;
-			x1 = x2;
-			x2 = temp;
-
-			temp = y1;
-			y1 = x2;
-			y2 = temp;
-		}
-
-		Vector2 topIntercept = getIntersection(
-			new Vector2(x1, y1),
-			slope,
-			new Vector2(0.0, yMax),
-			0.0);
-		Vector2 rightIntercept = getIntersection(
-			new Vector2(x1, y1),
-			slope,
-			new Vector2(xMax, 0.0),
-			Double.POSITIVE_INFINITY);
-		Vector2 bottomIntercept = getIntersection(
-			new Vector2(x1, y1),
-			slope,
-			new Vector2(0.0, yMin),
-			0.0);
-		Vector2 leftIntercept = getIntersection(
-			new Vector2(x1, y1),
-			slope,
-			new Vector2(xMin, 0.0),
-			Double.POSITIVE_INFINITY);
-
-		Vector2 in, out;
-
-		if (slope > 0) {
-			// Line can come in through bottom or left side, and exit
-			// through right or top side (in geometry, not
-			// on the screen)
-
-			in = inBounds(bottomIntercept)
-				? bottomIntercept : leftIntercept;
-			out = inBounds(topIntercept)
-				? topIntercept : rightIntercept;
-		} else {
-			// Line can come in through top or left side, and exit
-			// through right or bottom side (in geometry, not
-			// on the screen)
-
-			in = inBounds(topIntercept)
-				? topIntercept : leftIntercept;
-			out = inBounds(bottomIntercept)
-				? bottomIntercept : bottomIntercept;
-		}
-
-		// Now we have the line to draw across the box
-		getCanvas().getRenderer().drawLineSegment(
-			in.getX(), in.getY(),
-			out.getX(), out.getY());
-	}
-
-	/**
-	 * Returns <tt>true</tt> if and only if the line from (x1, y1) to
-	 * (x2, y2) crosses through this bounding box.
-	 *
-	 * @param x1
-	 * 		the X-coordinate of the first point
-	 * @param y1
-	 * 		the Y-coordinate of the first point
-	 * @param x2
-	 * 		the X-coordinate of the second point
-	 * @param y2
-	 * 		the Y-coordinate of the second point
-	 * @return
-	 * 		<tt>true</tt> if and only if the line from (x1, y1) to
-	 * 		(x2, y2) crosses through this bounding box
-	 */
-	private boolean lineCrossesBounds(double x1, double y1, double x2,
-			double y2) {
-		if (x1 < xMin && x2 < xMin)
-			return false;
-
-		if (y1 < yMin && y2 < yMin)
-			return false;
-
-		if (x1 > xMax && x2 > xMax)
-			return false;
-
-		if (y1 > yMax && y2 > yMax)
-			return false;
-
-		return false;
+		drawLineOutOfBounds(x1, y1, x2, y2);
 	}
 
 	/**
@@ -396,6 +287,146 @@ public final class BoundedDrawingBox {
 
 		// Downward-sloping line, goes off left or top side
 		return inBounds(leftIntercept) ? leftIntercept : topIntercept;
+	}
+
+
+	/**
+	 * Draws whichever line segment is necessary, given that points
+	 * (x1, y1) and (x2, y2) are both out of bounds.
+	 *
+	 * @param x1
+	 * 		the X-coordinate of the first point
+	 * @param y1
+	 * 		the Y-coordinate of the first point
+	 * @param x2
+	 * 		the X-coordinate of the second point
+	 * @param y2
+	 * 		the Y-coordinate of the second point
+	 * @throws IllegalArgumentException
+	 * 		if either (x1, y1) or (x2, y2) is in bounds
+	 */
+	private void drawLineOutOfBounds(double x1, double y1, double x2, double y2) {
+		if (inBounds(x1, y1) || inBounds(x2, y2))
+			throw new IllegalArgumentException(
+				"At least one point is in bounds");
+
+		// See if we really should draw the line
+		if (! lineCouldCrossBounds(x1, y1, x2, y2))
+			return;
+
+		double slope = (y2 - y1) / (x2 - x1);		
+		if (doubleEquals(x1, x2) || Double.isInfinite(slope)) {
+			// Vertical line
+			getCanvas().getRenderer().drawLineSegment(x1, yMin, x1, yMax);
+			return;
+		}
+
+		if (doubleEquals(slope, 0.0)) {
+			// Optimization: don't do anything extra if the slope is 0
+
+			getCanvas().getRenderer().drawLineSegment(xMin, y1, xMax, y2);
+			return;
+		}
+
+		Vector2 topIntercept = getIntersection(
+			new Vector2(x1, y1), slope,
+			new Vector2(0.0, yMax), 0.0);
+		Vector2 rightIntercept = getIntersection(
+			new Vector2(x1, y1), slope,
+			new Vector2(xMax, 0.0), Double.POSITIVE_INFINITY);
+		Vector2 bottomIntercept = getIntersection(
+			new Vector2(x1, y1), slope,
+			new Vector2(0.0, yMin), 0.0);
+		Vector2 leftIntercept = getIntersection(
+			new Vector2(x1, y1), slope,
+			new Vector2(xMin, 0.0), Double.POSITIVE_INFINITY);
+
+		List<Vector2> inBoundsIntercepts = getInBoundsPoints(
+			topIntercept, rightIntercept, leftIntercept,
+			bottomIntercept);
+
+		// Don't draw a line unless there are two points to draw
+		if (inBoundsIntercepts.size() < 2)
+			return;
+		else if (inBoundsIntercepts.size() == 3) {
+			// The line goes through a corner
+			// We eliminate one of the two points which are
+			// closest together
+
+			double distSq01 = inBoundsIntercepts.get(0).distanceSquared(
+				inBoundsIntercepts.get(1));
+			double distSq02 = inBoundsIntercepts.get(0).distanceSquared(
+				inBoundsIntercepts.get(2));
+			double distSq12 = inBoundsIntercepts.get(1).distanceSquared(
+				inBoundsIntercepts.get(2));
+
+			// Always remove the unique point that is involved in
+			// the two smallest of the three distances
+			if (distSq01 < distSq02) {
+				if (distSq02 < distSq12)
+					inBoundsIntercepts.remove(0);
+				else
+					inBoundsIntercepts.remove(1);
+			} else {
+				if (distSq02 < distSq12)
+					inBoundsIntercepts.remove(2);
+				else
+					inBoundsIntercepts.remove(1);
+			}
+		} else if (inBoundsIntercepts.size() == 4) {
+			// The line goes through both corners
+			// We know that all four of our intercepts are in bounds,
+			// so we can use them directly.  The top and bottom
+			// intercepts are guaranteed to be in bounds
+
+			inBoundsIntercepts.clear();
+			inBoundsIntercepts.add(topIntercept);
+			inBoundsIntercepts.add(bottomIntercept);
+		}
+
+		// Now we have the line to draw across the box
+		getCanvas().getRenderer().drawLineSegment(
+			inBoundsIntercepts.get(0),
+			inBoundsIntercepts.get(1));
+	}
+
+	/**
+	 * Returns <tt>true</tt> if the line from (x1, y1) to (x2, y2)
+	 * could cross through this bounding box.
+	 *
+	 * <p>In practical terms, this means returning <tt>false</tt> if
+	 * both points are on the same side of one of the boundaries, and
+	 * <tt>true</tt> otherwise.  This method is just intended as a very
+	 * quick way to rule out a lot of possible lines without having
+	 * to do more complicated (and definitive) checks.</p>
+	 *
+	 * @param x1
+	 * 		the X-coordinate of the first point
+	 * @param y1
+	 * 		the Y-coordinate of the first point
+	 * @param x2
+	 * 		the X-coordinate of the second point
+	 * @param y2
+	 * 		the Y-coordinate of the second point
+	 * @return
+	 * 		<tt>true</tt> if the line from (x1, y1) to
+	 * 		(x2, y2) could cross through this bounding box
+	 */
+	private boolean lineCouldCrossBounds(double x1, double y1, double x2,
+			double y2) {
+		if (x1 < xMin && x2 < xMin)
+			return false;
+
+		if (y1 < yMin && y2 < yMin)
+			return false;
+
+		if (x1 > xMax && x2 > xMax)
+			return false;
+
+		if (y1 > yMax && y2 > yMax)
+			return false;
+
+		return false;
 	}
 
 	/**
@@ -515,5 +546,27 @@ public final class BoundedDrawingBox {
 	 */
 	private static boolean doubleEquals(double a, double b) {
 		return Math.abs((a - b) / a) < TOLERANCE;
+	}
+
+	/**
+	 * Performs a filter operation on points, keeping only those points
+	 * which are in bounds.
+	 *
+	 * @param points
+	 * 		the point on which we will filter
+	 * @return
+	 * 		a list of points that are in bounds.  It is guaranteed that
+	 * 		the returned list will include all in-bounds points (as
+	 * 		determined by {@link #inBounds(Vector2)}), in the same
+	 * 		order in which they were passed to this method.
+	 */
+	private List<Vector2> getInBoundsPoints(Vector2... points) {
+		List<Vector2> result = new ArrayList<Vector2>();
+
+		for (Vector2 point: points)
+			if (inBounds(point))
+				result.add(point);
+
+		return result;
 	}
 }
