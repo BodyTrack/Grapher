@@ -95,7 +95,7 @@ public final class BoundedDrawingBox {
 
 	/**
 	 * Draws a circle with the specified values and radius,
-	 * if and only if the center the circle is in bounds.
+	 * if and only if the center of the circle is in bounds.
 	 *
 	 * <p>Unlike {@link #drawCircle(double, double, double)},
 	 * this only checks whether the circle's center is in
@@ -166,6 +166,10 @@ public final class BoundedDrawingBox {
 		}
 
 		// Now we know both points are out of bounds
+
+		// See if we really should draw the line
+		if (! lineCrossesBounds(x1, y1, x2, y2))
+			return;
 
 		if (x1 == x2) {
 			// Vertical line
@@ -243,6 +247,39 @@ public final class BoundedDrawingBox {
 		getCanvas().getRenderer().drawLineSegment(
 			in.getX(), in.getY(),
 			out.getX(), out.getY());
+	}
+
+	/**
+	 * Returns <tt>true</tt> if and only if the line from (x1, y1) to
+	 * (x2, y2) crosses through this bounding box.
+	 *
+	 * @param x1
+	 * 		the X-coordinate of the first point
+	 * @param y1
+	 * 		the Y-coordinate of the first point
+	 * @param x2
+	 * 		the X-coordinate of the second point
+	 * @param y2
+	 * 		the Y-coordinate of the second point
+	 * @return
+	 * 		<tt>true</tt> if and only if the line from (x1, y1) to
+	 * 		(x2, y2) crosses through this bounding box
+	 */
+	private boolean lineCrossesBounds(double x1, double y1, double x2,
+			double y2) {
+		if (x1 < xMin && x2 < xMin)
+			return false;
+
+		if (y1 < yMin && y2 < yMin)
+			return false;
+
+		if (x1 > xMax && x2 > xMax)
+			return false;
+
+		if (y1 > yMax && y2 > yMax)
+			return false;
+
+		return false;
 	}
 
 	/**
@@ -440,9 +477,14 @@ public final class BoundedDrawingBox {
 	 * @param point
 	 * 		the (x, y) point to check for bounds
 	 * @return
-	 * 		<tt>true</tt> if and only if (x, y) is in bounds
+	 * 		<tt>true</tt> if and only if (x, y) is in bounds.
+	 * 		Note that this returns <tt>false</tt> if point is
+	 * 		<tt>null</tt>.
 	 */
 	private boolean inBounds(Vector2 point) {
+		if (point == null)
+			return false;
+
 		return inBounds(point.getX(), point.getY());
 	}
 
