@@ -297,6 +297,8 @@ public final class BoundedDrawingBox {
 	 * @return
 	 * 		a Vector2 with the new (x2, y2) to use, on the line between
 	 * 		(x1, y1) and (x2, y2)
+	 * @throws IllegalArgumentException
+	 * 		unless (x1, y1) is in bounds and (x2, y2) is out of bounds
 	 */
 	private Vector2 getSecondEndpoint(double x1, double y1, double x2,
 			double y2) {
@@ -330,66 +332,70 @@ public final class BoundedDrawingBox {
 					x2 = xMin;
 				else
 					x2 = xMax;
-			} else if (slope > 0) {
-				// Upward-sloping line: we know (x2, y2) must be
-				// separated from (x1, y1) by either the right or
-				// top edge (actually, this is correct for
-				// geometry, but, for computer drawing, the separation
-				// is really at the right or bottom edge)
-
-				Vector2 rightIntercept = getIntersection(
-					new Vector2(x1, y1),
-					slope,
-					new Vector2(xMax, 0.0),
-					Double.POSITIVE_INFINITY);
-
-				Vector2 topIntercept = getIntersection(
-					new Vector2(x1, y1),
-					slope,
-					new Vector2(0.0, yMax),
-					0.0);
-
-				if (inBounds(rightIntercept)) {
-					// Line goes off right edge
-					x2 = rightIntercept.getX();
-					y2 = rightIntercept.getY();
-				} else {
-					// Line goes off top edge
-					x2 = topIntercept.getX();
-					y2 = topIntercept.getY();
-				}
-			} else {
-				// Downward-sloping line: we know (x2, y2) must be
-				// separated from (x1, y1) by either the left or
-				// bottom edge (actually, this is correct for
-				// geometry, but, for computer drawing, the separation
-				// is really at the left or top edge)
-
-				Vector2 leftIntercept = getIntersection(
-					new Vector2(x1, y1),
-					slope,
-					new Vector2(xMin, 0.0),
-					Double.POSITIVE_INFINITY);
-
-				Vector2 bottomIntercept = getIntersection(
-					new Vector2(x1, y1),
-					slope,
-					new Vector2(0.0, yMin),
-					0.0);
-
-				if (inBounds(leftIntercept)) {
-					// Line goes off left edge
-					x2 = leftIntercept.getX();
-					y2 = leftIntercept.getY();
-				} else {
-					// Line goes off bottom edge
-					x2 = bottomIntercept.getX();
-					y2 = bottomIntercept.getY();
-				}
-			}
+			} else
+				return chooseIntercept(x1, y1, x2, y2);
 		}
 
 		return new Vector2(x2, y2);
+	}
+
+	/**
+	 * Finds the correct second point to use when (x1, y1) is in bounds,
+	 * (x2, y2) is out of bounds, and the line between them is neither
+	 * horizontal nor vertical.
+	 *
+	 * <p>This assumes that the aforementioned preconditions hold, and
+	 * will not work properly otherwise.  Since this is a private method,
+	 * we do not bother to check the preconditions and instead rely upon
+	 * the calling methods (all of which are a part of this class) to
+	 * check the preconditions.</p>
+	 *
+	 * @param x1
+	 * 		the X-coordinate of the point that is in bounds
+	 * @param y1
+	 * 		the Y-coordinate of the point that is in bounds
+	 * @param x2
+	 * 		the X-coordinate of the point that is out of bounds
+	 * @param y2
+	 * 		the Y-coordinate of the point that is out of bounds
+	 * @return
+	 * 		the point at which the line between the two points
+	 * 		crosses a boundary line
+	 */
+	private Vector2 chooseIntercept(double x1, double y1, double x2, double y2) {
+		double slope = (y2 - y1) / (x2 - x1);
+
+		Vector2 rightIntercept = getIntersection(
+			new Vector2(x1, y1), slope,
+			new Vector2(xMax, 0.0), Double.POSITIVE_INFINITY);
+		Vector2 topIntercept = getIntersection(
+			new Vector2(x1, y1), slope,
+			new Vector2(0.0, yMax), 0.0);
+		Vector2 leftIntercept = getIntersection(
+			new Vector2(x1, y1), slope,
+			new Vector2(xMin, 0.0), Double.POSITIVE_INFINITY);
+		Vector2 bottomIntercept = getIntersection(
+			new Vector2(x1, y1), slope,
+			new Vector2(0.0, yMin), 0.0);
+
+		// Now 4 cases on the sign of slope and the relative values of
+		// x2 and x1.  All comments we make use directions from an abstract
+		// Cartesian plane from geometry, not the way the lines are actually
+		// drawn on the screen.
+
+		if (slope > 0 && x2 > x1) {
+			// Upward-sloping line, goes off right or top side
+			return inBounds(rightIntercept) ? rightIntercept : topIntercept;
+		} else if (slope > 0) {
+			// Upward-sloping line, goes off left or bottom side
+			return inBounds(leftIntercept) ? leftIntercept : bottomIntercept;
+		} else if (x2 > x1) {
+			// Downward-sloping line, goes off right or bottom side
+			return inBounds(rightIntercept) ? rightIntercept : bottomIntercept;
+		}
+
+		// Downward-sloping line, goes off left or top side
+		return inBounds(leftIntercept) ? leftIntercept : topIntercept;
 	}
 
 	/**
