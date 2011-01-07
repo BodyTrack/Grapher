@@ -20,6 +20,22 @@ package org.bodytrack.client;
  * very limited threading model provided by Web Workers), there is
  * no harm in guarantees that only hold for a single-threaded
  * program.</p>
+ *
+ * <p>This class deals with the public API between the GWT application
+ * and the rest of the webpage.  This is through the
+ * window.grapherState dictionary, which contains several predefined
+ * keys for the interface.  See the {@link #initialize()} method to
+ * see the dictionary keys that are available for the rest of the
+ * page.</p>
+ *
+ * <p>There are several informative parts of the API, and one part by
+ * which the rest of the page can request to be notified on changes.
+ * The window.grapherState[&quot;change_listeners&quot;] part of the
+ * API is meant to be an array of no-argument functions.  Whenever a
+ * change is made to the informative part of the API, all these functions
+ * are called.  They may be called when the actual information does not
+ * change, so they are responsible for checking the important
+ * information in the window.grapherState variable.</p>
  */
 public final class InfoPublisher {
 	private static final InfoPublisher INSTANCE = new InfoPublisher();
@@ -36,6 +52,7 @@ public final class InfoPublisher {
 	 */
 	private native void initialize() /*-{
 		$wnd.grapherState = {};
+		$wnd.grapherState['change_listeners'] = [];
 		$wnd.grapherState['x_axis'] = {};
 		$wnd.grapherState['y_axis'] = {};
 		$wnd.grapherState['channel_colors'] = {};
@@ -62,6 +79,11 @@ public final class InfoPublisher {
 	public native void publishXAxisBounds(double min, double max) /*-{
 		$wnd.grapherState['x_axis']['min'] = min;
 		$wnd.grapherState['x_axis']['max'] = max;
+
+		var len = $wnd.grapherState['change_listeners'].length;
+		for (var i = 0; i < len; i++) {
+			$wnd.grapherState['change_listeners'][i]();
+		}
 	}-*/;
 
 	/**
@@ -75,6 +97,11 @@ public final class InfoPublisher {
 	public native void publishYAxisBounds(double min, double max) /*-{
 		$wnd.grapherState['y_axis']['min'] = min;
 		$wnd.grapherState['y_axis']['max'] = max;
+
+		var len = $wnd.grapherState['change_listeners'].length;
+		for (var i = 0; i < len; i++) {
+			$wnd.grapherState['change_listeners'][i]();
+		}
 	}-*/;
 
 	/*
@@ -104,5 +131,10 @@ public final class InfoPublisher {
 	public native void publishChannelColor(String channelName,
 			String color) /*-{
 		$wnd.grapherState['channel_colors'][channelName] = color;
+
+		var len = $wnd.grapherState['change_listeners'].length;
+		for (var i = 0; i < len; i++) {
+			$wnd.grapherState['change_listeners'][i]();
+		}
 	}-*/;
 }

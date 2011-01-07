@@ -1,6 +1,5 @@
 package org.bodytrack.client;
 
-
 import gwt.g2d.client.graphics.Color;
 
 import java.util.ArrayList;
