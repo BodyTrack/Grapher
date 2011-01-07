@@ -317,6 +317,18 @@ public class GraphWidget extends Surface {
 		mouseDragAxis = null;
 		mouseDragLastPos = null;
 
+		// Ensure that all data plots are unhighlighted, as are
+		// all axes
+
+		for (DataPlot plot: dataPlots)
+			plot.unhighlight();
+
+		for (GraphAxis axis: xAxes.keySet())
+			axis.unhighlight();
+
+		for (GraphAxis axis: yAxes.keySet())
+			axis.unhighlight();
+
 		paint();
 	}
 
