@@ -367,15 +367,6 @@ public class DataPlot {
 			canvas.beginPath();
 
 			for (PlottablePoint point: dataPoints) {
-				// Don't draw points too far to the left or right
-				if (point.getDate() < xAxis.getMin()
-						|| point.getDate() > xAxis.getMax()) {
-					// Make sure we don't draw lines between points
-					// that aren't adjacent
-					prevX = prevY = - Double.MAX_VALUE;
-					continue;
-				}
-
 				double x = xAxis.project2D(point.getDate()).getX();
 				double y = yAxis.project2D(point.getValue()).getY();
 
@@ -383,7 +374,7 @@ public class DataPlot {
 						|| Double.isInfinite(x) || Double.isInfinite(y)) {
 					// Don't draw a boundary point
 
-					// So we don't draw a boundary point, we (relying
+					// So that we don't draw a boundary point, we (relying
 					// on the fact that MIN_DRAWABLE_VALUE is negative)
 					// set prevX and prevY to something smaller than
 					// MIN_DRAWABLE_VALUE, ensuring that paintEdgePoint
