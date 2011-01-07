@@ -220,36 +220,6 @@ public class GraphWidget extends Surface {
 	private void handleMouseMoveEvent(MouseMoveEvent event) {
 		Vector2 pos = new Vector2(event.getX(), event.getY());
 
-		GraphAxis axis = findAxis(pos);
-
-		// Handle the case in which the mouse is over an axis
-		if (axis != null) {
-			axis.highlight();
-
-			List<DataPlot> plots = null;
-
-			if (xAxes.containsKey(axis))
-				plots = xAxes.get(axis);
-			else
-				// Relies on the fact that no axis is at once an
-				// X-axis and a Y-axis
-				plots = yAxes.get(axis);
-
-			if (plots != null) {
-				for (DataPlot plot: plots)
-					plot.highlight();
-			}
-
-			if (mouseDragLastPos != null) {
-				// We are dragging the mouse
-				axis.drag(mouseDragLastPos, pos);
-
-				mouseDragLastPos = pos;
-			}
-
-			return;
-		}
-
 		// True if and only if at least one DataPlot is highlighted
 		boolean highlighted = false;
 		Set<DataPlot> highlightedPlots = new HashSet<DataPlot>();
