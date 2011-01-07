@@ -44,12 +44,6 @@ public class DataPlot {
 	protected static final double DOT_RADIUS = 0.5;
 
 	/**
-	 * The maximum size we allow currentData to be before we consider
-	 * pruning away unnecessary data.
-	 */
-	private static final int MAX_CURRENT_DATA_SIZE = 1024;
-
-	/**
 	 * Never render a point with value less than this - use anything
 	 * less as a sentinel for &quot;data point not present&quot;.
 	 *
@@ -233,32 +227,6 @@ public class DataPlot {
 		currentLevel = correctLevel;
 		currentMinOffset = correctMinOffset;
 		currentMaxOffset = correctMaxOffset;
-
-		// Remove for any data out of range, but only if we are not
-		// waiting on the data that is in range and we do not have
-		// enough available space to store our data
-		// TODO: Put more intelligent pruning in place
-		if (pendingDescriptions.size() > 0
-				|| currentData.size() < MAX_CURRENT_DATA_SIZE)
-			return correctLevel > minLevel;
-
-		/*
-		Iterator<GrapherTile> it = currentData.iterator();
-
-		while (it.hasNext()) {
-			GrapherTile curr = it.next();
-
-			int level = curr.getLevel();
-			int offset = curr.getOffset();
-
-			if (level != currentLevel) // Wrong level
-				it.remove();
-			else if (offset < currentMinOffset - 1) // Too far left
-				it.remove();
-			else if (offset > currentMaxOffset + 1) // Too far right
-				it.remove();
-		}
-		*/
 
 		return correctLevel > minLevel;
 	}
