@@ -23,6 +23,7 @@ public class Grapher2 implements EntryPoint {
 													Canvas.GREEN,
 													Canvas.BLUE,
 													Canvas.RED};
+	private static final String ZEO_COLOR_STRING = "";
 
 	/**
 	 * This is the entry point method.
@@ -59,9 +60,13 @@ public class Grapher2 implements EntryPoint {
 		// right order (Zeo first, default type last)
 		List<DataPlot> temporaryPlots = new ArrayList<DataPlot>();
 
+		InfoPublisher publisher = InfoPublisher.getInstance();
+
 		for (int i = 0; i < channels.length(); i++) {
-			double initialMin = getInitialMin(channels.get(i));
-			double initialMax = getInitialMax(channels.get(i));
+			String channelName = channels.get(i);
+
+			double initialMin = getInitialMin(channelName);
+			double initialMax = getInitialMax(channelName);
 
 			GraphAxis value = new GraphAxis(
 				initialMin > -1e100 ? initialMin : -1,
@@ -78,14 +83,21 @@ public class Grapher2 implements EntryPoint {
 						+ channels.get(i) + "/",
 						minLevel);
 				temporaryPlots.add(plot);
+				publisher.publishChannelColor(channelName,
+					ZEO_COLOR_STRING);
 			}
 			else {
+				Color color = DATA_PLOT_COLORS[i % DATA_PLOT_COLORS.length];
+
 				plot = new DataPlot(gw, time, value,
 						"/tiles/" + userid + "/"
 						+ channels.get(i) + "/",
 						minLevel,
-						DATA_PLOT_COLORS[i % DATA_PLOT_COLORS.length]);
+						color);
 				temporaryPlots.add(0, plot);
+
+				publisher.publishChannelColor(channelName,
+					Canvas.friendlyName(color));
 			}
 		}
 

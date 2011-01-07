@@ -38,6 +38,7 @@ public final class InfoPublisher {
 		$wnd.grapherState = {};
 		$wnd.grapherState['x_axis'] = {};
 		$wnd.grapherState['y_axis'] = {};
+		$wnd.grapherState['channel_colors'] = {};
 	}-*/;
 
 	/**
@@ -74,5 +75,34 @@ public final class InfoPublisher {
 	public native void publishYAxisBounds(double min, double max) /*-{
 		$wnd.grapherState['y_axis']['min'] = min;
 		$wnd.grapherState['y_axis']['max'] = max;
+	}-*/;
+
+	/*
+	 * TODO: Add this, or something similar
+	 *
+	 * Manipulate a $wnd.grapherState['plot_type'] dictionary, perhaps
+	 *
+	 * Could even use an InfoPublisher.PlotType enum, giving nice
+	 *   properties in Java, with only a little glue code needed to
+	 *   convert to JavaScript values and publish to the page
+	 *
+	 * Perhaps expect that Zeo plots are published with the special
+	 * color &quot;ZEO&quot;, which will alert any outside scripts to
+	 * the type of channel.
+
+	public native void publishPlotType(String channelName, int plotType);
+	*/
+
+	/**
+	 * Publishes the color for a channel.
+	 *
+	 * @param channelName
+	 * 		the name of the channel
+	 * @param color
+	 * 		the color of the data plot with the specified channel name
+	 */
+	public native void publishChannelColor(String channelName,
+			String color) /*-{
+		$wnd.grapherState['channel_colors'][channelName] = color;
 	}-*/;
 }

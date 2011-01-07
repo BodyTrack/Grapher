@@ -35,6 +35,19 @@ public final class Canvas {
 	public static final Color BLUE = new Color(0x00, 0x00, 0xFF);
 	public static final Color YELLOW = new Color(0xFF, 0xFF, 0x00);
 
+	private static final Map<Color, String> colorsToNames =
+		new HashMap<Color, String>();
+
+	static {
+		colorsToNames.put(BLACK, "Black");
+		colorsToNames.put(DARK_GRAY, "DarkGray");
+		colorsToNames.put(GRAY, "Gray");
+		colorsToNames.put(RED, "Red");
+		colorsToNames.put(GREEN, "Green");
+		colorsToNames.put(BLUE, "Blue");
+		colorsToNames.put(YELLOW, "yellow");
+	}
+
 	/**
 	 * The default color, which classes should set as the stroke color
 	 * if wishing to &quot;clean up after themselves&quot; when done
@@ -55,6 +68,27 @@ public final class Canvas {
 
 	static {
 		instances = new HashMap<Surface, Canvas>();
+	}
+
+	/**
+	 * Converts color to a human-readable string if color is one
+	 * of the constants defined by this class, and converts color
+	 * to a color code otherwise.
+	 *
+	 * <p>Regardless, returns a string that can be used by a
+	 * browser as a color specification.</p>
+	 *
+	 * @param color
+	 * 		the Color object we want to examine
+	 * @return
+	 * 		a code representing color, hopefully in a human-readable
+	 * 		form
+	 */
+	public static String friendlyName(Color color) {
+		if (colorsToNames.containsKey(color))
+			return colorsToNames.get(color);
+
+		return color.getColorCode();
 	}
 
 	private Canvas() { }
