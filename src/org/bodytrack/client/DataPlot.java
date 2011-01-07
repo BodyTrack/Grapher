@@ -22,10 +22,11 @@ import java.util.Set;
  * <p>A class that wishes to inherit this class can override
  * {@link DataPlot#paintAllDataPoints()}, but the easiest way to modify
  * functionality it to override {@link DataPlot#paintDataPoint()} and
- * {@link DataPlot#paintEdgePoint(BoundedDrawingBox, double, double)}.  These two functions
- * are responsible for painting a single point on this DataPlot.
- * This (parent) class will automatically handle highlighting, zooming,
- * and the Ajax calls for pulling extra data from the server.</p>
+ * {@link DataPlot#paintEdgePoint(BoundedDrawingBox, double, double)}.
+ * These two functions are responsible for painting a single point on
+ * this DataPlot.  This (parent) class will automatically handle
+ * highlighting, zooming, and the Ajax calls for pulling extra data
+ * from the server.</p>
  *
  * <p>A classes that wishes to inherit this class may also wish to
  * override {@link DataPlot#getDataPoints(GrapherTile)}, which
