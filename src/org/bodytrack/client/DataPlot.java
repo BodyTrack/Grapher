@@ -379,20 +379,27 @@ public class DataPlot {
 				double x = xAxis.project2D(point.getDate()).getX();
 				double y = yAxis.project2D(point.getValue()).getY();
 
-				boolean shouldDraw = true;
-
-				if (x < MIN_DRAWABLE_VALUE || y < MIN_DRAWABLE_VALUE)
+				if (x < MIN_DRAWABLE_VALUE || y < MIN_DRAWABLE_VALUE
+						|| Double.isInfinite(x) || Double.isInfinite(y)) {
 					// Don't draw a boundary point
-					shouldDraw = false;
+
+					// So we don't draw a boundary point, we (relying
+					// on the fact that MIN_DRAWABLE_VALUE is negative)
+					// set prevX and prevY to something smaller than
+					// MIN_DRAWABLE_VALUE, ensuring that paintEdgePoint
+					// will be called on the next loop iteration
+					prevX = MIN_DRAWABLE_VALUE * 1.01;
+					prevY = MIN_DRAWABLE_VALUE * 1.01;
+
+					continue;
+				}
 
 				// Draw this part of the line
-				if (shouldDraw) {
-					if (prevX > MIN_DRAWABLE_VALUE
-							&& prevY > MIN_DRAWABLE_VALUE)
-						paintDataPoint(drawing, prevX, prevY, x, y);
-					else
-						paintEdgePoint(drawing, x, y);
-				}
+				if (prevX > MIN_DRAWABLE_VALUE
+						&& prevY > MIN_DRAWABLE_VALUE)
+					paintDataPoint(drawing, prevX, prevY, x, y);
+				else
+					paintEdgePoint(drawing, x, y);
 
 				prevX = x;
 				prevY = y;
