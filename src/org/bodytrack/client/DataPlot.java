@@ -68,12 +68,6 @@ public class DataPlot {
 	private Set<TileDescription> pendingDescriptions;
 	private List<GrapherTile> pendingData;
 
-	// Determining whether or not we should retrieve more data from
-	// the server
-	private int currentLevel;
-	private int currentMinOffset;
-	private int currentMaxOffset;
-
 	// Points to highlight in future invocations of paint
 	private boolean highlighted;
 
@@ -168,10 +162,6 @@ public class DataPlot {
 		pendingDescriptions = new HashSet<TileDescription>();
 		currentData = new ArrayList<GrapherTile>();
 
-		currentLevel = Integer.MIN_VALUE;
-		currentMinOffset = Integer.MAX_VALUE;
-		currentMaxOffset = Integer.MIN_VALUE;
-
 		highlighted = false;
 
 		shouldZoomIn = checkForFetch();
@@ -215,18 +205,19 @@ public class DataPlot {
 		int correctMinOffset = computeMinOffset(correctLevel);
 		int correctMaxOffset = computeMaxOffset(correctLevel);
 
-		if (correctLevel != currentLevel) {
-			for (int i = correctMinOffset; i <= correctMaxOffset; i++)
-				fetchFromServer(correctLevel, i);
-		} else if (correctMinOffset < currentMinOffset)
-			fetchFromServer(correctLevel, correctMinOffset);
-		else if (correctMaxOffset > currentMaxOffset)
-			fetchFromServer(correctLevel, correctMaxOffset);
+		Set<TileDescription> requested = new HashSet<TileDescription>();
 
-		// This way we don't fetch the same data multiple times
-		currentLevel = correctLevel;
-		currentMinOffset = correctMinOffset;
-		currentMaxOffset = correctMaxOffset;
+		// Prefetch on the edges a bit
+		for (int offset = correctMinOffset - 1;
+				offset <= correctMaxOffset + 1; offset++)
+			requested.add(new TileDescription(correctLevel, offset));
+
+		// Now remove from requested all the tiles we already have
+		for (GrapherTile currentTile: currentData)
+			requested.remove(currentTile.getDescription());
+
+		for (TileDescription desc: requested)
+			fetchFromServer(desc);
 
 		return correctLevel > minLevel;
 	}
@@ -234,23 +225,20 @@ public class DataPlot {
 	/**
 	 * Fetches the specified tile from the server.
 	 *
-	 * Note that this checks the pendingDescriptions instance variable
+	 * <p>Note that this checks the pendingDescriptions instance variable
 	 * to determine if this tile has already been requested.  If so,
-	 * does not request anything from the server.
+	 * does not request anything from the server.</p>
 	 *
-	 * @param level
-	 * 		the level of the tile to fetch
-	 * @param offset
-	 * 		the offset of the tile to fetch
+	 * @param desc
+	 * 		a description of the tile to fetch
 	 */
-	private void fetchFromServer(int level, int offset) {
-		TileDescription desc = new TileDescription(level, offset);
-
+	private void fetchFromServer(TileDescription desc) {
 		// Ensures we don't fetch the same tile twice unnecessarily
 		if (pendingDescriptions.contains(desc))
 			return;
 
-		String url = baseUrl + level + "." + offset + ".json";
+		String url = baseUrl + desc.getLevel() + "."
+			+ desc.getOffset() + ".json";
 		GrapherTile.retrieveTile(url, pendingData);
 
 		// Make sure we don't fetch this again unnecessarily
