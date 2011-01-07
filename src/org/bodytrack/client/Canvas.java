@@ -27,6 +27,7 @@ public final class Canvas {
 	 * All the following colors should have exactly the same values as
 	 * their CSS counterparts by the same (lowercase) name.
 	 */
+
 	public static final Color BLACK = new Color(0x00, 0x00, 0x00);
 	public static final Color DARK_GRAY = new Color(0xA9, 0xA9, 0xA9);
 	public static final Color GRAY = new Color(0x80, 0x80, 0x80);
@@ -45,7 +46,7 @@ public final class Canvas {
 		colorsToNames.put(RED, "Red");
 		colorsToNames.put(GREEN, "Green");
 		colorsToNames.put(BLUE, "Blue");
-		colorsToNames.put(YELLOW, "yellow");
+		colorsToNames.put(YELLOW, "Yellow");
 	}
 
 	/**
