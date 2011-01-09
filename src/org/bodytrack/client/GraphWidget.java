@@ -135,7 +135,7 @@ public class GraphWidget extends Surface {
 				$wnd.navigator.vendor.indexOf("Apple Computer") >= 0;
 		}
 
-		return isSafari && $wnd.navigator.platform.match(/.*mac/i);
+		return isSafari && !!$wnd.navigator.platform.match(/.*mac/i);
 	}-*/;
 
 	GraphAxis findAxis(Vector2 pos) {

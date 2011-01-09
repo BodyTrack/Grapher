@@ -6,6 +6,7 @@ import java.util.List;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.JsArrayNumber;
+import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.RequestCallback;
@@ -152,7 +153,7 @@ public final class GrapherTile extends JavaScriptObject {
 	 * @return
 	 * 		the list of field names for this tile
 	 */
-	public native String[] getFields() /*-{
+	public native JsArrayString getFields() /*-{
 		return this.fields;
 	}-*/;
 
@@ -199,12 +200,12 @@ public final class GrapherTile extends JavaScriptObject {
 		int timeIndex = -1;
 		int meanIndex = -1;
 
-		String[] fieldNames = getFields();
+		JsArrayString fieldNames = getFields();
 
-		for (int i = 0; i < fieldNames.length; i++) {
-			if (fieldNames[i].equalsIgnoreCase("time"))
+		for (int i = 0; i < fieldNames.length(); i++) {
+			if (fieldNames.get(i).equalsIgnoreCase("time"))
 				timeIndex = i;
-			else if (fieldNames[i].equalsIgnoreCase("mean"))
+			else if (fieldNames.get(i).equalsIgnoreCase("mean"))
 				meanIndex = i;
 		}
 

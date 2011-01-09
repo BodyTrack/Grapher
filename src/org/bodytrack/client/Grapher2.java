@@ -421,7 +421,7 @@ public class Grapher2 implements EntryPoint {
 	 * 		the Y-value to show as the initial maximum of the
 	 * 		plot for the data
 	 */
-	private native double getChartType(String channelName) /*-{
+	private native String getChartType(String channelName) /*-{
 		var DEFAULT_VALUE = "default";
 		var KEY_1 = "channel_specs";
 		var KEY_2 = "type";
