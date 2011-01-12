@@ -3,10 +3,14 @@ package org.bodytrack.client;
 import gwt.g2d.client.math.Vector2;
 
 public class Basis {
-	public Vector2 x;
-	public Vector2 y;
+	public final Vector2 x;
+	public final Vector2 y;
 
 	Basis(Vector2 x, Vector2 y) {
+		if (x == null || y == null)
+			throw new NullPointerException(
+				"Null basis vector not allowed");
+
 		this.x = x;
 		this.y = y;
 	}
@@ -15,4 +19,24 @@ public class Basis {
 		new Basis(new Vector2(1, 0), new Vector2(0, -1));
 	public static final Basis xDownYRight =
 		new Basis(new Vector2(0, 1), new Vector2(1, 0));
+
+	@Override
+	public boolean equals(Object other) {
+		if (this == other)
+			return true;
+
+		if (! (other instanceof Basis))
+			return false;
+
+		Basis otherBasis = (Basis) other;
+
+		// This only works as is because we forbid x and y from being null
+		// (the constructor enforces this invariant)
+		return this.x.equals(otherBasis.x) && this.y.equals(otherBasis.y);
+	}
+
+	@Override
+	public int hashCode() {
+		return x.hashCode() ^ y.hashCode();
+	}
 }
