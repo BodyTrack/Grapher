@@ -67,7 +67,7 @@ public class Grapher2 implements EntryPoint {
 			double initialMin = getInitialMin(channelName);
 			double initialMax = getInitialMax(channelName);
 
-			GraphAxis value = new GraphAxis(
+			GraphAxis value = new GraphAxis(channelName,
 				initialMin > -1e100 ? initialMin : -1,
 				initialMax > -1e100 ? initialMax : 1,
 				Basis.xRightYUp,

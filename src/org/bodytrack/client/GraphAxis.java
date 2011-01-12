@@ -13,6 +13,8 @@ import gwt.g2d.client.math.Vector2;
 import com.google.gwt.i18n.client.NumberFormat;
 
 public class GraphAxis {
+	public static final String NO_CHANNEL_NAME = "";
+
 	public double majorTickMinSpacingPixels = 50;
 	public double majorTickWidthPixels = 8;
 
@@ -35,7 +37,8 @@ public class GraphAxis {
 	private double scale;
 	private BBox bounds;
 
-	private boolean isXAxis;
+	private final boolean isXAxis;
+	private final String channelName;
 
 	// For determining whether to highlight this GraphAxis
 	private boolean highlighted;
@@ -46,21 +49,17 @@ public class GraphAxis {
 	final static int JUSTIFY_MED = 1;
 	final static int JUSTIFY_MAX = 2;
 
-	/**
-	 * Same as the other constructor, but attempts to guess whether this
-	 * is an X-axis by examining basis.
-	 *
-	 * @param min
-	 * @param max
-	 * @param basis
-	 * @param width
-	 */
-	public GraphAxis(double min, double max, Basis basis, double width) {
-		this(min, max, basis, width, Basis.xDownYRight.equals(basis));
+	// Same as the other constructor, but attempts to guess whether this
+	// is an X-axis by examining basis.
+	public GraphAxis(String channelName, double min, double max,
+			Basis basis, double width) {
+		this(channelName, min, max, basis, width,
+			Basis.xDownYRight.equals(basis));
 	}
 
-	public GraphAxis(double min, double max, Basis basis, double width,
-			boolean isXAxis) {
+	public GraphAxis(String channelName, double min, double max,
+			Basis basis, double width, boolean isXAxis) {
+		this.channelName = channelName;
 		this.min = min;
 		this.max = max;
 		this.basis = basis;
@@ -553,6 +552,6 @@ public class GraphAxis {
 		if (isXAxis)
 			pub.publishXAxisBounds(min, max);
 		else
-			pub.publishYAxisBounds(min, max);
+			pub.publishYAxisBounds(channelName, min, max);
 	}
 }
