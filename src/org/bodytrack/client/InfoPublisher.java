@@ -31,11 +31,14 @@ package org.bodytrack.client;
  * <p>There are several informative parts of the API, and one part by
  * which the rest of the page can request to be notified on changes.
  * The window.grapherState[&quot;change_listeners&quot;] part of the
- * API is meant to be an array of no-argument functions.  Whenever a
- * change is made to the informative part of the API, all these functions
- * are called.  They may be called when the actual information does not
- * change, so they are responsible for checking the important
- * information in the window.grapherState variable.</p>
+ * API is meant to be an array of no-argument functions.  Outside
+ * JavScript may modify this array at will.  Whenever a change is made
+ * to the informative part of the API, and actually when any non-static
+ * method of this class is called from GWT, all these functions are
+ * called in JavaScript.  Thus, these functions may be called when the
+ * actual information does not change, so they are responsible for
+ * checking the pertinent information in the window.grapherState
+ * variable.</p>
  */
 public final class InfoPublisher {
 	private static final InfoPublisher INSTANCE = new InfoPublisher();
@@ -89,14 +92,20 @@ public final class InfoPublisher {
 	/**
 	 * Publishes the min/max values for the Y-axis.
 	 *
+	 * @param channelName
+	 * 		the name of the channel with which this Y-axis is paired
 	 * @param min
 	 * 		the current min value for the Y-axis
 	 * @param max
 	 * 		the current max value for the Y-axis
 	 */
-	public native void publishYAxisBounds(double min, double max) /*-{
-		$wnd.grapherState['y_axis']['min'] = min;
-		$wnd.grapherState['y_axis']['max'] = max;
+	public native void publishYAxisBounds(String channelName, double min,
+			double max) /*-{
+		if (! channelName in $wnd.grapherState['y_axis'])
+			$wnd.grapherState['y_axis'][channelName] = {};
+
+		$wnd.grapherState['y_axis'][channelName]['min'] = min;
+		$wnd.grapherState['y_axis'][channelName]['max'] = max;
 
 		var len = $wnd.grapherState['change_listeners'].length;
 		for (var i = 0; i < len; i++) {
@@ -116,6 +125,9 @@ public final class InfoPublisher {
 	 * Perhaps expect that Zeo plots are published with the special
 	 * color &quot;ZEO&quot;, which will alert any outside scripts to
 	 * the type of channel.
+	 *
+	 * Now, though, Zeo plots are published with the color
+	 * Grapher2.ZEO_COLOR_STRING, which is the empty string
 
 	public native void publishPlotType(String channelName, int plotType);
 	*/
