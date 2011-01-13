@@ -8,7 +8,8 @@ import junit.framework.TestCase;
 public class GraphAxisTest extends TestCase {
 	@Test
 	public void test_ticks() {
-		GraphAxis g=new GraphAxis(0, 1, // min, max
+		GraphAxis g = new GraphAxis(GraphAxis.NO_CHANNEL_NAME,
+				0, 1, // min, max
 				Basis.xDownYRight,
 				5 // width
 				);
