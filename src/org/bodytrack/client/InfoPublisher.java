@@ -101,7 +101,7 @@ public final class InfoPublisher {
 	 */
 	public native void publishYAxisBounds(String channelName, double min,
 			double max) /*-{
-		if (! channelName in $wnd.grapherState['y_axis'])
+		if (! (channelName in $wnd.grapherState['y_axis']))
 			$wnd.grapherState['y_axis'][channelName] = {};
 
 		$wnd.grapherState['y_axis'][channelName]['min'] = min;
