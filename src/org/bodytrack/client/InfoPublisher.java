@@ -90,7 +90,24 @@ public final class InfoPublisher {
 	}-*/;
 
 	/**
+	 * Adds the specified Y-axis to the set of Y-axes for which
+	 * bounds are published.
+	 *
+	 * @param channelName
+	 * 		the name of the channel for which we are publishing
+	 * 		Y-axis information
+	 * @see InfoPublisher#publishYAxisBounds(String, double, double)
+	 */
+	public native void addYAxis(String channelName) /*-{
+		$wnd.grapherState['y_axis'][channelName] = {};
+	}-*/;
+
+	/**
 	 * Publishes the min/max values for the Y-axis.
+	 *
+	 * <p>Note that this method will not work properly unless
+	 * {@link InfoPublisher#addYAxis(String)} has already been called
+	 * with channelName as its parameter.</p>
 	 *
 	 * @param channelName
 	 * 		the name of the channel with which this Y-axis is paired
@@ -98,12 +115,10 @@ public final class InfoPublisher {
 	 * 		the current min value for the Y-axis
 	 * @param max
 	 * 		the current max value for the Y-axis
+	 * @see InfoPublisher#addYAxis(String)
 	 */
 	public native void publishYAxisBounds(String channelName, double min,
 			double max) /*-{
-		if (! (channelName in $wnd.grapherState['y_axis']))
-			$wnd.grapherState['y_axis'][channelName] = {};
-
 		$wnd.grapherState['y_axis'][channelName]['min'] = min;
 		$wnd.grapherState['y_axis'][channelName]['max'] = max;
 
