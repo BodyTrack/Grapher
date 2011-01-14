@@ -27,7 +27,7 @@ import com.google.gwt.http.client.Response;
 public final class GrapherTile extends JavaScriptObject {
 	/**
 	 * The width of a tile, in data points.
-	 * 
+	 *
 	 * <p>Each tile is defined to encompass all data in a time range
 	 * equal to {@code Math.pow(2, level) * TILE_WIDTH} seconds.</p>
 	 */
@@ -36,12 +36,12 @@ public final class GrapherTile extends JavaScriptObject {
 	// Overlay types always have protected, zero-arg constructors
 	// with empty bodies
 	protected GrapherTile() { }
-	
+
 	/**
 	 * Returns a single GrapherTile, given a JSON string containing the data.
-	 * 
+	 *
 	 * <h2 style="color: red">WARNING:</h2>
-	 * 
+	 *
 	 * <p>Note that the JSON string is assumed to be trusted.  This method uses
 	 * the JavaScript eval() function, <strong>which could allow arbitrary
 	 * code to execute on a user's browser</strong> if this string was not
@@ -51,7 +51,7 @@ public final class GrapherTile extends JavaScriptObject {
 	 * those tiles to the attacker's machine.  As such, data from insecure
 	 * connections, and especially from cross-site requests, should not be
 	 * passed in as the data parameter here.</p>
-	 *   
+	 *
 	 * @param json
 	 * 		a JSON string containing data for a single tile
 	 * @return
@@ -63,16 +63,16 @@ public final class GrapherTile extends JavaScriptObject {
 	}-*/;
 	
 	/**
-	 * Retrives a tile from the specified URL.
-	 * 
-	 * Adds a tile retrieved from url into destination whenever that tile
+	 * Retrieves a tile from the specified URL.
+	 *
+	 * <p>Adds a tile retrieved from url into destination whenever that tile
 	 * arrives.  Since GWT only supports asynchronous server requests, there
 	 * is no clean way to make this method block until the object comes in.
 	 * Thus, this method takes a {@link java.util.List List}, into which
-	 * the GrapherTile is placed when received.
-	 * 
+	 * the GrapherTile is placed when received.</p>
+	 *
 	 * <h2 style="color: red">WARNING:</h2>
-	 * 
+	 *
 	 * <p>Note that the URL is assumed to be trusted.  This method uses
 	 * the JavaScript eval() function, <strong>which could allow arbitrary
 	 * code to execute on a user's browser</strong> if this URL is not to
@@ -82,7 +82,7 @@ public final class GrapherTile extends JavaScriptObject {
 	 * to the attacker's machine.  As such, URLs for insecure connections,
 	 * and especially for other websites, should not be passed in as
 	 * the data parameter here.</p>
-	 * 
+	 *
 	 * @param url
 	 * 		the URL from which to retrieve the data
 	 * @param destination
@@ -118,13 +118,13 @@ public final class GrapherTile extends JavaScriptObject {
 	
 	/**
 	 * Returns the level of resolution at which this tile operates.
-	 * 
+	 *
 	 * <p>Note that level 0 corresponds to data points 1 second apart,
 	 * and that levels scale in powers of 2.  For instance, level 1
 	 * corresponds to data points 2 seconds apart, level 2 corresponds
 	 * to data points 4 seconds apart, etc.  Levels can be positive or
 	 * negative.</p>
-	 * 
+	 *
 	 * @return
 	 * 		the level of resolution at which this tile operates
 	 */
@@ -134,12 +134,12 @@ public final class GrapherTile extends JavaScriptObject {
 
 	/**
 	 * Returns the offset from the epoch at which this tile is found.
-	 * 
+	 *
 	 * <p>If we consider a very larger array of tiles, each one at the same
 	 * level as this one, and tile 0 beginning on midnight of 1/1/1970,
 	 * the offset is the index in this array at which we can find this
 	 * tile.</p>
-	 * 
+	 *
 	 * @return
 	 * 		the offset value for this tile
 	 */
@@ -149,7 +149,7 @@ public final class GrapherTile extends JavaScriptObject {
 
 	/**
 	 * Returns the list of field names for this tile.
-	 * 
+	 *
 	 * @return
 	 * 		the list of field names for this tile
 	 */
@@ -159,7 +159,7 @@ public final class GrapherTile extends JavaScriptObject {
 
 	/**
 	 * Returns the data stored in this tile.
-	 * 
+	 *
 	 * @return
 	 * 		the data stored in this tile, as a two-dimensional array of
 	 * 		double-precision values
@@ -171,7 +171,7 @@ public final class GrapherTile extends JavaScriptObject {
 	/**
 	 * Returns the value of the optional sample_width parameter in a tile.
 	 *
-	 * Currently, this is a field only used by the Zeo data.
+	 * <p>Currently, this is a field only used by the Zeo data.</p>
 	 *
 	 * @return
 	 * 		the value of the sample_width field for this tile, or -1 if
@@ -186,7 +186,7 @@ public final class GrapherTile extends JavaScriptObject {
 
 	/**
 	 * Returns the data points that should be graphed for this GrapherTile.
-	 * 
+	 *
 	 * @return
 	 * 		a {@link java.util.List List} of
 	 * 		{@link org.bodytrack.client.PlottablePoint PlottablePoint}

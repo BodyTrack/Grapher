@@ -85,8 +85,7 @@ public class Grapher2 implements EntryPoint {
 				temporaryPlots.add(plot);
 				publisher.publishChannelColor(channelName,
 					ZEO_COLOR_STRING);
-			}
-			else {
+			} else {
 				Color color = DATA_PLOT_COLORS[i % DATA_PLOT_COLORS.length];
 
 				plot = new DataPlot(gw, time, value,
