@@ -40,13 +40,13 @@ public final class Canvas {
 		new HashMap<Color, String>();
 
 	static {
-		colorsToNames.put(BLACK, "Black");
-		colorsToNames.put(DARK_GRAY, "DarkGray");
-		colorsToNames.put(GRAY, "Gray");
-		colorsToNames.put(RED, "Red");
-		colorsToNames.put(GREEN, "Green");
-		colorsToNames.put(BLUE, "Blue");
-		colorsToNames.put(YELLOW, "Yellow");
+		colorsToNames.put(BLACK, "black");
+		colorsToNames.put(DARK_GRAY, "darkgray");
+		colorsToNames.put(GRAY, "gray");
+		colorsToNames.put(RED, "red");
+		colorsToNames.put(GREEN, "green");
+		colorsToNames.put(BLUE, "blue");
+		colorsToNames.put(YELLOW, "yellow");
 	}
 
 	/**
