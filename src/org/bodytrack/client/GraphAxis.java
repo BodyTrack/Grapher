@@ -67,6 +67,11 @@ public class GraphAxis {
 		this.isXAxis = isXAxis;
 
 		highlighted = false;
+
+		if (! this.isXAxis)
+			InfoPublisher.getInstance().addYAxis(this.channelName);
+
+		publishBounds();
 	}
 
 	public void layout(Vector2 begin, double length) {

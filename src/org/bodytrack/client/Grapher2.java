@@ -37,6 +37,9 @@ public class Grapher2 implements EntryPoint {
 	}
 
 	private void setupGraphWidget() {
+		// Have to put this early
+		InfoPublisher publisher = InfoPublisher.getInstance();
+
 		int axisMargin = getAxisMargin();
 
 		gw = new GraphWidget(getGrapherWidth(),
@@ -59,8 +62,6 @@ public class Grapher2 implements EntryPoint {
 		// right order (Zeo first, default type last)
 		List<DataPlot> temporaryPlots = new ArrayList<DataPlot>();
 
-		InfoPublisher publisher = InfoPublisher.getInstance();
-
 		for (int i = 0; i < channels.length(); i++) {
 			String channelName = channels.get(i);
 
@@ -68,11 +69,11 @@ public class Grapher2 implements EntryPoint {
 			double initialMax = getInitialMax(channelName);
 
 			GraphAxis value = new GraphAxis(channelName,
-				initialMin > -1e100 ? initialMin : -1,
-				initialMax > -1e100 ? initialMax : 1,
+				initialMin > -1e300 ? initialMin : -1,
+				initialMax > -1e300 ? initialMax : 1,
 				Basis.xRightYUp,
 				axisMargin * 3,
-				true);
+				false);
 
 			DataPlot plot;
 

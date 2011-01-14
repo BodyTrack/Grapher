@@ -310,6 +310,7 @@ public class TimeGraphAxis extends GraphAxis {
 		}
 	}
 
+	@Override
 	public void paint(Surface surface) {
 		Canvas canvas = Canvas.buildCanvas(surface);
 
