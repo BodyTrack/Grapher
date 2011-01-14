@@ -4,8 +4,10 @@ import gwt.g2d.client.graphics.Color;
 import gwt.g2d.client.math.Vector2;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -34,7 +36,7 @@ import java.util.Set;
  * will draw, and the order in which paintAllDataPoints will draw
  * them.</p>
  */
-public class DataPlot {
+public class DataPlot implements Alertable<String> {
 	// These two constants are used when highlighting this plot
 	protected static final int NORMAL_STROKE_WIDTH = 1;
 	protected static final int HIGHLIGHT_STROKE_WIDTH = 3;
@@ -53,6 +55,12 @@ public class DataPlot {
 	 */
 	protected static final double MIN_DRAWABLE_VALUE = -1e300;
 
+	/**
+	 * We never re-request a URL with MAX_REQUESTS_PER_URL or more failures
+	 * in a row.
+	 */
+	private static final int MAX_REQUESTS_PER_URL = 5;
+
 	private GraphWidget container;
 	private GraphAxis xAxis;
 	private GraphAxis yAxis;
@@ -67,6 +75,7 @@ public class DataPlot {
 	private String baseUrl;
 	private List<GrapherTile> currentData;
 	private Set<TileDescription> pendingDescriptions;
+	private Map<String, Integer> pendingUrls;
 	private List<GrapherTile> pendingData;
 
 	// Determining whether or not we should retrieve more data from
@@ -167,6 +176,7 @@ public class DataPlot {
 		// The data will be pulled in with the checkForFetch call
 		pendingData = new ArrayList<GrapherTile>();
 		pendingDescriptions = new HashSet<TileDescription>();
+		pendingUrls = new HashMap<String, Integer>();
 		currentData = new ArrayList<GrapherTile>();
 
 		currentLevel = Integer.MIN_VALUE;
@@ -252,10 +262,53 @@ public class DataPlot {
 			return;
 
 		String url = baseUrl + level + "." + offset + ".json";
-		GrapherTile.retrieveTile(url, pendingData);
+		GrapherTile.retrieveTile(url, pendingData, this);
 
 		// Make sure we don't fetch this again unnecessarily
 		pendingDescriptions.add(desc);
+		pendingUrls.put(url, 0);
+	}
+
+	/**
+	 * Called every time a new tile loads.
+	 *
+	 * @param url
+	 * 		the URL of the tile that loaded
+	 */
+	@Override
+	public void onSuccess(String url) {
+		if (pendingUrls.containsKey(url))
+			pendingUrls.remove(url);
+
+		paint();
+	}
+
+	/**
+	 * Called every time a tile load fails.
+	 *
+	 * <p>Tried to re-request the tile.</p>
+	 *
+	 * @param url
+	 * 		the URL of the tile that failed
+	 */
+	@Override
+	public void onFailure(String url) {
+		if (pendingUrls.containsKey(url)) {
+			int oldValue = pendingUrls.get(url);
+			if (oldValue > MAX_REQUESTS_PER_URL)
+				// TODO: Log or alert user whenever we can't get
+				// a piece of data
+				// Perhaps use InfoPublisher API
+				return;
+
+			pendingUrls.remove(url);
+			pendingUrls.put(url, oldValue + 1);
+		} else
+			pendingUrls.put(url, 1);
+
+		GrapherTile.retrieveTile(url, pendingData, this);
+
+		paint();
 	}
 
 	/**
@@ -268,7 +321,27 @@ public class DataPlot {
 	 * override the {@link #paintAllDataPoints()} method.</p>
 	 */
 	public void paint() {
-		// If we have received data from the server
+		checkForNewData();
+
+		// Draw data points
+		canvas.getSurface().setStrokeStyle(color);
+		canvas.getSurface().setLineWidth(highlighted
+			? HIGHLIGHT_STROKE_WIDTH : NORMAL_STROKE_WIDTH);
+
+		paintAllDataPoints();
+
+		// Clean up after ourselves
+		canvas.getSurface().setStrokeStyle(Canvas.DEFAULT_COLOR);
+		canvas.getSurface().setLineWidth(NORMAL_STROKE_WIDTH);
+
+		// Make sure we shouldn't get any more info from the server
+		shouldZoomIn = checkForFetch();
+	}
+
+	/**
+	 * Checks to see if we have received data from the server
+	 */
+	private void checkForNewData() {
 		if (pendingData.size() > 0) {
 			// Pull all the data out of pendingData
 			for (GrapherTile tile: pendingData) {
@@ -284,20 +357,6 @@ public class DataPlot {
 
 			pendingData.clear();
 		}
-
-		// Draw data points
-		canvas.getSurface().setStrokeStyle(color);
-		canvas.getSurface().setLineWidth(highlighted
-			? HIGHLIGHT_STROKE_WIDTH : NORMAL_STROKE_WIDTH);
-
-		paintAllDataPoints();
-
-		// Clean up after ourselves
-		canvas.getSurface().setStrokeStyle(Canvas.DEFAULT_COLOR);
-		canvas.getSurface().setLineWidth(NORMAL_STROKE_WIDTH);
-
-		// Make sure we shouldn't get any more info from the server
-		shouldZoomIn = checkForFetch();
 	}
 
 	/**
@@ -470,7 +529,7 @@ public class DataPlot {
 			// so we don't get the same tile twice
 
 			if (bestAtCurrTime == null) {
-				maxCoveredTime += (maxTime - minTime) * 1e-3;
+				maxCoveredTime += (maxTime - minTime) * 1e-2;
 			} else {
 				best.add(bestAtCurrTime);
 

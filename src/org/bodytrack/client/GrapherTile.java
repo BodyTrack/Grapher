@@ -88,34 +88,48 @@ public final class GrapherTile extends JavaScriptObject {
 	 * @param destination
 	 * 		the {@link java.util.List List} into which this method
 	 * 		will add the tile when the tile is loaded from the server
+	 * @param callback
+	 * 		an {@link org.bodytrack.client.Alertable<String>} that
+	 * 		is notified whenever the tile arrives, using a message
+	 * 		of the url parameter.  This url parameter is helpful
+	 * 		in notifications because it allows callback to
+	 * 		differentiate between several requested tiles.
 	 */
 	public static void retrieveTile(String url,
-			final List<GrapherTile> destination) {		
+			final List<GrapherTile> destination,
+			Alertable<String> callback) {
 		// Send request to server and catch any errors.
 		RequestBuilder builder =
 			new RequestBuilder(RequestBuilder.GET, url);
-		
+
 		try {
+			// Required because an inner class can only access
+			// a local variable if that variable is final
+			final Alertable<String> callbackFinal = callback;
+			final String urlFinal = url;
+
 			builder.sendRequest(null, new RequestCallback() {
 				@Override
 				public void onError(Request request,
 						Throwable exception) {
-					// Need sensible way to handle this error
+					callbackFinal.onFailure(urlFinal);
 				}
-				
+
 				@Override
 				public void onResponseReceived(Request request,
 						Response response) {
-					if (response.getStatusCode() == 200)
+					if (response.getStatusCode() == 200) {
+						callbackFinal.onSuccess(urlFinal);
 						destination.add(buildTile(response.getText()));
+					} else
+						callbackFinal.onFailure(urlFinal);
 				}
 			});
 		} catch (RequestException e) {
-			// No sensible way to handle this error, except by not
-			// adding any tile to response
+			callback.onFailure(url);
 		}
 	}
-	
+
 	/**
 	 * Returns the level of resolution at which this tile operates.
 	 *
