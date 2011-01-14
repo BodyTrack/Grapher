@@ -383,10 +383,12 @@ public class DataPlot implements Alertable<String> {
 		BoundedDrawingBox drawing =
 			new BoundedDrawingBox(canvas, minX, minY, maxX, maxY);
 
-		for (GrapherTile tile: getBestResolutionTiles()) {
-			double prevX = - Double.MAX_VALUE;
-			double prevY = - Double.MAX_VALUE;
+		// Putting these declarations outside the loop ensures
+		// that no gaps appear between lines
+		double prevX = - Double.MAX_VALUE;
+		double prevY = - Double.MAX_VALUE;
 
+		for (GrapherTile tile: getBestResolutionTiles()) {
 			List<PlottablePoint> dataPoints = getDataPoints(tile);
 
 			if (dataPoints == null)
