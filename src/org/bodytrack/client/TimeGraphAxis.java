@@ -202,11 +202,8 @@ public class TimeGraphAxis extends GraphAxis {
 	//	}
 
 	class YearTickGenerator extends MonthTickGenerator {
-		private int tickSizeYears;
-
 		YearTickGenerator(int tickSizeYears) {
 			super(12 * tickSizeYears);
-			this.tickSizeYears = tickSizeYears;
 		}
 	}
 
