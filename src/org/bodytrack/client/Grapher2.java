@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.google.gwt.core.client.EntryPoint;
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -28,12 +29,17 @@ public class Grapher2 implements EntryPoint {
 	 * This is the entry point method.
 	 */
 	public void onModuleLoad() {
-		mainLayout = new VerticalPanel();
+		boolean showpix = true;
+		if (showpix) {
+			RootPanel.get(getDivName()).add(new FlowPhotosWidget(1293861600-86400*15, 1293861600));
+		} else {		
+			mainLayout = new VerticalPanel();
 
-		setupGraphWidget();
+			setupGraphWidget();
 
-		mainLayout.add(gw);
-		RootPanel.get(getDivName()).add(mainLayout);
+			mainLayout.add(gw);
+			RootPanel.get(getDivName()).add(mainLayout);
+		}
 	}
 
 	private void setupGraphWidget() {
