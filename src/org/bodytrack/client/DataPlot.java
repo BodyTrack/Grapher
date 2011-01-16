@@ -61,10 +61,10 @@ public class DataPlot implements Alertable<String> {
 	 */
 	private static final int MAX_REQUESTS_PER_URL = 5;
 
-	private GraphWidget container;
-	private GraphAxis xAxis;
-	private GraphAxis yAxis;
-	private Canvas canvas;
+	private final GraphWidget container;
+	private final GraphAxis xAxis;
+	private final GraphAxis yAxis;
+	private final Canvas canvas;
 
 	private final int minLevel;
 	private final Color color;
@@ -72,11 +72,11 @@ public class DataPlot implements Alertable<String> {
 	private boolean shouldZoomIn;
 
 	// Values related to getting new values from the server
-	private String baseUrl;
-	private List<GrapherTile> currentData;
-	private Set<TileDescription> pendingDescriptions;
-	private Map<String, Integer> pendingUrls;
-	private List<GrapherTile> pendingData;
+	private final String baseUrl;
+	private final List<GrapherTile> currentData;
+	private final Set<TileDescription> pendingDescriptions;
+	private final Map<String, Integer> pendingUrls;
+	private final List<GrapherTile> pendingData;
 
 	// Determining whether or not we should retrieve more data from
 	// the server
@@ -84,7 +84,7 @@ public class DataPlot implements Alertable<String> {
 	private int currentMinOffset;
 	private int currentMaxOffset;
 
-	// Points to highlight in future invocations of paint
+	// Whether to highlight in future invocations of paint
 	private boolean highlighted;
 
 	/**
