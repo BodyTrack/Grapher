@@ -567,6 +567,9 @@ public class GraphWidget extends Surface {
 	 * Removes the specified message from the queue of messages
 	 * to show.
 	 *
+	 * <p>It is guaranteed that this method will remove either 0
+	 * or 1 messages from the set of messages that could be shown.</p>
+	 *
 	 * @param messageId
 	 * 		the ID of the message to remove
 	 * @return
@@ -589,7 +592,7 @@ public class GraphWidget extends Surface {
 		while (it.hasNext()) {
 			MessageIdPair curr = it.next();
 
-			if (curr.getId() == messageId) {
+			if (result == null && curr.getId() == messageId) {
 				result = curr.getMessage();
 				it.remove();
 			}

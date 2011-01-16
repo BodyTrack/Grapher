@@ -78,6 +78,8 @@ public class DataPlot implements Alertable<String> {
 	private final Map<String, Integer> pendingUrls;
 	private final List<GrapherTile> pendingData;
 
+	private final Map<String, Integer> loadingText;
+
 	// Determining whether or not we should retrieve more data from
 	// the server
 	private int currentLevel;
@@ -90,7 +92,7 @@ public class DataPlot implements Alertable<String> {
 	/**
 	 * Constructor for the DataPlot object that allows unlimited zoom.
 	 * 
-	 * The parameter url is the trickiest to get right.  This parameter
+	 * <p>The parameter url is the trickiest to get right.  This parameter
 	 * should be the <strong>beginning</strong> (the text up to, but
 	 * not including, the &lt;level&gt;.&lt;offset&gt;.json part of the
 	 * URL to fetch) of the URL which will be used to get more data.
@@ -98,7 +100,7 @@ public class DataPlot implements Alertable<String> {
 	 * URL.  As described in the documentation for
 	 * {@link org.bodytrack.client.GrapherTile#retrieveTile(String, List)
 	 *  GrapherTile.retriveTile()}, an untrusted connection could allow
-	 * unauthorized access to all of a user's data.
+	 * unauthorized access to all of a user's data.</p>
 	 *
 	 * @param container
 	 * 		the {@link org.bodytrack.client.GraphWidget GraphWidget} on
@@ -124,7 +126,7 @@ public class DataPlot implements Alertable<String> {
 	/**
 	 * Main constructor for the DataPlot object.
 	 *
-	 * The parameter url is the trickiest to get right.  This parameter
+	 * <p>The parameter url is the trickiest to get right.  This parameter
 	 * should be the <strong>beginning</strong> (the text up to, but
 	 * not including, the &lt;level&gt;.&lt;offset&gt;.json part of the
 	 * URL to fetch) of the URL which will be used to get more data.
@@ -132,7 +134,7 @@ public class DataPlot implements Alertable<String> {
 	 * URL.  As described in the documentation for
 	 * {@link org.bodytrack.client.GrapherTile#retrieveTile(String, List)
 	 *  GrapherTile.retriveTile()}, an untrusted connection could allow
-	 * unauthorized access to all of a user's data.
+	 * unauthorized access to all of a user's data.</p>
 	 *
 	 * @param container
 	 * 		the {@link org.bodytrack.client.GraphWidget GraphWidget} on
@@ -178,6 +180,8 @@ public class DataPlot implements Alertable<String> {
 		pendingDescriptions = new HashSet<TileDescription>();
 		pendingUrls = new HashMap<String, Integer>();
 		currentData = new ArrayList<GrapherTile>();
+
+		loadingText = new HashMap<String, Integer>();
 
 		currentLevel = Integer.MIN_VALUE;
 		currentMinOffset = Integer.MAX_VALUE;
@@ -264,9 +268,68 @@ public class DataPlot implements Alertable<String> {
 		String url = baseUrl + level + "." + offset + ".json";
 		GrapherTile.retrieveTile(url, pendingData, this);
 
+		// Tell the user we are looking for information
+		addLoadingText(level, offset, url);
+
 		// Make sure we don't fetch this again unnecessarily
 		pendingDescriptions.add(desc);
 		pendingUrls.put(url, 0);
+	}
+
+	/**
+	 * Adds the specified loading text to container.
+	 *
+	 * <p>This is one of two methods to handle the loading text feature
+	 * for DataPlot objects.  The other is
+	 * {@link #removeLoadingText(String)}.  This method will create
+	 * a loading text string and publish it to container, but no
+	 * guarantee is made as to how this string is formed.</p>
+	 *
+	 * @param level
+	 * 		the level of the tile that is loading
+	 * @param offset
+	 * 		the offset of the tile that is loading
+	 * @param url
+	 * 		the URL of the tile that is loading
+	 */
+	private void addLoadingText(int level, int offset, String url) {
+		// Simplest implementation
+		// String msg = GraphWidget.DEFAULT_LOADING_MESSAGE;
+
+		String msg = "Loading " + url;
+
+		// Actually add the message
+		int id = container.addLoadingMessage(msg);
+		loadingText.put(url, id);
+
+		// TODO: This could be buggy if a duplicate URL is requested.
+		// How do we handle that?
+		// Answer: set up a list of integer IDs for each URL (i.e.
+		// make loadingText a Map<String, List<Integer>>, and
+		// arbitrarily remove an ID on every load.  Will be more
+		// correct than essentially removing all of them
+	}
+
+	/**
+	 * Removes the specified loading text from container.
+	 *
+	 * <p>This is one of two methods to handle the loading text feature
+	 * for DataPlot objects.  The other is
+	 * {@link #addLoadingText(int, int, String)}.  This method will
+	 * remove from container the loading text string associated
+	 * with url.  Thus, it is required that this take the same
+	 * URL that was passed to addLoadingText to create the message.</p>
+	 *
+	 * @param url
+	 * 		the URL of the tile that is finished loading
+	 */
+	private void removeLoadingText(String url) {
+		if (loadingText.containsKey(url)) {
+			int id = loadingText.remove(url);
+
+			container.removeLoadingMessage(id);
+		}
+		// Don't do anything if we don't have an ID with this URL
 	}
 
 	/**
@@ -280,7 +343,12 @@ public class DataPlot implements Alertable<String> {
 		if (pendingUrls.containsKey(url))
 			pendingUrls.remove(url);
 
-		paint();
+		removeLoadingText(url);
+
+		// It is important to call container.paint() rather than
+		// simply paint() here, since the loading text does
+		// not update unless container.paint() is called
+		container.paint();
 	}
 
 	/**
@@ -295,11 +363,14 @@ public class DataPlot implements Alertable<String> {
 	public void onFailure(String url) {
 		if (pendingUrls.containsKey(url)) {
 			int oldValue = pendingUrls.get(url);
-			if (oldValue > MAX_REQUESTS_PER_URL)
+			if (oldValue > MAX_REQUESTS_PER_URL) {
 				// TODO: Log or alert user whenever we can't get
 				// a piece of data
 				// Perhaps use InfoPublisher API
+				removeLoadingText(url);
+
 				return;
+			}
 
 			pendingUrls.remove(url);
 			pendingUrls.put(url, oldValue + 1);
@@ -308,7 +379,9 @@ public class DataPlot implements Alertable<String> {
 
 		GrapherTile.retrieveTile(url, pendingData, this);
 
-		paint();
+		// See the documentation in onSuccess() to see why
+		// container.paint() is important
+		container.paint();
 	}
 
 	/**
