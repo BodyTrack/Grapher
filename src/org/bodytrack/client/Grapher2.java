@@ -31,7 +31,8 @@ public class Grapher2 implements EntryPoint {
 	public void onModuleLoad() {
 		boolean showpix = true;
 		if (showpix) {
-			RootPanel.get(getDivName()).add(new FlowPhotosWidget(1293861600-86400*15, 1293861600));
+			RootPanel.get(getDivName()).add(new BodyTrackWidget());
+//			RootPanel.get(getDivName()).add(new FlowPhotosWidget(1293861600-86400*15, 1293861600));
 		} else {		
 			mainLayout = new VerticalPanel();
 

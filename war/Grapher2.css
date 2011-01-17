@@ -47,6 +47,17 @@ h1 {
 	margin-left: auto;
 	margin-right: auto;
 }
+
+.loginWidget div {
+	margin-left: 5px;
+	margin-right: 5px;
+}
+
+
+
+	
+
+
 /** Set ids using widget.getElement().setId("idOfElement") */
 #closeButton {
   margin: 15px 6px 6px;
