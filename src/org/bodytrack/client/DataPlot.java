@@ -78,7 +78,7 @@ public class DataPlot implements Alertable<String> {
 	private final Map<String, Integer> pendingUrls;
 	private final List<GrapherTile> pendingData;
 
-	private final Map<String, Integer> loadingText;
+	private final Map<String, List<Integer>> loadingUrls;
 
 	// Determining whether or not we should retrieve more data from
 	// the server
@@ -181,7 +181,7 @@ public class DataPlot implements Alertable<String> {
 		pendingUrls = new HashMap<String, Integer>();
 		currentData = new ArrayList<GrapherTile>();
 
-		loadingText = new HashMap<String, Integer>();
+		loadingUrls = new HashMap<String, List<Integer>>();
 
 		currentLevel = Integer.MIN_VALUE;
 		currentMinOffset = Integer.MAX_VALUE;
@@ -300,14 +300,11 @@ public class DataPlot implements Alertable<String> {
 
 		// Actually add the message
 		int id = container.addLoadingMessage(msg);
-		loadingText.put(url, id);
 
-		// TODO: This could be buggy if a duplicate URL is requested.
-		// How do we handle that?
-		// Answer: set up a list of integer IDs for each URL (i.e.
-		// make loadingText a Map<String, List<Integer>>, and
-		// arbitrarily remove an ID on every load.  Will be more
-		// correct than essentially removing all of them
+		List<Integer> ids = loadingUrls.containsKey(url) ?
+			loadingUrls.remove(url) : new ArrayList<Integer>();
+		ids.add(id);
+		loadingUrls.put(url, ids);
 	}
 
 	/**
@@ -324,8 +321,20 @@ public class DataPlot implements Alertable<String> {
 	 * 		the URL of the tile that is finished loading
 	 */
 	private void removeLoadingText(String url) {
-		if (loadingText.containsKey(url)) {
-			int id = loadingText.remove(url);
+		if (loadingUrls.containsKey(url)) {
+			// Always maintain the invariant that each value in
+			// loadingUrls has at least one element.  Since this
+			// is the place where things are removed from loadingUrls,
+			// and since no empty lists are added to loadingUrls,
+			// this method is responsible for maintaining the
+			// invariant.
+
+			// Note that we remove from loadingUrls
+			List<Integer> ids = loadingUrls.remove(url);
+			int id = ids.remove(0);
+
+			if (ids.size() > 0)
+				loadingUrls.put(url, ids);
 
 			container.removeLoadingMessage(id);
 		}
