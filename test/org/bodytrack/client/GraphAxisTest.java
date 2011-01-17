@@ -14,8 +14,6 @@ public class GraphAxisTest extends TestCase {
 				5 // width
 				);
 		
-		int height = 100;
-		int tick_pixels = 10;
 		double epsilon = 1e-10;
 			
 		assertEquals(0.1, g.computeTickSize(  9), epsilon);
