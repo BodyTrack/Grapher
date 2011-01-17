@@ -22,18 +22,21 @@ import com.google.gwt.user.client.ui.PopupPanel;
 
 public class LoginWidget extends HorizontalPanel {
 	Label status = new Label();
-	HTML action = new HTML();
+	ClickableLink action;
 	PopupPanel loginPopup = new PopupPanel();
+	LoginDialog loginDialog = new LoginDialog();
 	
 	LoginWidget() {
 		final LoginWidget loginWidget = this;
 		this.setStyleName("loginWidget");
 		this.add(status);
-		action.addClickHandler(new ClickHandler() {
+		action = new ClickableLink("", new ClickHandler() {
 			@Override public void onClick(ClickEvent event) { loginWidget.action(); } 
 			});
 		this.add(action);
 	
+		loginPopup.add(loginDialog);
+		
 		updateWidget(null, 0);
 		refresh();
 	}
@@ -46,7 +49,9 @@ public class LoginWidget extends HorizontalPanel {
 		if (isLoggedIn()) {
 			logout();
 		} else {
-			login("rsargent", "bodytrack ftw");
+			loginPopup.setPopupPosition(10, 10);
+			loginPopup.show();
+			loginDialog.execute(this);
 		}
 	}
 	
@@ -93,19 +98,19 @@ public class LoginWidget extends HorizontalPanel {
 	}
 		
 	protected void updateWidget(String username, int user_id) {
-		GWT.log("updateWidget " + username + " " + user_id);
 		this.username=username;
 		this.uid=user_id;
 		if (username == null) {
 			status.setText("");
-			action.setHTML("<a href=\"javascript:\">Login</a>");
+			action.setText("Login");
 		} else {
 			status.setText(username);
-			action.setHTML("<a href=\"javascript:\">Logout</a>");
+			action.setText("Logout");
 		}
 	}
 
 	public void login(String username, String password) {
+		loginPopup.hide();
 		String url=G.rootUrl() + "/login.json";
 		String postData = URL.encodeComponent("login")+"="+URL.encodeComponent(username);
 		postData += "&" + URL.encodeComponent("password")+"="+URL.encodeComponent(password);
@@ -136,6 +141,7 @@ public class LoginWidget extends HorizontalPanel {
 	}
 	
 	public void logout() {
+		loginDialog.clear();
 		String url=G.rootUrl() + "/logout";
 		// TODO: retry, give error messages
 		RequestBuilder b = new RequestBuilder(RequestBuilder.GET, url);
@@ -146,17 +152,19 @@ public class LoginWidget extends HorizontalPanel {
 					Window.alert("Error logging out: " + e);
 				}
 				@Override public void onResponseReceived(Request request, Response response) {
-					GWT.log("logout response received");
 					if (response.getStatusCode() == 200) {
 						loginWidget.updateWidget(null, 0);
 					} else {
 						Window.alert("Error logging out: " + response.getText());
 					}
-					GWT.log("logout: " + response.getStatusCode() + "; " + response.getText());
 				}
 			});
 		} catch (RequestException e) {
 			Window.alert("Error logging out: " + e);
 		}		
+	}
+
+	public void loginCanceled() {
+		loginPopup.hide();
 	}	
 }

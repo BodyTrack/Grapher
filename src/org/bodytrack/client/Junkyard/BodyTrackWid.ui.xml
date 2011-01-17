@@ -1,0 +1,25 @@
+<!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
+<ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder"
+	xmlns:g="urn:import:com.google.gwt.user.client.ui"
+	xmlns:bodytrack="urn:import:org.bodytrack.client">
+	<ui:style>
+		.important {
+			font-weight: bold;
+		}
+		.loginWidget {
+			float: right;
+			margin-right: 5px;
+		}
+	</ui:style>
+	<g:HTMLPanel>
+	<div>
+	    <bodytrack:LoginWidget styleName="{style.loginWidget}" ui:field="loginWidget"></bodytrack:LoginWidget>
+	</div>
+	<div>
+	    <g:TabLayoutPanel barHeight="100" ui:field="tabLayoutPanel">
+	    	<g:tab><g:header>a</g:header><g:Label text="yo">abc</g:Label></g:tab>
+	    	<g:tab><g:header>b</g:header><g:Label>def</g:Label></g:tab>
+	    </g:TabLayoutPanel>
+	</div>
+	</g:HTMLPanel>
+</ui:UiBinder> 
