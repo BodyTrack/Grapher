@@ -82,30 +82,19 @@ public class BodyTrackWidget extends VerticalPanel {
 	};
 	
 	String[] anneChannels = {
-			"{\"max_value\":\"69.0\",\"graph_type\":\"Line\",\"updated_at\":\"2011-01-09T09:20:56-05:00\",\"min_value\":\"33.0\",\"data_type\":\"Double\",\"max_graph_value\":null,\"id\":64,\"ch_name\":\"Humidity\",\"dev_nickname\":\"AR_Basestation\",\"user_id\":1,\"min_graph_value\":null,\"created_at\":\"2011-01-05T06:31:51-05:00\"}",
-			"{\"max_value\":\"101.0\",\"graph_type\":\"Line\",\"updated_at\":\"2011-01-05T06:31:51-05:00\",\"min_value\":\"97.0\",\"data_type\":\"Double\",\"max_graph_value\":null,\"id\":63,\"ch_name\":\"Microphone\",\"dev_nickname\":\"AR_Basestation\",\"user_id\":1,\"min_graph_value\":null,\"created_at\":\"2011-01-05T06:31:51-05:00\"}",
-			"{\"max_value\":\"101.0\",\"graph_type\":\"Line\",\"updated_at\":\"2011-01-06T12:27:38-05:00\",\"min_value\":\"98.0\",\"data_type\":\"Double\",\"max_graph_value\":null,\"id\":65,\"ch_name\":\"Pressure\",\"dev_nickname\":\"AR_Basestation\",\"user_id\":1,\"min_graph_value\":null,\"created_at\":\"2011-01-05T06:31:51-05:00\"}",
-			"{\"max_value\":\"78.1\",\"graph_type\":\"Line\",\"updated_at\":\"2011-01-06T12:39:56-05:00\",\"min_value\":\"19.1\",\"data_type\":\"Double\",\"max_graph_value\":null,\"id\":66,\"ch_name\":\"Temperature\",\"dev_nickname\":\"AR_Basestation\",\"user_id\":1,\"min_graph_value\":null,\"created_at\":\"2011-01-05T06:31:51-05:00\"}",
-			"{\"max_value\":\"30.0\",\"graph_type\":\"Line\",\"updated_at\":\"2011-01-13T08:49:12-05:00\",\"min_value\":\"10.0\",\"data_type\":\"Double\",\"max_graph_value\":null,\"id\":69,\"ch_name\":\"Dew_Point\",\"dev_nickname\":\"PIT\",\"user_id\":1,\"min_graph_value\":null,\"created_at\":\"2011-01-13T08:49:12-05:00\"}",
-			"{\"max_value\":\"28.9426666666667\",\"graph_type\":\"Line\",\"updated_at\":\"2011-01-13T08:49:12-05:00\",\"min_value\":\"28.7196666666667\",\"data_type\":\"Double\",\"max_graph_value\":null,\"id\":68,\"ch_name\":\"Pressure\",\"dev_nickname\":\"PIT\",\"user_id\":1,\"min_graph_value\":null,\"created_at\":\"2011-01-13T08:49:12-05:00\"}",
-			"{\"max_value\":\"33.0\",\"graph_type\":\"Line\",\"updated_at\":\"2011-01-13T08:49:12-05:00\",\"min_value\":\"23.0\",\"data_type\":\"Double\",\"max_graph_value\":null,\"id\":67,\"ch_name\":\"Temperature\",\"dev_nickname\":\"PIT\",\"user_id\":1,\"min_graph_value\":null,\"created_at\":\"2011-01-13T08:49:12-05:00\"}",
-			"{\"max_value\":\"30.0\",\"graph_type\":\"Line\",\"updated_at\":\"2011-01-13T08:49:12-05:00\",\"min_value\":\"10.0\",\"data_type\":\"Double\",\"max_graph_value\":null,\"id\":69,\"ch_name\":\"Dew_Point\",\"dev_nickname\":\"CSG\",\"user_id\":1,\"min_graph_value\":null,\"created_at\":\"2011-01-13T08:49:12-05:00\"}",
-			"{\"max_value\":\"28.9426666666667\",\"graph_type\":\"Line\",\"updated_at\":\"2011-01-13T08:49:12-05:00\",\"min_value\":\"28.7196666666667\",\"data_type\":\"Double\",\"max_graph_value\":null,\"id\":68,\"ch_name\":\"Pressure\",\"dev_nickname\":\"CSG\",\"user_id\":1,\"min_graph_value\":null,\"created_at\":\"2011-01-13T08:49:12-05:00\"}",
-			"{\"max_value\":\"33.0\",\"graph_type\":\"Line\",\"updated_at\":\"2011-01-13T08:49:12-05:00\",\"min_value\":\"23.0\",\"data_type\":\"Double\",\"max_graph_value\":null,\"id\":67,\"ch_name\":\"Temperature\",\"dev_nickname\":\"CSG\",\"user_id\":1,\"min_graph_value\":null,\"created_at\":\"2011-01-13T08:49:12-05:00\"}"
+			"{\"max_value\":\"100.0\",\"graph_type\":\"Line\",\"updated_at\":\"2011-01-09T09:20:56-05:00\",\"min_value\":\"0.0\",\"data_type\":\"Double\",\"max_graph_value\":null,\"id\":64,\"ch_name\":\"Humidity\",\"dev_nickname\":\"AR_Basestation\",\"user_id\":1,\"min_graph_value\":null,\"created_at\":\"2011-01-05T06:31:51-05:00\"}",
+			"{\"max_value\":\"255.0\",\"graph_type\":\"Line\",\"updated_at\":\"2011-01-05T06:31:51-05:00\",\"min_value\":\"0.0\",\"data_type\":\"Double\",\"max_graph_value\":null,\"id\":63,\"ch_name\":\"Microphone\",\"dev_nickname\":\"AR_Basestation\",\"user_id\":1,\"min_graph_value\":null,\"created_at\":\"2011-01-05T06:31:51-05:00\"}",
+			"{\"max_value\":\"255.0\",\"graph_type\":\"Line\",\"updated_at\":\"2011-01-06T12:27:38-05:00\",\"min_value\":\"0.0\",\"data_type\":\"Double\",\"max_graph_value\":null,\"id\":65,\"ch_name\":\"Pressure\",\"dev_nickname\":\"AR_Basestation\",\"user_id\":1,\"min_graph_value\":null,\"created_at\":\"2011-01-05T06:31:51-05:00\"}",
+			"{\"max_value\":\"100.0\",\"graph_type\":\"Line\",\"updated_at\":\"2011-01-06T12:39:56-05:00\",\"min_value\":\"19.1\",\"data_type\":\"Double\",\"max_graph_value\":null,\"id\":66,\"ch_name\":\"Temperature\",\"dev_nickname\":\"AR_Basestation\",\"user_id\":1,\"min_graph_value\":null,\"created_at\":\"2011-01-05T06:31:51-05:00\"}",
+			"{\"max_value\":\"50.0\",\"graph_type\":\"Line\",\"updated_at\":\"2011-01-13T08:49:12-05:00\",\"min_value\":\"0.0\",\"data_type\":\"Double\",\"max_graph_value\":null,\"id\":69,\"ch_name\":\"Dew_Point\",\"dev_nickname\":\"PIT\",\"user_id\":1,\"min_graph_value\":null,\"created_at\":\"2011-01-13T08:49:12-05:00\"}",
+			"{\"max_value\":\"30\",\"graph_type\":\"Line\",\"updated_at\":\"2011-01-13T08:49:12-05:00\",\"min_value\":\"28\",\"data_type\":\"Double\",\"max_graph_value\":null,\"id\":68,\"ch_name\":\"Pressure\",\"dev_nickname\":\"PIT\",\"user_id\":1,\"min_graph_value\":null,\"created_at\":\"2011-01-13T08:49:12-05:00\"}",
+			"{\"max_value\":\"100.0\",\"graph_type\":\"Line\",\"updated_at\":\"2011-01-13T08:49:12-05:00\",\"min_value\":\"0.0\",\"data_type\":\"Double\",\"max_graph_value\":null,\"id\":67,\"ch_name\":\"Temperature\",\"dev_nickname\":\"PIT\",\"user_id\":1,\"min_graph_value\":null,\"created_at\":\"2011-01-13T08:49:12-05:00\"}",
+			"{\"max_value\":\"50.0\",\"graph_type\":\"Line\",\"updated_at\":\"2011-01-13T08:49:12-05:00\",\"min_value\":\"0.0\",\"data_type\":\"Double\",\"max_graph_value\":null,\"id\":69,\"ch_name\":\"Dew_Point\",\"dev_nickname\":\"CSG\",\"user_id\":1,\"min_graph_value\":null,\"created_at\":\"2011-01-13T08:49:12-05:00\"}",
+			"{\"max_value\":\"30\",\"graph_type\":\"Line\",\"updated_at\":\"2011-01-13T08:49:12-05:00\",\"min_value\":\"28\",\"data_type\":\"Double\",\"max_graph_value\":null,\"id\":68,\"ch_name\":\"Pressure\",\"dev_nickname\":\"CSG\",\"user_id\":1,\"min_graph_value\":null,\"created_at\":\"2011-01-13T08:49:12-05:00\"}",
+			"{\"max_value\":\"100.0\",\"graph_type\":\"Line\",\"updated_at\":\"2011-01-13T08:49:12-05:00\",\"min_value\":\"0.0\",\"data_type\":\"Double\",\"max_graph_value\":null,\"id\":67,\"ch_name\":\"Temperature\",\"dev_nickname\":\"CSG\",\"user_id\":1,\"min_graph_value\":null,\"created_at\":\"2011-01-13T08:49:12-05:00\"}"
 	};
 	
-	String[] randyChannels = {
-			"{\"max_value\":\"69.0\",\"graph_type\":\"Line\",\"updated_at\":\"2011-01-09T09:20:56-05:00\",\"min_value\":\"33.0\",\"data_type\":\"Double\",\"max_graph_value\":null,\"id\":64,\"ch_name\":\"Humidity\",\"dev_nickname\":\"AR_Basestation\",\"user_id\":1,\"min_graph_value\":null,\"created_at\":\"2011-01-05T06:31:51-05:00\"}",
-			"{\"max_value\":\"101.0\",\"graph_type\":\"Line\",\"updated_at\":\"2011-01-05T06:31:51-05:00\",\"min_value\":\"97.0\",\"data_type\":\"Double\",\"max_graph_value\":null,\"id\":63,\"ch_name\":\"Microphone\",\"dev_nickname\":\"AR_Basestation\",\"user_id\":1,\"min_graph_value\":null,\"created_at\":\"2011-01-05T06:31:51-05:00\"}",
-			"{\"max_value\":\"101.0\",\"graph_type\":\"Line\",\"updated_at\":\"2011-01-06T12:27:38-05:00\",\"min_value\":\"98.0\",\"data_type\":\"Double\",\"max_graph_value\":null,\"id\":65,\"ch_name\":\"Pressure\",\"dev_nickname\":\"AR_Basestation\",\"user_id\":1,\"min_graph_value\":null,\"created_at\":\"2011-01-05T06:31:51-05:00\"}",
-			"{\"max_value\":\"78.1\",\"graph_type\":\"Line\",\"updated_at\":\"2011-01-06T12:39:56-05:00\",\"min_value\":\"19.1\",\"data_type\":\"Double\",\"max_graph_value\":null,\"id\":66,\"ch_name\":\"Temperature\",\"dev_nickname\":\"AR_Basestation\",\"user_id\":1,\"min_graph_value\":null,\"created_at\":\"2011-01-05T06:31:51-05:00\"}",
-			"{\"max_value\":\"30.0\",\"graph_type\":\"Line\",\"updated_at\":\"2011-01-13T08:49:12-05:00\",\"min_value\":\"10.0\",\"data_type\":\"Double\",\"max_graph_value\":null,\"id\":69,\"ch_name\":\"Dew_Point\",\"dev_nickname\":\"PIT\",\"user_id\":1,\"min_graph_value\":null,\"created_at\":\"2011-01-13T08:49:12-05:00\"}",
-			"{\"max_value\":\"28.9426666666667\",\"graph_type\":\"Line\",\"updated_at\":\"2011-01-13T08:49:12-05:00\",\"min_value\":\"28.7196666666667\",\"data_type\":\"Double\",\"max_graph_value\":null,\"id\":68,\"ch_name\":\"Pressure\",\"dev_nickname\":\"PIT\",\"user_id\":1,\"min_graph_value\":null,\"created_at\":\"2011-01-13T08:49:12-05:00\"}",
-			"{\"max_value\":\"33.0\",\"graph_type\":\"Line\",\"updated_at\":\"2011-01-13T08:49:12-05:00\",\"min_value\":\"23.0\",\"data_type\":\"Double\",\"max_graph_value\":null,\"id\":67,\"ch_name\":\"Temperature\",\"dev_nickname\":\"PIT\",\"user_id\":1,\"min_graph_value\":null,\"created_at\":\"2011-01-13T08:49:12-05:00\"}",
-			"{\"max_value\":\"30.0\",\"graph_type\":\"Line\",\"updated_at\":\"2011-01-13T08:49:12-05:00\",\"min_value\":\"10.0\",\"data_type\":\"Double\",\"max_graph_value\":null,\"id\":69,\"ch_name\":\"Dew_Point\",\"dev_nickname\":\"CSG\",\"user_id\":1,\"min_graph_value\":null,\"created_at\":\"2011-01-13T08:49:12-05:00\"}",
-			"{\"max_value\":\"28.9426666666667\",\"graph_type\":\"Line\",\"updated_at\":\"2011-01-13T08:49:12-05:00\",\"min_value\":\"28.7196666666667\",\"data_type\":\"Double\",\"max_graph_value\":null,\"id\":68,\"ch_name\":\"Pressure\",\"dev_nickname\":\"CSG\",\"user_id\":1,\"min_graph_value\":null,\"created_at\":\"2011-01-13T08:49:12-05:00\"}",
-			"{\"max_value\":\"33.0\",\"graph_type\":\"Line\",\"updated_at\":\"2011-01-13T08:49:12-05:00\",\"min_value\":\"23.0\",\"data_type\":\"Double\",\"max_graph_value\":null,\"id\":67,\"ch_name\":\"Temperature\",\"dev_nickname\":\"CSG\",\"user_id\":1,\"min_graph_value\":null,\"created_at\":\"2011-01-13T08:49:12-05:00\"}"
-	};
+	String[] randyChannels = anneChannels;
 	
 	String fetchChannelsJSON() {
 		String[] channels={};
@@ -140,9 +129,18 @@ public class BodyTrackWidget extends VerticalPanel {
 			Graphable channel = channels.get(i);
 			int minLevel = -20;
 			
+			// Reduce vertical scale by 10x.  Offset vertically
+			double min = channel.min_value();
+			double max = channel.max_value();
+			double span = max-min;
+			double center = .5 * (min+max);
+			center += span * (i - 4);
+			span *= 10;
+			min = center - .5 * span;
+			max = center + .5 * span;
+			
 			GraphAxis yAxis = new GraphAxis(channel.ch_name(),
-					channel.min_value(),
-					channel.max_value(),
+					min, max,
 					Basis.xRightYUp,
 					axisMargin * 3,
 					false);
@@ -181,7 +179,7 @@ public class BodyTrackWidget extends VerticalPanel {
 	void selectPhotos() {
 		if (!loginWidget.isLoggedIn()) return;
 		unselect();
-		mainPanel = new FlowPhotosWidget(1293861600-86400*15, 1293861600);
+		mainPanel = new FlowPhotosWidget(1293861600-86400*365, 1293861600+86400*365);
 		add(mainPanel);
 	}
 	void changeLoginStatus(boolean loggedIn) {

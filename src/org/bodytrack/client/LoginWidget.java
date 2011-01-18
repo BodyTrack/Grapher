@@ -116,6 +116,7 @@ public class LoginWidget extends HorizontalPanel {
 				@Override public void onResponseReceived(Request request, Response response) {
 					if (response.getStatusCode() == 200) {
 						LoginReply reply=LoginReply.fromJSON(response.getText());
+						reply.log();
 						if (reply.fail() != null) {
 							Window.alert("Error logging in: " + reply.fail());
 						} else {
