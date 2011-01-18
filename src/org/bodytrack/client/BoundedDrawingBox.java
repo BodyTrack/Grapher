@@ -89,10 +89,10 @@ public final class BoundedDrawingBox {
 	 * 		the radius of the circle
 	 */
 	public void drawCircle(double x, double y, double radius) {
-		if (inBounds(x - radius, y - radius)
-				&& inBounds(x - radius, y + radius)
-				&& inBounds(x + radius, y - radius)
-				&& inBounds(x + radius, y + radius))
+		if (contains(x - radius, y - radius)
+				&& contains(x - radius, y + radius)
+				&& contains(x + radius, y - radius)
+				&& contains(x + radius, y + radius))
 			getCanvas().getRenderer().drawCircle(x, y, radius);
 	}
 
@@ -114,7 +114,7 @@ public final class BoundedDrawingBox {
 	 * 		the radius of the circle
 	 */
 	public void drawDot(double x, double y, double radius) {
-		if (inBounds(x, y))
+		if (contains(x, y))
 			getCanvas().getRenderer().drawCircle(x, y, radius);
 	}
 
@@ -139,7 +139,7 @@ public final class BoundedDrawingBox {
 	 * 		by the line segment we are to draw)
 	 */
 	public void drawLineSegment(double x1, double y1, double x2, double y2) {
-		if (inBounds(x1, y1) && inBounds(x2, y2)) {
+		if (contains(x1, y1) && contains(x2, y2)) {
 			// If everything is in bounds, we just draw the line
 			getCanvas().getRenderer().drawLineSegment(x1, y1, x2, y2);
 			return;
@@ -147,7 +147,7 @@ public final class BoundedDrawingBox {
 
 		// Now we know at least one of the endpoints is out of bounds
 
-		if (inBounds(x1, y1)) {
+		if (contains(x1, y1)) {
 			// First point in bounds, second point out of bounds
 
 			Vector2 secondEndpoint = getSecondEndpoint(x1, y1, x2, y2);
@@ -163,7 +163,7 @@ public final class BoundedDrawingBox {
 		// Since a line segment is non-directional, we can reuse code
 		// by drawing the same line the opposite direction, as long as
 		// (x2, y2) is in bounds
-		if (inBounds(x2, y2)) {
+		if (contains(x2, y2)) {
 			drawLineSegment(x2, y2, x1, y1);
 			return;
 		}
@@ -193,7 +193,7 @@ public final class BoundedDrawingBox {
 	 */
 	private Vector2 getSecondEndpoint(double x1, double y1, double x2,
 			double y2) {
-		if (! (inBounds(x1, y1) && ! inBounds(x2, y2)))
+		if (! (contains(x1, y1) && ! contains(x2, y2)))
 			throw new IllegalArgumentException(
 				"Invalid endpoints: this is designed to calculate "
 				+ "an endpoint with the first point in bounds");
@@ -276,17 +276,17 @@ public final class BoundedDrawingBox {
 
 		if (slope > 0 && x2 > x1) {
 			// Upward-sloping line, goes off right or top side
-			return inBounds(rightIntercept) ? rightIntercept : topIntercept;
+			return contains(rightIntercept) ? rightIntercept : topIntercept;
 		} else if (slope > 0) {
 			// Upward-sloping line, goes off left or bottom side
-			return inBounds(leftIntercept) ? leftIntercept : bottomIntercept;
+			return contains(leftIntercept) ? leftIntercept : bottomIntercept;
 		} else if (x2 > x1) {
 			// Downward-sloping line, goes off right or bottom side
-			return inBounds(rightIntercept) ? rightIntercept : bottomIntercept;
+			return contains(rightIntercept) ? rightIntercept : bottomIntercept;
 		}
 
 		// Downward-sloping line, goes off left or top side
-		return inBounds(leftIntercept) ? leftIntercept : topIntercept;
+		return contains(leftIntercept) ? leftIntercept : topIntercept;
 	}
 
 
@@ -306,7 +306,7 @@ public final class BoundedDrawingBox {
 	 * 		if either (x1, y1) or (x2, y2) is in bounds
 	 */
 	private void drawLineOutOfBounds(double x1, double y1, double x2, double y2) {
-		if (inBounds(x1, y1) || inBounds(x2, y2))
+		if (contains(x1, y1) || contains(x2, y2))
 			throw new IllegalArgumentException(
 				"At least one point is in bounds");
 
@@ -503,13 +503,13 @@ public final class BoundedDrawingBox {
 	 * @return
 	 * 		<tt>true</tt> if and only if (x, y) is in bounds
 	 */
-	private boolean inBounds(double x, double y) {
+	public boolean contains(double x, double y) {
 		return x >= xMin && x <= xMax && y >= yMin && y <= yMax;
 	}
 
 	/**
 	 * Exactly the same as calling
-	 * {@code inBounds(point.getX(), point.getY())}.
+	 * {@code contains(point.getX(), point.getY())}.
 	 *
 	 * @param point
 	 * 		the (x, y) point to check for bounds
@@ -518,11 +518,11 @@ public final class BoundedDrawingBox {
 	 * 		Note that this returns <tt>false</tt> if point is
 	 * 		<tt>null</tt>.
 	 */
-	private boolean inBounds(Vector2 point) {
+	public boolean contains(Vector2 point) {
 		if (point == null)
 			return false;
 
-		return inBounds(point.getX(), point.getY());
+		return contains(point.getX(), point.getY());
 	}
 
 	/**
@@ -557,14 +557,14 @@ public final class BoundedDrawingBox {
 	 * @return
 	 * 		a list of points that are in bounds.  It is guaranteed that
 	 * 		the returned list will include all in-bounds points (as
-	 * 		determined by {@link #inBounds(Vector2)}), in the same
+	 * 		determined by {@link #contains(Vector2)}), in the same
 	 * 		order in which they were passed to this method.
 	 */
 	private List<Vector2> getInBoundsPoints(Vector2... points) {
 		List<Vector2> result = new ArrayList<Vector2>();
 
 		for (Vector2 point: points)
-			if (inBounds(point))
+			if (contains(point))
 				result.add(point);
 
 		return result;

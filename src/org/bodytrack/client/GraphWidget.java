@@ -1,8 +1,14 @@
 package org.bodytrack.client;
 
+import gwt.g2d.client.graphics.Color;
+import gwt.g2d.client.graphics.Surface;
+import gwt.g2d.client.graphics.TextAlign;
+import gwt.g2d.client.math.Vector2;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -19,14 +25,23 @@ import com.google.gwt.event.dom.client.MouseUpEvent;
 import com.google.gwt.event.dom.client.MouseUpHandler;
 import com.google.gwt.event.dom.client.MouseWheelEvent;
 import com.google.gwt.event.dom.client.MouseWheelHandler;
-import gwt.g2d.client.graphics.Surface;
-import gwt.g2d.client.math.Vector2;
 
 public class GraphWidget extends Surface {
+	/**
+	 * The default loading message for this widget to show.
+	 */
+	public static final String DEFAULT_LOADING_MESSAGE = "Loading...";
+
 	private static final double MOUSE_WHEEL_ZOOM_RATE_MAC = 1.003;
 	private static final double MOUSE_WHEEL_ZOOM_RATE_PC = 1.1;
 
 	private static final double HIGHLIGHT_DISTANCE_THRESHOLD = 5;
+
+	private static final int INITIAL_MESSAGE_ID = 1;
+	private static final Color LOADING_MSG_COLOR = Canvas.DARK_GRAY;
+	private static final int LOADING_MSG_X_MARGIN = 5;
+	private static final int LOADING_MSG_Y_MARGIN = 5;
+	private static final int TEXT_HEIGHT = 12;
 
 	private List<DataPlot> dataPlots;
 
@@ -35,14 +50,15 @@ public class GraphWidget extends Surface {
 	 * They map from axes to sets of data plots associated with
 	 * those axes
 	 */
-	private Map<GraphAxis, List<DataPlot>> xAxes;
-	private Map<GraphAxis, List<DataPlot>> yAxes;
+	private final Map<GraphAxis, List<DataPlot>> xAxes;
+	private final Map<GraphAxis, List<DataPlot>> yAxes;
 
-	private int width, height;
-	private int axisMargin;
-	private int graphMargin = 5;
+	private int nextMessageId;
+	private final List<MessageIdPair> loadingMessages;
 
-	private int graphWidth, graphHeight;
+	private final int width, height;
+	private final int axisMargin;
+	private final int graphMargin = 5;
 
 	private GraphAxis mouseDragAxis;
 	private Vector2 mouseDragLastPos;
@@ -59,6 +75,9 @@ public class GraphWidget extends Surface {
 		dataPlots = new ArrayList<DataPlot>();
 		xAxes = new HashMap<GraphAxis, List<DataPlot>>();
 		yAxes = new HashMap<GraphAxis, List<DataPlot>>();
+
+		nextMessageId = INITIAL_MESSAGE_ID;
+		loadingMessages = new ArrayList<MessageIdPair>();
 
 		this.addMouseWheelHandler(new MouseWheelHandler() {
 			@Override
@@ -138,7 +157,7 @@ public class GraphWidget extends Surface {
 		return isSafari && !!$wnd.navigator.platform.match(/.*mac/i);
 	}-*/;
 
-	GraphAxis findAxis(Vector2 pos) {
+	private GraphAxis findAxis(Vector2 pos) {
 		for (GraphAxis axis: xAxes.keySet()) {
 			if (axis.contains(pos))
 				return axis;
@@ -335,8 +354,8 @@ public class GraphWidget extends Surface {
 	private void layout() {
 		int xAxesWidth = calculateAxesWidth(xAxes.keySet());
 		int yAxesWidth = calculateAxesWidth(yAxes.keySet());
-		graphWidth = width - graphMargin - yAxesWidth;
-		graphHeight = height - graphMargin - xAxesWidth;
+		int graphWidth = width - graphMargin - yAxesWidth;
+		int graphHeight = height - graphMargin - xAxesWidth;
 		Vector2 xAxesBegin = new Vector2(graphMargin,
 			graphHeight + graphMargin);
 		layoutAxes(xAxes.keySet(), graphWidth, xAxesBegin,
@@ -382,7 +401,14 @@ public class GraphWidget extends Surface {
 		this.save();
 		this.translate(.5, .5);
 
-		// Draw the axes in all cases
+		// Draw any Loading... messages that might be requested
+		if (loadingMessages.size() > 0) {
+			String msg = loadingMessages.get(0).getMessage();
+
+			showLoadingMessage(msg);
+		}
+
+		// Draw the axes
 		for (GraphAxis xAxis: xAxes.keySet())
 			xAxis.paint(this);
 
@@ -394,6 +420,24 @@ public class GraphWidget extends Surface {
 			plot.paint();
 
 		this.restore();
+	}
+
+	private void showLoadingMessage(String msg) {
+		// Save old data to be restored later
+		TextAlign oldTextAlign = getTextAlign();
+
+		// Change settings
+		setTextAlign(TextAlign.LEFT);
+		setStrokeStyle(LOADING_MSG_COLOR);
+
+		// Actually write the text
+		int bottom = height - LOADING_MSG_Y_MARGIN;
+		int textTop = bottom - TEXT_HEIGHT;
+		strokeText(msg, LOADING_MSG_X_MARGIN, textTop);
+
+		// Restore old settings
+		setTextAlign(oldTextAlign);
+		setStrokeStyle(Canvas.DEFAULT_COLOR);
 	}
 
 	/**
@@ -487,5 +531,111 @@ public class GraphWidget extends Surface {
 			yAxes.get(yAxis).remove(plot);
 		else
 			yAxes.remove(yAxis);
+	}
+
+	/**
+	 * Adds a loading message
+	 *
+	 * <p>Note that we implement a FIFO policy for displaying loading
+	 * messages.  This means that messages that are posted early will
+	 * display until removed.</p>
+	 *
+	 * <p>This system of assigning integer IDs to messages and then
+	 * removing messages by ID is necessitated by the fact that data
+	 * is not required to come into the page in the same order
+	 * that it is requested.  A simple queue system thus doesn't
+	 * work.</p>
+	 *
+	 * @param msg
+	 * 		the message to display whenever there are no older
+	 * 		messages left in the queue
+	 * @return
+	 * 		an integer ID that can be used to remove msg whenever
+	 * 		it should no longer appear
+	 * @see #removeLoadingMessage(int)
+	 */
+	public int addLoadingMessage(String msg) {
+		int id = nextMessageId;
+		nextMessageId++;
+
+		loadingMessages.add(new MessageIdPair(id, msg));
+
+		return id;
+	}
+
+	/**
+	 * Removes the specified message from the queue of messages
+	 * to show.
+	 *
+	 * <p>It is guaranteed that this method will remove either 0
+	 * or 1 messages from the set of messages that could be shown.</p>
+	 *
+	 * @param messageId
+	 * 		the ID of the message to remove
+	 * @return
+	 * 		the string that was previously associated with messageId,
+	 * 		at least if messageId is in the list.  If messageId is
+	 * 		not in the list, returns <tt>null</tt>.
+	 * @see #addLoadingMessage(String)
+	 */
+	public String removeLoadingMessage(int messageId) {
+		// Since IDs are assigned sequentially, starting at
+		// INITIAL_MESSAGE_ID, this allows us to avoid a search
+		// in some cases
+		if (messageId < INITIAL_MESSAGE_ID || messageId >= nextMessageId)
+			return null;
+
+		Iterator<MessageIdPair> it = loadingMessages.iterator();
+
+		String result = null;
+
+		while (it.hasNext()) {
+			MessageIdPair curr = it.next();
+
+			if (result == null && curr.getId() == messageId) {
+				result = curr.getMessage();
+				it.remove();
+			}
+		}
+
+		return result;
+	}
+
+	private static class MessageIdPair implements Comparable<MessageIdPair> {
+		private final int id;
+		private final String msg;
+
+		public MessageIdPair(int id, String msg) {
+			this.id = id;
+			this.msg = msg;
+		}
+
+		public int getId() {
+			return id;
+		}
+
+		public String getMessage() {
+			return msg;
+		}
+
+		@Override
+		public int hashCode() {
+			return id;
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o)
+				return true;
+			if (! (o instanceof MessageIdPair))
+				return false;
+			MessageIdPair other = (MessageIdPair) o;
+			return compareTo(other) == 0;
+		}
+
+		@Override
+		public int compareTo(MessageIdPair other) {
+			return id - other.id;
+		}
 	}
 }

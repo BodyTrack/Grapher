@@ -61,10 +61,10 @@ public class DataPlot implements Alertable<String> {
 	 */
 	private static final int MAX_REQUESTS_PER_URL = 5;
 
-	private GraphWidget container;
-	private GraphAxis xAxis;
-	private GraphAxis yAxis;
-	private Canvas canvas;
+	private final GraphWidget container;
+	private final GraphAxis xAxis;
+	private final GraphAxis yAxis;
+	private final Canvas canvas;
 
 	private final int minLevel;
 	private final Color color;
@@ -72,11 +72,13 @@ public class DataPlot implements Alertable<String> {
 	private boolean shouldZoomIn;
 
 	// Values related to getting new values from the server
-	private String baseUrl;
-	private List<GrapherTile> currentData;
-	private Set<TileDescription> pendingDescriptions;
-	private Map<String, Integer> pendingUrls;
-	private List<GrapherTile> pendingData;
+	private final String baseUrl;
+	private final List<GrapherTile> currentData;
+	private final Set<TileDescription> pendingDescriptions;
+	private final Map<String, Integer> pendingUrls;
+	private final List<GrapherTile> pendingData;
+
+	private final Map<String, List<Integer>> loadingUrls;
 
 	// Determining whether or not we should retrieve more data from
 	// the server
@@ -84,13 +86,13 @@ public class DataPlot implements Alertable<String> {
 	private int currentMinOffset;
 	private int currentMaxOffset;
 
-	// Points to highlight in future invocations of paint
+	// Whether to highlight in future invocations of paint
 	private boolean highlighted;
 
 	/**
 	 * Constructor for the DataPlot object that allows unlimited zoom.
 	 * 
-	 * The parameter url is the trickiest to get right.  This parameter
+	 * <p>The parameter url is the trickiest to get right.  This parameter
 	 * should be the <strong>beginning</strong> (the text up to, but
 	 * not including, the &lt;level&gt;.&lt;offset&gt;.json part of the
 	 * URL to fetch) of the URL which will be used to get more data.
@@ -98,7 +100,7 @@ public class DataPlot implements Alertable<String> {
 	 * URL.  As described in the documentation for
 	 * {@link org.bodytrack.client.GrapherTile#retrieveTile(String, List)
 	 *  GrapherTile.retriveTile()}, an untrusted connection could allow
-	 * unauthorized access to all of a user's data.
+	 * unauthorized access to all of a user's data.</p>
 	 *
 	 * @param container
 	 * 		the {@link org.bodytrack.client.GraphWidget GraphWidget} on
@@ -124,7 +126,7 @@ public class DataPlot implements Alertable<String> {
 	/**
 	 * Main constructor for the DataPlot object.
 	 *
-	 * The parameter url is the trickiest to get right.  This parameter
+	 * <p>The parameter url is the trickiest to get right.  This parameter
 	 * should be the <strong>beginning</strong> (the text up to, but
 	 * not including, the &lt;level&gt;.&lt;offset&gt;.json part of the
 	 * URL to fetch) of the URL which will be used to get more data.
@@ -132,7 +134,7 @@ public class DataPlot implements Alertable<String> {
 	 * URL.  As described in the documentation for
 	 * {@link org.bodytrack.client.GrapherTile#retrieveTile(String, List)
 	 *  GrapherTile.retriveTile()}, an untrusted connection could allow
-	 * unauthorized access to all of a user's data.
+	 * unauthorized access to all of a user's data.</p>
 	 *
 	 * @param container
 	 * 		the {@link org.bodytrack.client.GraphWidget GraphWidget} on
@@ -178,6 +180,8 @@ public class DataPlot implements Alertable<String> {
 		pendingDescriptions = new HashSet<TileDescription>();
 		pendingUrls = new HashMap<String, Integer>();
 		currentData = new ArrayList<GrapherTile>();
+
+		loadingUrls = new HashMap<String, List<Integer>>();
 
 		currentLevel = Integer.MIN_VALUE;
 		currentMinOffset = Integer.MAX_VALUE;
@@ -264,9 +268,77 @@ public class DataPlot implements Alertable<String> {
 		String url = baseUrl + level + "." + offset + ".json";
 		GrapherTile.retrieveTile(url, pendingData, this);
 
+		// Tell the user we are looking for information
+		addLoadingText(level, offset, url);
+
 		// Make sure we don't fetch this again unnecessarily
 		pendingDescriptions.add(desc);
 		pendingUrls.put(url, 0);
+	}
+
+	/**
+	 * Adds the specified loading text to container.
+	 *
+	 * <p>This is one of two methods to handle the loading text feature
+	 * for DataPlot objects.  The other is
+	 * {@link #removeLoadingText(String)}.  This method will create
+	 * a loading text string and publish it to container, but no
+	 * guarantee is made as to how this string is formed.</p>
+	 *
+	 * @param level
+	 * 		the level of the tile that is loading
+	 * @param offset
+	 * 		the offset of the tile that is loading
+	 * @param url
+	 * 		the URL of the tile that is loading
+	 */
+	private void addLoadingText(int level, int offset, String url) {
+		// Simplest implementation
+		// String msg = GraphWidget.DEFAULT_LOADING_MESSAGE;
+
+		String msg = "Loading " + url;
+
+		// Actually add the message
+		int id = container.addLoadingMessage(msg);
+
+		List<Integer> ids = loadingUrls.containsKey(url) ?
+			loadingUrls.remove(url) : new ArrayList<Integer>();
+		ids.add(id);
+		loadingUrls.put(url, ids);
+	}
+
+	/**
+	 * Removes the specified loading text from container.
+	 *
+	 * <p>This is one of two methods to handle the loading text feature
+	 * for DataPlot objects.  The other is
+	 * {@link #addLoadingText(int, int, String)}.  This method will
+	 * remove from container the loading text string associated
+	 * with url.  Thus, it is required that this take the same
+	 * URL that was passed to addLoadingText to create the message.</p>
+	 *
+	 * @param url
+	 * 		the URL of the tile that is finished loading
+	 */
+	private void removeLoadingText(String url) {
+		if (loadingUrls.containsKey(url)) {
+			// Always maintain the invariant that each value in
+			// loadingUrls has at least one element.  Since this
+			// is the place where things are removed from loadingUrls,
+			// and since no empty lists are added to loadingUrls,
+			// this method is responsible for maintaining the
+			// invariant.
+
+			// Note that we remove from loadingUrls
+			List<Integer> ids = loadingUrls.remove(url);
+			int id = ids.remove(0);
+
+			if (ids.size() > 0)
+				loadingUrls.put(url, ids);
+
+			container.removeLoadingMessage(id);
+		}
+		// Don't do anything if we don't have an ID with this URL
 	}
 
 	/**
@@ -280,7 +352,12 @@ public class DataPlot implements Alertable<String> {
 		if (pendingUrls.containsKey(url))
 			pendingUrls.remove(url);
 
-		paint();
+		removeLoadingText(url);
+
+		// It is important to call container.paint() rather than
+		// simply paint() here, since the loading text does
+		// not update unless container.paint() is called
+		container.paint();
 	}
 
 	/**
@@ -295,11 +372,14 @@ public class DataPlot implements Alertable<String> {
 	public void onFailure(String url) {
 		if (pendingUrls.containsKey(url)) {
 			int oldValue = pendingUrls.get(url);
-			if (oldValue > MAX_REQUESTS_PER_URL)
+			if (oldValue > MAX_REQUESTS_PER_URL) {
 				// TODO: Log or alert user whenever we can't get
 				// a piece of data
 				// Perhaps use InfoPublisher API
+				removeLoadingText(url);
+
 				return;
+			}
 
 			pendingUrls.remove(url);
 			pendingUrls.put(url, oldValue + 1);
@@ -308,7 +388,9 @@ public class DataPlot implements Alertable<String> {
 
 		GrapherTile.retrieveTile(url, pendingData, this);
 
-		paint();
+		// See the documentation in onSuccess() to see why
+		// container.paint() is important
+		container.paint();
 	}
 
 	/**
