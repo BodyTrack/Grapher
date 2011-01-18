@@ -989,9 +989,9 @@ public class DataPlot implements Alertable<String> {
 	 *
 	 * <pre>
 	 * public boolean highlightIfNear(Vector2 pos, double threshold) {
-	 * 	PlottablePoint point = DataPlot.this.closest(pos, threshold);
+	 * 	PlottablePoint point = closest(pos, threshold);
 	 * 	if (point != null)
-	 * 		DataPlot.this.highlight();
+	 * 		highlight();
 	 * 	return point != null;
 	 * }
 	 * </pre>
@@ -1017,9 +1017,9 @@ public class DataPlot implements Alertable<String> {
 	 * 		if threshold is negative
 	 */
 	public boolean highlightIfNear(Vector2 pos, double threshold) {
-		PlottablePoint point = DataPlot.this.closest(pos, threshold);
+		PlottablePoint point = closest(pos, threshold);
 		if (point != null)
-			DataPlot.this.highlight();
+			highlight();
 
 		return point != null;
 	}

@@ -188,12 +188,12 @@ public final class GrapherTile extends JavaScriptObject {
 	 * <p>Currently, this is a field only used by the Zeo data.</p>
 	 *
 	 * @return
-	 * 		the value of the sample_width field for this tile, or -1 if
-	 * 		such a field is not present
+	 * 		the value of the sample_width field for this tile, or a
+	 * 		negative number if such a field is not present
 	 */
-	public native int getSampleWidth() /*-{
+	public native double getSampleWidth() /*-{
 		if (! this.sample_width)
-			return -1;
+			return -1.0;
 
 		return this.sample_width;
 	}-*/;
