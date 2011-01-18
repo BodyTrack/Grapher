@@ -55,32 +55,22 @@ public class LoginWidget extends HorizontalPanel {
 		}
 	}
 	
-	
-	private String username;
-	private int uid;
-		
 	public boolean isLoggedIn() {
-		return username != null;
-	}
-	public String getUsername() {
-		return username;
-	}
-	public int getUid() {
-		return uid;
+		return G.username != null;
 	}
 		
 	static class LoginReply extends JavaScriptObject {
 		protected LoginReply() {}
-		public final native String fail() /*-{ return this.fail; }-*/;
-		public final native int user_id() /*-{ return this.user_id; }-*/;
-		public final String username() { return "UID."+user_id(); }
-		//public final native void log() /*-{ console.log(this); }-*/;
+		public final native String fail()     /*-{ return this.fail;    }-*/;
+		public final native int    user_id()  /*-{ return this.user_id; }-*/;
+		public final native String username() /*-{ return this.login;   }-*/;
+		public final native void   log()      /*-{ console.log(this);   }-*/;
 
 		static native LoginReply fromJSON(String json) /*-{ eval("var ret="+json); return ret; }-*/;
 	}
 	
 	public void refresh() {
-		String url=G.rootUrl() + "/login_status.json";
+		String url="/login_status.json";
 		// TODO: retry, give error messages
 		RequestBuilder b = new RequestBuilder(RequestBuilder.GET, url);
 		final LoginWidget loginWidget = this;
@@ -90,6 +80,7 @@ public class LoginWidget extends HorizontalPanel {
 				@Override public void onResponseReceived(Request request, Response response) {
 					if (response.getStatusCode() == 200) {
 						LoginReply reply=LoginReply.fromJSON(response.getText());
+						reply.log();
 						if (reply.fail() == null) loginWidget.updateWidget(reply.username(), reply.user_id());
 					}
 				}
@@ -98,8 +89,8 @@ public class LoginWidget extends HorizontalPanel {
 	}
 		
 	protected void updateWidget(String username, int user_id) {
-		this.username=username;
-		this.uid=user_id;
+		G.username=username;
+		G.user_id=user_id;
 		if (username == null) {
 			status.setText("");
 			action.setText("Login");
@@ -111,7 +102,7 @@ public class LoginWidget extends HorizontalPanel {
 
 	public void login(String username, String password) {
 		loginPopup.hide();
-		String url=G.rootUrl() + "/login.json";
+		String url="/login.json";
 		String postData = URL.encodeComponent("login")+"="+URL.encodeComponent(username);
 		postData += "&" + URL.encodeComponent("password")+"="+URL.encodeComponent(password);
 		RequestBuilder b = new RequestBuilder(RequestBuilder.POST, url);
@@ -142,7 +133,7 @@ public class LoginWidget extends HorizontalPanel {
 	
 	public void logout() {
 		loginDialog.clear();
-		String url=G.rootUrl() + "/logout";
+		String url="/logout";
 		// TODO: retry, give error messages
 		RequestBuilder b = new RequestBuilder(RequestBuilder.GET, url);
 		final LoginWidget loginWidget=this;

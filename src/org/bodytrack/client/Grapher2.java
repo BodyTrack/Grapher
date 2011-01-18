@@ -31,10 +31,8 @@ public class Grapher2 implements EntryPoint {
 	 * This is the entry point method.
 	 */
 	public void onModuleLoad() {
-		boolean showpix = true;
-		if (showpix) {
-			RootPanel.get(getDivName()).add(new BodyTrackWidget());
-//			RootPanel.get(getDivName()).add(new FlowPhotosWidget(1293861600-86400*15, 1293861600));
+		if (isStandAlone()) {
+			RootPanel.get("graph").add(new BodyTrackWidget());
 		} else {		
 			mainLayout = new VerticalPanel();
 
@@ -119,6 +117,12 @@ public class Grapher2 implements EntryPoint {
 		gw.paint();
 	}
 
+	private native boolean isStandAlone() /*-{
+		return ! $wnd.initializeGrapher;
+	}-*/;
+	
+	
+	
 	/**
 	 * Returns the name of the div into which this grapher widget should
 	 * place itself, or &quot;graph&quot; if that is not available.

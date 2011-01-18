@@ -40,11 +40,12 @@ public class FlowPhotosWidget extends FlowPanel {
 	
 	static class Photo extends JavaScriptObject {
 		protected Photo() {}
-		public final native int id() /*-{ return this.id; }-*/;
-		public final native double timestamp() /*-{ return this.begin_d; }-*/;
-		public final native void logme() /*-{ console.log(this); }-*/;
-		public final native JsArrayString tagArray() /*-{ return this.tags; }-*/;
-		public final native String tags() /*-{ return this.tags.join(", "); }-*/;
+		public final native int id()                 /*-{ return this.id;              }-*/;
+		public final native double timestamp()       /*-{ return this.begin_d;         }-*/;
+		public final native void logme()             /*-{ console.log(this);           }-*/;
+		public final native JsArrayString tagArray() /*-{ return this.tags;            }-*/;
+		public final native String tags()            /*-{ return this.tags.join(", "); }-*/;
+		public final String thumbURL300() { return "/users/" + G.user_id + "/logphotos/"+id()+".300.jpg"; }
 	}
 	
 	static class PhotoWidget extends VerticalPanel {
@@ -61,7 +62,7 @@ public class FlowPhotosWidget extends FlowPanel {
 		PhotoWidget(Photo p) {
 			final PhotoWidget photoView = this;
 			photo=p;
-			Image image = new Image("http://bodytrack.org/users/1/logphotos/"+photo.id()+".300.jpg");
+			Image image = new Image(photo.thumbURL300());
 			image.setStyleName("photoViewImage");
 			image.addMouseOverHandler(new MouseOverHandler() {
 				@Override
@@ -95,7 +96,7 @@ public class FlowPhotosWidget extends FlowPanel {
 		protected void onMouseOverPhoto() {
 			if (popup == null) {
 				popup = new PopupPanel();
-				popup.add(new Image("http://bodytrack.org/users/1/logphotos/"+photo.id()+".300.jpg"));
+				popup.add(new Image(photo.thumbURL300()));
 				this.add(popup);
 			}
 			popup.setPopupPosition(this.getAbsoluteLeft(),this.getAbsoluteTop()-300);
@@ -105,19 +106,10 @@ public class FlowPhotosWidget extends FlowPanel {
 			popup.hide();
 		}
 
-		static private String join(String[] a, String delim) {
-			if (a.length==0) return "";
-			String ret = a[0];
-			for (int i=1; i<a.length; i++) {
-				ret += delim + a[i];
-			}
-			return ret;
-		}
-		
 		public void setTags(String[] tags) {
 			GWT.log("setTags " + tags);			
-			textBox.setText(join(tags, ", "));
-			final String url = "http://bodytrack.org/users/1/tags/" + photo.id() + "/set?tags=" + join(tags, ",");
+			textBox.setText(StringUtil.join(tags, ", "));
+			final String url = "/" + G.user_id + "/tags/" + photo.id() + "/set?tags=" + StringUtil.join(tags, ",");
 			GWT.log("about to hit " + url);
 			// TODO: this should be .POST
 			RequestBuilder b = new RequestBuilder(RequestBuilder.GET, url);
@@ -179,7 +171,7 @@ public class FlowPhotosWidget extends FlowPanel {
 		TileDescription beginTile = TileDescription.tileAt(level, beginTime);
 		TileDescription endTile = TileDescription.tileAt(level, endTime);
 		for (int offset = beginTile.getOffset(); offset <= endTile.getOffset(); offset++) {
-			final String url = "http://bodytrack.org/photos/1/" + level + "." + offset + ".json";
+			final String url = "/photos/1/" + level + "." + offset + ".json";
 			GWT.log("PVW requesting " + url);
 
 			RequestBuilder b = new RequestBuilder(RequestBuilder.GET, url);
