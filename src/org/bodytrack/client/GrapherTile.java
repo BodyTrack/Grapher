@@ -12,9 +12,11 @@ import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.RequestCallback;
 import com.google.gwt.http.client.RequestException;
 import com.google.gwt.http.client.Response;
+import com.google.gwt.json.client.JSONParser;
+import com.google.gwt.json.client.JSONValue;
 
 /**
- * Represents a single "tile" of data.
+ * Represents a single tile of data.
  *
  * <p>An overlay type for a generic data tile.  This data type can be loaded
  * from JSON using the {@link #buildTile(String)} method.</p>
@@ -24,6 +26,15 @@ import com.google.gwt.http.client.Response;
  * between making the class final and making all public instance methods
  * final.  We opted for the former option.</p>
  */
+// TODO: See if using JSONParser.parseStrict() is better than eval()
+// (it is definitely safer)
+// TODO: Perhaps change this from an overlay type to something that
+// holds a reference to a JSONValue, which would allow arrays and objects
+// without the fix implemented in retrieveTile.  This would also allow
+// using JSONParser.parseStrict() for safety.
+
+// Note: it is possible to cast back and forth between JavaScriptObject
+// and an overlay type, and the casts will succeed.
 public final class GrapherTile extends JavaScriptObject {
 	/**
 	 * The width of a tile, in data points.
@@ -120,9 +131,37 @@ public final class GrapherTile extends JavaScriptObject {
 						Response response) {
 					if (response.getStatusCode() == 200) {
 						callbackFinal.onSuccess(urlFinal);
-						destination.add(buildTile(response.getText()));
+
+						String responseText = response.getText();
+						if (isArray(responseText))
+							// FIXME: This is a somewhat ugly response
+							// This way we still get a JSON dictionary,
+							// since a GrapherTile is an overlay type
+							// over a JSONObject
+							destination.add(buildTile("{\"photo_descriptions\":"
+								+ responseText
+								+ ", \"contains_photo_descriptions\":true}"));
+						else
+							destination.add(buildTile(response.getText()));
 					} else
 						callbackFinal.onFailure(urlFinal);
+				}
+
+				/**
+				 * Tells if the specified text refers to a JsArray object.
+				 *
+				 * @param json
+				 * 		the JSON string to parse
+				 * @return
+				 * 		<tt>true</tt> if and only if json represents a
+				 * 		JSONArray value
+				 */
+				private boolean isArray(String json) {
+					// TODO: This only works in GWT 2.1 and later:
+					// JSONValue parsed = JSONParser.parseStrict(json);
+
+					JSONValue parsed = JSONParser.parse(json);
+					return parsed.isArray() != null;
 				}
 			});
 		} catch (RequestException e) {
@@ -199,7 +238,42 @@ public final class GrapherTile extends JavaScriptObject {
 	}-*/;
 
 	/**
+	 * Tells whether this tile represents photo descriptions or not.
+	 *
+	 * @return
+	 * 		<tt>true</tt> if and only if the contains_photo_descriptions
+	 * 		field of this is <tt>true</tt>
+	 */
+	public native boolean containsPhotoDescriptions() /*-{
+		// Can't return true if this.contains_photo_descriptions equal to
+		// undefined (no such key) or false (explicitly marked false)
+		return !! this.contains_photo_descriptions;
+	}-*/;
+
+	/**
+	 * Returns a list of the
+	 * {@link org.bodytrack.client.PhotoDescription PhotoDescription}
+	 * objects that this GrapherTile holds.
+	 *
+	 * <p>This only works if {@link #containsPhotoDescriptions()}
+	 * returns <tt>true</tt>, indicating that this data is available.</p>
+	 *
+	 * @return
+	 * 		a list of <tt>PhotoDescription</tt> objects if available,
+	 * 		<tt>null</tt> otherwise
+	 */
+	private native JsArray<JavaScriptObject> getRawDescriptions() /*-{
+		if (! this.photo_descriptions)
+			return null;
+
+		return this.photo_descriptions;
+	}-*/;
+
+	/**
 	 * Returns the data points that should be graphed for this GrapherTile.
+	 *
+	 * <p>Note that this works if and only if this GrapherTile represents
+	 * a series of data points, not a photo description.</p>
 	 *
 	 * @return
 	 * 		a {@link java.util.List List} of
@@ -208,9 +282,15 @@ public final class GrapherTile extends JavaScriptObject {
 	 * 		<tt>null</tt> if the required data does not seem to be
 	 * 		available (i.e. the field names &quot;time&quot; and
 	 * 		&quot;mean&quot; are not elements of the array returned
-	 * 		by {@link #getFields() getFields()}).
+	 * 		by {@link #getFields() getFields()}).  Also returns <tt>null</tt>
+	 * 		if this GrapherTile represents a list of
+	 * 		{@link org.bodytrack.client.PhotoDescription PhotoDescription}
+	 * 		objects rather than a series of direct data points.
 	 */
 	public List<PlottablePoint> getDataPoints() {
+		if (containsPhotoDescriptions())
+			return null;
+
 		int timeIndex = -1;
 		int meanIndex = -1;
 
@@ -236,6 +316,34 @@ public final class GrapherTile extends JavaScriptObject {
 			double mean = dataPoint.get(meanIndex);
 
 			result.add(new PlottablePoint(time, mean));
+		}
+
+		return result;
+	}
+
+	/**
+	 * Returns a list of available PhotoDescription objects if
+	 * this tile contains photo descriptions, or <tt>null</tt>
+	 * otherwise.
+	 *
+	 * @return
+	 * 		a (possibly empty) List of PhotoDescriptions if
+	 * 		{@link #containsPhotoDescriptions()} returns
+	 * 		<tt>true</tt>, <tt>null</tt> otherwise
+	 */
+	public List<PhotoDescription> getPhotoDescriptions() {
+		if (! containsPhotoDescriptions())
+			return null;
+
+		JsArray<JavaScriptObject> descriptions = getRawDescriptions();
+		if (descriptions == null)
+			return new ArrayList<PhotoDescription>();
+
+		List<PhotoDescription> result = new ArrayList<PhotoDescription>();
+		for (int i = 0; i < descriptions.length(); i++) {
+			// The following cast will always succeed
+			PhotoDescription curr = (PhotoDescription) descriptions.get(i);
+			result.add(curr);
 		}
 
 		return result;
