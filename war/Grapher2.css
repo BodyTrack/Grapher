@@ -28,6 +28,31 @@ h1 {
   color: red;
 }
 
+.photoViewFlow {
+	display: inline-table;
+	margin-left: 10px;
+	margin-right: 10px;
+}
+
+.photoViewImage {
+	max-width: 150px;
+	max-height: 150px;
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.photoViewTags {
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.clickableLink {
+	margin-left: 5px;
+	margin-right: 5px;
+}
+	
 /** Set ids using widget.getElement().setId("idOfElement") */
 #closeButton {
   margin: 15px 6px 6px;

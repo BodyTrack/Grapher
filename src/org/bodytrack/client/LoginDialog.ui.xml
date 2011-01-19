@@ -1,0 +1,22 @@
+<!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
+<ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder"
+	xmlns:g="urn:import:com.google.gwt.user.client.ui">
+	<ui:style>
+		.cancelButton {
+			font-weight: normal;
+			float: right;
+		}
+		.loginButton {
+			font-weight: bold;
+			float: right;
+		}
+	</ui:style>
+	<g:HTMLPanel>
+	    <h3>Log in to bodytrack.org</h3>
+	    <table>
+	    <tr><td>Username:</td><td><g:TextBox ui:field="username" /></td></tr>
+	    <tr><td>Password:</td><td><g:PasswordTextBox ui:field="password" /></td></tr></table>
+		<g:Button text="Login" styleName="{style.loginButton}" ui:field="login" />
+		<g:Button text="Cancel" styleName="{style.cancelButton}" ui:field="cancel" />
+	</g:HTMLPanel>
+</ui:UiBinder> 

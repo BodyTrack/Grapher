@@ -9,6 +9,7 @@ package org.bodytrack.client;
  * class, if that attacker can introduce cross-site scripting.</p>
  */
 public final class TileDescription {
+	
 	private int level;
 	private int offset;
 
@@ -132,5 +133,29 @@ public final class TileDescription {
 			return false;
 
 		return true;
+	}
+	
+	/**
+	 * Computes the tile level corresponding to a length of time.
+	 * Returns a double;  consider using Math.{floor,round,ceil} to convert to integer.
+	 *
+	 * @param timeLength
+	 * 		length of time, in seconds
+	 */
+	public static double computeLevel(double timeLength) {
+		return Math.log(timeLength/GrapherTile.TILE_WIDTH)/Math.log(2);
+	}
+	
+	
+	/**
+	 * Compute TileDescription for tile at a given level containing a given time.
+	 *
+	 * @param level
+	 * 		the level for the TileDescription to be returned
+	 * @param time
+	 * 		timestamp contained in tile (standard BodyTrack timestamp: seconds since 1/1/1970)
+	 */
+	public static TileDescription tileAt(int level, double time) {
+		return new TileDescription(level, (int) Math.floor(time / (Math.pow(2, level) * GrapherTile.TILE_WIDTH)));
 	}
 }

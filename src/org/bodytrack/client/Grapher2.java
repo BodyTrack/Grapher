@@ -5,7 +5,10 @@ import gwt.g2d.client.graphics.Color;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.bodytrack.client.Junkyard.BodyTrackWid;
+
 import com.google.gwt.core.client.EntryPoint;
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -28,12 +31,16 @@ public class Grapher2 implements EntryPoint {
 	 * This is the entry point method.
 	 */
 	public void onModuleLoad() {
-		mainLayout = new VerticalPanel();
+		if (isStandAlone()) {
+			RootPanel.get("graph").add(new BodyTrackWidget());
+		} else {		
+			mainLayout = new VerticalPanel();
 
-		setupGraphWidget();
+			setupGraphWidget();
 
-		mainLayout.add(gw);
-		RootPanel.get(getDivName()).add(mainLayout);
+			mainLayout.add(gw);
+			RootPanel.get(getDivName()).add(mainLayout);
+		}
 	}
 
 	private void setupGraphWidget() {
@@ -110,6 +117,12 @@ public class Grapher2 implements EntryPoint {
 		gw.paint();
 	}
 
+	private native boolean isStandAlone() /*-{
+		return ! $wnd.initializeGrapher;
+	}-*/;
+	
+	
+	
 	/**
 	 * Returns the name of the div into which this grapher widget should
 	 * place itself, or &quot;graph&quot; if that is not available.
