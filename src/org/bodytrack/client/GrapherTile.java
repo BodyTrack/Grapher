@@ -12,8 +12,6 @@ import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.RequestCallback;
 import com.google.gwt.http.client.RequestException;
 import com.google.gwt.http.client.Response;
-import com.google.gwt.json.client.JSONParser;
-import com.google.gwt.json.client.JSONValue;
 
 /**
  * Represents a single tile of data.
@@ -138,7 +136,8 @@ public final class GrapherTile extends JavaScriptObject {
 							// This way we still get a JSON dictionary,
 							// since a GrapherTile is an overlay type
 							// over a JSONObject
-							destination.add(buildTile("{\"photo_descriptions\":"
+							destination.add(buildTile(
+								"{\"photo_descriptions\":"
 								+ responseText
 								+ ", \"contains_photo_descriptions\":true}"));
 						else
@@ -148,20 +147,27 @@ public final class GrapherTile extends JavaScriptObject {
 				}
 
 				/**
-				 * Tells if the specified text refers to a JsArray object.
+				 * Tells if the specified text refers to a JavaScript
+				 * Array object rather than to a dictionary.
 				 *
 				 * @param json
 				 * 		the JSON string to parse
 				 * @return
-				 * 		<tt>true</tt> if and only if json represents a
-				 * 		JSONArray value
+				 * 		<tt>true</tt> if json represents a JavaScript
+				 * 		Array value, not a dictionary
 				 */
 				private boolean isArray(String json) {
 					// TODO: This only works in GWT 2.1 and later:
 					// JSONValue parsed = JSONParser.parseStrict(json);
 
-					JSONValue parsed = JSONParser.parse(json);
-					return parsed.isArray() != null;
+					// This is a hack until GWT 2.1
+					int bracketIndex = json.indexOf('[');
+					int curlyBracketIndex = json.indexOf('{');
+
+					// An object is an array if the bracketed portion
+					// surrounds the first set of curly braces
+					return bracketIndex >= 0
+						&& bracketIndex < curlyBracketIndex;
 				}
 			});
 		} catch (RequestException e) {
