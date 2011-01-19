@@ -434,7 +434,8 @@ public class DataPlot implements Alertable<String> {
 
 				// Make sure we don't still mark this as pending
 				pendingDescriptions.remove(new TileDescription(
-					tile.getLevel(), tile.getOffset()));
+					tile.getPlottableTile().getLevel(),
+					tile.getPlottableTile().getOffset()));
 			}
 
 			pendingData.clear();
@@ -650,11 +651,11 @@ public class DataPlot implements Alertable<String> {
 			if (best == null)
 				best = tile;
 			else if(Math.abs(desc.getLevel() - bestLevel) <
-					Math.abs(best.getLevel() - bestLevel))
+					Math.abs(best.getPlottableTile().getLevel() - bestLevel))
 				best = tile;
 			else if (Math.abs(desc.getLevel() - bestLevel) ==
-					Math.abs(best.getLevel() - bestLevel)) {
-				if (desc.getLevel() < best.getLevel())
+					Math.abs(best.getPlottableTile().getLevel() - bestLevel)) {
+				if (desc.getLevel() < best.getPlottableTile().getLevel())
 					best = tile;
 			}
 		}

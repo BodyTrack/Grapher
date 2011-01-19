@@ -92,7 +92,7 @@ public class ZeoDataPlot extends DataPlot {
 		List<PlottablePoint> transformedPoints =
 			new ArrayList<PlottablePoint>();
 
-		double width = tile.getSampleWidth();
+		double width = tile.getPlottableTile().getSampleWidth();
 		if (width <= 0)
 			return new ArrayList<PlottablePoint>();
 
