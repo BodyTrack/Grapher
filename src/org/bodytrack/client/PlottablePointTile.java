@@ -8,7 +8,7 @@ import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.JsArrayNumber;
 import com.google.gwt.core.client.JsArrayString;
 
-public class PlottablePointTile extends JavaScriptObject {
+public final class PlottablePointTile extends JavaScriptObject {
 	// Overlay types always have protected, zero-arg constructors
 	// with empty bodies
 	protected PlottablePointTile() { }

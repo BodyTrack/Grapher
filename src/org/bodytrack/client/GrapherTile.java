@@ -27,8 +27,7 @@ import com.google.gwt.http.client.Response;
  * meaning that this class is <span style="color: red">not</span>
  * immutable.</p>
  */
-// TODO: See if using JSONParser.parseStrict() is better than eval()
-// (it is definitely safer)
+// TODO: Use JSONParser.parseStrict() rather than eval() - this is for safety
 public class GrapherTile {
 	// One or the other of these fields will always be null
 	private final String url;
