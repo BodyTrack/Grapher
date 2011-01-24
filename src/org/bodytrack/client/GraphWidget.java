@@ -25,6 +25,7 @@ import com.google.gwt.event.dom.client.MouseUpEvent;
 import com.google.gwt.event.dom.client.MouseUpHandler;
 import com.google.gwt.event.dom.client.MouseWheelEvent;
 import com.google.gwt.event.dom.client.MouseWheelHandler;
+import com.google.gwt.user.client.Timer;
 
 public class GraphWidget extends Surface {
 	/**
@@ -36,6 +37,8 @@ public class GraphWidget extends Surface {
 	private static final double MOUSE_WHEEL_ZOOM_RATE_PC = 1.1;
 
 	private static final double HIGHLIGHT_DISTANCE_THRESHOLD = 5;
+
+	private static final int PAINT_TWICE_DELAY = 10;
 
 	private static final int INITIAL_MESSAGE_ID = 1;
 	private static final Color LOADING_MSG_COLOR = Canvas.DARK_GRAY;
@@ -400,7 +403,24 @@ public class GraphWidget extends Surface {
 		}
 	}
 
+	/**
+	 * Actually paints this widget twice, with the two paint operations
+	 * separated by PAINT_TWICE_DELAY milliseconds.
+	 */
 	public void paint() {
+		paintInternal();
+
+		Timer timer = new Timer() {
+			@Override
+			public void run() {
+				paintInternal();
+			}
+		};
+
+		timer.schedule(PAINT_TWICE_DELAY);
+	}
+
+	private void paintInternal() {
 		layout();
 		this.clear();
 		this.save();
