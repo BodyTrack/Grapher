@@ -86,6 +86,7 @@ public class GraphWidget extends Surface {
 
 				// Stops scrolling meant for the widget from moving the
 				// browser's scroll bar
+				event.preventDefault();
 				event.stopPropagation();
 			}
 		});
