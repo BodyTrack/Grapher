@@ -8,6 +8,16 @@ import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.JsArrayNumber;
 import com.google.gwt.core.client.JsArrayString;
 
+/**
+ * Representation of a tile of points that can be plotted in
+ * two dimensions.
+ *
+ * <p>This is a JavaScript overlay type for a tile.  This tile is
+ * assumed to have dictionary entries called &quot;level&quot;,
+ * &quot;offset&quot;, &quot;fields&quot;, and &quot;data&quot;.
+ * It may optionally have a field called &quot;sample_width&quot;,
+ * which applies for Zeo data.</p>
+ */
 public final class PlottablePointTile extends JavaScriptObject {
 	// Overlay types always have protected, zero-arg constructors
 	// with empty bodies

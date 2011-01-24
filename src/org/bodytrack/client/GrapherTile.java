@@ -35,7 +35,8 @@ import com.google.gwt.http.client.Response;
 // expression that will parse JSON safely
 // TODO: Make sure the level and offset we store here are consistent with
 // that sent to us in a PlottablePointTile
-public class GrapherTile {
+
+public final class GrapherTile {
 	// One or the other of these fields will always be null
 	private final String url;
 	private final int level;
@@ -102,6 +103,14 @@ public class GrapherTile {
 	 * Tells if the specified text refers to a JavaScript
 	 * Array object rather than to a dictionary.
 	 *
+	 * <h2 style="color: red">WARNING:</h2>
+	 *
+	 * <p>This uses the JavaScript eval() function, which makes
+	 * it dangerous if json is from an untrusted source.  See the
+	 * full warning at
+	 * {@link #retrieveTile(String, int, int, List, Alertable)}, which
+	 * completely applies here as well.</p>
+	 *
 	 * @param json
 	 * 		the JSON string to parse
 	 * @return
@@ -117,8 +126,23 @@ public class GrapherTile {
 		return obj.__proto__["constructor"].toString().indexOf("Array") >= 0;
 	}-*/;
 
-	// TODO: Document like PlottablePointTile#buildTile()
-	// Possibly move to PhotoDescription
+	/**
+	 * Reads an array from json, which is assumed to be a JSON
+	 * representation of an array.
+	 *
+	 * <h2 style="color: red">WARNING:</h2>
+	 *
+	 * <p>This uses the JavaScript eval() function, which makes
+	 * it dangerous if json is from an untrusted source.  See the
+	 * full warning at
+	 * {@link #retrieveTile(String, int, int, List, Alertable)}, which
+	 * completely applies here as well.</p>
+	 *
+	 * @param json
+	 * 		the JSON string representing an array
+	 * @return
+	 * 		the array of the objects found in json
+	 */
 	private static native JsArray<JavaScriptObject> evalArray(String json) /*-{
 		eval("var arr = " + json);
 		return arr;
@@ -147,6 +171,10 @@ public class GrapherTile {
 	 *
 	 * @param url
 	 * 		the URL from which to retrieve the data
+	 * @param level
+	 * 		the level of the tile we are retrieving
+	 * @param offset
+	 * 		the offset of the tile we are retrieving
 	 * @param destination
 	 * 		the {@link java.util.List List} into which this method
 	 * 		will add the tile when the tile is loaded from the server
@@ -199,14 +227,34 @@ public class GrapherTile {
 		}
 	}
 
+	/**
+	 * Returns the URL used to create this <tt>GrapherTile</tt>.
+	 *
+	 * @return
+	 * 		the URL used to create this <tt>GrapherTile</tt>
+	 */
 	public String getUrl() {
 		return url;
 	}
 
+	/**
+	 * Returns the level used to create this <tt>GrapherTile</tt>.
+	 *
+	 * @return
+	 * 		the level passed to the constructor when this <tt>GrapherTile</tt>
+	 * 		was created
+	 */
 	public int getLevel() {
 		return level;
 	}
 
+	/**
+	 * Returns the offset used to create this <tt>GrapherTile</tt>.
+	 *
+	 * @return
+	 * 		the offset passed to the constructor when this
+	 * 		<tt>GrapherTile</tt> was created
+	 */
 	public int getOffset() {
 		return offset;
 	}
@@ -222,6 +270,18 @@ public class GrapherTile {
 		return new TileDescription(level, offset);
 	}
 
+	/**
+	 * Returns a {@link org.bodytrack.client.PlottableTile PlottableTile}
+	 * object representing any (x, y) points in this <tt>GrapherTile</tt>,
+	 * or <tt>null</tt> if this <tt>GrapherTile</tt> contains no such
+	 * information.
+	 *
+	 * @return
+	 * 		the <tt>PlottableTile</tt> that was parsed out of the json
+	 * 		parameter sent to the constructor when this object was
+	 * 		initialized, or <tt>null</tt> if json was not a
+	 * 		<tt>PlottableTile</tt>
+	 */
 	public PlottablePointTile getPlottableTile() {
 		return tile;
 	}
@@ -240,8 +300,38 @@ public class GrapherTile {
 		return photoDescs;
 	}
 
-	// A convenience method that also helps with backward
-	// compatibility
+	/**
+	 * Returns <tt>true</tt> if and only if there is some data
+	 * available from this <tt>GrapherTile</tt> object.
+	 *
+	 * <p>If this returns <tt>true</tt>, then exactly one
+	 * of {@link GrapherTile#getPlottableTile()} and
+	 * {@link GrapherTile#getPhotoDescriptions()} will return a
+	 * non-<tt>null</tt> value.  If this returns <tt>false</tt>,
+	 * both methods will return <tt>null</tt> if called.</p>
+	 *
+	 * @return
+	 * 		<tt>true</tt> if there is some data available from
+	 * 		this object, <tt>false</tt> otherwise
+	 */
+	public boolean containsData() {
+		return tile != null || photoDescs != null;
+	}
+
+	/**
+	 * Returns a list of plottable points found in the plottable
+	 * tile this stores, or <tt>null</tt> if
+	 * {@link #getPlottableTile()} returns <tt>null</tt>.
+	 *
+	 * <p>This is exactly equivalent to
+	 * {@code getPlottableTile() == null ? null :
+	 * getPlottableTile().getDataPoints()}.</p>
+	 *
+	 * @return
+	 * 		a list of plottable points found in the plottable
+	 * 		tile this stores, or <tt>null</tt> if
+	 * 		{@link #getPlottableTile()} returns <tt>null</tt>.
+	 */
 	public List<PlottablePoint> getDataPoints() {
 		if (tile == null)
 			return null;
