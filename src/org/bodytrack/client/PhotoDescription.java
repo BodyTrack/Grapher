@@ -1,6 +1,7 @@
 package org.bodytrack.client;
 
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.JsArrayString;
 
 /**
  * Represents a single photo and all its parameters.
@@ -74,6 +75,16 @@ public final class PhotoDescription extends JavaScriptObject {
 			return -1e308;
 
 		return this.begin_d;
+	}-*/;
+
+	/**
+	 * Returns the tags for this <tt>PhotoDescription</tt>.
+	 *
+	 * @return
+	 * 		the tags for this <tt>PhotoDescription</tt>
+	 */
+	public final native JsArrayString getTags() /*-{
+		return this.tags;
 	}-*/;
 
 	/**
