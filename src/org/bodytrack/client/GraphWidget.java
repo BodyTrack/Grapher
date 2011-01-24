@@ -83,6 +83,10 @@ public class GraphWidget extends Surface {
 			@Override
 			public void onMouseWheel(MouseWheelEvent event) {
 				handleMouseWheelEvent(event);
+
+				// Stops scrolling meant for the widget from moving the
+				// browser's scroll bar
+				event.stopPropagation();
 			}
 		});
 
