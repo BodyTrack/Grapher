@@ -18,19 +18,28 @@ import com.google.gwt.http.client.Response;
  * {@link org.bodytrack.client.PhotoDescription PhotoDescription}
  * objects, or a single
  * {@link org.bodytrack.client.PlottablePointTile PlottablePointTile}
- * object.  There are essentially two interfaces for this, but it
- * allows compatibility with existing code and promotes code
- * reuse.</p>
+ * object.  A GrapherTile object has two very important methods:
+ * {@link #getPlottableTile()} and {@link #getPhotoDescriptions()}.
+ * At least one of these methods will always return <tt>null</tt> for
+ * any given <tt>GrapherTile</tt> object, but normally one of these
+ * methods will return a non-<tt>null</tt> value that is useful.  In
+ * this way, a <tt>GrapherTile</tt> object is a useful container for
+ * objects of two other types.</p>
  *
  * <p>Since this almost always holds a reference to a JavaScript
- * overlay object, we do not bother making copies of return values,
- * meaning that this class is <span style="color: red">not</span>
- * immutable.</p>
+ * overlay object, for efficiency we do not bother making copies of
+ * return values, meaning that this class is <em>not</em> immutable.</p>
  */
 // TODO: Use JSONParser.parseStrict() rather than eval() - this is for safety
+// OR use http://www.ietf.org/rfc/rfc4627.txt, section 6, which has an
+// expression that will parse JSON safely
+// TODO: Make sure the level and offset we store here are consistent with
+// that sent to us in a PlottablePointTile
 public class GrapherTile {
 	// One or the other of these fields will always be null
 	private final String url;
+	private final int level;
+	private final int offset;
 	private final PlottablePointTile tile;
 	private final List<PhotoDescription> photoDescs;
 
@@ -47,6 +56,10 @@ public class GrapherTile {
 	 *
 	 * @param url
 	 * 		the URL from which json came
+	 * @param level
+	 * 		the level of this tile
+	 * @param offset
+	 * 		the offset of this tile
 	 * @param json
 	 * 		the JSON representation of either a list of PhotoDescription
 	 * 		objects or a single PlottablePointTile object.  Another
@@ -55,8 +68,14 @@ public class GrapherTile {
 	 * @throws NullPointerException
 	 * 		if url or json is <tt>null</tt>
 	 */
-	public GrapherTile(String url, String json) {
+	public GrapherTile(String url, int level, int offset, String json) {
+		if (url == null || json == null)
+			throw new NullPointerException(
+				"Null parameter for construction of GrapherTile");
+
 		this.url = url;
+		this.level = level;
+		this.offset = offset;
 
 		// Allow for the special case in which JSON is the empty string
 		if (json.equals("")) {
@@ -89,19 +108,14 @@ public class GrapherTile {
 	 * 		<tt>true</tt> if json represents a JavaScript
 	 * 		Array value, not a dictionary
 	 */
-	private static boolean isArray(String json) {
-		// TODO: This only works in GWT 2.1 and later:
-		// JSONValue parsed = JSONParser.parseStrict(json);
+	// TODO: This only works in GWT 2.1 and later:
+	// JSONValue parsed = JSONParser.parseStrict(json);
 
-		// This is a hack until GWT 2.1
-		int bracketIndex = json.indexOf('[');
-		int curlyBracketIndex = json.indexOf('{');
-
-		// An object is an array if the bracketed portion
-		// surrounds the first set of curly braces
-		return bracketIndex >= 0
-			&& bracketIndex < curlyBracketIndex;
-	}
+	// This is still a hack, just less of a hack than before
+	private static native boolean isArray(String json) /*-{
+		eval("var obj = " + json);
+		return obj.__proto__["constructor"].toString().indexOf("Array") >= 0;
+	}-*/;
 
 	// TODO: Document like PlottablePointTile#buildTile()
 	// Possibly move to PhotoDescription
@@ -143,45 +157,69 @@ public class GrapherTile {
 	 * 		in notifications because it allows callback to
 	 * 		differentiate between several requested tiles.
 	 */
-	public static void retrieveTile(String url,
+	public static void retrieveTile(final String url,
+			final int level,
+			final int offset,
 			final List<GrapherTile> destination,
-			Alertable<String> callback) {
+			final Alertable<GrapherTile> callback) {
 		// Send request to server and catch any errors.
 		RequestBuilder builder =
 			new RequestBuilder(RequestBuilder.GET, url);
 
-		try {
-			// Required because an inner class can only access
-			// a local variable if that variable is final
-			final Alertable<String> callbackFinal = callback;
-			final String urlFinal = url;
+		// This is simply to clean up code, so we don't construct the
+		// same tile in multiple places
+		final GrapherTile failureTile =
+			new GrapherTile(url, level, offset, "");
 
+		try {
 			builder.sendRequest(null, new RequestCallback() {
 				@Override
 				public void onError(Request request,
 						Throwable exception) {
-					callbackFinal.onFailure(urlFinal);
+					callback.onFailure(failureTile);
 				}
 
 				@Override
 				public void onResponseReceived(Request request,
 						Response response) {
 					if (response.getStatusCode() == 200) {
-						callbackFinal.onSuccess(urlFinal);
+						GrapherTile successTile = new GrapherTile(url,
+							level,
+							offset,
+							response.getText());
 
-						destination.add(new GrapherTile(urlFinal,
-							response.getText()));
+						callback.onSuccess(successTile);
+						destination.add(successTile);
 					} else
-						callbackFinal.onFailure(urlFinal);
+						callback.onFailure(failureTile);
 				}
 			});
 		} catch (RequestException e) {
-			callback.onFailure(url);
+			callback.onFailure(failureTile);
 		}
 	}
 
 	public String getUrl() {
 		return url;
+	}
+
+	public int getLevel() {
+		return level;
+	}
+
+	public int getOffset() {
+		return offset;
+	}
+
+	/**
+	 * Returns a description of the current tile.
+	 *
+	 * @return
+	 * 		a new {@link org.bodytrack.client.TileDescription TileDescription}
+	 * 		object representing the level and offset of this tile
+	 */
+	public TileDescription getDescription() {
+		return new TileDescription(level, offset);
 	}
 
 	public PlottablePointTile getPlottableTile() {
@@ -209,14 +247,5 @@ public class GrapherTile {
 			return null;
 
 		return tile.getDataPoints();
-	}
-
-	// A convenience method that also helps with backward
-	// compatibility
-	public TileDescription getDescription() {
-		if (tile == null)
-			return null;
-
-		return tile.getDescription();
 	}
 }

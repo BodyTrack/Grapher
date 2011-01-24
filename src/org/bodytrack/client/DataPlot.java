@@ -36,7 +36,7 @@ import java.util.Set;
  * will draw, and the order in which paintAllDataPoints will draw
  * them.</p>
  */
-public class DataPlot implements Alertable<String> {
+public class DataPlot implements Alertable<GrapherTile> {
 	// These two constants are used when highlighting this plot
 	protected static final int NORMAL_STROKE_WIDTH = 1;
 	protected static final int HIGHLIGHT_STROKE_WIDTH = 3;
@@ -266,7 +266,7 @@ public class DataPlot implements Alertable<String> {
 			return;
 
 		String url = baseUrl + level + "." + offset + ".json";
-		GrapherTile.retrieveTile(url, pendingData, this);
+		GrapherTile.retrieveTile(url, level, offset, pendingData, this);
 
 		// Tell the user we are looking for information
 		addLoadingText(level, offset, url);
@@ -348,7 +348,9 @@ public class DataPlot implements Alertable<String> {
 	 * 		the URL of the tile that loaded
 	 */
 	@Override
-	public void onSuccess(String url) {
+	public void onSuccess(GrapherTile tile) {
+		String url = tile.getUrl();
+
 		if (pendingUrls.containsKey(url))
 			pendingUrls.remove(url);
 
@@ -369,7 +371,11 @@ public class DataPlot implements Alertable<String> {
 	 * 		the URL of the tile that failed
 	 */
 	@Override
-	public void onFailure(String url) {
+	public void onFailure(GrapherTile tile) {
+		String url = tile.getUrl();
+		int level = tile.getLevel();
+		int offset = tile.getOffset();
+
 		if (pendingUrls.containsKey(url)) {
 			int oldValue = pendingUrls.get(url);
 			if (oldValue > MAX_REQUESTS_PER_URL) {
@@ -386,7 +392,7 @@ public class DataPlot implements Alertable<String> {
 		} else
 			pendingUrls.put(url, 1);
 
-		GrapherTile.retrieveTile(url, pendingData, this);
+		GrapherTile.retrieveTile(url, level, offset, pendingData, this);
 
 		// See the documentation in onSuccess() to see why
 		// container.paint() is important
