@@ -72,6 +72,9 @@ public class PhotoGraphAxis extends GraphAxis {
 		double x = project2D(INITIAL_MIN).getX();
 		double width = getWidth();
 
+		// Allow ourselves to begin drawing
+		canvas.beginPath();
+
 		// Now figure out where the line should go, drawing ticks
 		// as we go along
 		double topValue = PHOTO_CENTER_LOCATION + PHOTO_HEIGHT / 2.0;
@@ -91,9 +94,13 @@ public class PhotoGraphAxis extends GraphAxis {
 		double bottomY = projectY(bottomValue);
 
 		// Now draw the vertical line
-		canvas.beginPath();
 		canvas.getRenderer().drawLineSegment(x, topY, x, bottomY);
+
+		// Actually render all our ticks and lines on the canvas
 		canvas.stroke();
+
+		// Clean up after ourselves
+		canvas.getSurface().setStrokeStyle(Canvas.DEFAULT_COLOR);
 	}
 
 	/**
@@ -102,6 +109,11 @@ public class PhotoGraphAxis extends GraphAxis {
 	 * <p>Draws a tick of width {@code width * TICK_WIDTH_FACTOR}
 	 * with its left edge at the specified X-value, and at Y-value
 	 * determined by {@code projectY(value)}.</p>
+	 *
+	 * <p>Note that this method does not call {@code canvas.beginPath()}
+	 * or {@code canvas.stroke()}.  It is up to a calling method to
+	 * call {@code canvas.beginPath()} before calling this method,
+	 * and to call {@code canvas.stroke()} after calling this method.</p>
 	 *
 	 * @param canvas
 	 * 		a {@link org.bodytrack.client.Canvas Canvas} on which the
@@ -132,8 +144,6 @@ public class PhotoGraphAxis extends GraphAxis {
 		double tickWidth = TICK_WIDTH_FACTOR * width;
 		double xRight = x + tickWidth;
 
-		canvas.beginPath();
 		canvas.getRenderer().drawLineSegment(x, y, xRight, y);
-		canvas.stroke();
 	}
 }
