@@ -21,7 +21,16 @@ import gwt.g2d.client.math.Vector2;
  * a partially out of bounds structure, and all methods act exactly
  * the same as their DirectShapeRenderer counterparts if all parts of
  * a structure are in bounds.</p>
+ *
+ * <p>Also note that none of these methods calls
+ * {@link org.bodytrack.client.Canvas#beginPath() beginPath()} or
+ * {@link org.bodytrack.client.Canvas#stroke() stroke()} on the
+ * underlying {@link org.bodytrack.client.Canvas Canvas} object: it
+ * is up the the caller to call these methods.</p>
  */
+
+// TODO: Add a method to draw images, partially if necessary
+
 public final class BoundedDrawingBox {
 	private Canvas canvas;
 	private double xMin;
