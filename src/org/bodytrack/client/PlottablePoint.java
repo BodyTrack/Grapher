@@ -26,7 +26,7 @@ public final class PlottablePoint {
 		myDate = date;
 		myValue = value;
 	}
-	
+
 	/**
 	 * Returns the date for this PlottablePoint.
 	 * 
@@ -45,5 +45,35 @@ public final class PlottablePoint {
 	 */
 	public double getValue() {
 		return myValue;
+	}
+
+	/**
+	 * Returns a hashcode based on the date of this <tt>PlottablePoint</tt>.
+	 */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		long temp = (long) Math.floor(myDate);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		return result;
+	}
+
+	/**
+	 * Considers this as equal to obj iff obj is a <tt>PlottablePoint</tt>
+	 * object with the same date as this, disregarding any fractional
+	 * part.
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (! (obj instanceof PlottablePoint))
+			return false;
+
+		return (long) Math.floor(myDate) ==
+			(long) Math.floor(((PlottablePoint) obj).myDate);
 	}
 }
