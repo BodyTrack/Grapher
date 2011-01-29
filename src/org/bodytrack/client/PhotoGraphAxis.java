@@ -24,8 +24,22 @@ public class PhotoGraphAxis extends GraphAxis {
 	// of total width
 	private static final double TICK_WIDTH_FACTOR = 0.5;
 
-	private static final double PHOTO_CENTER_LOCATION = 0.8;
-	private static final double PHOTO_HEIGHT = 0.35;
+	/**
+	 * The logical Y-value at which the center of a photo should be
+	 * placed.  Note that a call to {@link #project2D(double)} is
+	 * required to get the actual value in pixels where the center
+	 * should be drawn.
+	 */
+	public static final double PHOTO_CENTER_LOCATION = 0.8;
+
+	/**
+	 * The logical height for a photo.  Note that calls to
+	 * {@link #project2D(double)} are required to get the actual
+	 * locations of the top and bottom of the image.  Also note
+	 * that this is for the original photo, not for an expanded
+	 * size photo that the user is mousing over.
+	 */
+	public static final double PHOTO_HEIGHT = 0.35;
 
 	public PhotoGraphAxis(String channelName, double width) {
 		super(channelName, INITIAL_MIN, INITIAL_MAX,
