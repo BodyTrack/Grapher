@@ -37,21 +37,33 @@ public final class PhotoGetter {
 		DEFAULT_IMAGE.setHeight(DEFAULT_IMAGE_HEIGHT + "px");
 	}
 
+	// Used for equality and hashing
+	private final int userId;
+	private final int imageId;
+
+	// Used for grabbing image
 	private final Image img;
 	private final String baseUrl;
 	private final PhotoGetterHandler eventHandler;
 
+	// Data about what happened to the image
 	private boolean imageLoaded;
 	private boolean loadFailed;
 
+	/**
+	 * Creates a new <tt>PhotoGetter</tt> to retrieve information
+	 * for the specified user.
+	 *
+	 * @param userId
+	 * @param imageId
+	 */
 	public PhotoGetter(int userId, int imageId) {
+		this.userId = userId;
+		this.imageId = imageId;
+
 		img = new Image();
 
-		// You can find a photo at
-		// the URL /users/:user_id/logphotos/:id.:width.jpg
-		// Note that baseUrl leaves of the :width.jpg portion of
-		// the URL
-		baseUrl = "/users/" + userId + "/logphotos/" + imageId + ".";
+		baseUrl = getBaseUrl(userId, imageId);
 
 		eventHandler = new PhotoGetterHandler();
 		img.addLoadHandler(eventHandler);
@@ -60,8 +72,47 @@ public final class PhotoGetter {
 		imageLoaded = false;
 		loadFailed = false;
 
-		String url = baseUrl + DEFAULT_WIDTH + ".jpg";
+		String url = getUrl(baseUrl);
 		img.setUrl(url);
+	}
+
+	/**
+	 * Builds the baseUrl variable for an object to use for an image
+	 * with the specified user ID and image ID.
+	 *
+	 * <p>This method, along with {@link #getUrl(String)}, encapsulates
+	 * the logic for image URL production.</p>
+	 *
+	 * @param userId
+	 * 		the ID of the user who owns the image
+	 * @param imageId
+	 * 		the ID of the image to download
+	 * @return
+	 * 		the baseUrl variable to use for getting images for the
+	 * 		specified user ID and image ID
+	 */
+	private static String getBaseUrl(int userId, int imageId) {
+		// You can find a photo at
+		// the URL /users/:user_id/logphotos/:id.:width.jpg
+		// Note that baseUrl leaves off the :width.jpg portion of
+		// the URL
+		return "/users/" + userId + "/logphotos/" + imageId + ".";
+	}
+
+	/**
+	 * Builds the URL to use to get a photo of width DEFAULT_WIDTH.
+	 *
+	 * <p>This method, along with {@link #getBaseUrl(int, int)},
+	 * encapsulates the logic for image URL production.</p>
+	 *
+	 * @param baseUrl
+	 * 		the baseUrl value that holds the user ID and image ID
+	 * 		information for the image
+	 * @return
+	 * 		the URL to use to get the image with width DEFAULT_WIDTH
+	 */
+	private static String getUrl(String baseUrl) {
+		return baseUrl + DEFAULT_WIDTH + ".jpg";
 	}
 
 	/**
@@ -106,6 +157,68 @@ public final class PhotoGetter {
 	 */
 	public boolean loadFailed() {
 		return loadFailed;
+	}
+
+	/**
+	 * Returns the user ID used to construct this <tt>PhotoGetter</tt>.
+	 *
+	 * @return
+	 * 		the user ID passed to the constructor when this
+	 * 		<tt>PhotoGetter</tt> was created
+	 */
+	public int getUserId() {
+		return userId;
+	}
+
+	/**
+	 * Returns the image ID used to construct this <tt>PhotoGetter</tt>.
+	 *
+	 * @return
+	 * 		the image ID passed to the constructor when this
+	 * 		<tt>PhotoGetter</tt> was created
+	 */
+	public int getImageId() {
+		return imageId;
+	}
+
+	/**
+	 * Computes a hashcode for this object based on image ID and user ID.
+	 *
+	 * @return
+	 * 		a hashcode based on the image ID and user ID passed in to
+	 * 		the constructor when this object was created
+	 */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + imageId;
+		result = prime * result + userId;
+		return result;
+	}
+
+	/**
+	 * Tells whether this and obj have the same image ID and user ID.
+	 *
+	 * @return
+	 * 		<tt>true</tt> if and only if obj is of type <tt>PhotoGetter</tt>
+	 * 		and has the same image ID and user ID (from the constructor)
+	 * 		as this object does
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (!(obj instanceof PhotoGetter))
+			return false;
+		PhotoGetter other = (PhotoGetter) obj;
+		if (imageId != other.imageId)
+			return false;
+		if (userId != other.userId)
+			return false;
+		return true;
 	}
 
 	/**
