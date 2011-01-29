@@ -265,7 +265,7 @@ public class DataPlot implements Alertable<GrapherTile> {
 		if (pendingDescriptions.contains(desc))
 			return;
 
-		String url = baseUrl + level + "." + offset + ".json";
+		String url = getTileUrl(level, offset);
 		GrapherTile.retrieveTile(url, level, offset, pendingData, this);
 
 		// Tell the user we are looking for information
@@ -274,6 +274,26 @@ public class DataPlot implements Alertable<GrapherTile> {
 		// Make sure we don't fetch this again unnecessarily
 		pendingDescriptions.add(desc);
 		pendingUrls.put(url, 0);
+	}
+
+	/**
+	 * A method to generate the correct URL for a given tile.
+	 *
+	 * <p>This method is designed so that subclasses can override
+	 * it and change the default behavior of tile fetching with
+	 * little effort.  For instance, a photo data plot can modify the
+	 * &quot;tags&quot; and &quot;nsfw&quot; parameters in the request
+	 * to the server.</p>
+	 *
+	 * @param level
+	 * 		the level at which the tile should come
+	 * @param offset
+	 * 		the offset of the tile
+	 * @return
+	 * 		the URL to use to get the tile
+	 */
+	protected String getTileUrl(int level, int offset) {
+		return baseUrl + level + "." + offset + ".json";
 	}
 
 	/**
@@ -551,7 +571,7 @@ public class DataPlot implements Alertable<GrapherTile> {
 	 * 		{@link org.bodytrack.client.BoundedDrawingBox BoundedDrawingBox}
 	 * 		that should constrain the drawing.  Forwarding graphics calls
 	 * 		through drawing will ensure that everything draws up to the edge
-	 * 		but no farther.
+	 * 		but no farther
 	 * @param x
 	 * 		the X-coordinate of the point to draw
 	 * @param y
@@ -565,14 +585,15 @@ public class DataPlot implements Alertable<GrapherTile> {
 	/**
 	 * Draws a single data point on the graph.
 	 *
-	 * Note that this method has as a precondition that {@code prevX < x}.
+	 * <p>Note that this method has as a precondition that
+	 * {@code prevX < x}.</p>
 	 *
 	 * @param drawing
 	 * 		the
 	 * 		{@link org.bodytrack.client.BoundedDrawingBox BoundedDrawingBox}
 	 * 		that should constrain the drawing.  Forwarding graphics calls
 	 * 		through drawing will ensure that everything draws up to the edge
-	 * 		but no farther.
+	 * 		but no farther
 	 * @param prevX
 	 * 		the previous X-value, which will be greater than
 	 * 		MIN_DRAWABLE_VALUE
