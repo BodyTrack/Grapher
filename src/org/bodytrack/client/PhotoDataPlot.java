@@ -4,8 +4,10 @@ import gwt.g2d.client.math.Vector2;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.google.gwt.dom.client.ImageElement;
 
@@ -18,13 +20,10 @@ public class PhotoDataPlot extends DataPlot {
 
 	// Images tells us which images are associated with each PlottablePoint
 	// we have to draw
-	// TODO: Handle multiple images in a second (this version is problematic
-	// because, if two images have times within a second of each other, they
-	// will crowd out each other in the map)
-	private final Map<PlottablePoint, PhotoGetter> images;
+	private final Map<PlottablePoint, Set<PhotoGetter>> images;
 
 	// TODO: Will be used when we implement highlighting
-	private PhotoGetter highlightedImage;
+	private Set<PhotoGetter> highlightedImages;
 
 	private static final double IMAGE_Y_VALUE =
 		PhotoGraphAxis.PHOTO_CENTER_LOCATION;
@@ -60,9 +59,9 @@ public class PhotoDataPlot extends DataPlot {
 		// so we will be able to cast freely later on
 
 		this.userId = userId;
-		images = new HashMap<PlottablePoint, PhotoGetter>();
+		images = new HashMap<PlottablePoint, Set<PhotoGetter>>();
 
-		highlightedImage = null;
+		highlightedImages = new HashSet<PhotoGetter>();
 	}
 
 	/**
@@ -97,9 +96,33 @@ public class PhotoDataPlot extends DataPlot {
 			// objects is based on equality of the floors of the times
 			// of the objects (this is robust to small variations in
 			// even the same object)
-			if (! images.containsKey(pos))
-				images.put(pos, new PhotoGetter(userId, desc.getId()));
+			if (! images.containsKey(pos)) {
+				Set<PhotoGetter> newValue = new HashSet<PhotoGetter>();
+				newValue.add(new PhotoGetter(userId, desc.getId()));
+				images.put(pos, newValue);
+			} else {
+				Set<PhotoGetter> value = images.get(pos);
+				// TODO: Add a startDownload() method to PhotoGetter (or
+				// replace the PhotoGetter constructor with a pair of
+				// factory methods, one to ask the network and one not), so
+				// we won't start a new network connection with the line
+				// if (value.contains(new PhotoGetter(userId, desc.getId())))
 
+				boolean haveDesc = false;
+
+				for (PhotoGetter photo: value) {
+					if (photo.getImageId() == desc.getId()
+							&& photo.getUserId() == userId) {
+						haveDesc = true;
+						break;
+					}
+				}
+
+				if (! haveDesc)
+					value.add(new PhotoGetter(userId, desc.getId()));
+			}
+
+			// Now handle the PlottablePoint we just generated
 			result.add(pos);
 		}
 
@@ -121,15 +144,52 @@ public class PhotoDataPlot extends DataPlot {
 	 * all other parameters, since the Y-values on our points are just
 	 * dummy values anyway, and since we don't draw lines between successive
 	 * points.</p>
+	 *
+	 * @param drawing
+	 * @param prevX
+	 * 		ignored
+	 * @param prevY
+	 * 		ignored
+	 * @param x
+	 * 		the X-value (in pixels) at which we draw the images
+	 * @param y
+	 * 		ignored
 	 */
 	@Override
 	protected void paintDataPoint(BoundedDrawingBox drawing, double prevX,
 			double prevY, double x, double y) {
-		PhotoGetter photo = images.get(new PlottablePoint(x, y));
-		if (photo == null)
+		// We stored data in images under the logical X-value (time), not
+		// under a pixel value
+		double unprojectedX = getXAxis().unproject(new Vector2(x, y));
+
+		Set<PhotoGetter> photos = images.get(
+			new PlottablePoint(unprojectedX, IMAGE_Y_VALUE));
+		if (photos == null || photos.size() == 0)
 			// This shouldn't ever occur
 			return;
 
+		// TODO: BUG because we will draw the same images many times
+		// (this is because each image creates a point)
+		for (PhotoGetter photo: photos)
+			drawPhoto(drawing, x, y, photo);
+	}
+
+	/**
+	 * Draws a single photo at the specified X position.
+	 *
+	 * @param drawing
+	 * 		the <tt>BoundedDrawingBox</tt> we use to draw only in
+	 * 		bounds
+	 * @param x
+	 * 		the X-value (in pixels) at which the center of the image
+	 * 		should be drawn
+	 * @param y
+	 * 		ignored
+	 * @param photo
+	 * 		the photo to draw at point x
+	 */
+	private void drawPhoto(BoundedDrawingBox drawing, double x,
+			double y, PhotoGetter photo) {
 		// TODO: If photo == highlightedImage, we need to draw at a
 		// different size
 
@@ -188,9 +248,14 @@ public class PhotoDataPlot extends DataPlot {
 	 */
 	@Override
 	public boolean highlightIfNear(Vector2 pos, double threshold) {
+		// We need to clear highlightedImages ourselves, since we
+		// are handling this data structure, hidden from the outside
+		// world
+		highlightedImages.clear();
+
 		PlottablePoint point = closest(pos, threshold);
 		if (point != null) {
-			highlightedImage = images.get(point);
+			highlightedImages = images.get(point);
 			highlight();
 		}
 

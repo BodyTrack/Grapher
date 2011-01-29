@@ -563,8 +563,10 @@ public class DataPlot implements Alertable<GrapherTile> {
 	/**
 	 * Paints a left edge point for a segment of the plot.
 	 *
-	 * This is only called for the left edge of a plot segment.  This
-	 * particular implementation draws a small dot.
+	 * <p>This is only called for the left edge of a plot segment.  This
+	 * particular implementation draws a small dot.  Note that all
+	 * parameters (except drawing, of course) are assumed to be in
+	 * terms of pixels, not logical values on the axes.</p>
 	 *
 	 * @param drawing
 	 * 		the
@@ -586,7 +588,8 @@ public class DataPlot implements Alertable<GrapherTile> {
 	 * Draws a single data point on the graph.
 	 *
 	 * <p>Note that this method has as a precondition that
-	 * {@code prevX < x}.</p>
+	 * {@code prevX < x}.  Note that all parameters (except drawing,
+	 * of course) are assumed to be in terms of pixels.</p>
 	 *
 	 * @param drawing
 	 * 		the

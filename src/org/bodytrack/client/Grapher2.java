@@ -80,8 +80,10 @@ public class Grapher2 implements EntryPoint {
 				false);
 
 			DataPlot plot;
+			String chartType = getChartType(channels.get(i));
 
-			if ("zeo".equals(getChartType(channels.get(i)))) {
+			// TODO: Add a case to handle photo drawing
+			if ("zeo".equals(chartType)) {
 				plot = new ZeoDataPlot(gw, time, value,
 						"/tiles/" + userid + "/"
 						+ channels.get(i) + "/",
