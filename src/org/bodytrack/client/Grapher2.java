@@ -450,7 +450,8 @@ public class Grapher2 implements EntryPoint {
 
 		var data = $wnd.initializeGrapher();
 
-		if (! (data && data[KEY_1] && data[KEY_1][channelName])) {
+		if (! (data && data[KEY_1] && data[KEY_1][channelName]
+				&& data[KEY_1][channelName][KEY_2])) {
 			return DEFAULT_VALUE;
 		}
 
