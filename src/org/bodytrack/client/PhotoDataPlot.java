@@ -22,7 +22,8 @@ public class PhotoDataPlot extends DataPlot {
 	// we have to draw
 	private final Map<PlottablePoint, Set<PhotoGetter>> images;
 
-	// TODO: Will be used when we implement highlighting
+	private final Set<PhotoGetter> alreadyPaintedImages;
+
 	private Set<PhotoGetter> highlightedImages;
 
 	private static final double IMAGE_Y_VALUE =
@@ -59,8 +60,9 @@ public class PhotoDataPlot extends DataPlot {
 		// so we will be able to cast freely later on
 
 		this.userId = userId;
-		images = new HashMap<PlottablePoint, Set<PhotoGetter>>();
 
+		images = new HashMap<PlottablePoint, Set<PhotoGetter>>();
+		alreadyPaintedImages = new HashSet<PhotoGetter>();
 		highlightedImages = new HashSet<PhotoGetter>();
 	}
 
@@ -130,6 +132,20 @@ public class PhotoDataPlot extends DataPlot {
 	}
 
 	/**
+	 * Wrapper around {@code super.paintAllDataPoints} that adds code
+	 * to ensure that there is no drawing of duplicate images.
+	 *
+	 * <p>Clears <tt>alreadyPaintedImages</tt>, then calls
+	 * {@link org.bodytrack.client.DataPlot#paintAllDataPoints()
+	 * 		super.paintAllDataPoints()}.</p>
+	 */
+	@Override
+	protected void paintAllDataPoints() {
+		alreadyPaintedImages.clear();
+		super.paintAllDataPoints();
+	}
+
+	/**
 	 * Draws nothing, since we handle edge points and normal points in
 	 * the same way in this class.
 	 */
@@ -168,10 +184,13 @@ public class PhotoDataPlot extends DataPlot {
 			// This shouldn't ever occur
 			return;
 
-		// TODO: BUG because we will draw the same images many times
-		// (this is because each image creates a point)
-		for (PhotoGetter photo: photos)
-			drawPhoto(drawing, x, y, photo);
+		for (PhotoGetter photo: photos) {
+			// Ensure we don't draw the same image multiple times
+			if (! alreadyPaintedImages.contains(photo)) {
+				alreadyPaintedImages.add(photo);
+				drawPhoto(drawing, x, y, photo);
+			}
+		}
 	}
 
 	/**
