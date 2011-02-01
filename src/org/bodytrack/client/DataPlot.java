@@ -459,9 +459,7 @@ public class DataPlot implements Alertable<GrapherTile> {
 				currentData.add(tile);
 
 				// Make sure we don't still mark this as pending
-				pendingDescriptions.remove(new TileDescription(
-					tile.getPlottableTile().getLevel(),
-					tile.getPlottableTile().getOffset()));
+				pendingDescriptions.remove(tile.getDescription());
 			}
 
 			pendingData.clear();
@@ -671,6 +669,7 @@ public class DataPlot implements Alertable<GrapherTile> {
 	 */
 	private GrapherTile getBestResolutionTileAt(double time, int bestLevel) {
 		GrapherTile best = null;
+		TileDescription bestDesc = null;
 
 		for (GrapherTile tile: currentData) {
 			TileDescription desc = tile.getDescription();
@@ -678,15 +677,19 @@ public class DataPlot implements Alertable<GrapherTile> {
 			if (desc.getMinTime() > time || desc.getMaxTime() < time)
 				continue;
 
-			if (best == null)
+			if (best == null) {
 				best = tile;
-			else if(Math.abs(desc.getLevel() - bestLevel) <
-					Math.abs(best.getPlottableTile().getLevel() - bestLevel))
+				bestDesc = desc;
+			} else if(Math.abs(desc.getLevel() - bestLevel) <
+					Math.abs(bestDesc.getLevel() - bestLevel)) {
 				best = tile;
-			else if (Math.abs(desc.getLevel() - bestLevel) ==
-					Math.abs(best.getPlottableTile().getLevel() - bestLevel)) {
-				if (desc.getLevel() < best.getPlottableTile().getLevel())
+				bestDesc = desc;
+			} else if (Math.abs(desc.getLevel() - bestLevel) ==
+					Math.abs(bestDesc.getLevel() - bestLevel)) {
+				if (desc.getLevel() < bestDesc.getLevel()) {
 					best = tile;
+					bestDesc = desc;
+				}
 			}
 		}
 
