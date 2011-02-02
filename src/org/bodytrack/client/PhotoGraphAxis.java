@@ -86,18 +86,23 @@ public class PhotoGraphAxis extends GraphAxis {
 		double x = project2D(INITIAL_MIN).getX();
 		double width = getWidth();
 
-		// Allow ourselves to begin drawing
-		canvas.beginPath();
-
 		// Now figure out where the line should go, drawing ticks
 		// as we go along
 		double topValue = PHOTO_CENTER_LOCATION + PHOTO_HEIGHT / 2.0;
+		double bottomValue = PHOTO_CENTER_LOCATION - PHOTO_HEIGHT / 2.0;
+
+		// Don't draw anything at all if the line is out of bounds
+		if (bottomValue > getMax() || topValue < getMin())
+			return;
+
+		// Allow ourselves to begin drawing
+		canvas.beginPath();
+		
 		if (topValue > getMax())
 			topValue = getMax();
 		else
 			drawTick(canvas, topValue, x, width);
 
-		double bottomValue = PHOTO_CENTER_LOCATION - PHOTO_HEIGHT / 2.0;
 		if (bottomValue < getMin())
 			bottomValue = getMin();
 		else
@@ -122,7 +127,10 @@ public class PhotoGraphAxis extends GraphAxis {
 	 *
 	 * <p>Draws a tick of width {@code width * TICK_WIDTH_FACTOR}
 	 * with its left edge at the specified X-value, and at Y-value
-	 * determined by {@code projectY(value)}.</p>
+	 * determined by {@code projectY(value)}.  If <tt>value</tt> is
+	 * out of range, though (the range is determined by
+	 * {@linkplain GraphAxis#getMin()} and {@linkplain GraphAxis#getMax()}),
+	 * this method draws nothing.</p>
 	 *
 	 * <p>Note that this method does not call {@code canvas.beginPath()}
 	 * or {@code canvas.stroke()}.  It is up to a calling method to
@@ -136,22 +144,18 @@ public class PhotoGraphAxis extends GraphAxis {
 	 * 		the location in which to draw the tick, specified
 	 * 		not in pixels but in terms of the
 	 * 		(INITIAL_MIN_VALUE, INITIAL_MAX_VALUE) value
-	 * 		scale this class keeps in place.  It is <em>required</em>
-	 * 		that {@code getMin() <= value <= getMax()}
+	 * 		scale this class keeps in place
 	 * @param x
 	 * 		the X-coordinate for the left edge of the tick
 	 * @param width
 	 * 		the width of this axis, <em>NOT</em> the width of
 	 * 		the tick
-	 * @throws IllegalArgumentException
-	 * 		if the precondition {@code getMin() <= value <= getMax()}
-	 * 		does not hold
 	 */
 	private void drawTick(Canvas canvas, double value, double x,
 			double width) {
+		// Don't draw anything that is out of bounds
 		if (getMin() > value || getMax() < value)
-			throw new IllegalArgumentException(
-				"Cannot draw tick at out-of-bounds value " + value);
+			return;
 
 		double y = projectY(value);
 
