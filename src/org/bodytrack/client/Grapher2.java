@@ -39,6 +39,10 @@ public class Grapher2 implements EntryPoint {
 			mainLayout.add(gw);
 			RootPanel.get(getDivName()).add(mainLayout);
 		}
+
+		// Set the canvas ID, which allows JavaScript to draw
+		// directly on the canvas
+		setCanvasId(GraphWidget.DEFAULT_GRAPHER_ID);
 	}
 
 	private void setupGraphWidget() {
@@ -122,12 +126,34 @@ public class Grapher2 implements EntryPoint {
 		gw.paint();
 	}
 
+	/**
+	 * Returns <tt>true</tt> if and only if there is no
+	 * window.initializeGrapher method.
+	 *
+	 * @return
+	 * 		<tt>true</tt> if there is no window.initializeGrapher,
+	 * 		<tt>false</tt> otherwise
+	 */
 	private native boolean isStandAlone() /*-{
 		return ! $wnd.initializeGrapher;
 	}-*/;
-	
-	
-	
+
+	/**
+	 * A hack that sets the ID of the first canvas on the page
+	 * to the specified ID.
+	 *
+	 * @param newId
+	 * 		the ID to use for the first canvas on the page
+	 */
+	private native void setCanvasId(String newId) /*-{
+		var canvasList = $doc.getElementsByTagName("canvas");
+
+		if (! canvasList)
+			return;
+
+		canvasList[0].id = newId;
+	}-*/;
+
 	/**
 	 * Returns the name of the div into which this grapher widget should
 	 * place itself, or &quot;graph&quot; if that is not available.

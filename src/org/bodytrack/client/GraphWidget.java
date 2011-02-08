@@ -28,6 +28,8 @@ import com.google.gwt.event.dom.client.MouseWheelHandler;
 import com.google.gwt.user.client.Timer;
 
 public class GraphWidget extends Surface {
+	public static final String DEFAULT_GRAPHER_ID = "bodytrack-gwt-viewer";
+
 	/**
 	 * The default loading message for this widget to show.
 	 */

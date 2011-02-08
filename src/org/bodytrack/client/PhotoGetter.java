@@ -1,11 +1,6 @@
 package org.bodytrack.client;
 
-import com.google.gwt.dom.client.ImageElement;
-import com.google.gwt.event.dom.client.ErrorEvent;
-import com.google.gwt.event.dom.client.ErrorHandler;
-import com.google.gwt.event.dom.client.LoadEvent;
-import com.google.gwt.event.dom.client.LoadHandler;
-import com.google.gwt.user.client.ui.Image;
+import com.google.gwt.core.client.JavaScriptObject;
 
 /**
  * A class to download a single photo and return the appropriate
@@ -23,148 +18,97 @@ import com.google.gwt.user.client.ui.Image;
  * <p>This class also maintains the logic for building photo
  * download URLs, given the appropriate information.</p>
  */
-public final class PhotoGetter {
+public final class PhotoGetter extends JavaScriptObject {
 	/**
 	 * At least for now, we always download images at size
 	 * DEFAULT_IMAGE_WIDTH and do not use other image sizes.
 	 */
 	public static final int DEFAULT_WIDTH = 300;
 
-	private static final Image DEFAULT_IMAGE = new Image();
-	private static final int DEFAULT_IMAGE_HEIGHT = DEFAULT_WIDTH * 3 / 2;
-	static {
-		DEFAULT_IMAGE.setWidth(DEFAULT_WIDTH + "px");
-		DEFAULT_IMAGE.setHeight(DEFAULT_IMAGE_HEIGHT + "px");
-
-		ImageElement defaultElem = ImageElement.as(DEFAULT_IMAGE.getElement());
-		if (defaultElem != null) {
-			// defaultElem should never be null
-			defaultElem.setWidth(DEFAULT_WIDTH);
-			defaultElem.setHeight(DEFAULT_IMAGE_HEIGHT);
-		}
-	}
-
-	// Used for equality and hashing
-	private final int userId;
-	private final int imageId;
-
-	// Used for grabbing image
-	private final Image img;
-	private final String baseUrl;
-	private final PhotoGetterHandler eventHandler;
-
-	// Data about what happened to the image
-	private boolean imageLoaded;
-	private boolean loadFailed;
+	/* Overlay types always have protected zero-arg constructors. */
+	protected PhotoGetter() { }
 
 	/**
-	 * Creates a new <tt>PhotoGetter</tt> to retrieve information
-	 * for the specified user.
+	 * Creates a new PhotoGetter.
 	 *
 	 * @param userId
-	 * 		the user ID for the user requesting this image
+	 * 		the ID of the user who owns the specified image
 	 * @param imageId
-	 * 		the ID of the image we want to get
+	 * 		the ID of the specified image
+	 * @return
+	 * 		a new PhotoGetter that will get the specified image
 	 */
-	public PhotoGetter(int userId, int imageId) {
-		this.userId = userId;
-		this.imageId = imageId;
+	public native static PhotoGetter buildPhotoGetter(int userId,
+			int imageId) /*-{
+		// Declare this constant, and these functions, inside this
+		// function so we don't pollute the global namespace
 
-		img = new Image();
+		var DEFAULT_WIDTH = 300;
 
-		baseUrl = getBaseUrl(userId, imageId);
+		// TODO: Possibly inline these functions for speed, since
+		// the inlining is trivial here
+		var getBaseUrl = function() {
+			return "/users/" + userId + "/logphotos/" + imageId + ".";
+		}
 
-		eventHandler = new PhotoGetterHandler();
-		img.addLoadHandler(new LoadHandler() {
-			@Override
-			public void onLoad(LoadEvent event) {
-				eventHandler.onLoad(event);
-				consoleLog(event.toDebugString());
+		var getUrl = function(baseUrl) {
+			return baseUrl + DEFAULT_WIDTH + ".jpg";
+		}
+
+		var getter = {};
+		getter.userId = userId;
+		getter.imageId = imageId;
+		getter.imageLoaded = false;
+		getter.loadFailed = false;
+		getter.baseUrl = getBaseUrl();
+		getter.url = getUrl(getter.baseUrl);
+		getter.originalImgWidth = -1;
+		getter.originalImgHeight = -1;
+
+		getter.img = new Image();
+		getter.img.onload = function() {
+			getter.imageLoaded = true;
+			getter.loadFailed = false;
+
+			if (getter.img.width && getter.img.width > 0)
+				getter.originalImgWidth = getter.img.width;
+
+			if (getter.img.height && getter.img.height > 0)
+				getter.originalImgHeight = getter.img.height;
+		}
+		getter.img.onerror = function() {
+			if (! getter.imageLoaded) {
+				getter.loadFailed = true;
 			}
-
-			private native void consoleLog(String debugString) /*-{
-				console.log(debugString);
-			}-*/;
-		});
-		// img.addLoadHandler(eventHandler);
-		img.addErrorHandler(eventHandler);
-
-		imageLoaded = false;
-		loadFailed = false;
-
-		String url = getUrl(baseUrl);
-		img.setUrl(url);
-	}
-
-	/**
-	 * Builds the baseUrl variable for an object to use for an image
-	 * with the specified user ID and image ID.
-	 *
-	 * <p>This method, along with {@link #getUrl(String)}, encapsulates
-	 * the logic for image URL production.</p>
-	 *
-	 * @param userId
-	 * 		the ID of the user who owns the image
-	 * @param imageId
-	 * 		the ID of the image to download
-	 * @return
-	 * 		the baseUrl variable to use for getting images for the
-	 * 		specified user ID and image ID
-	 */
-	private static String getBaseUrl(int userId, int imageId) {
-		// You can find a photo at
-		// the URL /users/:user_id/logphotos/:id.:width.jpg
-		// Note that baseUrl leaves off the :width.jpg portion of
-		// the URL
-		return "/users/" + userId + "/logphotos/" + imageId + ".";
-	}
-
-	/**
-	 * Builds the URL to use to get a photo of width DEFAULT_WIDTH.
-	 *
-	 * <p>This method, along with {@link #getBaseUrl(int, int)},
-	 * encapsulates the logic for image URL production.</p>
-	 *
-	 * @param baseUrl
-	 * 		the baseUrl value that holds the user ID and image ID
-	 * 		information for the image
-	 * @return
-	 * 		the URL to use to get the image with width DEFAULT_WIDTH
-	 */
-	private static String getUrl(String baseUrl) {
-		return baseUrl + DEFAULT_WIDTH + ".jpg";
-	}
-
-	/**
-	 * Returns an ImageElement of width DEFAULT_IMAGE_WIDTH.
-	 *
-	 * @return
-	 * 		the image with the ID specified in the constructor,
-	 * 		if that image is available and has loaded.  If not
-	 * 		available yet, this will return an ImageElement
-	 * 		for DEFAULT_IMAGE.
-	 */
-	public ImageElement getElement() {
-		ImageElement elem = ImageElement.as(img.getElement());
-
-		if (elem != null) {
-			// TODO: Remove next 2 lines
-			elem.setWidth(DEFAULT_WIDTH);
-			elem.setHeight(DEFAULT_IMAGE_HEIGHT);
-
-			return elem;
 		}
 
-		return ImageElement.as(DEFAULT_IMAGE.getElement());
+		// Actually request that the browser load the image
+		getter.img.src = getter.url;
 
-		// OLD VERSION
-		// if (imageLoaded)
-			// This is safe because img is an Image object
-			// that must contain the data we want
-		//	return ImageElement.as(img.getElement());
+		return getter;
+	}-*/;
 
-		// return ImageElement.as(DEFAULT_IMAGE.getElement());
-	}
+	/**
+	 * Returns the user ID used to initialize this <tt>PhotoGetter</tt>.
+	 *
+	 * @return
+	 * 		the user ID passed to the factory method when this
+	 * 		<tt>PhotoGetter</tt> was created
+	 */
+	public native int getUserId() /*-{
+		return this.userId;
+	}-*/;
+
+	/**
+	 * Returns the image ID used to initialize this <tt>PhotoGetter</tt>.
+	 *
+	 * @return
+	 * 		the image ID passed to the factory method when this
+	 * 		<tt>PhotoGetter</tt> was created
+	 */
+	public native int getImageId() /*-{
+		return this.imageId;
+	}-*/;
 
 	/**
 	 * Returns <tt>true</tt> if the requested image has loaded,
@@ -172,12 +116,11 @@ public final class PhotoGetter {
 	 *
 	 * @return
 	 * 		<tt>true</tt> if and only if the requested image
-	 * 		has loaded and is available from
-	 * 		{@link #getElement()}
+	 * 		has loaded
 	 */
-	public boolean imageLoaded() {
-		return imageLoaded;
-	}
+	public native boolean imageLoaded() /*-{
+		return this.imageLoaded;
+	}-*/;
 
 	/**
 	 * Returns <tt>true</tt> if and only if the attempt to load the
@@ -188,109 +131,67 @@ public final class PhotoGetter {
 	 * 		the image has failed to load.  If the image loads despite
 	 * 		an error, this will return <tt>false</tt>
 	 */
-	public boolean loadFailed() {
-		return loadFailed;
-	}
+	public native boolean loadFailed() /*-{
+		return this.loadFailed;
+	}-*/;
 
 	/**
-	 * Returns the user ID used to construct this <tt>PhotoGetter</tt>.
+	 * Returns the width at which the image was sent over the wire, or a
+	 * negative value if the image hasn't loaded.
 	 *
 	 * @return
-	 * 		the user ID passed to the constructor when this
-	 * 		<tt>PhotoGetter</tt> was created
+	 * 		the width of the image, if it has loaded (i.e. if
+	 * 		{@link #imageLoaded()} returns <tt>true</tt>
 	 */
-	public int getUserId() {
-		return userId;
-	}
+	public native double getOriginalWidth() /*-{
+		return this.originalImgWidth;
+	}-*/;
 
 	/**
-	 * Returns the image ID used to construct this <tt>PhotoGetter</tt>.
+	 * Returns the height at which the image was sent over the wire, or a
+	 * negative value if the image hasn't loaded.
 	 *
 	 * @return
-	 * 		the image ID passed to the constructor when this
-	 * 		<tt>PhotoGetter</tt> was created
+	 * 		the height of the image, if it has loaded (i.e. if
+	 * 		{@link #imageLoaded()} returns <tt>true</tt>
 	 */
-	public int getImageId() {
-		return imageId;
-	}
+	public native double getOriginalHeight() /*-{
+		return this.originalImgHeight;
+	}-*/;
 
 	/**
-	 * Computes a hashcode for this object based on image ID and user ID.
+	 * Draws the image with the specified <strong>center</strong> location
+	 * and dimensions.
 	 *
+	 * @param canvasId
+	 * 		the value of the ID attribute on the canvas we should use to
+	 * 		draw the image
+	 * @param x
+	 * 		the X-position of the <em>center</em> of the image, in pixels
+	 * 		from the left edge of the canvas
+	 * @param y
+	 * 		the Y-position of the <em>center</em> of the image, in pixels
+	 * 		from the top edge of the canvas
+	 * @param width
+	 * 		the width of the image
+	 * @param height
+	 * 		the height of the image
 	 * @return
-	 * 		a hashcode based on the image ID and user ID passed in to
-	 * 		the constructor when this object was created
+	 * 		<tt>true</tt> if and only if the image was successfully drawn,
+	 * 		meaning that {@link #imageLoaded()} is <tt>true</tt> and that
+	 * 		canvasId is the actual ID for a valid HTML canvas
 	 */
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + imageId;
-		result = prime * result + userId;
-		return result;
-	}
+	public native boolean drawImage(String canvasId, double x, double y,
+			double width, double height) /*-{
+		if (! this.imageLoaded) return false;
 
-	/**
-	 * Tells whether this and obj have the same image ID and user ID.
-	 *
-	 * @return
-	 * 		<tt>true</tt> if and only if obj is of type <tt>PhotoGetter</tt>
-	 * 		and has the same image ID and user ID (from the constructor)
-	 * 		as this object does
-	 */
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (!(obj instanceof PhotoGetter))
-			return false;
-		PhotoGetter other = (PhotoGetter) obj;
-		if (imageId != other.imageId)
-			return false;
-		if (userId != other.userId)
-			return false;
+		var canvas = $doc.getElementById(canvasId);
+		if (! canvas) return false;
+
+		var ctx = canvas.getContext('2d');
+		if (! ctx) return false;
+
+		ctx.drawImage(this.img, x - width / 2, y - height / 2, width, height);
 		return true;
-	}
-
-	/**
-	 * A class that hides details of our event handling from users of
-	 * the PhotoGetter class and allows a clean set of exported
-	 * functions.
-	 */
-	private class PhotoGetterHandler implements LoadHandler, ErrorHandler {
-		/**
-		 * Callback whenever the image loads successfully.
-		 *
-		 * @param event
-		 * 		the <tt>LoadEvent</tt> that informs us about
-		 * 		the loaded image
-		 * 		information about the error
-		 */
-		@Override
-		public void onLoad(LoadEvent event) {
-			alert();
-			imageLoaded = true;
-			loadFailed = false; // This is for the unlikely event
-				// in which we get an image after an error of some kind
-		}
-
-		private native void alert() /*-{
-			alert(1);
-		}-*/;
-
-		/**
-		 * Callback whenever there is an error loading the image.
-		 *
-		 * @param event
-		 * 		the <tt>ErrorEvent</tt> thrown our way to give
-		 * 		information about the error
-		 */
-		@Override
-		public void onError(ErrorEvent event) {
-			if (! imageLoaded) // We disregard errors once we have success
-				loadFailed = true;
-		}
-	}
+	}-*/;
 }

@@ -9,8 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.google.gwt.dom.client.ImageElement;
-
 /**
  * A class to show photos on a
  * {@link org.bodytrack.client.GraphWidget GraphWidget}.
@@ -99,10 +97,9 @@ public class PhotoDataPlot extends DataPlot {
 			// of the objects (this is robust to small variations in
 			// even the same object)
 			if (! images.containsKey(pos)) {
-				// TODO: We seem to request the same image many many times,
-				// in some cases
 				Set<PhotoGetter> newValue = new HashSet<PhotoGetter>();
-				newValue.add(new PhotoGetter(userId, desc.getId()));
+				newValue.add(PhotoGetter.buildPhotoGetter(
+					userId, desc.getId()));
 				images.put(pos, newValue);
 			} else {
 				Set<PhotoGetter> value = images.get(pos);
@@ -123,7 +120,8 @@ public class PhotoDataPlot extends DataPlot {
 				}
 
 				if (! haveDesc)
-					value.add(new PhotoGetter(userId, desc.getId()));
+					value.add(PhotoGetter.buildPhotoGetter(
+						userId, desc.getId()));
 			}
 
 			// Now handle the PlottablePoint we just generated
@@ -144,7 +142,6 @@ public class PhotoDataPlot extends DataPlot {
 	@Override
 	protected void paintAllDataPoints() {
 		alreadyPaintedImages.clear();
-		clearOutside();
 		super.paintAllDataPoints();
 	}
 
@@ -170,9 +167,9 @@ public class PhotoDataPlot extends DataPlot {
 	 * @param prevY
 	 * 		ignored
 	 * @param x
-	 * 		the X-value (in pixels) at which we draw the images
+	 * 		the X-value (in pixels) at which we draw the image
 	 * @param y
-	 * 		ignored
+	 * 		the Y-value (in pixels) at which we draw the image
 	 */
 	@Override
 	protected void paintDataPoint(BoundedDrawingBox drawing, double prevX,
@@ -206,7 +203,8 @@ public class PhotoDataPlot extends DataPlot {
 	 * 		the X-value (in pixels) at which the center of the image
 	 * 		should be drawn
 	 * @param y
-	 * 		ignored
+	 * 		the Y-value (in pixels) at which the center of the image
+	 * 		should be drawn
 	 * @param photo
 	 * 		the photo to draw at point x
 	 */
@@ -215,28 +213,15 @@ public class PhotoDataPlot extends DataPlot {
 		// TODO: If photo == highlightedImage, we need to draw at a
 		// different size
 
-		ImageElement imageElem = photo.getElement();
-
-		addToOutside(imageElem);
-		if (photo.imageLoaded())
-			alert(photo.toString());
-
-		// Get the current dimensions on elem
-		int originalWidth = imageElem.getWidth();
-		int originalHeight = imageElem.getHeight();
-
-		consoleLog(photo.getUserId() + ", " + photo.getImageId() + ": "
-			+ originalWidth + ", " + originalHeight);
+		// Get the dimensions on photo
+		double originalWidth = photo.getOriginalWidth();
+		double originalHeight = photo.getOriginalHeight();
 
 		double widthToHeight = ((double) originalWidth) / originalHeight;
 
 		// Get the correct dimensions for image
-		int height = (int) Math.round(getPhotoHeight());
-		int width = (int) Math.round(height * widthToHeight);
-
-		// Set the proper dimensions on elem, maintaining aspect ratio
-		imageElem.setWidth(width);
-		imageElem.setHeight(height);
+		double height = Math.round(getPhotoHeight());
+		double width = Math.round(height * widthToHeight);
 
 		// Now get the corner positions of the image (in pixels)
 		double xMin = x - (width / 2.0);
@@ -251,26 +236,8 @@ public class PhotoDataPlot extends DataPlot {
 		drawing.drawLineSegment(xMax, yMin, xMin, yMin);
 
 		// Now draw the image itself
-		getCanvas().getSurface().drawImage(imageElem,
-			new Vector2(xMin, yMin));
+		photo.drawImage(GraphWidget.DEFAULT_GRAPHER_ID, x, y, width, height);
 	}
-
-	// All four of these methods are for debugging only
-	private native void consoleLog(String s) /*-{
-		// console.log(s);
-	}-*/;
-
-	private native void alert(String s) /*-{
-		alert(s);
-	}-*/;
-
-	private native void clearOutside() /*-{
-		$wnd.grapherState['images'] = [];
-	}-*/;
-
-	private native void addToOutside(ImageElement elem) /*-{
-		$wnd.grapherState['images'] = $wnd.grapherState['images'].concat(elem);
-	}-*/;
 
 	/**
 	 * Returns the height the photo should take up, in pixels.
