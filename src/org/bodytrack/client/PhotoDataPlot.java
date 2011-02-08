@@ -99,6 +99,8 @@ public class PhotoDataPlot extends DataPlot {
 			// of the objects (this is robust to small variations in
 			// even the same object)
 			if (! images.containsKey(pos)) {
+				// TODO: We seem to request the same image many many times,
+				// in some cases
 				Set<PhotoGetter> newValue = new HashSet<PhotoGetter>();
 				newValue.add(new PhotoGetter(userId, desc.getId()));
 				images.put(pos, newValue);
@@ -142,6 +144,7 @@ public class PhotoDataPlot extends DataPlot {
 	@Override
 	protected void paintAllDataPoints() {
 		alreadyPaintedImages.clear();
+		clearOutside();
 		super.paintAllDataPoints();
 	}
 
@@ -214,9 +217,16 @@ public class PhotoDataPlot extends DataPlot {
 
 		ImageElement imageElem = photo.getElement();
 
+		addToOutside(imageElem);
+		if (photo.imageLoaded())
+			alert(photo.toString());
+
 		// Get the current dimensions on elem
 		int originalWidth = imageElem.getWidth();
 		int originalHeight = imageElem.getHeight();
+
+		consoleLog(photo.getUserId() + ", " + photo.getImageId() + ": "
+			+ originalWidth + ", " + originalHeight);
 
 		double widthToHeight = ((double) originalWidth) / originalHeight;
 
@@ -245,6 +255,23 @@ public class PhotoDataPlot extends DataPlot {
 			new Vector2(xMin, yMin));
 	}
 
+	// All four of these methods are for debugging only
+	private native void consoleLog(String s) /*-{
+		// console.log(s);
+	}-*/;
+
+	private native void alert(String s) /*-{
+		alert(s);
+	}-*/;
+
+	private native void clearOutside() /*-{
+		$wnd.grapherState['images'] = [];
+	}-*/;
+
+	private native void addToOutside(ImageElement elem) /*-{
+		$wnd.grapherState['images'] = $wnd.grapherState['images'].concat(elem);
+	}-*/;
+
 	/**
 	 * Returns the height the photo should take up, in pixels.
 	 *
@@ -256,8 +283,8 @@ public class PhotoDataPlot extends DataPlot {
 
 		// Note that 0 has a lower Y-value than PHOTO_HEIGHT, since
 		// higher values have smaller Y-values in pixels
-		return yAxis.project2D(0).getY() -
-			yAxis.project2D(PhotoGraphAxis.PHOTO_HEIGHT).getY();
+		return Math.abs(yAxis.project2D(0).getY() -
+			yAxis.project2D(PhotoGraphAxis.PHOTO_HEIGHT).getY());
 	}
 
 	/**
@@ -272,6 +299,8 @@ public class PhotoDataPlot extends DataPlot {
 		// world
 		highlightedImages.clear();
 
+		// TODO: Use threshold differently - maybe as a percentage of
+		// photo size or something like that
 		PlottablePoint point = closest(pos, threshold);
 		if (point != null) {
 			highlightedImages = images.get(point);

@@ -35,6 +35,13 @@ public final class PhotoGetter {
 	static {
 		DEFAULT_IMAGE.setWidth(DEFAULT_WIDTH + "px");
 		DEFAULT_IMAGE.setHeight(DEFAULT_IMAGE_HEIGHT + "px");
+
+		ImageElement defaultElem = ImageElement.as(DEFAULT_IMAGE.getElement());
+		if (defaultElem != null) {
+			// defaultElem should never be null
+			defaultElem.setWidth(DEFAULT_WIDTH);
+			defaultElem.setHeight(DEFAULT_IMAGE_HEIGHT);
+		}
 	}
 
 	// Used for equality and hashing
@@ -55,7 +62,9 @@ public final class PhotoGetter {
 	 * for the specified user.
 	 *
 	 * @param userId
+	 * 		the user ID for the user requesting this image
 	 * @param imageId
+	 * 		the ID of the image we want to get
 	 */
 	public PhotoGetter(int userId, int imageId) {
 		this.userId = userId;
@@ -66,7 +75,18 @@ public final class PhotoGetter {
 		baseUrl = getBaseUrl(userId, imageId);
 
 		eventHandler = new PhotoGetterHandler();
-		img.addLoadHandler(eventHandler);
+		img.addLoadHandler(new LoadHandler() {
+			@Override
+			public void onLoad(LoadEvent event) {
+				eventHandler.onLoad(event);
+				consoleLog(event.toDebugString());
+			}
+
+			private native void consoleLog(String debugString) /*-{
+				console.log(debugString);
+			}-*/;
+		});
+		// img.addLoadHandler(eventHandler);
 		img.addErrorHandler(eventHandler);
 
 		imageLoaded = false;
@@ -125,12 +145,25 @@ public final class PhotoGetter {
 	 * 		for DEFAULT_IMAGE.
 	 */
 	public ImageElement getElement() {
-		if (imageLoaded)
-			// This is safe because img is an Image object
-			// that must contain the data we want
-			return ImageElement.as(img.getElement());
+		ImageElement elem = ImageElement.as(img.getElement());
+
+		if (elem != null) {
+			// TODO: Remove next 2 lines
+			elem.setWidth(DEFAULT_WIDTH);
+			elem.setHeight(DEFAULT_IMAGE_HEIGHT);
+
+			return elem;
+		}
 
 		return ImageElement.as(DEFAULT_IMAGE.getElement());
+
+		// OLD VERSION
+		// if (imageLoaded)
+			// This is safe because img is an Image object
+			// that must contain the data we want
+		//	return ImageElement.as(img.getElement());
+
+		// return ImageElement.as(DEFAULT_IMAGE.getElement());
 	}
 
 	/**
@@ -237,10 +270,15 @@ public final class PhotoGetter {
 		 */
 		@Override
 		public void onLoad(LoadEvent event) {
+			alert();
 			imageLoaded = true;
 			loadFailed = false; // This is for the unlikely event
 				// in which we get an image after an error of some kind
 		}
+
+		private native void alert() /*-{
+			alert(1);
+		}-*/;
 
 		/**
 		 * Callback whenever there is an error loading the image.
