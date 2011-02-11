@@ -20,8 +20,6 @@ public class PhotoDataPlot extends DataPlot {
 	// we have to draw
 	private final Map<PlottablePoint, Set<PhotoGetter>> images;
 
-	private final Set<PhotoGetter> alreadyPaintedImages;
-
 	private final PhotoAlertable loadListener;
 	private final Map<PhotoGetter, Integer> loadingText;
 
@@ -68,7 +66,6 @@ public class PhotoDataPlot extends DataPlot {
 		this.userId = userId;
 
 		images = new HashMap<PlottablePoint, Set<PhotoGetter>>();
-		alreadyPaintedImages = new HashSet<PhotoGetter>();
 		loadListener = new PhotoAlertable();
 		loadingText = new HashMap<PhotoGetter, Integer>();
 		highlightedImages = new HashSet<PhotoGetter>();
@@ -180,20 +177,6 @@ public class PhotoDataPlot extends DataPlot {
 	}
 
 	/**
-	 * Wrapper around {@code super.paintAllDataPoints} that adds code
-	 * to ensure that there is no drawing of duplicate images.
-	 *
-	 * <p>Clears <tt>alreadyPaintedImages</tt>, then calls
-	 * {@link org.bodytrack.client.DataPlot#paintAllDataPoints()
-	 * 		super.paintAllDataPoints()}.</p>
-	 */
-	@Override
-	protected void paintAllDataPoints() {
-		alreadyPaintedImages.clear();
-		super.paintAllDataPoints();
-	}
-
-	/**
 	 * Draws nothing, since we handle edge points and normal points in
 	 * the same way in this class.
 	 */
@@ -233,13 +216,8 @@ public class PhotoDataPlot extends DataPlot {
 			// This shouldn't ever occur
 			return;
 
-		for (PhotoGetter photo: photos) {
-			// Ensure we don't draw the same image multiple times
-			if (! alreadyPaintedImages.contains(photo)) {
-				alreadyPaintedImages.add(photo);
-				drawPhoto(drawing, x, y, photo);
-			}
-		}
+		for (PhotoGetter photo: photos)
+			drawPhoto(drawing, x, y, photo);
 	}
 
 	/**
