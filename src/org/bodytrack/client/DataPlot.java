@@ -210,10 +210,28 @@ public class DataPlot implements Alertable<GrapherTile> {
 	 * can draw.
 	 *
 	 * @return
-	 * 		the Canvas on which this DataPlot draws
+	 * 		the <tt>Canvas</tt> on which this <tt>DataPlot</tt> draws
 	 */
 	protected Canvas getCanvas() {
 		return canvas;
+	}
+
+	/**
+	 * Gives subclasses a reference to the
+	 * {@link org.bodytrack.client.GraphWidget GraphWidget} object that
+	 * they can use for the <tt>GraphWidget</tt> API.
+	 *
+	 * <p>Do <em>not</em> use this method's return value for direct
+	 * drawing - this is why the {@link #getCanvas()} method was created.
+	 * Instead, this method's return value should be used for other
+	 * calls that are specific to the <tt>GraphWidget</tt> class.</p>
+	 *
+	 * @return
+	 * 		the <tt>GraphWidget</tt> on which this <tt>DataPlot</tt>
+	 * 		draws
+	 */
+	protected GraphWidget getContainer() {
+		return container;
 	}
 
 	/**
@@ -302,8 +320,7 @@ public class DataPlot implements Alertable<GrapherTile> {
 	 * <p>This is one of two methods to handle the loading text feature
 	 * for DataPlot objects.  The other is
 	 * {@link #removeLoadingText(String)}.  This method will create
-	 * a loading text string and publish it to container, but no
-	 * guarantee is made as to how this string is formed.</p>
+	 * a loading text string and publish it to container.</p>
 	 *
 	 * @param level
 	 * 		the level of the tile that is loading
@@ -313,9 +330,6 @@ public class DataPlot implements Alertable<GrapherTile> {
 	 * 		the URL of the tile that is loading
 	 */
 	private void addLoadingText(int level, int offset, String url) {
-		// Simplest implementation
-		// String msg = GraphWidget.DEFAULT_LOADING_MESSAGE;
-
 		String msg = "Loading " + url;
 
 		// Actually add the message
@@ -364,8 +378,8 @@ public class DataPlot implements Alertable<GrapherTile> {
 	/**
 	 * Called every time a new tile loads.
 	 *
-	 * @param url
-	 * 		the URL of the tile that loaded
+	 * @param tile
+	 * 		the <tt>GrapherTile</tt> representing the tile that loaded
 	 */
 	@Override
 	public void onSuccess(GrapherTile tile) {
@@ -385,10 +399,11 @@ public class DataPlot implements Alertable<GrapherTile> {
 	/**
 	 * Called every time a tile load fails.
 	 *
-	 * <p>Tried to re-request the tile.</p>
+	 * <p>Tries to re-request the tile.</p>
 	 *
-	 * @param url
-	 * 		the URL of the tile that failed
+	 * @param tile
+	 * 		the <tt>GrapherTile</tt> representing the tile that failed
+	 * 		to load
 	 */
 	@Override
 	public void onFailure(GrapherTile tile) {
