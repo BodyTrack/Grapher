@@ -252,7 +252,14 @@ public class PhotoDataPlot extends DataPlot {
 
 		double width = Math.round(height * widthToHeight);
 
-		// Now get the corner positions of the image (in pixels)
+		// Now draw the image itself, not allowing it to overflow onto
+		// the axes
+		photo.drawImageClipped(GraphWidget.DEFAULT_GRAPHER_ID, x, y, width,
+			height, drawing);
+
+		// Note that the borders are drawn after the image is - this is
+		// so the image doesn't obscure the borders
+
 		double xMin = x - (width / 2.0);
 		double xMax = x + (width / 2.0);
 		double yMin = y - (height / 2.0);
@@ -263,9 +270,6 @@ public class PhotoDataPlot extends DataPlot {
 		drawing.drawLineSegment(xMin, yMax, xMax, yMax);
 		drawing.drawLineSegment(xMax, yMax, xMax, yMin);
 		drawing.drawLineSegment(xMax, yMin, xMin, yMin);
-
-		// Now draw the image itself
-		photo.drawImage(GraphWidget.DEFAULT_GRAPHER_ID, x, y, width, height);
 	}
 
 	/**
