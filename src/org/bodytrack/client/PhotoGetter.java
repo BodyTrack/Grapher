@@ -1,5 +1,7 @@
 package org.bodytrack.client;
 
+import gwt.g2d.client.math.Vector2;
+
 import org.bodytrack.client.PhotoDataPlot.PhotoAlertable;
 
 import com.google.gwt.core.client.JavaScriptObject;
@@ -222,6 +224,127 @@ public final class PhotoGetter extends JavaScriptObject {
 		if (! ctx) return false;
 
 		ctx.drawImage(this.img, x - width / 2, y - height / 2, width, height);
+		return true;
+	}-*/;
+
+	/**
+	 * A handy shortcut to the native
+	 * {@link #drawImageClipped(String, double, double, double, double,
+	 * double, double, double, double) drawImageClipped} method.
+	 *
+	 * <p>This gets the position, width, and height of bounds, and uses
+	 * that information to call the native <tt>drawImageClipped</tt>
+	 * with the correct parameters.</p>
+	 *
+	 * @param canvasId
+	 * 		the value of the ID attribute on the canvas we should use to
+	 * 		draw the image
+	 * @param x
+	 * 		the X-position of the <em>center</em> of the image, in pixels
+	 * 		from the left edge of the canvas
+	 * @param y
+	 * 		the Y-position of the <em>center</em> of the image, in pixels
+	 * 		from the top edge of the canvas
+	 * @param width
+	 * 		the width of the image
+	 * @param height
+	 * 		the height of the image
+	 * @param bounds
+	 * 		a {@link org.bodytrack.client.BoundedDrawingBox
+	 * 		BoundedDrawingBox} with the same bounds that we should use to
+	 * 		constrain the image drawing
+	 * @return
+	 * 		<tt>true</tt> if and only if the image was successfully drawn,
+	 * 		meaning that {@link #imageLoaded() imageLoaded} returns
+	 * 		<tt>true</tt> and that canvasId is the actual ID for a valid
+	 * 		HTML canvas.  Note that this does <em>not</em> return
+	 * 		<tt>false</tt> if everything else is fine but the image is
+	 * 		outside the bounding box; a caller can check for that
+	 * 		using arithmetic, so we do not alert a caller to that event
+	 * @see #drawImageClipped(String, double, double, double, double,
+	 * double, double, double, double)
+	 */
+	public boolean drawImageClipped(String canvasId, double x, double y,
+			double width, double height, BoundedDrawingBox bounds) {
+		Vector2 topLeft = bounds.getTopLeft();
+		Vector2 bottomRight = bounds.getBottomRight();
+
+		return drawImageClipped(canvasId, x, y, width, height,
+			topLeft.getX(),
+			topLeft.getY(),
+			bottomRight.getX() - topLeft.getX(),
+			bottomRight.getY() - topLeft.getY());
+	}
+
+	/**
+	 * Draws the image with the specified <strong>center</strong> location
+	 * and dimensions, and only inside the specified box.
+	 *
+	 * <p>This is exactly like
+	 * {@link #drawImage(String, double, double, double, double) drawImage},
+	 * except that it also takes parameters for the bounds of the region
+	 * where we might draw the image.</p>
+	 *
+	 * @param canvasId
+	 * 		the value of the ID attribute on the canvas we should use to
+	 * 		draw the image
+	 * @param x
+	 * 		the X-position of the <em>center</em> of the image, in pixels
+	 * 		from the left edge of the canvas
+	 * @param y
+	 * 		the Y-position of the <em>center</em> of the image, in pixels
+	 * 		from the top edge of the canvas
+	 * @param width
+	 * 		the width of the image
+	 * @param height
+	 * 		the height of the image
+	 * @param minX
+	 * 		the minimum X-value that is within the bounds
+	 * @param minY
+	 * 		the minimum Y-value that is within the bounds
+	 * @param boundsWidth
+	 * 		the width of the clipping region i.e. the width of the region
+	 * 		in which we will draw an image
+	 * @param boundsHeight
+	 * 		the height of the clipping region i.e. the height of the
+	 * 		region in which we will draw an image
+	 * @return
+	 * 		<tt>true</tt> if and only if the image was successfully drawn,
+	 * 		meaning that {@link #imageLoaded() imageLoaded} returns
+	 * 		<tt>true</tt> and that canvasId is the actual ID for a valid
+	 * 		HTML canvas.  Note that this does <em>not</em> return
+	 * 		<tt>false</tt> if everything else is fine but the image is
+	 * 		outside the bounding box; a caller can check for that
+	 * 		using arithmetic, so we do not alert a caller to that event
+	 */
+	public native boolean drawImageClipped(String canvasId, double x, double y,
+			double width, double height, double minX, double minY,
+			double boundsWidth, double boundsHeight) /*-{
+		// Same as drawImage, except with clipping also enabled
+
+		if (! this.imageLoaded) return false;
+
+		var canvas = $doc.getElementById(canvasId);
+		if (! canvas) return false;
+
+		var ctx = canvas.getContext('2d');
+		if (! ctx) return false;
+
+		ctx.stroke();
+
+		// Begin of save/restore block
+		ctx.save();
+		ctx.beginPath();
+		ctx.rect(minX, minY, boundsWidth, boundsHeight);
+		ctx.clip();
+
+		ctx.drawImage(this.img, x - width / 2, y - height / 2, width, height);
+
+		ctx.restore();
+		// End of save/restore block
+
+		ctx.beginPath();
+
 		return true;
 	}-*/;
 }
