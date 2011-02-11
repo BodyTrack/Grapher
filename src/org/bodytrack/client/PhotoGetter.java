@@ -1,5 +1,7 @@
 package org.bodytrack.client;
 
+import org.bodytrack.client.PhotoDataPlot.PhotoAlertable;
+
 import com.google.gwt.core.client.JavaScriptObject;
 
 /**
@@ -21,7 +23,7 @@ import com.google.gwt.core.client.JavaScriptObject;
 public final class PhotoGetter extends JavaScriptObject {
 	/**
 	 * At least for now, we always download images at size
-	 * DEFAULT_IMAGE_WIDTH and do not use other image sizes.
+	 * DEFAULT_WIDTH and do not use other image sizes.
 	 */
 	public static final int DEFAULT_WIDTH = 300;
 
@@ -35,11 +37,18 @@ public final class PhotoGetter extends JavaScriptObject {
 	 * 		the ID of the user who owns the specified image
 	 * @param imageId
 	 * 		the ID of the specified image
+	 * @param callback
+	 * 		the object that will get a callback whenever the photo loads
+	 * 		or an error occurs.  If this is <tt>null</tt>, no exception
+	 * 		will occur, and callback will simply be ignored.
 	 * @return
 	 * 		a new PhotoGetter that will get the specified image
 	 */
+	// TODO: Don't really want to pass in a PhotoAlertable, but I don't
+	// know how JSNI could handle it otherwise, because it wouldn't compile
+	// when I tried to use Alertable in JSNI
 	public native static PhotoGetter buildPhotoGetter(int userId,
-			int imageId) /*-{
+			int imageId, PhotoAlertable callback) /*-{
 		// Declare this constant, and these functions, inside this
 		// function so we don't pollute the global namespace
 
@@ -58,6 +67,7 @@ public final class PhotoGetter extends JavaScriptObject {
 		var getter = {};
 		getter.userId = userId;
 		getter.imageId = imageId;
+		getter.callback = callback;
 		getter.imageLoaded = false;
 		getter.loadFailed = false;
 		getter.baseUrl = getBaseUrl();
@@ -75,11 +85,20 @@ public final class PhotoGetter extends JavaScriptObject {
 
 			if (getter.img.height && getter.img.height > 0)
 				getter.originalImgHeight = getter.img.height;
+
+			if (getter.callback)
+				// In Java-like style:
+				// getter.callback.onSuccess(getter);
+				getter.callback.@org.bodytrack.client.PhotoDataPlot.PhotoAlertable::onSuccess(Lorg/bodytrack/client/PhotoGetter;)(getter);
 		}
 		getter.img.onerror = function() {
-			if (! getter.imageLoaded) {
+			if (! getter.imageLoaded)
 				getter.loadFailed = true;
-			}
+
+			if (getter.callback)
+				// In Java-like style:
+				// getter.callback.onFailure(getter);
+				getter.callback.@org.bodytrack.client.PhotoDataPlot.PhotoAlertable::onFailure(Lorg/bodytrack/client/PhotoGetter;)(getter);
 		}
 
 		// Actually request that the browser load the image
@@ -108,6 +127,17 @@ public final class PhotoGetter extends JavaScriptObject {
 	 */
 	public native int getImageId() /*-{
 		return this.imageId;
+	}-*/;
+
+	/**
+	 * Returns the URL built up from the userId and imageId parameters
+	 * to {@link #buildPhotoGetter(int, int, PhotoAlertable)}.
+	 *
+	 * @return
+	 * 		the URL this <tt>PhotoGetter</tt> uses to request its image
+	 */
+	public native String getUrl() /*-{
+		return this.url;
 	}-*/;
 
 	/**

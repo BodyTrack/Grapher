@@ -22,10 +22,18 @@ public class PhotoDataPlot extends DataPlot {
 
 	private final Set<PhotoGetter> alreadyPaintedImages;
 
+	private final PhotoAlertable loadListener;
+	private final Map<PhotoGetter, Integer> loadingText;
+
 	private Set<PhotoGetter> highlightedImages;
 
 	private static final double IMAGE_Y_VALUE =
 		PhotoGraphAxis.PHOTO_CENTER_LOCATION;
+
+	/**
+	 * Ratio of heights between highlighted image and regular image.
+	 */
+	private static final double HIGHLIGHTED_SIZE_RATIO = 1.2;
 
 	/**
 	 * Initializes a new PhotoDataPlot.
@@ -61,6 +69,8 @@ public class PhotoDataPlot extends DataPlot {
 
 		images = new HashMap<PlottablePoint, Set<PhotoGetter>>();
 		alreadyPaintedImages = new HashSet<PhotoGetter>();
+		loadListener = new PhotoAlertable();
+		loadingText = new HashMap<PhotoGetter, Integer>();
 		highlightedImages = new HashSet<PhotoGetter>();
 	}
 
@@ -98,16 +108,10 @@ public class PhotoDataPlot extends DataPlot {
 			// even the same object)
 			if (! images.containsKey(pos)) {
 				Set<PhotoGetter> newValue = new HashSet<PhotoGetter>();
-				newValue.add(PhotoGetter.buildPhotoGetter(
-					userId, desc.getId()));
+				newValue.add(loadPhoto(userId, desc.getId()));
 				images.put(pos, newValue);
 			} else {
 				Set<PhotoGetter> value = images.get(pos);
-				// TODO: Add a startDownload() method to PhotoGetter (or
-				// replace the PhotoGetter constructor with a pair of
-				// factory methods, one to ask the network and one not), so
-				// we won't start a new network connection with the line
-				// if (value.contains(new PhotoGetter(userId, desc.getId())))
 
 				boolean haveDesc = false;
 
@@ -120,8 +124,7 @@ public class PhotoDataPlot extends DataPlot {
 				}
 
 				if (! haveDesc)
-					value.add(PhotoGetter.buildPhotoGetter(
-						userId, desc.getId()));
+					value.add(loadPhoto(userId, desc.getId()));
 			}
 
 			// Now handle the PlottablePoint we just generated
@@ -129,6 +132,51 @@ public class PhotoDataPlot extends DataPlot {
 		}
 
 		return result;
+	}
+
+	/**
+	 * Loads the specified photo, and adds loading text to the
+	 * container.
+	 *
+	 * @param userId
+	 * 		the ID of the current user
+	 * @param photoId
+	 * 		the ID of the photo
+	 * @return
+	 * 		the {@link org.bodytrack.client.PhotoGetter PhotoGetter}
+	 * 		that can be used to draw the photo we just requested
+	 */
+	private PhotoGetter loadPhoto(int userId, int photoId) {
+		PhotoGetter photo = PhotoGetter.buildPhotoGetter(userId,
+			photoId, loadListener);
+
+		loadingText.put(photo,
+			getContainer().addLoadingMessage(photo.getUrl()));
+
+		return photo;
+	}
+
+	/**
+	 * Removes loading text for the photo from the container
+	 * in which this draws itself.
+	 *
+	 * @param photo
+	 * 		the photo that has just loaded (or failed)
+	 * @return
+	 * 		<tt>true</tt> if we actually remove text from the
+	 * 		container, <tt>false</tt> if there was no text to
+	 * 		begin with for this particular image
+	 */
+	private boolean removePhotoLoadingText(PhotoGetter photo) {
+		boolean contains = loadingText.containsKey(photo);
+
+		if (contains) {
+			int msgId = loadingText.get(photo);
+			getContainer().removeLoadingMessage(msgId);
+			loadingText.remove(photo);
+		}
+
+		return contains;
 	}
 
 	/**
@@ -162,6 +210,7 @@ public class PhotoDataPlot extends DataPlot {
 	 * points.</p>
 	 *
 	 * @param drawing
+	 * 		ignored
 	 * @param prevX
 	 * 		ignored
 	 * @param prevY
@@ -210,9 +259,6 @@ public class PhotoDataPlot extends DataPlot {
 	 */
 	private void drawPhoto(BoundedDrawingBox drawing, double x,
 			double y, PhotoGetter photo) {
-		// TODO: If photo == highlightedImage, we need to draw at a
-		// different size
-
 		// Get the dimensions on photo
 		double originalWidth = photo.getOriginalWidth();
 		double originalHeight = photo.getOriginalHeight();
@@ -221,6 +267,11 @@ public class PhotoDataPlot extends DataPlot {
 
 		// Get the correct dimensions for image
 		double height = Math.round(getPhotoHeight());
+
+		// Handle highlighting
+		//if (highlightedImages.contains(photo))
+		//	height *= HIGHLIGHTED_SIZE_RATIO;
+
 		double width = Math.round(height * widthToHeight);
 
 		// Now get the corner positions of the image (in pixels)
@@ -275,5 +326,43 @@ public class PhotoDataPlot extends DataPlot {
 		}
 
 		return point != null;
+	}
+
+	public final class PhotoAlertable implements Alertable<PhotoGetter> {
+		/**
+		 * Called every time a new image loads.
+		 *
+		 * @param photo
+		 * 		the <tt>PhotoGetter</tt> that just successfully loaded
+		 * 		its image
+		 */
+		@Override
+		public void onSuccess(PhotoGetter photo) {
+			removePhotoLoadingText(photo);
+
+			getContainer().paint();
+		}
+
+		/**
+		 * Called every time a new image fails to load.
+		 *
+		 * <p>This does not attempt to reload the image, since it is
+		 * assumed that the image must not exist on the server if
+		 * we are getting an error.</p>
+		 *
+		 * @param photo
+		 * 		the <tt>PhotoGetter</tt> that just encountered an error
+		 */
+		@Override
+		public void onFailure(PhotoGetter photo) {
+			// Don't do anything if this is a spurious error after
+			// a successful load (should never happen)
+			if (photo.imageLoaded())
+				return;
+
+			removePhotoLoadingText(photo);
+
+			getContainer().paint();
+		}
 	}
 }
