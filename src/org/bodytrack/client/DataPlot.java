@@ -61,6 +61,11 @@ public class DataPlot implements Alertable<GrapherTile> {
 	 */
 	private static final int MAX_REQUESTS_PER_URL = 5;
 
+	/**
+	 * Used to speed up the log2 method.
+	 */
+	private static final double LN_2 = Math.log(2);
+
 	private final GraphWidget container;
 	private final GraphAxis xAxis;
 	private final GraphAxis yAxis;
@@ -745,21 +750,18 @@ public class DataPlot implements Alertable<GrapherTile> {
 	}
 
 	/**
-	 * Computes the floor of the log (base 2) of n.
+	 * Computes the floor of the log (base 2) of x.
 	 *
-	 * @param n
+	 * @param x
 	 * 		the value for which we want to take the log
 	 * @return
-	 * 		the floor of the log (base 2) of n
+	 * 		the floor of the log (base 2) of x
 	 */
 	private int log2(double x) {
-		if (x == 0)
-			return 0;
+		if (x <= 0)
+			return Integer.MIN_VALUE;
 
-		if (x < 0)
-			return -1 * log2(-x);
-
-		return (int) (Math.log(x) / Math.log(2));
+		return (int) Math.floor((Math.log(x) / LN_2));
 	}
 
 	/**
@@ -1052,7 +1054,9 @@ public class DataPlot implements Alertable<GrapherTile> {
 	 * this method is not required to call overridden forms of isNear and
 	 * highlightPoints.  However, this method is not a final method, so
 	 * a subclass implementation of this method may call an overridden
-	 * form of closest and highlight.</p>
+	 * form of closest and highlight.  A subclass may also change the
+	 * measurement unit on threshold (it is pixels here), as long as
+	 * that fact is clearly documented.</p>
 	 *
 	 * @param pos
 	 * 		the position at which the mouse is hovering, and from which
