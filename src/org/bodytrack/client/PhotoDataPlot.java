@@ -25,6 +25,11 @@ public class PhotoDataPlot extends DataPlot {
 
 	private Set<PhotoGetter> highlightedImages;
 
+	// Used so we only need to move a pointer to indicate that we have
+	// no highlighted images
+	private static final Set<PhotoGetter> EMPTY_HIGHLIGHTED_IMAGES_SET =
+		new HashSet<PhotoGetter>();
+
 	private static final double IMAGE_Y_VALUE =
 		PhotoGraphAxis.PHOTO_CENTER_LOCATION;
 
@@ -245,11 +250,8 @@ public class PhotoDataPlot extends DataPlot {
 
 		// Get the correct dimensions for image
 		double height = Math.round(getPhotoHeight());
-
-		// Handle highlighting
-		//if (highlightedImages.contains(photo))
-		//	height *= HIGHLIGHTED_SIZE_RATIO;
-
+		if (highlightedImages.contains(photo)) // Handle highlighting
+			height *= HIGHLIGHTED_SIZE_RATIO;
 		double width = Math.round(height * widthToHeight);
 
 		// Now draw the image itself, not allowing it to overflow onto
@@ -288,28 +290,40 @@ public class PhotoDataPlot extends DataPlot {
 	}
 
 	/**
-	 * Exactly the same as {@link DataPlot#highlightIfNear(Vector2, double)},
-	 * except that this also figures out <em>which</em> photo should be
-	 * highlighted for the user.
+	 * The same as {@link DataPlot#highlightIfNear(Vector2, double)},
+	 * except that this counts threshold as a percentage of image height.
+	 * rather than as a number of pixels.
+	 *
+	 * <p>It is important to remember that threshold is a radius, so
+	 * threshold should always be in the range [0, 50) - otherwise, the
+	 * threshold will definitely be bigger than the image.</p>
+	 *
+	 * <p>This also figures out which photo should be highlighted for
+	 * the user.</p>
+	 *
+	 * @inheritDoc
 	 */
+	// TODO: write a new version of closest() that cares only about
+	// X-values and handles Y-values more intelligently
 	@Override
 	public boolean highlightIfNear(Vector2 pos, double threshold) {
-		// We need to clear highlightedImages ourselves, since we
-		// are handling this data structure, hidden from the outside
-		// world
-		highlightedImages.clear();
+		PlottablePoint point = closest(pos,
+			threshold * getPhotoHeight() / 100);
 
-		// TODO: Use threshold differently - maybe as a percentage of
-		// photo size or something like that
-		PlottablePoint point = closest(pos, threshold);
 		if (point != null) {
 			highlightedImages = images.get(point);
 			highlight();
-		}
+		} else
+			// We need to clear highlightedImages ourselves
+			highlightedImages = EMPTY_HIGHLIGHTED_IMAGES_SET;
 
 		return point != null;
 	}
 
+	/**
+	 * An {@link org.bodytrack.client.Alertable Alertable} implementation
+	 * that is specific to photo loading.
+	 */
 	public final class PhotoAlertable implements Alertable<PhotoGetter> {
 		/**
 		 * Called every time a new image loads.

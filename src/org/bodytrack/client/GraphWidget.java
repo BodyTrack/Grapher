@@ -39,6 +39,7 @@ public class GraphWidget extends Surface {
 	private static final double MOUSE_WHEEL_ZOOM_RATE_PC = 1.1;
 
 	private static final double HIGHLIGHT_DISTANCE_THRESHOLD = 5;
+	private static final double PHOTO_HIGHLIGHT_DISTANCE_THRESH = 10;
 
 	private static final int PAINT_TWICE_DELAY = 10;
 
@@ -271,7 +272,11 @@ public class GraphWidget extends Surface {
 			for (DataPlot plot: dataPlots) {
 				plot.unhighlight();
 
-				if (plot.highlightIfNear(pos, HIGHLIGHT_DISTANCE_THRESHOLD)) {
+				double distanceThreshold = (plot instanceof PhotoDataPlot)
+					? PHOTO_HIGHLIGHT_DISTANCE_THRESH
+					: HIGHLIGHT_DISTANCE_THRESHOLD;
+
+				if (plot.highlightIfNear(pos, distanceThreshold)) {
 					highlighted = true;
 					highlightedPlots.add(plot);
 				}
