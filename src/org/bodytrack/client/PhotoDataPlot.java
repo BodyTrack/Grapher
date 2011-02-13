@@ -182,12 +182,26 @@ public class PhotoDataPlot extends DataPlot {
 	}
 
 	/**
-	 * Draws nothing, since we handle edge points and normal points in
-	 * the same way in this class.
+	 * Draws the images at the specified point.
+	 *
+	 * <p>Although we handle edge points and regular points in the same
+	 * way in this class, we still need to draw all the images, so this
+	 * does exactly the same thing that {@link
+	 * #paintDataPoint(BoundedDrawingBox, double, double, double, double)
+	 * paintDataPoint} does.</p>
+	 *
+	 * @param drawing
+	 * 		the bounding box that constrains where photos will draw
+	 * @param x
+	 * 		the X-value (in pixels) at which we draw the image
+	 * @param y
+	 * 		the Y-value (in pixels) at which we draw the image
 	 */
 	@Override
 	protected void paintEdgePoint(BoundedDrawingBox drawing, double x,
-			double y) { }
+			double y) {
+		drawAllImagesAtPoint(drawing, x, y);
+	}
 
 	/**
 	 * Draws the images that are matched with x.
@@ -198,7 +212,7 @@ public class PhotoDataPlot extends DataPlot {
 	 * points.</p>
 	 *
 	 * @param drawing
-	 * 		ignored
+	 * 		the bounding box that constrains where photos will draw
 	 * @param prevX
 	 * 		ignored
 	 * @param prevY
@@ -211,6 +225,22 @@ public class PhotoDataPlot extends DataPlot {
 	@Override
 	protected void paintDataPoint(BoundedDrawingBox drawing, double prevX,
 			double prevY, double x, double y) {
+		drawAllImagesAtPoint(drawing, x, y);
+	}
+
+	/**
+	 * Helper method that actually implements <tt>paintEdgePoint</tt>
+	 * and <tt>paintDataPoint</tt>.
+	 *
+	 * @param drawing
+	 * 		the bounding box that constrains where photos will draw
+	 * @param x
+	 * 		the X-value (in pixels) at which we draw the image
+	 * @param y
+	 * 		the Y-value (in pixels) at which we draw the image
+	 */
+	private void drawAllImagesAtPoint(BoundedDrawingBox drawing, double x,
+			double y) {
 		// We stored data in images under the logical X-value (time), not
 		// under a pixel value
 		double unprojectedX = getXAxis().unproject(new Vector2(x, y));
