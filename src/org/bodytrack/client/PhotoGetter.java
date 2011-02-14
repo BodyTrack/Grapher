@@ -142,6 +142,7 @@ public final class PhotoGetter extends JavaScriptObject {
 	 * 		<tt>PhotoGetter</tt> was created
 	 */
 	public native double getTime() /*-{
+		return this.time;
 	}-*/;
 
 	/**
