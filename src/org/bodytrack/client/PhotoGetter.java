@@ -39,6 +39,8 @@ public final class PhotoGetter extends JavaScriptObject {
 	 * 		the ID of the user who owns the specified image
 	 * @param imageId
 	 * 		the ID of the specified image
+	 * @param time
+	 * 		the time at which this image should appear
 	 * @param callback
 	 * 		the object that will get a callback whenever the photo loads
 	 * 		or an error occurs.  If this is <tt>null</tt>, no exception
@@ -50,7 +52,7 @@ public final class PhotoGetter extends JavaScriptObject {
 	// know how JSNI could handle it otherwise, because it wouldn't compile
 	// when I tried to use Alertable in JSNI
 	public native static PhotoGetter buildPhotoGetter(int userId,
-			int imageId, PhotoAlertable callback) /*-{
+			int imageId, double time, PhotoAlertable callback) /*-{
 		// Declare this constant, and these functions, inside this
 		// function so we don't pollute the global namespace
 
@@ -69,6 +71,7 @@ public final class PhotoGetter extends JavaScriptObject {
 		var getter = {};
 		getter.userId = userId;
 		getter.imageId = imageId;
+		getter.time = time;
 		getter.callback = callback;
 		getter.imageLoaded = false;
 		getter.loadFailed = false;
@@ -129,6 +132,16 @@ public final class PhotoGetter extends JavaScriptObject {
 	 */
 	public native int getImageId() /*-{
 		return this.imageId;
+	}-*/;
+
+	/**
+	 * Returns the time parameter used to initialize this <tt>PhotoGetter</tt>.
+	 *
+	 * @return
+	 * 		the time parameter passed to the factory method when this
+	 * 		<tt>PhotoGetter</tt> was created
+	 */
+	public native double getTime() /*-{
 	}-*/;
 
 	/**

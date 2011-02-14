@@ -110,7 +110,8 @@ public class PhotoDataPlot extends DataPlot {
 			// even the same object)
 			if (! images.containsKey(pos)) {
 				Set<PhotoGetter> newValue = new HashSet<PhotoGetter>();
-				newValue.add(loadPhoto(userId, desc.getId()));
+				newValue.add(loadPhoto(userId, desc.getId(),
+					desc.getBeginDate()));
 				images.put(pos, newValue);
 			} else {
 				Set<PhotoGetter> value = images.get(pos);
@@ -126,7 +127,8 @@ public class PhotoDataPlot extends DataPlot {
 				}
 
 				if (! haveDesc)
-					value.add(loadPhoto(userId, desc.getId()));
+					value.add(loadPhoto(userId, desc.getId(),
+						desc.getBeginDate()));
 			}
 
 			// Now handle the PlottablePoint we just generated
@@ -144,13 +146,16 @@ public class PhotoDataPlot extends DataPlot {
 	 * 		the ID of the current user
 	 * @param photoId
 	 * 		the ID of the photo
+	 * @param time
+	 * 		the timestamp on the photo, which is used to decide where to
+	 * 		put it on the X-axis
 	 * @return
 	 * 		the {@link org.bodytrack.client.PhotoGetter PhotoGetter}
 	 * 		that can be used to draw the photo we just requested
 	 */
-	private PhotoGetter loadPhoto(int userId, int photoId) {
+	private PhotoGetter loadPhoto(int userId, int photoId, double time) {
 		PhotoGetter photo = PhotoGetter.buildPhotoGetter(userId,
-			photoId, loadListener);
+			photoId, time, loadListener);
 
 		loadingText.put(photo,
 			getContainer().addLoadingMessage(photo.getUrl()));
@@ -243,13 +248,11 @@ public class PhotoDataPlot extends DataPlot {
 			double y) {
 		// We stored data in images under the logical X-value (time), not
 		// under a pixel value
-		double unprojectedX = getXAxis().unproject(new Vector2(x, y));
+		double photoTime = getXAxis().unproject(new Vector2(x, y));
 
 		Set<PhotoGetter> photos = images.get(
-			new PlottablePoint(unprojectedX, IMAGE_Y_VALUE));
-		if (photos == null || photos.size() == 0)
-			// This shouldn't ever occur
-			return;
+			new PlottablePoint(photoTime, IMAGE_Y_VALUE));
+		if (photos == null) return; // This shouldn't ever occur
 
 		for (PhotoGetter photo: photos)
 			drawPhoto(drawing, x, y, photo);
@@ -257,6 +260,14 @@ public class PhotoDataPlot extends DataPlot {
 
 	/**
 	 * Draws a single photo at the specified X position.
+	 *
+	 * <p>This method worries about fit, making sure that the photo
+	 * will not overlap anything.  Then, this calls
+	 * {@link #renderPhoto(BoundedDrawingBox, double, double,
+	 * double, double, PhotoGetter)} to show the photo on the page.
+	 * As such, x and y are taken as polite suggestions rather than
+	 * hard absolutes, since we are interested in not having the
+	 * photos overlap.</p>
 	 *
 	 * @param drawing
 	 * 		the <tt>BoundedDrawingBox</tt> we use to draw only in
@@ -268,29 +279,205 @@ public class PhotoDataPlot extends DataPlot {
 	 * 		the Y-value (in pixels) at which the center of the image
 	 * 		should be drawn
 	 * @param photo
-	 * 		the photo to draw at point x
+	 * 		the photo to draw at point (x, y)
 	 */
 	private void drawPhoto(BoundedDrawingBox drawing, double x,
 			double y, PhotoGetter photo) {
-		// Get the dimensions on photo
+		// Get the correct dimensions for image
+		double height = getHeight(photo);
+
+		// Handle overlap for drawing, by changing height and
+		// Y-position of the photo
+		if (overlapsLeft(photo)) {
+			if (overlapsRight(photo)) {
+				// Overlaps on both sides, so draw in the center
+				height /= 3.0;
+			} else {
+				// Overlaps on only the left side, so draw on top
+				y -= height / 3.0;
+				height /= 3.0;
+			}
+		} else if (overlapsRight(photo)) {
+			// Overlaps on only the right side, so draw on bottom
+			y += height / 3.0;
+			height /= 3.0;
+		}
+
+		// If neither of the above cases holds, no overlap, so we
+		// render at full size, with the same y-value as before
+
+		double width = getWidth(photo, height);
+		renderPhoto(drawing, x, y, width, height, photo);
+	}
+
+	/**
+	 * Returns the full-size height of photo.
+	 *
+	 * <p>This checks for highlighting status, and handles that correctly
+	 * as well.  To get the default photo height, call
+	 * {@link #getPhotoHeight()}.</p>
+	 *
+	 * @param photo
+	 * 		the photo for which we want to get the height
+	 * @return
+	 * 		the height at which photo should be drawn, if at full size
+	 */
+	private double getHeight(PhotoGetter photo) {
+		double height = getPhotoHeight();
+		if (highlightedImages.contains(photo)) // Handle highlighting
+			height *= HIGHLIGHTED_SIZE_RATIO;
+
+		return height;
+	}
+
+	/**
+	 * Finds the width at which photo should be drawn, if we are working
+	 * at the specified height.
+	 *
+	 * @param photo
+	 * 		the photo for which we want the width
+	 * @param height
+	 * 		the height at which photo will be drawn
+	 * @return
+	 * 		the width at which photo should be drawn, maintaining the
+	 * 		aspect ratio of photo
+	 */
+	private double getWidth(PhotoGetter photo, double height) {
 		double originalWidth = photo.getOriginalWidth();
 		double originalHeight = photo.getOriginalHeight();
 
 		double widthToHeight = ((double) originalWidth) / originalHeight;
 
-		// Get the correct dimensions for image
-		double height = Math.round(getPhotoHeight());
-		if (highlightedImages.contains(photo)) // Handle highlighting
-			height *= HIGHLIGHTED_SIZE_RATIO;
-		double width = Math.round(height * widthToHeight);
+		return height * widthToHeight;
+	}
 
+	/**
+	 * Determines whether photo overlaps with any photo to the left of
+	 * it.
+	 *
+	 * <p>Note that we use the {@link #overlaps(PhotoGetter, PhotoGetter)}
+	 * method to determine whether or not two photos overlap.</p>
+	 *
+	 * @param photo
+	 * 		the photo to check for overlapping
+	 * @return
+	 * 		<tt>true</tt> if and only if there is a photo, with time
+	 * 		greater than or equal to the time for photo, that overlaps
+	 * 		photo.  Note that photo does not overlap with itself
+	 */
+	// TODO: Precompute an overlap map, that keeps track of pairs of
+	// photos that overlap.  Only need to update the map in loadPhoto,
+	// and can just read from the map after that
+	private boolean overlapsLeft(PhotoGetter photo) {
+		double time = photo.getTime();
+
+		for (Set<PhotoGetter> second: images.values())
+			for (PhotoGetter otherPhoto: second)
+				if (photo != otherPhoto &&
+						otherPhoto.getTime() <= time &&
+						overlaps(photo, otherPhoto))
+					return true;
+
+		return false;
+	}
+
+	/**
+	 * Determines whether photo overlaps with any photo to the right of
+	 * it.
+	 *
+	 * <p>Note that we use the {@link #overlaps(PhotoGetter, PhotoGetter)}
+	 * method to determine whether or not two photos overlap.</p>
+	 *
+	 * @param photo
+	 * 		the photo to check for overlapping
+	 * @return
+	 * 		<tt>true</tt> if and only if there is a photo, with time
+	 * 		greater than or equal to the time for photo, that overlaps
+	 * 		photo.  Note that photo does not overlap with itself
+	 */
+	private boolean overlapsRight(PhotoGetter photo) {
+		double time = photo.getTime();
+
+		for (Set<PhotoGetter> second: images.values())
+			for (PhotoGetter otherPhoto: second)
+				if (photo != otherPhoto &&
+						otherPhoto.getTime() >= time &&
+						overlaps(photo, otherPhoto))
+					return true;
+
+		return false;
+	}
+
+	/**
+	 * Tells whether the two photos overlap when drawn at full size
+	 * but not highlighted.
+	 *
+	 * <p>It is not really overlapping if the only thing causing an
+	 * overlap is the highlighting, so this ignores highlighting when
+	 * calculating intersection.</p>
+	 *
+	 * @param photo1
+	 * 		the first photo that may or may not overlap
+	 * @param photo2
+	 * 		the second photo that may or may not overlap
+	 * @return
+	 * 		<tt>true</tt> if and only if photo1 and photo2 would overlap
+	 * 		when drawn at full size, when not highlighted
+	 */
+	private boolean overlaps(PhotoGetter photo1, PhotoGetter photo2) {
+		double height = getPhotoHeight();
+
+		double width1 = getWidth(photo1, height);
+		double width2 = getWidth(photo2, height);
+
+		double x1 = getPhotoX(photo1);
+		double x2 = getPhotoX(photo2);
+
+		return 2 * Math.abs(x1 - x2) < width1 + width2;
+	}
+
+	/**
+	 * Returns the X-value, in pixels, at which the specified photo should
+	 * be drawn.
+	 *
+	 * @param photo
+	 * 		the photo to place on the X-axis
+	 * @return
+	 * 		the X-value, in pixels, at which we should draw photo
+	 */
+	private double getPhotoX(PhotoGetter photo) {
+		return getXAxis().project2D(photo.getTime()).getX();
+	}
+
+	/**
+	 * Actually draws the specified photo to the canvas, without
+	 * worrying about fit.
+	 *
+	 * @param drawing
+	 * 		the <tt>BoundedDrawingBox</tt> we use to draw only in
+	 * 		bounds
+	 * @param x
+	 * 		the X-value (in pixels) at which the center of the image
+	 * 		will be drawn
+	 * @param y
+	 * 		the Y-value (in pixels) at which the center of the image
+	 * 		will be drawn
+	 * @param width
+	 * 		the width (in pixels) at which the image will be drawn
+	 * @param height
+	 * 		the height (in pixels) at which the image will be drawn
+	 * @param photo
+	 * 		the photo to draw at point (x, y)
+	 */
+	private void renderPhoto(BoundedDrawingBox drawing, double x, double y,
+			double width, double height, PhotoGetter photo) {
 		// Now draw the image itself, not allowing it to overflow onto
 		// the axes
 		photo.drawImageClipped(GraphWidget.DEFAULT_GRAPHER_ID, x, y, width,
 			height, drawing);
 
-		// Note that the borders are drawn after the image is - this is
-		// so the image doesn't obscure the borders
+		// Note that the borders are drawn after the image is, so the image
+		// doesn't obscure the borders
 
 		double xMin = x - (width / 2.0);
 		double xMax = x + (width / 2.0);
