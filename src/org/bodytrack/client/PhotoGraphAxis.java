@@ -12,9 +12,6 @@ import gwt.g2d.client.graphics.Surface;
  * portion of the axis, centered at <tt>PHOTO_CENTER_LOCATION</tt>
  * that takes up logical height <tt>PHOTO_HEIGHT</tt>.</p>
  */
-
-// TODO: FINISH DOCUMENTING
-
 public class PhotoGraphAxis extends GraphAxis {
 	private static final double INITIAL_MIN = 0.0;
 	private static final double INITIAL_MAX = 1.0;
@@ -51,6 +48,8 @@ public class PhotoGraphAxis extends GraphAxis {
 	 * drawn.
 	 *
 	 * @return
+	 * 		the Y-value at which the center of a photo should be drawn,
+	 * 		in pixels
 	 */
 	public double projectPhotoCenter() {
 		return projectY(PHOTO_CENTER_LOCATION);
@@ -60,6 +59,7 @@ public class PhotoGraphAxis extends GraphAxis {
 	 * Returns the height of a photo in pixels.
 	 *
 	 * @return
+	 * 		the photo height, in pixels
 	 */
 	public double projectPhotoHeight() {
 		// Note that we count the stretched height of the axis as
@@ -69,10 +69,27 @@ public class PhotoGraphAxis extends GraphAxis {
 		return PHOTO_HEIGHT * (projectY(INITIAL_MIN) - projectY(INITIAL_MAX));
 	}
 
+	/**
+	 * Returns the value, in pixels, at which the specified logical
+	 * Y-value should be drawn.
+	 *
+	 * @param value
+	 * 		the Y-value to change from logical to pixels
+	 * @return
+	 * 		the Y-axis location, in pixels, at which value should be
+	 * 		drawn
+	 */
 	private double projectY(double value) {
 		return project2D(value).getY();
 	}
 
+	/**
+	 * Draws this axis.
+	 *
+	 * @param surface
+	 * 		the {@link gwt.g2d.client.graphics.Surface Surface} on
+	 * 		which we should draw the axis
+	 */
 	@Override
 	public void paint(Surface surface) {
 		Canvas canvas = Canvas.buildCanvas(surface);
