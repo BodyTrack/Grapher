@@ -934,8 +934,11 @@ public class DataPlot implements Alertable<GrapherTile> {
 
 		PlottablePoint closest = null;
 		double shortestDistanceSq = Double.MAX_VALUE;
+		List<PlottablePoint> points = getDataPoints(tile);
+		if (points == null)
+			return null;
 
-		for (PlottablePoint point: getDataPoints(tile)) {
+		for (PlottablePoint point: points) {
 			double time = point.getDate();
 			double val = point.getValue();
 
