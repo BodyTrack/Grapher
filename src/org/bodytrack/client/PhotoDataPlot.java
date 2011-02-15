@@ -343,25 +343,18 @@ public class PhotoDataPlot extends DataPlot {
 		// Get the correct dimensions for image
 		double height = getHeight(photo);
 
-		// Handle overlap for drawing, by changing height and
-		// Y-position of the photo
-		if (overlapsLeft(photo)) {
-			if (overlapsRight(photo)) {
-				// Overlaps on both sides, so draw in the center
-				height /= 3.0;
-			} else {
-				// Overlaps on only the left side, so draw on top
-				y -= height / 3.0;
-				height /= 3.0;
-			}
-		} else if (overlapsRight(photo)) {
-			// Overlaps on only the right side, so draw on bottom
-			y += height / 3.0;
-			height /= 3.0;
-		}
+		if (overlap.get(photo).size() > 0) {
+			// There is overlap, so we draw photos with even IDs on
+			// top and photos with odd IDs on the bottom
 
-		// If neither of the above cases holds, no overlap, so we
-		// render at full size, with the same y-value as before
+			if (photo.getImageId() % 2 == 0) {
+				y -= height / 4.0;
+				height /= 2.0;
+			} else {
+				y += height / 4.0;
+				height /= 2.0;
+			}
+		}
 
 		double width = getWidth(photo, height);
 		renderPhoto(drawing, x, y, width, height, photo);
@@ -406,46 +399,6 @@ public class PhotoDataPlot extends DataPlot {
 		double widthToHeight = ((double) originalWidth) / originalHeight;
 
 		return height * widthToHeight;
-	}
-
-	/**
-	 * Determines whether photo overlaps with any photo to the left of it.
-	 *
-	 * @param photo
-	 * 		the photo to check for overlapping
-	 * @return
-	 * 		<tt>true</tt> if and only if there is a photo, with time
-	 * 		less than or equal to the time for photo, that overlaps
-	 * 		photo.  Note that photo does not overlap with itself
-	 */
-	private boolean overlapsLeft(PhotoGetter photo) {
-		double time = photo.getTime();
-
-		for (PhotoGetter other: overlap.get(photo))
-			if (other.getTime() <= time)
-				return true;
-
-		return false;
-	}
-
-	/**
-	 * Determines whether photo overlaps with any photo to the right of it.
-	 *
-	 * @param photo
-	 * 		the photo to check for overlapping
-	 * @return
-	 * 		<tt>true</tt> if and only if there is a photo, with time
-	 * 		greater than or equal to the time for photo, that overlaps
-	 * 		photo.  Note that photo does not overlap with itself
-	 */
-	private boolean overlapsRight(PhotoGetter photo) {
-		double time = photo.getTime();
-
-		for (PhotoGetter other: overlap.get(photo))
-			if (other.getTime() >= time)
-				return true;
-
-		return false;
 	}
 
 	/**
@@ -597,6 +550,9 @@ public class PhotoDataPlot extends DataPlot {
 	 */
 	// TODO: write a new version of closest() that cares only about
 	// X-values and handles Y-values more intelligently
+	// TODO: Bug because we need to keep track of the Y-value much
+	// more carefully.  Right now, we are just using the center axis
+	// as our Y-value, which works only for full-size photos
 	@Override
 	public boolean highlightIfNear(Vector2 pos, double threshold) {
 		PlottablePoint point = closest(pos,
