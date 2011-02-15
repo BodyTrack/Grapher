@@ -25,6 +25,30 @@ public class PhotoDataPlot extends DataPlot {
 
 	private Set<PhotoGetter> highlightedImages;
 
+	// Map from photo P to set of photos that overlap P, which
+	// makes this map somewhat redundant (information contained
+	// in two places whenever two photos overlap) but fast
+	private final Map<PhotoGetter, Set<PhotoGetter>> overlap;
+	private double previousHeight;
+		// Since overlap is only valid at a given height (in pixels)
+	private double previousWidth;
+		// Since overlap is only valid at a X-axis width (in seconds)
+
+	/**
+	 * If the difference in height between the current height, in pixels,
+	 * and the value of previousHeight is greater than
+	 * OVERLAP_RESET_THRESH_H, then we have to drop the overlap
+	 * cache.
+	 */
+	private static final double OVERLAP_RESET_THRESH_H = 5;
+
+	/**
+	 * If the quotient of the X-axis width, in seconds, and previousWidth
+	 * differs from 1 by more than OVERLAP_RESET_THRESH_W,
+	 * then we have to drop the overlap cache.
+	 */
+	private static final double OVERLAP_RESET_THRESH_W = 0.05;
+
 	// Used so we only need to move a pointer to indicate that we have
 	// no highlighted images
 	private static final Set<PhotoGetter> EMPTY_HIGHLIGHTED_IMAGES_SET =
@@ -74,6 +98,10 @@ public class PhotoDataPlot extends DataPlot {
 		loadListener = new PhotoAlertable();
 		loadingText = new HashMap<PhotoGetter, Integer>();
 		highlightedImages = new HashSet<PhotoGetter>();
+
+		overlap = new HashMap<PhotoGetter, Set<PhotoGetter>>();
+		previousHeight = 1e-10;
+		previousWidth = 1e-10;
 	}
 
 	/**
@@ -160,7 +188,36 @@ public class PhotoDataPlot extends DataPlot {
 		loadingText.put(photo,
 			getContainer().addLoadingMessage(photo.getUrl()));
 
+		addOverlaps(photo, getPhotoHeight());
+
 		return photo;
+	}
+
+	/**
+	 * Adds all photos that overlap with photo to the overlap instance
+	 * variable.
+	 *
+	 * @param photo
+	 * 		the photo to check for overlapping
+	 * @param height
+	 * 		the height at which that photo will be drawn by default,
+	 * 		as returned by {@link #getPhotoHeight()}
+	 */
+	private void addOverlaps(PhotoGetter photo, double height) {
+		double time = photo.getTime();
+
+		Set<PhotoGetter> overlapping = new HashSet<PhotoGetter>();
+
+		for (Set<PhotoGetter> second: images.values())
+			for (PhotoGetter otherPhoto: second)
+				if (photo != otherPhoto &&
+						otherPhoto.getTime() <= time &&
+						overlaps(photo, otherPhoto, height)) {
+					overlapping.add(otherPhoto);
+					overlap.get(otherPhoto).add(photo);
+				}
+
+		overlap.put(photo, overlapping);
 	}
 
 	/**
@@ -352,41 +409,27 @@ public class PhotoDataPlot extends DataPlot {
 	}
 
 	/**
-	 * Determines whether photo overlaps with any photo to the left of
-	 * it.
-	 *
-	 * <p>Note that we use the {@link #overlaps(PhotoGetter, PhotoGetter)}
-	 * method to determine whether or not two photos overlap.</p>
+	 * Determines whether photo overlaps with any photo to the left of it.
 	 *
 	 * @param photo
 	 * 		the photo to check for overlapping
 	 * @return
 	 * 		<tt>true</tt> if and only if there is a photo, with time
-	 * 		greater than or equal to the time for photo, that overlaps
+	 * 		less than or equal to the time for photo, that overlaps
 	 * 		photo.  Note that photo does not overlap with itself
 	 */
-	// TODO: Precompute an overlap map, that keeps track of pairs of
-	// photos that overlap.  Only need to update the map in loadPhoto,
-	// and can just read from the map after that
 	private boolean overlapsLeft(PhotoGetter photo) {
 		double time = photo.getTime();
 
-		for (Set<PhotoGetter> second: images.values())
-			for (PhotoGetter otherPhoto: second)
-				if (photo != otherPhoto &&
-						otherPhoto.getTime() <= time &&
-						overlaps(photo, otherPhoto))
-					return true;
+		for (PhotoGetter other: overlap.get(photo))
+			if (other.getTime() <= time)
+				return true;
 
 		return false;
 	}
 
 	/**
-	 * Determines whether photo overlaps with any photo to the right of
-	 * it.
-	 *
-	 * <p>Note that we use the {@link #overlaps(PhotoGetter, PhotoGetter)}
-	 * method to determine whether or not two photos overlap.</p>
+	 * Determines whether photo overlaps with any photo to the right of it.
 	 *
 	 * @param photo
 	 * 		the photo to check for overlapping
@@ -398,12 +441,9 @@ public class PhotoDataPlot extends DataPlot {
 	private boolean overlapsRight(PhotoGetter photo) {
 		double time = photo.getTime();
 
-		for (Set<PhotoGetter> second: images.values())
-			for (PhotoGetter otherPhoto: second)
-				if (photo != otherPhoto &&
-						otherPhoto.getTime() >= time &&
-						overlaps(photo, otherPhoto))
-					return true;
+		for (PhotoGetter other: overlap.get(photo))
+			if (other.getTime() >= time)
+				return true;
 
 		return false;
 	}
@@ -420,13 +460,15 @@ public class PhotoDataPlot extends DataPlot {
 	 * 		the first photo that may or may not overlap
 	 * @param photo2
 	 * 		the second photo that may or may not overlap
+	 * @param height
+	 * 		the height at which these photos will be drawn by default,
+	 * 		as returned by {@link #getPhotoHeight()}
 	 * @return
 	 * 		<tt>true</tt> if and only if photo1 and photo2 would overlap
 	 * 		when drawn at full size, when not highlighted
 	 */
-	private boolean overlaps(PhotoGetter photo1, PhotoGetter photo2) {
-		double height = getPhotoHeight();
-
+	private boolean overlaps(PhotoGetter photo1, PhotoGetter photo2,
+			double height) {
 		double width1 = getWidth(photo1, height);
 		double width2 = getWidth(photo2, height);
 
@@ -494,6 +536,10 @@ public class PhotoDataPlot extends DataPlot {
 	/**
 	 * Returns the height the photo should take up, in pixels.
 	 *
+	 * <p>This also has the side effect of dropping and refilling the cache
+	 * in the overlap instance variable whenever there is too much change
+	 * from the previous version.</p>
+	 *
 	 * @return
 	 * 		the height the photo should take up, in pixels
 	 */
@@ -501,9 +547,38 @@ public class PhotoDataPlot extends DataPlot {
 		GraphAxis yAxis = getYAxis();
 
 		// Note that 0 has a lower Y-value than PHOTO_HEIGHT, since
-		// higher values have smaller Y-values in pixels
-		return Math.abs(yAxis.project2D(0).getY() -
-			yAxis.project2D(PhotoGraphAxis.PHOTO_HEIGHT).getY());
+		// higher values in logical units have smaller Y-values in pixels
+		double height = yAxis.project2D(0).getY() -
+			yAxis.project2D(PhotoGraphAxis.PHOTO_HEIGHT).getY();
+
+		double xAxisWidth = getXAxis().getMax() - getXAxis().getMin();
+		double widthRatio = previousWidth / xAxisWidth;
+
+		// TODO: Smarter caching of overlap info, so we only add and drop
+		// values when we need to do so.  Also, maybe use old cache as
+		// starting point whenever we refresh the cache.
+		if (Math.abs(height - previousHeight) > OVERLAP_RESET_THRESH_H
+				|| Math.abs(1 - widthRatio) > OVERLAP_RESET_THRESH_W) {
+			resetOverlapCache(height);
+			previousHeight = height;
+			previousWidth = xAxisWidth;
+		}
+
+		return height;
+	}
+
+	/**
+	 * Resets the overlap instance variable.
+	 *
+	 * @param height
+	 * 		the default height used to draw images
+	 */
+	private void resetOverlapCache(double height) {
+		overlap.clear();
+
+		for (Set<PhotoGetter> second: images.values())
+			for (PhotoGetter photo: second)
+				addOverlaps(photo, height);
 	}
 
 	/**
