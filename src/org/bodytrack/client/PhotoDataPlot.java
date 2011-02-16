@@ -49,11 +49,6 @@ public class PhotoDataPlot extends DataPlot {
 	 */
 	private static final double OVERLAP_RESET_THRESH_W = 0.05;
 
-	// Used so we only need to move a pointer to indicate that we have
-	// no highlighted images
-	private static final Set<PhotoGetter> EMPTY_HIGHLIGHTED_IMAGES_SET =
-		new HashSet<PhotoGetter>();
-
 	private static final double IMAGE_Y_VALUE =
 		PhotoGraphAxis.PHOTO_CENTER_LOCATION;
 
@@ -299,7 +294,7 @@ public class PhotoDataPlot extends DataPlot {
 	 * @param x
 	 * 		the X-value (in pixels) at which we draw the image
 	 * @param y
-	 * 		the Y-value (in pixels) at which we draw the image
+	 * 		ignored
 	 */
 	private void drawAllImagesAtPoint(BoundedDrawingBox drawing, double x,
 			double y) {
@@ -333,8 +328,7 @@ public class PhotoDataPlot extends DataPlot {
 	 * 		the X-value (in pixels) at which the center of the image
 	 * 		should be drawn
 	 * @param y
-	 * 		the Y-value (in pixels) at which the center of the image
-	 * 		should be drawn
+	 * 		ignored
 	 * @param photo
 	 * 		the photo to draw at point (x, y)
 	 */
@@ -347,13 +341,11 @@ public class PhotoDataPlot extends DataPlot {
 			// There is overlap, so we draw photos with even IDs on
 			// top and photos with odd IDs on the bottom
 
-			if (photo.getImageId() % 2 == 0) {
-				y -= height / 4.0;
-				height /= 2.0;
-			} else {
-				y += height / 4.0;
-				height /= 2.0;
-			}
+			// TODO: Possibly rename getPhotoHeight() to
+			// getFullPhotoHeight(), and change getPhotoHeight() to
+			// return the height of the shrunken photo
+			y = getPhotoY(photo);
+			height /= 2.0;
 		}
 
 		double width = getWidth(photo, height);
@@ -438,10 +430,41 @@ public class PhotoDataPlot extends DataPlot {
 	 * @param photo
 	 * 		the photo to place on the X-axis
 	 * @return
-	 * 		the X-value, in pixels, at which we should draw photo
+	 * 		the X-value, in pixels, at which we should draw the center of
+	 * 		photo
 	 */
 	private double getPhotoX(PhotoGetter photo) {
 		return getXAxis().project2D(photo.getTime()).getX();
+	}
+
+	/**
+	 * Returns the Y-value, in pixels, at which the specified photo
+	 * should be drawn.
+	 *
+	 * <p>This implements all the logic for spreading out photos along
+	 * the Y-axis, and should be used for both drawing and
+	 * highlighting.</p>
+	 *
+	 * @param photo
+	 * 		the photo to place on the Y-axis
+	 * @return
+	 * 		the Y-value, in pixels, at which we should draw the center
+	 * 		of photo
+	 */
+	private double getPhotoY(PhotoGetter photo) {
+		double y = getYAxis().project2D(
+			PhotoGraphAxis.PHOTO_CENTER_LOCATION).getY();
+
+		if (overlap.get(photo).size() > 0) {
+			double photoHeight = getPhotoHeight();
+
+			if (photo.getImageId() % 2 == 0)
+				y -= photoHeight / 4.0;
+			else
+				y += photoHeight / 4.0;
+		}
+
+		return y;
 	}
 
 	/**
@@ -548,24 +571,60 @@ public class PhotoDataPlot extends DataPlot {
 	 *
 	 * @inheritDoc
 	 */
-	// TODO: write a new version of closest() that cares only about
-	// X-values and handles Y-values more intelligently
-	// TODO: Bug because we need to keep track of the Y-value much
-	// more carefully.  Right now, we are just using the center axis
-	// as our Y-value, which works only for full-size photos
 	@Override
 	public boolean highlightIfNear(Vector2 pos, double threshold) {
-		PlottablePoint point = closest(pos,
+		highlightedImages = closeImages(pos,
 			threshold * getPhotoHeight() / 100);
 
-		if (point != null) {
-			highlightedImages = images.get(point);
-			highlight();
-		} else
-			// We need to clear highlightedImages ourselves
-			highlightedImages = EMPTY_HIGHLIGHTED_IMAGES_SET;
+		boolean haveImages = highlightedImages.size() > 0;
 
-		return point != null;
+		if (haveImages)
+			highlight();
+
+		return haveImages;
+	}
+
+	/**
+	 * A method, similar to {@link DataPlot#closest(Vector2, double)}, that
+	 * finds the images with centers within threshold pixels of pos.
+	 *
+	 * @param pos
+	 * 		the current mouse position
+	 * @param threshold
+	 * 		the maximum number of pixels an image must be from pos in
+	 * 		order to be highlighted
+	 * @return
+	 * 		a <tt>Set</tt> of images that should be highlighted, based
+	 * 		on the fact that the mouse is at pos
+	 */
+	private Set<PhotoGetter> closeImages(Vector2 pos, double threshold) {
+		Set<PhotoGetter> result = new HashSet<PhotoGetter>();
+
+		// Precompute some values
+		double xAxisMinValue = getXAxis().getMin();
+		double xAxisMaxValue = getXAxis().getMax();
+		double thresholdSq = threshold * threshold;
+
+		// TODO: Something better than 2 loops just to walk through all
+		// photos
+		for (Set<PhotoGetter> second: images.values())
+			for (PhotoGetter photo: second) {
+				double time = photo.getTime();
+
+				// Don't bother with photos that are out of bounds
+				if (time < xAxisMinValue || time > xAxisMaxValue)
+					continue;
+
+				// Both these values are in pixels
+				double photoX = getPhotoX(photo);
+				double photoY = getPhotoY(photo);
+
+				Vector2 photoPos = new Vector2(photoX, photoY);
+				if (pos.distanceSquared(photoPos) < thresholdSq)
+					result.add(photo);
+			}
+
+		return result;
 	}
 
 	/**

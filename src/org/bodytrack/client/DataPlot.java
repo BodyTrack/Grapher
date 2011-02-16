@@ -1023,9 +1023,9 @@ public class DataPlot implements Alertable<GrapherTile> {
 	/**
 	 * Tells whether or not this DataPlot is highlighted.
 	 *
-	 * If {@link #highlight()} has been called since the constructor
+	 * <p>If {@link #highlight()} has been called since the constructor
 	 * and since the last call to {@link #unhighlight()}, returns
-	 * <tt>true</tt>.  Otherwise, returns <tt>false</tt>.
+	 * <tt>true</tt>.  Otherwise, returns <tt>false</tt>.</p>
 	 *
 	 * @return
 	 * 		<tt>true</tt> if and only if this DataPlot is highlighted
@@ -1035,10 +1035,12 @@ public class DataPlot implements Alertable<GrapherTile> {
 	}
 
 	/**
-	 * Highlights the appropriate points on the axes if and only if
-	 * this DataPlot contains a point within threshold pixels of pos.
+	 * Highlights this <tt>DataPlot</tt> if and only if it contains a
+	 * point within threshold pixels of pos.
 	 *
-	 * <p>This method is defined to act exactly as if it were
+	 * <p>Note that this does <strong>note</strong> unhighlight this
+	 * <tt>DataPlot</tt> if there is no point within threshold pixels of
+	 * pos.  This method is defined to act exactly as if it were
 	 * implemented as
 	 *
 	 * <pre>
