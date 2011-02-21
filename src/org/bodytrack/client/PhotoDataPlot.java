@@ -192,6 +192,11 @@ public class PhotoDataPlot extends DataPlot {
 	 * Adds all photos that overlap with photo to the overlap instance
 	 * variable.
 	 *
+	 * <p>This expects - and maintains - the invariants that, for any
+	 * photo in images, there is a corresponding non-<tt>null</tt>
+	 * entry in overlap.  This is an acceptable expectation, since this
+	 * is a private method that deals only with private data.</p>
+	 *
 	 * @param photo
 	 * 		the photo to check for overlapping
 	 * @param height
@@ -491,7 +496,7 @@ public class PhotoDataPlot extends DataPlot {
 			double width, double height, PhotoGetter photo) {
 		// Now draw the image itself, not allowing it to overflow onto
 		// the axes
-		photo.drawImageClipped(GraphWidget.DEFAULT_GRAPHER_ID, x, y, width,
+		photo.drawImageBounded(GraphWidget.DEFAULT_GRAPHER_ID, x, y, width,
 			height, drawing);
 
 		// Note that the borders are drawn after the image is, so the image

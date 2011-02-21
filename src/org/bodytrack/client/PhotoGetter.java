@@ -243,11 +243,11 @@ public final class PhotoGetter extends JavaScriptObject {
 
 	/**
 	 * A handy shortcut to the native
-	 * {@link #drawImageClipped(String, double, double, double, double,
-	 * double, double, double, double) drawImageClipped} method.
+	 * {@link #drawImageBounded(String, double, double, double, double,
+	 * double, double, double, double) drawImageBounded} method.
 	 *
 	 * <p>This gets the position, width, and height of bounds, and uses
-	 * that information to call the native <tt>drawImageClipped</tt>
+	 * that information to call the other <tt>drawImageBounded</tt>
 	 * with the correct parameters.</p>
 	 *
 	 * @param canvasId
@@ -275,15 +275,15 @@ public final class PhotoGetter extends JavaScriptObject {
 	 * 		<tt>false</tt> if everything else is fine but the image is
 	 * 		outside the bounding box; a caller can check for that
 	 * 		using arithmetic, so we do not alert a caller to that event
-	 * @see #drawImageClipped(String, double, double, double, double,
+	 * @see #drawImageBounded(String, double, double, double, double,
 	 * double, double, double, double)
 	 */
-	public boolean drawImageClipped(String canvasId, double x, double y,
+	public boolean drawImageBounded(String canvasId, double x, double y,
 			double width, double height, BoundedDrawingBox bounds) {
 		Vector2 topLeft = bounds.getTopLeft();
 		Vector2 bottomRight = bounds.getBottomRight();
 
-		return drawImageClipped(canvasId, x, y, width, height,
+		return drawImageBounded(canvasId, x, y, width, height,
 			topLeft.getX(),
 			topLeft.getY(),
 			bottomRight.getX() - topLeft.getX(),
@@ -331,7 +331,7 @@ public final class PhotoGetter extends JavaScriptObject {
 	 * 		outside the bounding box; a caller can check for that
 	 * 		using arithmetic, so we do not alert a caller to that event
 	 */
-	public native boolean drawImageClipped(String canvasId, double x, double y,
+	public native boolean drawImageBounded(String canvasId, double x, double y,
 			double width, double height, double minX, double minY,
 			double boundsWidth, double boundsHeight) /*-{
 		// Same as drawImage, except with clipping also enabled
