@@ -41,9 +41,12 @@ public class GraphAxis {
 	private final String channelName;
 
 	// For determining whether to highlight this GraphAxis
-	private boolean highlighted;
+	private PlottablePoint highlightedPoint; // null if this isn't highlighted
 	protected static final Color NORMAL_COLOR = Canvas.DARK_GRAY;
 	protected static final Color HIGHLIGHTED_COLOR = Canvas.BLACK;
+	protected static final Color HIGHLIGHTED_POINT_COLOR = Canvas.RED;
+	protected static final double HIGHLIGHTED_POINT_LINE_WIDTH = 3;
+	protected static final double HIGHLIGHTED_POINT_LENGTH = 10;
 
 	final static int JUSTIFY_MIN = 0;
 	final static int JUSTIFY_MED = 1;
@@ -66,7 +69,7 @@ public class GraphAxis {
 		this.width = width;
 		this.isXAxis = isXAxis;
 
-		highlighted = false;
+		highlightedPoint = null;
 
 		if (! this.isXAxis)
 			InfoPublisher.getInstance().addYAxis(this.channelName);
@@ -118,15 +121,15 @@ public class GraphAxis {
 	/**
 	 * Marks this GraphAxis as highlighted.
 	 */
-	public void highlight() {
-		highlighted = true;
+	public void highlight(PlottablePoint point) {
+		highlightedPoint = point;
 	}
 
 	/**
 	 * Marks this GraphAxis as not highlighted.
 	 */
 	public void unhighlight() {
-		highlighted = false;
+		highlightedPoint = null;
 	}
 
 	/**
@@ -140,7 +143,7 @@ public class GraphAxis {
 	 * 		call to highlight
 	 */
 	public boolean isHighlighted() {
-		return highlighted;
+		return highlightedPoint != null;
 	}
 
 	public void paint(Surface surface) {
@@ -165,10 +168,57 @@ public class GraphAxis {
 		renderTicks(0, minorTickSize, null, canvas,
 				minorTickWidthPixels, null);
 
+		if (isHighlighted())
+			renderHighlight(canvas, highlightedPoint);
+
 		canvas.getRenderer().stroke();
 
 		// Clean up after ourselves
 		canvas.getSurface().setStrokeStyle(Canvas.DEFAULT_COLOR);
+	}
+
+	/**
+	 * Draws a colored line for point, if that is on this axis.
+	 *
+	 * <p>This is designed to be overridden by subclasses.</p>
+	 *
+	 * @param canvas
+	 * 		the {@link org.bodytrack.client.Canvas Canvas} we can
+	 * 		use to perform all rendering operations
+	 * @param point
+	 * 		the point to render on the axis
+	 */
+	protected void renderHighlight(Canvas canvas,
+			PlottablePoint point) {
+		DirectShapeRenderer renderer = canvas.getRenderer();
+
+		// Set the line width
+		double oldLineWidth = canvas.getSurface().getLineWidth();
+		canvas.getSurface().setLineWidth(HIGHLIGHTED_POINT_LINE_WIDTH);
+
+		if (isXAxis) {
+			double time = point.getDate();
+			if (time < min || time > max)
+				return;
+
+			// top of the line to draw
+			Vector2 top = project2D(time);
+			renderer.drawLineSegment(top,
+				top.add(basis.x.scale(HIGHLIGHTED_POINT_LENGTH)));
+		} else {
+			double value = point.getValue();
+			if (value < min || value > max)
+				return;
+
+			// left edge of the line to draw
+			Vector2 left = project2D(value);
+			double size = Math.min(HIGHLIGHTED_POINT_LENGTH, getWidth());
+			renderer.drawLineSegment(left,
+				new Vector2(left.getX() + size, left.getY()));
+		}
+
+		// Clean up after ourselves
+		canvas.getSurface().setLineWidth(oldLineWidth);
 	}
 
 	public double getMin() {
@@ -486,9 +536,9 @@ public class GraphAxis {
 
 	public double computeTickSize(double minPixels, double unitSize) {
 		double minDelta = (this.max - this.min)
-		* (minPixels / this.length) / unitSize;
+			* (minPixels / this.length) / unitSize;
 		double minDeltaMantissa = minDelta
-		/ Math.pow(10, Math.floor(Math.log10(minDelta)));
+			/ Math.pow(10, Math.floor(Math.log10(minDelta)));
 
 		// Round minDelta up to nearest (1,2,5)
 		double actualDeltaMantissa;

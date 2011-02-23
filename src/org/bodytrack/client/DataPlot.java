@@ -669,7 +669,7 @@ public class DataPlot implements Alertable<GrapherTile> {
 
 		while (maxCoveredTime <= maxTime) {
 			GrapherTile bestAtCurrTime = getBestResolutionTileAt(
-				maxCoveredTime + (maxTime - minTime) * 1e-6,
+				maxCoveredTime + (maxTime - minTime) * 1e-3,
 				bestLevel);
 			// We need to move a little to the right of the current time
 			// so we don't get the same tile twice
@@ -1077,13 +1077,11 @@ public class DataPlot implements Alertable<GrapherTile> {
 	/**
 	 * Returns the highlighted point maintained by this <tt>DataPlot</tt>.
 	 *
-	 * <p>This method is designed for subclass use only.</p>
-	 *
 	 * @return
 	 * 		the highlighted point this <tt>DataPlot</tt> keeps, or
 	 * 		<tt>null</tt> if there is no highlighted point
 	 */
-	protected PlottablePoint getHighlightedPoint() {
+	public PlottablePoint getHighlightedPoint() {
 		return highlightedPoint;
 	}
 

@@ -334,7 +334,7 @@ public class GraphWidget extends Surface {
 
 			for (DataPlot plot: entry.getValue())
 				if (plot.isHighlighted()) {
-					entry.getKey().highlight();
+					entry.getKey().highlight(plot.getHighlightedPoint());
 					break;
 				}
 		}
