@@ -414,20 +414,20 @@ public class GraphWidget extends Surface {
 	 * Actually paints this widget twice, with the two paint operations
 	 * separated by PAINT_TWICE_DELAY milliseconds.
 	 */
-	public void paint() {
-		paintInternal();
+	public void paintTwice() {
+		paint();
 
 		Timer timer = new Timer() {
 			@Override
 			public void run() {
-				paintInternal();
+				paint();
 			}
 		};
 
 		timer.schedule(PAINT_TWICE_DELAY);
 	}
 
-	private void paintInternal() {
+	public void paint() {
 		layout();
 		this.clear();
 		this.save();

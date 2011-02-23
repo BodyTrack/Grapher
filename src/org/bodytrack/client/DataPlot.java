@@ -395,10 +395,10 @@ public class DataPlot implements Alertable<GrapherTile> {
 
 		removeLoadingText(url);
 
-		// It is important to call container.paint() rather than
+		// It is important to call container.paintTwice() rather than
 		// simply paint() here, since the loading text does
-		// not update unless container.paint() is called
-		container.paint();
+		// not update unless container.paint() is called at least once
+		container.paintTwice();
 	}
 
 	/**
@@ -435,8 +435,8 @@ public class DataPlot implements Alertable<GrapherTile> {
 		GrapherTile.retrieveTile(url, level, offset, pendingData, this);
 
 		// See the documentation in onSuccess() to see why
-		// container.paint() is important
-		container.paint();
+		// container.paintTwice() is important
+		container.paintTwice();
 	}
 
 	/**
