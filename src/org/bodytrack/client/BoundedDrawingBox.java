@@ -1,9 +1,11 @@
 package org.bodytrack.client;
 
+import gwt.g2d.client.graphics.Surface;
+import gwt.g2d.client.graphics.canvas.Context;
+import gwt.g2d.client.math.Vector2;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import gwt.g2d.client.math.Vector2;
 
 /**
  * Provides a way for a class to ensure that it is drawing within
@@ -174,6 +176,53 @@ public final class BoundedDrawingBox {
 	 * 		by the line segment we are to draw)
 	 */
 	public void drawLineSegment(double x1, double y1, double x2, double y2) {
+		Surface surf = canvas.getSurface();
+		Context ctx = surf.getContext();
+
+		ctx.save();
+		// Set up the path for clipping
+		ctx.beginPath();
+		ctx.moveTo(xMin, yMin);
+		ctx.lineTo(xMax, yMin);
+		ctx.lineTo(xMax, yMax);
+		ctx.lineTo(xMin, yMax);
+		ctx.closePath();
+		ctx.clip();
+
+		ctx.beginPath();
+		ctx.moveTo(x1, y1);
+		ctx.lineTo(x2, y2);
+		ctx.stroke();
+		ctx.restore();
+	}
+
+	/**
+	 * Draws a line segment from (x1, y1) to (x2, y2), or at least as
+	 * much of the line segment as is in bounds.
+	 *
+	 * <p>Note that this method will draw a partial line segment if part
+	 * of the line segment is out of bounds.</p>
+	 *
+	 * <p>This is exactly the old version of
+	 * {@link #drawLineSegment(double, double, double, double)}, from before
+	 * the discovery of the clipping API in the browser's context objects.
+	 * This is included mainly as a way to save the old code.</p>
+	 *
+	 * @param x1
+	 * 		the X-coordinate of the first point (out of the two connected
+	 * 		by the line segment we are to draw)
+	 * @param y1
+	 * 		the Y-coordinate of the first point (out of the two connected
+	 * 		by the line segment we are to draw)
+	 * @param x2
+	 * 		the X-coordinate of the second point (out of the two connected
+	 * 		by the line segment we are to draw)
+	 * @param y2
+	 * 	 	the Y-coordinate of the second point (out of the two connected
+	 * 		by the line segment we are to draw)
+	 */
+	public void drawLineSegmentSoftwareClip(double x1, double y1, double x2,
+			double y2) {
 		if (contains(x1, y1) && contains(x2, y2)) {
 			// If everything is in bounds, we just draw the line
 			getCanvas().getRenderer().drawLineSegment(x1, y1, x2, y2);
