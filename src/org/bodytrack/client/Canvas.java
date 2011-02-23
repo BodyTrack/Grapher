@@ -144,14 +144,46 @@ public final class Canvas {
 	// --------------------------------------------------------------
 	// Copies of Surface methods
 	// --------------------------------------------------------------
-	// None here yet!
+
+	/**
+	 * Is exactly equivalent to a call to getSurface().setStrokeStyle(color)
+	 *
+	 * @param color
+	 * 		the color that will be used to stroke future drawing on the
+	 * 		surface
+	 * @return
+	 * 		the Surface used for the setStrokeStyle call
+	 */
+	public Surface setStrokeStyle(Color color) {
+		return surface.setStrokeStyle(color);
+	}
+
+	/**
+	 * Is exactly equivalent to a call to getSurface().save()
+	 *
+	 * @return
+	 * 		the Surface used for the save call
+	 */
+	public Surface save() {
+		return surface.save();
+	}
+
+	/**
+	 * Is exactly equivalent to a call to getSurface().restore()
+	 *
+	 * @return
+	 * 		the Surface used for the restore call
+	 */
+	public Surface restore() {
+		return surface.restore();
+	}
 
 	// --------------------------------------------------------------
 	// Copies of DirectShapeRenderer methods
 	// --------------------------------------------------------------
 
 	/**
-	 * Is exactly equivalent to a call to getRenderer().beginPath().
+	 * Is exactly equivalent to a call to getRenderer().beginPath()
 	 *
 	 * @return
 	 * 		the DirectShapeRenderer used for the beginPath call

@@ -330,11 +330,12 @@ public class GraphWidget extends Surface {
 		for (Entry<GraphAxis, List<DataPlot>> entry: axes.entrySet()) {
 			// Highlight an axis if any one of the plots associated
 			// with that axis is highlighted
-			entry.getKey().unhighlight();
+			GraphAxis axis = entry.getKey();
+			axis.unhighlight();
 
 			for (DataPlot plot: entry.getValue())
 				if (plot.isHighlighted()) {
-					entry.getKey().highlight(plot.getHighlightedPoint());
+					axis.highlight(plot.getHighlightedPoint());
 					break;
 				}
 		}

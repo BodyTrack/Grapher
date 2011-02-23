@@ -46,7 +46,7 @@ public class GraphAxis {
 	protected static final Color HIGHLIGHTED_COLOR = Canvas.BLACK;
 	protected static final Color HIGHLIGHTED_POINT_COLOR = Canvas.RED;
 	protected static final double HIGHLIGHTED_POINT_LINE_WIDTH = 3;
-	protected static final double HIGHLIGHTED_POINT_LENGTH = 10;
+	protected static final double HIGHLIGHTED_POINT_LENGTH = 15;
 
 	final static int JUSTIFY_MIN = 0;
 	final static int JUSTIFY_MED = 1;
@@ -146,6 +146,21 @@ public class GraphAxis {
 		return highlightedPoint != null;
 	}
 
+	/**
+	 * Returns the most recently set highlighted point, as set in
+	 * the {@link #highlight(PlottablePoint) highlight} method.
+	 *
+	 * <p>This is intended for subclass use only.  However, if a
+	 * subclass overrides this, it should also override
+	 * {@link #highlight(PlottablePoint)} and {@link #isHighlighted()}.</p>
+	 *
+	 * @return
+	 * 		the highlighted point for this axis
+	 */
+	protected PlottablePoint getHighlightedPoint() {
+		return highlightedPoint;
+	}
+
 	public void paint(Surface surface) {
 		Canvas canvas = Canvas.buildCanvas(surface);
 
@@ -168,10 +183,9 @@ public class GraphAxis {
 		renderTicks(0, minorTickSize, null, canvas,
 				minorTickWidthPixels, null);
 
-		if (isHighlighted())
-			renderHighlight(canvas, highlightedPoint);
-
 		canvas.getRenderer().stroke();
+
+		renderHighlight(canvas, highlightedPoint);
 
 		// Clean up after ourselves
 		canvas.getSurface().setStrokeStyle(Canvas.DEFAULT_COLOR);
@@ -179,6 +193,9 @@ public class GraphAxis {
 
 	/**
 	 * Draws a colored line for point, if that is on this axis.
+	 *
+	 * <p>Note that this does absolutely nothing unless this
+	 * axis is highlighted.</p>
 	 *
 	 * <p>This is designed to be overridden by subclasses.</p>
 	 *
@@ -190,11 +207,16 @@ public class GraphAxis {
 	 */
 	protected void renderHighlight(Canvas canvas,
 			PlottablePoint point) {
+		if (! isHighlighted())
+			return;
+
 		DirectShapeRenderer renderer = canvas.getRenderer();
 
-		// Set the line width
-		double oldLineWidth = canvas.getSurface().getLineWidth();
+		canvas.getSurface().save();
 		canvas.getSurface().setLineWidth(HIGHLIGHTED_POINT_LINE_WIDTH);
+		canvas.getSurface().setStrokeStyle(HIGHLIGHTED_POINT_COLOR);
+
+		renderer.beginPath();
 
 		if (isXAxis) {
 			double time = point.getDate();
@@ -204,7 +226,8 @@ public class GraphAxis {
 			// top of the line to draw
 			Vector2 top = project2D(time);
 			renderer.drawLineSegment(top,
-				top.add(basis.x.scale(HIGHLIGHTED_POINT_LENGTH)));
+				new Vector2(top.getX(),
+					top.getY() + HIGHLIGHTED_POINT_LENGTH));
 		} else {
 			double value = point.getValue();
 			if (value < min || value > max)
@@ -217,8 +240,10 @@ public class GraphAxis {
 				new Vector2(left.getX() + size, left.getY()));
 		}
 
+		renderer.stroke();
+
 		// Clean up after ourselves
-		canvas.getSurface().setLineWidth(oldLineWidth);
+		canvas.getSurface().restore();
 	}
 
 	public double getMin() {

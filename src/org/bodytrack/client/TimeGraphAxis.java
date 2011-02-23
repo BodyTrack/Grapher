@@ -428,6 +428,8 @@ public class TimeGraphAxis extends GraphAxis {
 
 		canvas.getRenderer().stroke();
 
+		renderHighlight(canvas, getHighlightedPoint());
+
 		// Clean up after ourselves
 		canvas.getSurface().setStrokeStyle(Canvas.DEFAULT_COLOR);
 	}
