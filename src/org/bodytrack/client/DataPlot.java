@@ -56,6 +56,17 @@ public class DataPlot implements Alertable<GrapherTile> {
 	protected static final double MIN_DRAWABLE_VALUE = -1e300;
 
 	/**
+	 * Whenever the {@link #highlight()} method is called, we don't know
+	 * which points on the axes should be highlighted, so we use this
+	 * value to indicate this.  As such, testing with == is OK as a test
+	 * for this point, since we set highlightedPoint to this exact
+	 * memory location whenever we don't know which point should be
+	 * highlighted.
+	 */
+	protected static final PlottablePoint HIGHLIGHTED_NO_SINGLE_POINT =
+		new PlottablePoint(Double.MIN_VALUE, 0.0);
+
+	/**
 	 * We never re-request a URL with MAX_REQUESTS_PER_URL or more failures
 	 * in a row.
 	 */
@@ -91,8 +102,9 @@ public class DataPlot implements Alertable<GrapherTile> {
 	private int currentMinOffset;
 	private int currentMaxOffset;
 
-	// Whether to highlight in future invocations of paint
-	private boolean highlighted;
+	// If highlightedPoint is null, then this should not be highlighted.
+	// Otherwise, this is the point to highlight on the axes
+	private PlottablePoint highlightedPoint;
 
 	/**
 	 * Constructor for the DataPlot object that allows unlimited zoom.
@@ -103,9 +115,10 @@ public class DataPlot implements Alertable<GrapherTile> {
 	 * URL to fetch) of the URL which will be used to get more data.
 	 * Note that this <strong>must</strong> be a trusted BodyTrack
 	 * URL.  As described in the documentation for
-	 * {@link org.bodytrack.client.GrapherTile#retrieveTile(String, List)
-	 *  GrapherTile.retriveTile()}, an untrusted connection could allow
-	 * unauthorized access to all of a user's data.</p>
+	 * {@link org.bodytrack.client.GrapherTile#retrieveTile(String, int,
+	 * int, List, Alertable) GrapherTile.retrieveTile()}, an untrusted
+	 * connection could allow unauthorized access to all of a user's
+	 * data.</p>
 	 *
 	 * @param container
 	 * 		the {@link org.bodytrack.client.GraphWidget GraphWidget} on
@@ -192,7 +205,7 @@ public class DataPlot implements Alertable<GrapherTile> {
 		currentMinOffset = Integer.MAX_VALUE;
 		currentMaxOffset = Integer.MIN_VALUE;
 
-		highlighted = false;
+		highlightedPoint = null;
 
 		shouldZoomIn = checkForFetch();
 	}
@@ -453,7 +466,7 @@ public class DataPlot implements Alertable<GrapherTile> {
 
 		// Draw data points
 		canvas.getSurface().setStrokeStyle(color);
-		canvas.getSurface().setLineWidth(highlighted
+		canvas.getSurface().setLineWidth(isHighlighted()
 			? HIGHLIGHT_STROKE_WIDTH : NORMAL_STROKE_WIDTH);
 
 		paintAllDataPoints();
@@ -1003,21 +1016,21 @@ public class DataPlot implements Alertable<GrapherTile> {
 	 * Highlights this DataPlot in future
 	 * {@link DataPlot#paint() paint} calls.
 	 *
-	 * Note that this does not highlight the axes associated with this
-	 * DataPlot.
+	 * <p>Note that this does not highlight the axes associated with this
+	 * DataPlot.</p>
 	 */
 	public void highlight() {
-		highlighted = true;
+		highlightedPoint = HIGHLIGHTED_NO_SINGLE_POINT;
 	}
 
 	/**
 	 * Stops highlighting this DataPlot.
 	 *
-	 * Note that this does not affect the highlighting status on the
-	 * axes associated with this DataPlot.
+	 * <p>Note that this does not affect the highlighting status on the
+	 * axes associated with this DataPlot.</p>
 	 */
 	public void unhighlight() {
-		highlighted = false;
+		highlightedPoint = null;
 	}
 
 	/**
@@ -1031,37 +1044,18 @@ public class DataPlot implements Alertable<GrapherTile> {
 	 * 		<tt>true</tt> if and only if this DataPlot is highlighted
 	 */
 	public boolean isHighlighted() {
-		return highlighted;
+		return highlightedPoint != null;
 	}
 
 	/**
 	 * Highlights this <tt>DataPlot</tt> if and only if it contains a
 	 * point within threshold pixels of pos.
 	 *
-	 * <p>Note that this does <strong>note</strong> unhighlight this
+	 * <p>Note that this does <strong>not</strong> unhighlight this
 	 * <tt>DataPlot</tt> if there is no point within threshold pixels of
-	 * pos.  This method is defined to act exactly as if it were
-	 * implemented as
-	 *
-	 * <pre>
-	 * public boolean highlightIfNear(Vector2 pos, double threshold) {
-	 * 	PlottablePoint point = closest(pos, threshold);
-	 * 	if (point != null)
-	 * 		highlight();
-	 * 	return point != null;
-	 * }
-	 * </pre>
-	 *
-	 * </p>
-	 *
-	 * <p>However, this method may be implemented in any way that
-	 * accomplishes the same aims as the code.  Note that, in particular,
-	 * this method is not required to call overridden forms of isNear and
-	 * highlightPoints.  However, this method is not a final method, so
-	 * a subclass implementation of this method may call an overridden
-	 * form of closest and highlight.  A subclass may also change the
-	 * measurement unit on threshold (it is pixels here), as long as
-	 * that fact is clearly documented.</p>
+	 * pos.  A subclass may also change the measurement unit on threshold
+	 * (the unit is pixels here), as long as that fact is clearly
+	 * documented.</p>
 	 *
 	 * @param pos
 	 * 		the position at which the mouse is hovering, and from which
@@ -1075,10 +1069,34 @@ public class DataPlot implements Alertable<GrapherTile> {
 	 * 		if threshold is negative
 	 */
 	public boolean highlightIfNear(Vector2 pos, double threshold) {
-		PlottablePoint point = closest(pos, threshold);
-		if (point != null)
-			highlight();
+		highlightedPoint = closest(pos, threshold);
 
-		return point != null;
+		return isHighlighted();
+	}
+
+	/**
+	 * Returns the highlighted point maintained by this <tt>DataPlot</tt>.
+	 *
+	 * <p>This method is designed for subclass use only.</p>
+	 *
+	 * @return
+	 * 		the highlighted point this <tt>DataPlot</tt> keeps, or
+	 * 		<tt>null</tt> if there is no highlighted point
+	 */
+	protected PlottablePoint getHighlightedPoint() {
+		return highlightedPoint;
+	}
+
+	/**
+	 * Sets the highlighted point to the specified value.
+	 *
+	 * <p>This method is designed for subclass use only.</p>
+	 *
+	 * @param point
+	 * 		the new value to use for the highlighted point this
+	 * 		<tt>DataPlot</tt> maintains
+	 */
+	protected void setHighlightedPoint(PlottablePoint point) {
+		highlightedPoint = point;
 	}
 }
