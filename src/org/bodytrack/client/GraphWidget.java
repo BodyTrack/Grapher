@@ -248,6 +248,8 @@ public class GraphWidget extends Surface {
 	}
 
 	private void handleMouseMoveEvent(MouseMoveEvent event) {
+		// TODO: Test for over an axis, set mouseDragAxis in that case
+		// TODO: Rewrite this method
 		Vector2 pos = new Vector2(event.getX(), event.getY());
 
 		// True if and only if at least one DataPlot is highlighted
@@ -287,17 +289,22 @@ public class GraphWidget extends Surface {
 			setAxisHighlighting(yAxes);
 		}
 
+		// We are dragging something
 		if (mouseDragLastPos != null) {
-			if (mouseDragAxis != null)
+			if (mouseDragAxis != null) {
+				unhighlightAll();
 				mouseDragAxis.drag(mouseDragLastPos, pos);
-			else if (highlighted) {
-				// Only drag the axes matched with the highlighted
-				// data plot(s)
-
+			} else if (highlighted) {
+				// Only drag the axes matched with the highlighted data
+				// plot(s), and only drag once (which is why we use a set)
+				Set<GraphAxis> highlightedAxes = new HashSet<GraphAxis>();
 				for (DataPlot plot: highlightedPlots) {
-					plot.getXAxis().drag(mouseDragLastPos, pos);
-					plot.getYAxis().drag(mouseDragLastPos, pos);
+					highlightedAxes.add(plot.getXAxis());
+					highlightedAxes.add(plot.getYAxis());
 				}
+
+				for (GraphAxis axis: highlightedAxes)
+					axis.drag(mouseDragLastPos, pos);
 			} else {
 				// Drag on all axes
 
@@ -308,10 +315,19 @@ public class GraphWidget extends Surface {
 					yAxis.drag(mouseDragLastPos, pos);
 			}
 
+			mouseDragAxis = findAxis(pos);
 			mouseDragLastPos = pos;
 		}
 
 		paint();
+	}
+
+	private void unhighlightAll() {
+		for (DataPlot plot: dataPlots) {
+			plot.unhighlight();
+			plot.getXAxis().unhighlight();
+			plot.getYAxis().unhighlight();
+		}
 	}
 
 	/**

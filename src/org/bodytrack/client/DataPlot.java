@@ -534,8 +534,6 @@ public class DataPlot implements Alertable<GrapherTile> {
 			if (dataPoints == null)
 				continue;
 
-			canvas.beginPath();
-
 			for (PlottablePoint point: dataPoints) {
 				double x = xAxis.project2D(point.getDate()).getX();
 				double y = yAxis.project2D(point.getValue()).getY();
@@ -565,8 +563,6 @@ public class DataPlot implements Alertable<GrapherTile> {
 				prevX = x;
 				prevY = y;
 			}
-
-			canvas.stroke();
 		}
 	}
 
@@ -875,6 +871,12 @@ public class DataPlot implements Alertable<GrapherTile> {
 
 		double centerTime = xAxis.unproject(pos);
 		double centerValue = xAxis.unproject(pos);
+
+		// Don't even bother trying to highlight if the mouse is out of
+		// bounds
+		if (maxTime < xAxis.getMin() || minTime > xAxis.getMax()
+				|| maxValue < yAxis.getMin() || minValue > yAxis.getMax())
+			return null;
 
 		// Get the tiles to check
 		int correctLevel = computeCurrentLevel();
