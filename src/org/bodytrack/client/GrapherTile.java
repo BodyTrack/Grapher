@@ -75,17 +75,20 @@ public final class GrapherTile {
 				"Null parameter for construction of GrapherTile");
 
 		this.url = url;
-		this.level = level;
-		this.offset = offset;
 
 		// Allow for the special case in which JSON is the empty string
 		if (json.equals("")) {
 			tile = null;
 			photoDescs = null;
+			this.level = level;
+			this.offset = offset;
 			return;
 		}
 
 		if (isArray(json)) {
+			this.level = level;
+			this.offset = offset;
+
 			tile = null;
 			photoDescs = new ArrayList<PhotoDescription>();
 
@@ -96,6 +99,12 @@ public final class GrapherTile {
 		} else {
 			photoDescs = null;
 			tile = PlottablePointTile.buildTile(json);
+
+			// Use the tile's actual level and offset in this case only
+			// Only in this case will the server ever return a level
+			// different from the level requested
+			this.level = tile.getLevel();
+			this.offset = tile.getOffset();
 		}
 	}
 
