@@ -522,6 +522,7 @@ public class DataPlot implements Alertable<GrapherTile> {
 
 		BoundedDrawingBox drawing =
 			new BoundedDrawingBox(canvas, minX, minY, maxX, maxY);
+		drawing.beginClippedPath();
 
 		// Putting these declarations outside the loop ensures
 		// that no gaps appear between lines
@@ -564,6 +565,8 @@ public class DataPlot implements Alertable<GrapherTile> {
 				prevY = y;
 			}
 		}
+
+		drawing.strokeClippedPath();
 	}
 
 	/**

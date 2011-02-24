@@ -1,6 +1,5 @@
 package org.bodytrack.client;
 
-import gwt.g2d.client.graphics.Surface;
 import gwt.g2d.client.graphics.canvas.Context;
 import gwt.g2d.client.math.Vector2;
 
@@ -30,9 +29,6 @@ import java.util.List;
  * underlying {@link org.bodytrack.client.Canvas Canvas} object: it
  * is up the the caller to call these methods.</p>
  */
-
-// TODO: Add a method to draw images, partially if necessary
-
 public final class BoundedDrawingBox {
 	private Canvas canvas;
 	private double xMin;
@@ -156,11 +152,38 @@ public final class BoundedDrawingBox {
 	}
 
 	/**
+	 * Sets up clipping on the canvas, then calls beginPath.
+	 *
+	 * <p>This replaces any other call to beginPath on the canvas.</p>
+	 *
+	 * @see #strokeClippedPath()
+	 */
+	public void beginClippedPath() {
+		Context ctx = canvas.getSurface().getContext();
+
+		ctx.save();
+		// Set up the path for clipping
+		ctx.beginPath();
+		ctx.moveTo(xMin, yMin);
+		ctx.lineTo(xMax, yMin);
+		ctx.lineTo(xMax, yMax);
+		ctx.lineTo(xMin, yMax);
+		ctx.closePath();
+		ctx.clip();
+
+		ctx.beginPath();
+	}
+
+	/**
 	 * Draws a line segment from (x1, y1) to (x2, y2), or at least as
 	 * much of the line segment as is in bounds.
 	 *
 	 * <p>Note that this method will draw a partial line segment if part
-	 * of the line segment is out of bounds.</p>
+	 * of the line segment is out of bounds.  More importantly, note
+	 * that this method is <em>only</em> valid between a call to
+	 * {@link #beginClippedPath()} and a call to
+	 * {@link #strokeClippedPath()}.  Otherwise, undefined behavior
+	 * may result.</p>
 	 *
 	 * @param x1
 	 * 		the X-coordinate of the first point (out of the two connected
@@ -176,22 +199,25 @@ public final class BoundedDrawingBox {
 	 * 		by the line segment we are to draw)
 	 */
 	public void drawLineSegment(double x1, double y1, double x2, double y2) {
-		Surface surf = canvas.getSurface();
-		Context ctx = surf.getContext();
+		Context ctx = canvas.getSurface().getContext();
 
-		ctx.save();
-		// Set up the path for clipping
-		ctx.beginPath();
-		ctx.moveTo(xMin, yMin);
-		ctx.lineTo(xMax, yMin);
-		ctx.lineTo(xMax, yMax);
-		ctx.lineTo(xMin, yMax);
-		ctx.closePath();
-		ctx.clip();
-
-		ctx.beginPath();
 		ctx.moveTo(x1, y1);
 		ctx.lineTo(x2, y2);
+	}
+
+	/**
+	 * Strokes the path and removes clipping from the canvas.
+	 *
+	 * <p>This replaces any other call to stroke on the canvas.  Note
+	 * that at no time may we ever have more calls to this method
+	 * than to {@link #beginClippedPath()}.  If this is so,
+	 * undefined behavior will result.</p>
+	 *
+	 * @see #beginClippedPath()
+	 */
+	public void strokeClippedPath() {
+		Context ctx = canvas.getSurface().getContext();
+
 		ctx.stroke();
 		ctx.restore();
 	}
@@ -206,7 +232,10 @@ public final class BoundedDrawingBox {
 	 * <p>This is exactly the old version of
 	 * {@link #drawLineSegment(double, double, double, double)}, from before
 	 * the discovery of the clipping API in the browser's context objects.
-	 * This is included mainly as a way to save the old code.</p>
+	 * This is included mainly as a way to save the old code.  Note that this
+	 * should <em>not</em> be called between calls to
+	 * {@link #beginClippedPath()} and {@link #strokeClippedPath()}, but
+	 * rather between regular beginPath and stroke calls.</p>
 	 *
 	 * @param x1
 	 * 		the X-coordinate of the first point (out of the two connected
