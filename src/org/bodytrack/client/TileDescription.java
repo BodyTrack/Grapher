@@ -145,8 +145,7 @@ public final class TileDescription {
 	public static double computeLevel(double timeLength) {
 		return Math.log(timeLength/GrapherTile.TILE_WIDTH)/Math.log(2);
 	}
-	
-	
+
 	/**
 	 * Compute TileDescription for tile at a given level containing a given time.
 	 *

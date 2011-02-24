@@ -46,7 +46,7 @@ public class GraphAxis {
 	protected static final Color HIGHLIGHTED_COLOR = Canvas.BLACK;
 	protected static final Color HIGHLIGHTED_POINT_COLOR = Canvas.RED;
 	protected static final double HIGHLIGHTED_POINT_LINE_WIDTH = 3;
-	protected static final double HIGHLIGHTED_POINT_LENGTH = 15;
+	protected static final double HIGHLIGHTED_POINT_LINE_LENGTH = 15;
 
 	final static int JUSTIFY_MIN = 0;
 	final static int JUSTIFY_MED = 1;
@@ -213,6 +213,7 @@ public class GraphAxis {
 		DirectShapeRenderer renderer = canvas.getRenderer();
 
 		canvas.getSurface().save();
+		double oldLineWidth = canvas.getSurface().getLineWidth();
 		canvas.getSurface().setLineWidth(HIGHLIGHTED_POINT_LINE_WIDTH);
 		canvas.getSurface().setStrokeStyle(HIGHLIGHTED_POINT_COLOR);
 
@@ -227,7 +228,7 @@ public class GraphAxis {
 			Vector2 top = project2D(time);
 			renderer.drawLineSegment(top,
 				new Vector2(top.getX(),
-					top.getY() + HIGHLIGHTED_POINT_LENGTH));
+					top.getY() + HIGHLIGHTED_POINT_LINE_LENGTH));
 		} else {
 			double value = point.getValue();
 			if (value < min || value > max)
@@ -235,7 +236,7 @@ public class GraphAxis {
 
 			// left edge of the line to draw
 			Vector2 left = project2D(value);
-			double size = Math.min(HIGHLIGHTED_POINT_LENGTH, getWidth());
+			double size = Math.min(HIGHLIGHTED_POINT_LINE_LENGTH, getWidth());
 			renderer.drawLineSegment(left,
 				new Vector2(left.getX() + size, left.getY()));
 		}
@@ -244,6 +245,7 @@ public class GraphAxis {
 
 		// Clean up after ourselves
 		canvas.getSurface().restore();
+		canvas.getSurface().setLineWidth(oldLineWidth);
 	}
 
 	public double getMin() {
