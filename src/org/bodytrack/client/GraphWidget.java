@@ -248,55 +248,27 @@ public class GraphWidget extends Surface {
 	}
 
 	private void handleMouseMoveEvent(MouseMoveEvent event) {
-		// TODO: Test for over an axis, set mouseDragAxis in that case
-		// TODO: Rewrite this method
 		Vector2 pos = new Vector2(event.getX(), event.getY());
 
-		// True if and only if at least one DataPlot is highlighted
-		boolean highlighted = false;
-		Set<DataPlot> highlightedPlots = new HashSet<DataPlot>();
+		// We can be dragging exactly one of: an axis, one or
+		// more data plots, the whole viewing window, and nothing
+		if (mouseDragAxis != null) {
+			// We are dragging an axis
+			mouseDragAxis.drag(mouseDragLastPos, pos);
+			mouseDragLastPos = pos;
+		} else if (mouseDragLastPos != null) {
+			// We are either dragging either one or more data plots,
+			// or the whole viewing window
 
-		// First check for already-highlighted plots, if we are
-		// dragging the mouse.  We don't want to highlight new plots
-		// if we are dragging.
-		if (mouseDragLastPos != null) {
-			for (DataPlot plot: dataPlots) {
-				if (plot.isHighlighted()) {
-					highlighted = true;
+			Set<DataPlot> highlightedPlots = new HashSet<DataPlot>();
+			for (DataPlot plot: dataPlots)
+				if (plot.isHighlighted())
 					highlightedPlots.add(plot);
-				}
-			}
-		}
 
-		// We are not dragging anything
-		if (! highlighted) {
-			// Highlight the appropriate points on the axes
-			for (DataPlot plot: dataPlots) {
-				plot.unhighlight();
+			if (highlightedPlots.size() > 0) {
+				// We are dragging at least one data plot, so we drag
+				// the associated axes
 
-				double distanceThreshold = (plot instanceof PhotoDataPlot)
-					? PHOTO_HIGHLIGHT_DISTANCE_THRESH
-					: HIGHLIGHT_DISTANCE_THRESHOLD;
-
-				if (plot.highlightIfNear(pos, distanceThreshold)) {
-					highlighted = true;
-					highlightedPlots.add(plot);
-				}
-			}
-
-			// Now we handle highlighting of the axes
-			setAxisHighlighting(xAxes);
-			setAxisHighlighting(yAxes);
-		}
-
-		// We are dragging something
-		if (mouseDragLastPos != null) {
-			if (mouseDragAxis != null) {
-				unhighlightAll();
-				mouseDragAxis.drag(mouseDragLastPos, pos);
-			} else if (highlighted) {
-				// Only drag the axes matched with the highlighted data
-				// plot(s), and only drag once (which is why we use a set)
 				Set<GraphAxis> highlightedAxes = new HashSet<GraphAxis>();
 				for (DataPlot plot: highlightedPlots) {
 					highlightedAxes.add(plot.getXAxis());
@@ -306,7 +278,8 @@ public class GraphWidget extends Surface {
 				for (GraphAxis axis: highlightedAxes)
 					axis.drag(mouseDragLastPos, pos);
 			} else {
-				// Drag on all axes
+				// We are dragging the entire viewing window, so we
+				// drag all axes
 
 				for (GraphAxis xAxis: xAxes.keySet())
 					xAxis.drag(mouseDragLastPos, pos);
@@ -315,19 +288,26 @@ public class GraphWidget extends Surface {
 					yAxis.drag(mouseDragLastPos, pos);
 			}
 
-			mouseDragAxis = findAxis(pos);
 			mouseDragLastPos = pos;
+		} else {
+			// We are not dragging anything, so we just update the
+			// highlighting on the data plots and axes
+
+			for (DataPlot plot: dataPlots) {
+				plot.unhighlight();
+
+				double distanceThreshold = (plot instanceof PhotoDataPlot)
+					? PHOTO_HIGHLIGHT_DISTANCE_THRESH
+					: HIGHLIGHT_DISTANCE_THRESHOLD;
+				plot.highlightIfNear(pos, distanceThreshold);
+			}
+
+			// Now we handle highlighting of the axes
+			setAxisHighlighting(xAxes);
+			setAxisHighlighting(yAxes);
 		}
 
 		paint();
-	}
-
-	private void unhighlightAll() {
-		for (DataPlot plot: dataPlots) {
-			plot.unhighlight();
-			plot.getXAxis().unhighlight();
-			plot.getYAxis().unhighlight();
-		}
 	}
 
 	/**
