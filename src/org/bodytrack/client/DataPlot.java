@@ -114,16 +114,8 @@ public class DataPlot implements Alertable<GrapherTile> {
 	/**
 	 * Constructor for the DataPlot object that allows unlimited zoom.
 	 * 
-	 * <p>The parameter url is the trickiest to get right.  This parameter
-	 * should be the <strong>beginning</strong> (the text up to, but
-	 * not including, the &lt;level&gt;.&lt;offset&gt;.json part of the
-	 * URL to fetch) of the URL which will be used to get more data.
-	 * Note that this <strong>must</strong> be a trusted BodyTrack
-	 * URL.  As described in the documentation for
-	 * {@link org.bodytrack.client.GrapherTile#retrieveTile(String, int,
-	 * int, List, Alertable) GrapherTile.retrieveTile()}, an untrusted
-	 * connection could allow unauthorized access to all of a user's
-	 * data.</p>
+	 * <p>The parameter url is the trickiest to get right.  See the
+	 * other constructor for details.</p>
 	 *
 	 * @param container
 	 * 		the {@link org.bodytrack.client.GraphWidget GraphWidget} on

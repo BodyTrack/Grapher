@@ -630,28 +630,67 @@ public class GraphWidget extends Surface {
 		return result;
 	}
 
-	private static class MessageIdPair implements Comparable<MessageIdPair> {
+	/**
+	 * A class representing a message ID and loading message.
+	 *
+	 * <p>Note that objects of this class are immutable and therefore
+	 * unconditionally thread-safe.  Or at least, in Java this holds.
+	 * In JavaScript every object is mutable, and there is only one
+	 * thread, so that doesn't really hold anymore.</p>
+	 */
+	private static final class MessageIdPair
+			implements Comparable<MessageIdPair> {
 		private final int id;
 		private final String msg;
 
+		/**
+		 * Creates a new <tt>MessageIdPair</tt> object.
+		 *
+		 * @param id
+		 * 		the ID this object should hold
+		 * @param msg
+		 * 		the message this object should hold
+		 */
 		public MessageIdPair(int id, String msg) {
 			this.id = id;
 			this.msg = msg;
 		}
 
+		/**
+		 * Returns the ID passed to this object's constructor when it
+		 * was created.
+		 *
+		 * @return
+		 * 		the ID this object holds
+		 */
 		public int getId() {
 			return id;
 		}
 
+		/**
+		 * Returns the message parameter passed to this object's
+		 * constructor when it was created.
+		 *
+		 * @return
+		 * 		the message this object holds
+		 */
 		public String getMessage() {
 			return msg;
 		}
 
+		/**
+		 * Computes a hash code for this object.
+		 */
 		@Override
 		public int hashCode() {
 			return id;
 		}
 
+		/**
+		 * Tells if this is logically equal to o.  Note that, if o
+		 * is not a MessageIdPair, then this and o must be unequal.
+		 * Note that equality is determined by ID.
+		 */
 		@Override
 		public boolean equals(Object o) {
 			if (this == o)
@@ -662,9 +701,17 @@ public class GraphWidget extends Surface {
 			return compareTo(other) == 0;
 		}
 
+		/**
+		 * Compares this to other.  Note that comparison is by ID.
+		 */
 		@Override
 		public int compareTo(MessageIdPair other) {
-			return id - other.id;
+			if (id > other.id)
+				return 1;
+			else if (id < other.id)
+				return -1;
+
+			return 0;
 		}
 	}
 }
