@@ -83,7 +83,7 @@ public class PhotoDataPlot extends DataPlot {
 	public PhotoDataPlot(GraphWidget container, GraphAxis xAxis,
 			PhotoGraphAxis yAxis, String url, int userId, int minLevel) {
 		super(container, xAxis, yAxis, url, minLevel,
-			Canvas.DEFAULT_COLOR);
+			Canvas.DEFAULT_COLOR, false);
 		// Note that we know that our Y-axis is a PhotoGraphAxis,
 		// so we will be able to cast freely later on
 

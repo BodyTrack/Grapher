@@ -61,7 +61,9 @@ public class ZeoDataPlot extends DataPlot {
 	public ZeoDataPlot(GraphWidget container, GraphAxis xAxis,
 			GraphAxis yAxis, String url, int minLevel) {
 		super(container, xAxis, yAxis, url, minLevel,
-			Canvas.DEFAULT_COLOR);
+			Canvas.DEFAULT_COLOR, false);
+		// Doesn't make sense to publish data values as 1, 2, 3, 4,
+		// at least until we have a way to provide more description
 	}
 
 	/**

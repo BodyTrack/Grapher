@@ -13,7 +13,6 @@ import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
-
 public class BodyTrackWidget extends VerticalPanel {
 	FlowPanel topBar = new FlowPanel();
 	LoginWidget loginWidget = new LoginWidget();
@@ -93,7 +92,7 @@ public class BodyTrackWidget extends VerticalPanel {
 		}
 		return "[" + StringUtil.join(channels, ",") +"]";
 	}
-	
+
 	static class Graphable extends JavaScriptObject {
 		protected Graphable() {}
 		final native double min_value()    /*-{ return this.min_value-0;  }-*/;
@@ -105,10 +104,10 @@ public class BodyTrackWidget extends VerticalPanel {
 			return "/tiles/" + user_id() + "/" + dev_nickname() + "." + ch_name() + "/";
 		}
 	}
-	
-	static native JsArray<Graphable> jsArrayGraphableFromJSON(String json) /*-{ return eval(json); }-*/;
-	
 
+	static native JsArray<Graphable> jsArrayGraphableFromJSON(String json) /*-{
+		return eval(json);
+	}-*/;
 
 	void receiveChannels(JsArray<Graphable> channels) {
 		GWT.log("received " + channels.length() + " channels");
@@ -134,7 +133,9 @@ public class BodyTrackWidget extends VerticalPanel {
 					axisMargin * 3,
 					false);
 			
-			graphWidget.addDataPlot(new DataPlot(graphWidget, timeAxis, yAxis, channel.tileUrl(), minLevel, DATA_PLOT_COLORS[i]));
+			graphWidget.addDataPlot(new DataPlot(graphWidget, timeAxis,
+				yAxis, channel.tileUrl(), minLevel, DATA_PLOT_COLORS[i],
+				true));
 		}
 	}
 	
@@ -168,7 +169,8 @@ public class BodyTrackWidget extends VerticalPanel {
 	void selectPhotos() {
 		if (!loginWidget.isLoggedIn()) return;
 		unselect();
-		mainPanel = new FlowPhotosWidget(1293861600-86400*365, 1293861600+86400*365);
+		mainPanel = new FlowPhotosWidget(1293861600-86400*365,
+			1293861600+86400*365);
 		add(mainPanel);
 	}
 	void changeLoginStatus(boolean loggedIn) {

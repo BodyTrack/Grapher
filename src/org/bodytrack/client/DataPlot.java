@@ -106,6 +106,11 @@ public class DataPlot implements Alertable<GrapherTile> {
 	// Otherwise, this is the point to highlight on the axes
 	private PlottablePoint highlightedPoint;
 
+	// If publishValueOnHighlight is true, we will show our data value
+	// as a decimal whenever this axis is highlighted, using the
+	// data value publishing API in GraphWidget.
+	private final boolean publishValueOnHighlight;
+
 	/**
 	 * Constructor for the DataPlot object that allows unlimited zoom.
 	 * 
@@ -138,7 +143,7 @@ public class DataPlot implements Alertable<GrapherTile> {
 	 */
 	public DataPlot(GraphWidget container, GraphAxis xAxis, GraphAxis yAxis,
 			String url) {
-		this(container, xAxis, yAxis, url, Integer.MIN_VALUE, Canvas.BLACK);
+		this(container, xAxis, yAxis, url, Integer.MIN_VALUE, Canvas.BLACK, true);
 	}
 
 	/**
@@ -172,11 +177,16 @@ public class DataPlot implements Alertable<GrapherTile> {
 	 * @param color
 	 * 		the color in which to draw these data points (note that
 	 * 		the axes are always drawn in black)
+	 * @param publishValueOnHighlight
+	 * 		<tt>true</tt> to signify that, whenever a point is highlighted
+	 * 		on this <tt>DataPlot</tt>, the value should show up in the
+	 * 		corner of container
 	 * @throws NullPointerException
 	 * 		if container, xAxis, yAxis, url, or color is <tt>null</tt>
 	 */
 	public DataPlot(GraphWidget container, GraphAxis xAxis, GraphAxis yAxis,
-			String url, int minLevel, Color color) {
+			String url, int minLevel, Color color,
+			boolean publishValueOnHighlight) {
 		if (container == null || xAxis == null
 				|| yAxis == null || url == null || color == null)
 			throw new NullPointerException(
@@ -190,6 +200,7 @@ public class DataPlot implements Alertable<GrapherTile> {
 		this.minLevel = minLevel;
 
 		this.color = color;
+		this.publishValueOnHighlight = publishValueOnHighlight;
 
 		canvas = Canvas.buildCanvas(this.container);
 
