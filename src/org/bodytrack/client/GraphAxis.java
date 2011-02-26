@@ -221,24 +221,24 @@ public class GraphAxis {
 
 		if (isXAxis) {
 			double time = point.getDate();
-			if (time < min || time > max)
-				return;
 
-			// top of the line to draw
-			Vector2 top = project2D(time);
-			renderer.drawLineSegment(top,
-				new Vector2(top.getX(),
-					top.getY() + HIGHLIGHTED_POINT_LINE_LENGTH));
+			if (time >= min && time <= max) {
+				// top of the line to draw
+				Vector2 top = project2D(time);
+				renderer.drawLineSegment(top,
+					new Vector2(top.getX(),
+						top.getY() + HIGHLIGHTED_POINT_LINE_LENGTH));
+			}
 		} else {
 			double value = point.getValue();
-			if (value < min || value > max)
-				return;
-
-			// left edge of the line to draw
-			Vector2 left = project2D(value);
-			double size = Math.min(HIGHLIGHTED_POINT_LINE_LENGTH, getWidth());
-			renderer.drawLineSegment(left,
-				new Vector2(left.getX() + size, left.getY()));
+			if (value >= min && value <= max) {
+				// left edge of the line to draw
+				Vector2 left = project2D(value);
+				double size = Math.min(HIGHLIGHTED_POINT_LINE_LENGTH,
+					getWidth());
+				renderer.drawLineSegment(left,
+					new Vector2(left.getX() + size, left.getY()));
+			}
 		}
 
 		renderer.stroke();
