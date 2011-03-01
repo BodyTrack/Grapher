@@ -28,12 +28,34 @@ import com.google.gwt.event.dom.client.MouseWheelHandler;
 import com.google.gwt.user.client.Timer;
 
 public class GraphWidget extends Surface {
+	/**
+	 * The value at which the ID attribute of this HTML canvas should
+	 * be set, unless there is a good reason to set it to something
+	 * else.  Note that this class never actually uses this value.
+	 */
 	public static final String DEFAULT_GRAPHER_ID = "bodytrack-gwt-viewer";
 
 	/**
-	 * The default loading message for this widget to show.
+	 * The default loading message for this widget to show.  This class
+	 * never actually uses this value, but makes it available for classes
+	 * that use the loading API.
 	 */
 	public static final String DEFAULT_LOADING_MESSAGE = "Loading...";
+
+	/**
+	 * The maximum number of value messages that is <em>guaranteed</em>
+	 * to be displayed.  It is possible that, if there are more than
+	 * this many value messages, all will be displayed, but no guarantee
+	 * is made.  Also, no guarantee is made as to which value messages
+	 * will be displayed.
+	 *
+	 * <p>In order to guarantee display of a message, then, a caller of
+	 * {@link #addValueMessage(String)} should ensure that the number of
+	 * value messages, as returned by {@link #countValueMessages()}, is
+	 * less than this.  If this is not so, messages can always be removed
+	 * using {@link #removeValueMessage(int)}.</p>
+	 */
+	public static final int VALUE_MESSAGES_CAPACITY = 3;
 
 	private static final double MOUSE_WHEEL_ZOOM_RATE_MAC = 1.003;
 	private static final double MOUSE_WHEEL_ZOOM_RATE_PC = 1.1;
@@ -47,9 +69,12 @@ public class GraphWidget extends Surface {
 	private static final Color LOADING_MSG_COLOR = Canvas.DARK_GRAY;
 	private static final int LOADING_MSG_X_MARGIN = 5;
 	private static final int LOADING_MSG_Y_MARGIN = 5;
+	private static final int VALUE_MSG_X_MARGIN = 5;
+	private static final int VALUE_MSG_Y_MARGIN = 5;
+	private static final int VALUE_MSG_GAP = 2;
 	private static final int TEXT_HEIGHT = 12;
 
-	private List<DataPlot> dataPlots;
+	private final List<DataPlot> dataPlots;
 
 	/* xAxes and yAxes provide the reverse mapping from
 	 * dataPlots.get(i).getXAxis() and dataPlots.get(i).getYAxis().
@@ -59,8 +84,21 @@ public class GraphWidget extends Surface {
 	private final Map<GraphAxis, List<DataPlot>> xAxes;
 	private final Map<GraphAxis, List<DataPlot>> yAxes;
 
-	private int nextMessageId;
-	private final List<MessageIdPair> loadingMessages;
+	// For the loading message API, which shows one message at a time
+	// on the bottom left, without regard to width
+	// Invariants: all IDs in loadingMessages conform to
+	// INITIAL_MESSAGE_ID <= id < nextLoadingMessageId, with all IDs
+	// unique, and there is never a null message string in loadingMessages
+	private int nextLoadingMessageId;
+	private final List<DisplayMessage> loadingMessages;
+
+	// For the value message API, which shows multiple messages at a time
+	// on the bottom right, with strict controls on size
+	// Invariants: all IDs in valueMessages conform to
+	// INITIAL_MESSAGE_ID <= id < nextValueMessageId, with all IDs
+	// unique, and there is never a null message string in valueMessages
+	private int nextValueMessageId;
+	private final List<DisplayMessage> valueMessages;
 
 	private final int width, height;
 	private final int axisMargin;
@@ -82,8 +120,11 @@ public class GraphWidget extends Surface {
 		xAxes = new HashMap<GraphAxis, List<DataPlot>>();
 		yAxes = new HashMap<GraphAxis, List<DataPlot>>();
 
-		nextMessageId = INITIAL_MESSAGE_ID;
-		loadingMessages = new ArrayList<MessageIdPair>();
+		nextLoadingMessageId = INITIAL_MESSAGE_ID;
+		loadingMessages = new ArrayList<DisplayMessage>();
+
+		nextValueMessageId = INITIAL_MESSAGE_ID;
+		valueMessages = new ArrayList<DisplayMessage>();
 
 		this.addMouseWheelHandler(new MouseWheelHandler() {
 			@Override
@@ -144,8 +185,7 @@ public class GraphWidget extends Surface {
 	 * Safari on the Mac.</p>
 	 *
 	 * @return
-	 * 		<tt>true</tt> if and only if the grapher should zoom
-	 * 		Mac-style
+	 * 		<tt>true</tt> if and only if the grapher should zoom Mac-style
 	 */
 	private native boolean shouldZoomMac() /*-{
 		// Don't do anything unless navigator.platform is available
@@ -158,8 +198,8 @@ public class GraphWidget extends Surface {
 		// Windows-style on the Mac
 		if ($wnd.navigator.vendor) {
 			// Chrome has vendor "Google Inc.", Safari has vendor
-			// "Apple Computer Inc.", and Firefox 3.5 appears
-			// to have no navigator.vendor
+			// "Apple Computer Inc.", and Firefox 3.5, at least,
+			// appears to have no navigator.vendor
 
 			isSafari =
 				$wnd.navigator.vendor.indexOf("Apple Computer") >= 0;
@@ -168,6 +208,17 @@ public class GraphWidget extends Surface {
 		return isSafari && !!$wnd.navigator.platform.match(/.*mac/i);
 	}-*/;
 
+	/**
+	 * Returns the axis over which pos sits, or <tt>null</tt> if no such
+	 * axis exists.
+	 *
+	 * @param pos
+	 * 		some position, represented as a vector coming from the
+	 * 		origin of the coordinate system
+	 * @return
+	 * 		the axis over which pos is, or <tt>null</tt> if pos is not
+	 * 		on top of a vector
+	 */
 	private GraphAxis findAxis(Vector2 pos) {
 		for (GraphAxis axis: xAxes.keySet()) {
 			if (axis.contains(pos))
@@ -432,9 +483,17 @@ public class GraphWidget extends Surface {
 
 		// Draw any Loading... messages that might be requested
 		if (loadingMessages.size() > 0) {
-			String msg = loadingMessages.get(0).getMessage();
+			showLoadingMessage(loadingMessages.get(0));
+		}
 
-			showLoadingMessage(msg);
+		// Draw any value messages that might be requested
+		if (valueMessages.size() > 0) {
+			// We use the first (oldest) VALUE_MESSAGES_CAPACITY
+			// messages in valueMessages, at least for now
+			int numMessages = Math.min(VALUE_MESSAGES_CAPACITY,
+				valueMessages.size());
+
+			showValueMessages(valueMessages.subList(0, numMessages));
 		}
 
 		// Draw the axes
@@ -451,18 +510,66 @@ public class GraphWidget extends Surface {
 		this.restore();
 	}
 
-	private void showLoadingMessage(String msg) {
+	/**
+	 * Shows the specified loading message.
+	 *
+	 * @param msg
+	 * 		a message to be shown at the bottom left corner of
+	 * 		the grapher.  Note that we require that msg is not
+	 * 		<tt>null</tt>
+	 */
+	private void showLoadingMessage(DisplayMessage msg) {
 		// Save old data to be restored later
 		TextAlign oldTextAlign = getTextAlign();
 
 		// Change settings
 		setTextAlign(TextAlign.LEFT);
-		setStrokeStyle(LOADING_MSG_COLOR);
+		setStrokeStyle(msg.getColor());
 
 		// Actually write the text
 		int bottom = height - LOADING_MSG_Y_MARGIN;
 		int textTop = bottom - TEXT_HEIGHT;
-		strokeText(msg, LOADING_MSG_X_MARGIN, textTop);
+		strokeText(msg.getText(), LOADING_MSG_X_MARGIN, textTop);
+
+		// Restore old settings
+		setTextAlign(oldTextAlign);
+		setStrokeStyle(Canvas.DEFAULT_COLOR);
+	}
+
+	/**
+	 * Shows the specified value messages.
+	 *
+	 * @param messages
+	 * 		a list of messages to be shown at the bottom right
+	 * 		of the grapher.  Note that we require that messages
+	 * 		is neither <tt>null</tt> nor empty, contains no
+	 * 		<tt>null</tt> elements, and has length less than or
+	 * 		equal to {@link #VALUE_MESSAGES_CAPACITY}.
+	 */
+	private void showValueMessages(List<DisplayMessage> messages) {
+		// Save old data to be restored later
+		TextAlign oldTextAlign = getTextAlign();
+
+		// Change settings
+		setTextAlign(TextAlign.LEFT);
+
+		// Actually write the text
+		double bottom = height - VALUE_MSG_Y_MARGIN;
+
+		for (DisplayMessage msg: messages) {
+			setStrokeStyle(msg.getColor());
+
+			double textTop = bottom - TEXT_HEIGHT;
+			String text = msg.getText();
+
+			// Find left edge, given that we know right edge
+			double x = width - VALUE_MSG_X_MARGIN - measureText(text);
+			strokeText(text, x, textTop);
+
+			// Move upwards for next loop iteration
+			bottom = textTop - VALUE_MSG_GAP;
+			textTop = bottom - TEXT_HEIGHT;
+		}
 
 		// Restore old settings
 		setTextAlign(oldTextAlign);
@@ -573,27 +680,34 @@ public class GraphWidget extends Surface {
 	 * removing messages by ID is necessitated by the fact that data
 	 * is not required to come into the page in the same order
 	 * that it is requested.  A simple queue system thus doesn't
-	 * work.</p>
+	 * work for removal purposes.</p>
 	 *
-	 * @param msg
+	 * @param message
 	 * 		the message to display whenever there are no older
 	 * 		messages left in the queue
 	 * @return
-	 * 		an integer ID that can be used to remove msg whenever
+	 * 		an integer ID that can be used to remove message whenever
 	 * 		it should no longer appear
+	 * @throws NullPointerException
+	 * 		if message is <tt>null</tt>
 	 * @see #removeLoadingMessage(int)
 	 */
-	public int addLoadingMessage(String msg) {
-		int id = nextMessageId;
-		nextMessageId++;
+	public final int addLoadingMessage(String message) {
+		if (message == null)
+			throw new NullPointerException(
+				"Null loading message not allowed");
 
-		loadingMessages.add(new MessageIdPair(id, msg));
+		int id = nextLoadingMessageId;
+		nextLoadingMessageId++;
+
+		loadingMessages.add(
+			new DisplayMessage(id, message, LOADING_MSG_COLOR));
 
 		return id;
 	}
 
 	/**
-	 * Removes the specified message from the queue of messages
+	 * Removes the specified message from the queue of loading messages
 	 * to show.
 	 *
 	 * <p>It is guaranteed that this method will remove either 0
@@ -607,27 +721,122 @@ public class GraphWidget extends Surface {
 	 * 		not in the list, returns <tt>null</tt>.
 	 * @see #addLoadingMessage(String)
 	 */
-	public String removeLoadingMessage(int messageId) {
+	public final String removeLoadingMessage(int messageId) {
 		// Since IDs are assigned sequentially, starting at
 		// INITIAL_MESSAGE_ID, this allows us to avoid a search
 		// in some cases
-		if (messageId < INITIAL_MESSAGE_ID || messageId >= nextMessageId)
+		if (messageId < INITIAL_MESSAGE_ID ||
+				messageId >= nextLoadingMessageId)
 			return null;
 
-		Iterator<MessageIdPair> it = loadingMessages.iterator();
+		return removeMessage(loadingMessages, messageId);
+	}
+
+	/**
+	 * Removes the message with the specified ID from messages, if
+	 * such a message exists.  Otherwise, does nothing
+	 *
+	 * @param messages
+	 * 		the list of messages from which to remove a message
+	 * @param messageId
+	 * 		the ID of the message to remove from messages
+	 * @return
+	 * 		the string message that was removed from messages, or
+	 * 		<tt>null</tt> if there is no message in messages with
+	 * 		the messageId
+	 */
+	private static String removeMessage(List<DisplayMessage> messages,
+			int messageId) {
+		Iterator<DisplayMessage> it = messages.iterator();
 
 		String result = null;
 
 		while (it.hasNext()) {
-			MessageIdPair curr = it.next();
+			DisplayMessage curr = it.next();
 
-			if (result == null && curr.getId() == messageId) {
-				result = curr.getMessage();
+			if (curr.getId() == messageId) {
+				result = curr.getText();
 				it.remove();
 			}
 		}
 
 		return result;
+	}
+
+	/**
+	 * Adds a value message
+	 *
+	 * <p>Note that we try to display all value messages, and indeed
+	 * guarantee that we will display all of them, as long as there
+	 * are less than or equal to {@link #VALUE_MESSAGES_CAPACITY}.
+	 * If there are more than this many messages, it is still possible
+	 * that all the messages will be drawn, but no guarantees are made
+	 * to which value messages will be drawn, whether some or all.
+	 * The count of value messages is always available through a call
+	 * to {@link #countValueMessages()}.</p>
+	 *
+	 * @param message
+	 * 		the value message to display if possible
+	 * @return
+	 * 		an integer ID that can be used to remove message whenever
+	 * 		it should no longer appear
+	 * @throws NullPointerException
+	 * 		if message or color is <tt>null</tt>
+	 * @see #removeValueMessage(int)
+	 */
+	public final int addValueMessage(String message, Color color) {
+		if (message == null)
+			throw new NullPointerException(
+				"Null value message not allowed");
+
+		if (color == null)
+			throw new NullPointerException("Null color not allowed");
+
+		int id = nextValueMessageId;
+		nextValueMessageId++;
+
+		valueMessages.add(new DisplayMessage(id, message, color));
+
+		return id;
+	}
+
+	/**
+	 * Removes the specified message from the list of value messages
+	 * to show.
+	 *
+	 * <p>It is guaranteed that this method will remove either 0
+	 * or 1 messages from the set of messages that could be shown.</p>
+	 *
+	 * @param messageId
+	 * 		the ID of the message to remove
+	 * @return
+	 * 		the string that was previously associated with messageId,
+	 * 		at least if messageId is in the list.  If messageId is
+	 * 		not in the list, returns <tt>null</tt>.
+	 * @see #addValueMessage(String)
+	 */
+	public final String removeValueMessage(int messageId) {
+		// Since IDs are assigned sequentially, starting at
+		// INITIAL_MESSAGE_ID, this allows us to avoid a search
+		// in some cases
+		if (messageId < INITIAL_MESSAGE_ID ||
+				messageId >= nextValueMessageId)
+			return null;
+
+		return removeMessage(valueMessages, messageId);
+	}
+
+	/**
+	 * Returns the number of value messages currently held in this
+	 * <tt>GraphWidget</tt>.
+	 *
+	 * @return
+	 * 		the number of messages that have been added using
+	 * 		{@link #addValueMessage(String)} but have not been
+	 * 		removed using {@link #removeValueMessage(int)}
+	 */
+	public final int countValueMessages() {
+		return valueMessages.size();
 	}
 
 	/**
@@ -638,22 +847,32 @@ public class GraphWidget extends Surface {
 	 * In JavaScript every object is mutable, and there is only one
 	 * thread, so that doesn't really hold anymore.</p>
 	 */
-	private static final class MessageIdPair
-			implements Comparable<MessageIdPair> {
+	private static final class DisplayMessage
+			implements Comparable<DisplayMessage> {
 		private final int id;
-		private final String msg;
+		private final String text;
+		private final Color color;
 
 		/**
 		 * Creates a new <tt>MessageIdPair</tt> object.
 		 *
 		 * @param id
 		 * 		the ID this object should hold
-		 * @param msg
+		 * @param text
 		 * 		the message this object should hold
+		 * @param color
+		 * 		the color at which the message should be drawn
+		 * @throws NullPointerException
+		 * 		if either text or color is <tt>null</tt>
 		 */
-		public MessageIdPair(int id, String msg) {
+		public DisplayMessage(int id, String text, Color color) {
+			if (text == null || color == null)
+				throw new NullPointerException(
+					"Null constructor parameter not allowed");
+
 			this.id = id;
-			this.msg = msg;
+			this.text = text;
+			this.color = color;
 		}
 
 		/**
@@ -674,8 +893,19 @@ public class GraphWidget extends Surface {
 		 * @return
 		 * 		the message this object holds
 		 */
-		public String getMessage() {
-			return msg;
+		public String getText() {
+			return text;
+		}
+
+		/**
+		 * Returns the color parameter passed to this object's
+		 * constructor when it was created.
+		 *
+		 * @return
+		 * 		the color this object holds
+		 */
+		public Color getColor() {
+			return color;
 		}
 
 		/**
@@ -695,9 +925,9 @@ public class GraphWidget extends Surface {
 		public boolean equals(Object o) {
 			if (this == o)
 				return true;
-			if (! (o instanceof MessageIdPair))
+			if (! (o instanceof DisplayMessage))
 				return false;
-			MessageIdPair other = (MessageIdPair) o;
+			DisplayMessage other = (DisplayMessage) o;
 			return compareTo(other) == 0;
 		}
 
@@ -705,7 +935,7 @@ public class GraphWidget extends Surface {
 		 * Compares this to other.  Note that comparison is by ID.
 		 */
 		@Override
-		public int compareTo(MessageIdPair other) {
+		public int compareTo(DisplayMessage other) {
 			if (id > other.id)
 				return 1;
 			else if (id < other.id)
