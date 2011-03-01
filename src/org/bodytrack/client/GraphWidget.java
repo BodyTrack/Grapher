@@ -55,7 +55,7 @@ public class GraphWidget extends Surface {
 	 * less than this.  If this is not so, messages can always be removed
 	 * using {@link #removeValueMessage(int)}.</p>
 	 */
-	public static final int VALUE_MESSAGES_CAPACITY = 3;
+	public static final int VALUE_MESSAGES_CAPACITY = 4;
 
 	private static final double MOUSE_WHEEL_ZOOM_RATE_MAC = 1.003;
 	private static final double MOUSE_WHEEL_ZOOM_RATE_PC = 1.1;
@@ -67,12 +67,13 @@ public class GraphWidget extends Surface {
 
 	private static final int INITIAL_MESSAGE_ID = 1;
 	private static final Color LOADING_MSG_COLOR = Canvas.DARK_GRAY;
-	private static final int LOADING_MSG_X_MARGIN = 5;
-	private static final int LOADING_MSG_Y_MARGIN = 5;
-	private static final int VALUE_MSG_X_MARGIN = 5;
-	private static final int VALUE_MSG_Y_MARGIN = 5;
-	private static final int VALUE_MSG_GAP = 2;
-	private static final int TEXT_HEIGHT = 12;
+	private static final double LOADING_MSG_X_MARGIN = 5;
+	private static final double LOADING_MSG_Y_MARGIN = 5;
+	private static final double VALUE_MSG_X_MARGIN = 5;
+	private static final double VALUE_MSG_Y_MARGIN = 5;
+	private static final double VALUE_MSG_GAP = 2;
+	private static final double TEXT_HEIGHT = 12;
+	private static final double TEXT_LINE_WIDTH = 1;
 
 	private final List<DataPlot> dataPlots;
 
@@ -521,18 +522,21 @@ public class GraphWidget extends Surface {
 	private void showLoadingMessage(DisplayMessage msg) {
 		// Save old data to be restored later
 		TextAlign oldTextAlign = getTextAlign();
+		double oldLineWidth = getLineWidth();
 
 		// Change settings
 		setTextAlign(TextAlign.LEFT);
+		setLineWidth(TEXT_LINE_WIDTH);
 		setStrokeStyle(msg.getColor());
 
 		// Actually write the text
-		int bottom = height - LOADING_MSG_Y_MARGIN;
-		int textTop = bottom - TEXT_HEIGHT;
+		double bottom = height - LOADING_MSG_Y_MARGIN;
+		double textTop = bottom - TEXT_HEIGHT;
 		strokeText(msg.getText(), LOADING_MSG_X_MARGIN, textTop);
 
 		// Restore old settings
 		setTextAlign(oldTextAlign);
+		setLineWidth(oldLineWidth);
 		setStrokeStyle(Canvas.DEFAULT_COLOR);
 	}
 
@@ -549,9 +553,11 @@ public class GraphWidget extends Surface {
 	private void showValueMessages(List<DisplayMessage> messages) {
 		// Save old data to be restored later
 		TextAlign oldTextAlign = getTextAlign();
+		double oldLineWidth = getLineWidth();
 
 		// Change settings
 		setTextAlign(TextAlign.LEFT);
+		setLineWidth(TEXT_LINE_WIDTH);
 
 		// Actually write the text
 		double bottom = height - VALUE_MSG_Y_MARGIN;
@@ -573,6 +579,7 @@ public class GraphWidget extends Surface {
 
 		// Restore old settings
 		setTextAlign(oldTextAlign);
+		setLineWidth(oldLineWidth);
 		setStrokeStyle(Canvas.DEFAULT_COLOR);
 	}
 

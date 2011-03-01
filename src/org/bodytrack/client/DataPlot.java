@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.gwt.i18n.client.NumberFormat;
+
 /**
  * Represents a single set of data, along with references to its
  * associated axes.
@@ -111,6 +113,8 @@ public class DataPlot implements Alertable<GrapherTile> {
 	// data value publishing API in GraphWidget.
 	private final boolean publishValueOnHighlight;
 
+	private int publishedValueId;
+
 	/**
 	 * Constructor for the DataPlot object that allows unlimited zoom.
 	 * 
@@ -209,6 +213,7 @@ public class DataPlot implements Alertable<GrapherTile> {
 		currentMaxOffset = Integer.MIN_VALUE;
 
 		highlightedPoint = null;
+		publishedValueId = 0;
 
 		shouldZoomIn = checkForFetch();
 	}
@@ -1039,6 +1044,7 @@ public class DataPlot implements Alertable<GrapherTile> {
 	 */
 	public void unhighlight() {
 		highlightedPoint = null;
+		possiblyDisplayHighlightedValue();
 	}
 
 	/**
@@ -1059,6 +1065,16 @@ public class DataPlot implements Alertable<GrapherTile> {
 	 * Highlights this <tt>DataPlot</tt> if and only if it contains a
 	 * point within threshold pixels of pos.
 	 *
+	 * <p>Also, if this data plot should be highlighted, this publishes
+	 * the highlighted data plot's value to the container widget, as long
+	 * as such a preference was indicated when this <tt>DataPlot</tt>
+	 * was created, using the publishValueOnHighlight constructor parameter.
+	 * On the other hand, if this data plot is currently highlighted but
+	 * should be unhighlighted, this removes the published value.  If a
+	 * subclass would like to change the formatting of the published
+	 * value, it should accomplish that by overriding
+	 * {@link #getDataLabel(PlottablePoint)}.</p>
+	 *
 	 * <p>Note that this does <strong>not</strong> unhighlight this
 	 * <tt>DataPlot</tt> if there is no point within threshold pixels of
 	 * pos.  A subclass may also change the measurement unit on threshold
@@ -1070,7 +1086,7 @@ public class DataPlot implements Alertable<GrapherTile> {
 	 * 		we want to derive our highlighting
 	 * @param threshold
 	 * 		the maximum distance the mouse can be from a point, while
-	 * 		still causing the highlighting effect
+	 * 		still causing the highlighting effects
 	 * @return
 	 * 		<tt>true</tt> if and only if this highlights the axes
 	 * @throws IllegalArgumentException
@@ -1078,8 +1094,68 @@ public class DataPlot implements Alertable<GrapherTile> {
 	 */
 	public boolean highlightIfNear(Vector2 pos, double threshold) {
 		highlightedPoint = closest(pos, threshold);
-
+		possiblyDisplayHighlightedValue();
 		return isHighlighted();
+	}
+
+	/**
+	 * Handles the value to be shown in the container as the highlighted
+	 * value.
+	 *
+	 * <p>This first checks publishValueOnHighlight.  If that is
+	 * <tt>false</tt>, does nothing.  Otherwise, checks highlightedPoint.
+	 * If it is <tt>null</tt> or equal to
+	 * {@link #HIGHLIGHTED_NO_SINGLE_POINT}, removes any messages that
+	 * might be showing for this data plot.  Otherwise, ensures that the
+	 * current value is being shown on the parent container, with the
+	 * value returned by {@link #getDataLabel(PlottablePoint)}.</p>
+	 */
+	private void possiblyDisplayHighlightedValue() {
+		if (! publishValueOnHighlight)
+			return;
+
+		if (highlightedPoint == null
+				|| highlightedPoint == HIGHLIGHTED_NO_SINGLE_POINT) {
+			// We can call this without problems because we know
+			// that container will ignore any invalid message IDs
+			container.removeValueMessage(publishedValueId);
+			publishedValueId = 0;
+		} else if (publishedValueId == 0) // Don't add message twice
+			publishedValueId = container.addValueMessage(
+				getDataLabel(highlightedPoint), color);
+	}
+
+	/**
+	 * Returns a label for the specified point.
+	 *
+	 * <p>This implementation takes the value of p out to three
+	 * significant digits and returns that value.  However, subclass
+	 * implementations might behave differently.</p>
+	 *
+	 * <p>This is designed to be overridden by subclasses that wish
+	 * to change the default behavior.  However, there are a few
+	 * requirements for subclass implementations, which unfortunately
+	 * cannot be expressed in code.  A subclass implementation of
+	 * this method must always return a non-<tt>null</tt> label in
+	 * finite (preferably very short) time, and must never throw
+	 * an exception.</p>
+	 *
+	 * @param p
+	 * 		the point for which to return a data label
+	 * @return
+	 * 		a data label to be displayed for p
+	 */
+	protected String getDataLabel(PlottablePoint p) {
+		double value = p.getValue();
+		double absValue = Math.abs(value);
+
+		if (absValue == 0.0) // Rare, but possible
+			return "0.0";
+
+		if (absValue < 1e-3 || absValue > 1e7)
+			return NumberFormat.getScientificFormat().format(value);
+
+		return NumberFormat.getFormat("###,##0.0##").format(value);
 	}
 
 	/**
@@ -1091,18 +1167,5 @@ public class DataPlot implements Alertable<GrapherTile> {
 	 */
 	public PlottablePoint getHighlightedPoint() {
 		return highlightedPoint;
-	}
-
-	/**
-	 * Sets the highlighted point to the specified value.
-	 *
-	 * <p>This method is designed for subclass use only.</p>
-	 *
-	 * @param point
-	 * 		the new value to use for the highlighted point this
-	 * 		<tt>DataPlot</tt> maintains
-	 */
-	protected void setHighlightedPoint(PlottablePoint point) {
-		highlightedPoint = point;
 	}
 }
