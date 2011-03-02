@@ -74,7 +74,8 @@ public class ZeoDataPlot extends DataPlot {
 	 * {@code tile.getDataPoints()}, so that all the points (except the
 	 * first in each group) represent top right corners of bars.  This
 	 * is necessary because the
-	 * {@link ZeoDataPlot#paintDataPoint(BoundedDrawingBox, double, double, double, double)}
+	 * {@link ZeoDataPlot#paintDataPoint(BoundedDrawingBox, double,
+	 * double, double, double)}
 	 * method uses the top right corner of a bar when drawing a point.
 	 *
 	 * @param tile
@@ -133,11 +134,20 @@ public class ZeoDataPlot extends DataPlot {
 
 	/**
 	 * Implemented here as a no-op, since we handle the edges properly
-	 * in paintDataPoint.
+	 * in {@link #paintDataPoint(BoundedDrawingBox, double, double,
+	 * double, double)}.
 	 */
 	@Override
 	protected void paintEdgePoint(BoundedDrawingBox drawing, double x,
 			double y) {}
+
+	/**
+	 * Implemented here as a no-op, since we don't need highlighted
+	 * points to look different.
+	 */
+	@Override
+	protected void paintHighlightedPoint(BoundedDrawingBox drawing,
+			PlottablePoint point) {}
 
 	/**
 	 * Paints the specified data point as a translucent rectangle.

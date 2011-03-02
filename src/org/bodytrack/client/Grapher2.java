@@ -108,8 +108,7 @@ public class Grapher2 implements EntryPoint {
 			} else {
 				Color color = DATA_PLOT_COLORS[i % DATA_PLOT_COLORS.length];
 
-				plot = new DataPlot(gw, time, value, baseUrl, minLevel,
-					color, true);
+				plot = new DataPlot(gw, time, value, baseUrl, minLevel, color);
 				temporaryPlots.add(plot);
 
 				publisher.publishChannelColor(channelName,

@@ -266,6 +266,14 @@ public class PhotoDataPlot extends DataPlot {
 	}
 
 	/**
+	 * Implemented here as a no-op, since we don't need highlighted
+	 * points to look different.
+	 */
+	@Override
+	protected void paintHighlightedPoint(BoundedDrawingBox drawing,
+			PlottablePoint point) {}
+
+	/**
 	 * Draws the images that are matched with x.
 	 *
 	 * <p>This does nothing except draw the images matched with x, ignoring

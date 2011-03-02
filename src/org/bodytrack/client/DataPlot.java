@@ -39,14 +39,15 @@ import com.google.gwt.i18n.client.NumberFormat;
  * them.</p>
  */
 public class DataPlot implements Alertable<GrapherTile> {
-	// These two constants are used when highlighting this plot
+	/**
+	 * The width at which a normal line is drawn.
+	 */
 	protected static final int NORMAL_STROKE_WIDTH = 1;
-	protected static final int HIGHLIGHT_STROKE_WIDTH = 3;
 
 	/**
-	 * The radius to use when drawing a dot on the grapher.
+	 * The width at which a highlighted line is drawn.
 	 */
-	protected static final double DOT_RADIUS = 0.5;
+	protected static final int HIGHLIGHT_STROKE_WIDTH = 3;
 
 	/**
 	 * Never render a point with value less than this - use anything
@@ -67,6 +68,16 @@ public class DataPlot implements Alertable<GrapherTile> {
 	 */
 	protected static final PlottablePoint HIGHLIGHTED_NO_SINGLE_POINT =
 		new PlottablePoint(Double.MIN_VALUE, 0.0);
+
+	/**
+	 * The radius to use when drawing a dot on the grapher.
+	 */
+	private static final double DOT_RADIUS = 0.5;
+
+	/**
+	 * The radius to use when drawing a highlighted dot on the grapher.
+	 */
+	private static final double HIGHLIGHTED_DOT_RADIUS = 5;
 
 	/**
 	 * We never re-request a URL with MAX_REQUESTS_PER_URL or more failures
@@ -119,7 +130,7 @@ public class DataPlot implements Alertable<GrapherTile> {
 	 * Constructor for the DataPlot object that allows unlimited zoom.
 	 * 
 	 * <p>The parameter url is the trickiest to get right.  See the
-	 * other constructor for details.</p>
+	 * main constructor for details.</p>
 	 *
 	 * @param container
 	 * 		the {@link org.bodytrack.client.GraphWidget GraphWidget} on
@@ -139,7 +150,41 @@ public class DataPlot implements Alertable<GrapherTile> {
 	 */
 	public DataPlot(GraphWidget container, GraphAxis xAxis, GraphAxis yAxis,
 			String url) {
-		this(container, xAxis, yAxis, url, Integer.MIN_VALUE, Canvas.BLACK, true);
+		this(container, xAxis, yAxis, url, Integer.MIN_VALUE,
+			Canvas.BLACK, true);
+	}
+
+	/**
+	 * Constructor for the DataPlot object that publishes its data values
+	 * and draws its highlighted points larger.
+	 *
+	 * <p>The parameter url is the trickiest to get right.  See the
+	 * main constructor for details.</p>
+	 *
+	 * @param container
+	 * 		the {@link org.bodytrack.client.GraphWidget GraphWidget} on
+	 * 		which this DataPlot will draw itself and its axes
+	 * @param xAxis
+	 * 		the X-axis along which this data set will be aligned when
+	 * 		drawn.  Usually this is a
+	 * 		{@link org.bodytrack.client.TimeGraphAxis TimeGraphAxis}
+	 * @param yAxis
+	 * 		the Y-axis along which this data set will be aligned when
+	 * 		drawn
+	 * @param url
+	 * 		the beginning of the URL for fetching this data with Ajax
+	 * 		calls
+	 * @param minLevel
+	 * 		the minimum level to which the user will be allowed to zoom
+	 * @param color
+	 * 		the color in which to draw these data points (note that
+	 * 		this does not affect the color of the axes)
+	 * @throws NullPointerException
+	 * 		if container, xAxis, yAxis, url, or color is <tt>null</tt>
+	 */
+	public DataPlot(GraphWidget container, GraphAxis xAxis, GraphAxis yAxis,
+			String url, int minLevel, Color color) {
+		this(container, xAxis, yAxis, url, minLevel, color, true);
 	}
 
 	/**
@@ -172,7 +217,7 @@ public class DataPlot implements Alertable<GrapherTile> {
 	 * 		the minimum level to which the user will be allowed to zoom
 	 * @param color
 	 * 		the color in which to draw these data points (note that
-	 * 		the axes are always drawn in black)
+	 * 		this does not affect the color of the axes)
 	 * @param publishValueOnHighlight
 	 * 		<tt>true</tt> to signify that, whenever a point is highlighted
 	 * 		on this <tt>DataPlot</tt>, the value should show up in the
@@ -477,7 +522,16 @@ public class DataPlot implements Alertable<GrapherTile> {
 		canvas.getSurface().setLineWidth(isHighlighted()
 			? HIGHLIGHT_STROKE_WIDTH : NORMAL_STROKE_WIDTH);
 
-		paintAllDataPoints();
+		BoundedDrawingBox drawing = getDrawingBounds();
+
+		paintAllDataPoints(drawing);
+
+		if (highlightedPoint != null
+				&& highlightedPoint != HIGHLIGHTED_NO_SINGLE_POINT) {
+			drawing.beginClippedPath();
+			paintHighlightedPoint(drawing, highlightedPoint);
+			drawing.strokeClippedPath();
+		}
 
 		// Clean up after ourselves
 		canvas.getSurface().setStrokeStyle(Canvas.DEFAULT_COLOR);
@@ -485,6 +539,29 @@ public class DataPlot implements Alertable<GrapherTile> {
 
 		// Make sure we shouldn't get any more info from the server
 		shouldZoomIn = checkForFetch();
+	}
+
+	/**
+	 * Builds and returns a new {@link org.bodytrack.client.BoundedDrawingBox
+	 * BoundedDrawingBox} that constrains drawing to the viewing window.
+	 *
+	 * @return
+	 * 		a <tt>BoundedDrawingBox</tt> that will only allow drawing
+	 * 		within the axes
+	 */
+	private BoundedDrawingBox getDrawingBounds() {
+		double minX = xAxis.project2D(xAxis.getMin()).getX();
+		double maxX = xAxis.project2D(xAxis.getMax()).getX();
+
+		// Although minY and maxY appear to be switched, this is actually
+		// the correct way to define these variables, since we draw the
+		// Y-axis from bottom to top but pixel values increase from top
+		// to bottom.  Thus, the max Y-value is associated with the min
+		// axis value, and vice versa.
+		double minY = yAxis.project2D(yAxis.getMax()).getY();
+		double maxY = yAxis.project2D(yAxis.getMin()).getY();
+
+		return new BoundedDrawingBox(canvas, minX, minY, maxX, maxY);
 	}
 
 	/**
@@ -509,8 +586,13 @@ public class DataPlot implements Alertable<GrapherTile> {
 
 	/**
 	 * Renders all the salient data points in currentData.
+	 *
+	 * @param drawing
+	 * 		the {@link org.bodytrack.client.BoundedDrawingBox
+	 * 		BoundedDrawingBox} in which all points should be
+	 * 		drawn
 	 */
-	protected void paintAllDataPoints() {
+	protected void paintAllDataPoints(BoundedDrawingBox drawing) {
 		// TODO: improve the algorithm for getting the best resolution tile
 		// Current algorithm is O(n m), where n is currentData.length()
 		// and m is getBestResolutionTiles().length()
@@ -518,18 +600,6 @@ public class DataPlot implements Alertable<GrapherTile> {
 		// have to be careful to drop the cache if we pan or zoom too much,
 		// and definitely if we pull in more data
 
-		// Although maxY and minY appear to be switched, this is actually
-		// the correct way to define these variables, since we draw the
-		// Y-axis from bottom to top but pixel values increase from top
-		// to bottom.  Thus, the max Y-value is associated with the min
-		// axis value, and vice versa.
-		double minX = xAxis.project2D(xAxis.getMin()).getX();
-		double maxY = yAxis.project2D(yAxis.getMin()).getY();
-		double maxX = xAxis.project2D(xAxis.getMax()).getX();
-		double minY = yAxis.project2D(yAxis.getMax()).getY();
-
-		BoundedDrawingBox drawing =
-			new BoundedDrawingBox(canvas, minX, minY, maxX, maxY);
 		drawing.beginClippedPath();
 
 		// Putting these declarations outside the loop ensures
@@ -581,10 +651,10 @@ public class DataPlot implements Alertable<GrapherTile> {
 	 * Returns the ordered list of points this DataPlot should draw
 	 * in {@link #paintAllDataPoints()}.
 	 *
-	 * It is acceptable, and not considered an error, if this or a subclass
+	 * <p>It is acceptable, and not considered an error, if this or a subclass
 	 * implementation returns <tt>null</tt>.  Such a return should simply
 	 * be taken as a sign that the specified tile contains no data points
-	 * that paintAllDataPoints should draw.
+	 * that paintAllDataPoints should draw.</p>
 	 *
 	 * @param tile
 	 * 		the {@link org.bodytrack.client.GrapherTile GrapherTile}
@@ -601,17 +671,20 @@ public class DataPlot implements Alertable<GrapherTile> {
 	/**
 	 * Paints a left edge point for a segment of the plot.
 	 *
-	 * <p>This is only called for the left edge of a plot segment.  This
-	 * particular implementation draws a small dot.  Note that all
-	 * parameters (except drawing, of course) are assumed to be in
-	 * terms of pixels, not logical values on the axes.</p>
+	 * <p>This method is designed to be overridden by subclasses.
+	 * Note that this is only called for the left edge of a plot
+	 * segment.  This particular implementation draws a small dot,
+	 * although a subclass implementation does not have to do the
+	 * same.  Note that all parameters (except drawing, of course)
+	 * are assumed to be in terms of pixels, not logical values
+	 * on the axes.</p>
 	 *
 	 * @param drawing
 	 * 		the
 	 * 		{@link org.bodytrack.client.BoundedDrawingBox BoundedDrawingBox}
 	 * 		that should constrain the drawing.  Forwarding graphics calls
 	 * 		through drawing will ensure that everything draws up to the edge
-	 * 		but no farther
+	 * 		of the viewing window but no farther
 	 * @param x
 	 * 		the X-coordinate of the point to draw
 	 * @param y
@@ -625,7 +698,8 @@ public class DataPlot implements Alertable<GrapherTile> {
 	/**
 	 * Draws a single data point on the graph.
 	 *
-	 * <p>Note that this method has as a precondition that
+	 * <p>This method is designed to be overridden by subclasses.
+	 * Note that this method has as a precondition that
 	 * {@code prevX < x}.  Note that all parameters (except drawing,
 	 * of course) are assumed to be in terms of pixels.</p>
 	 *
@@ -634,7 +708,7 @@ public class DataPlot implements Alertable<GrapherTile> {
 	 * 		{@link org.bodytrack.client.BoundedDrawingBox BoundedDrawingBox}
 	 * 		that should constrain the drawing.  Forwarding graphics calls
 	 * 		through drawing will ensure that everything draws up to the edge
-	 * 		but no farther
+	 * 		of the viewing window but no farther
 	 * @param prevX
 	 * 		the previous X-value, which will be greater than
 	 * 		MIN_DRAWABLE_VALUE
@@ -643,7 +717,8 @@ public class DataPlot implements Alertable<GrapherTile> {
 	 * 		MIN_DRAWABLE_VALUE
 	 * @param x
 	 * 		the current X-value, which will be greater than
-	 * 		MIN_DRAWABLE_VALUE
+	 * 		MIN_DRAWABLE_VALUE, and greater than or equal to
+	 * 		prevX
 	 * @param y
 	 * 		the current Y-value, which will be greater than
 	 * 		MIN_DRAWABLE_VALUE
@@ -653,6 +728,41 @@ public class DataPlot implements Alertable<GrapherTile> {
 	protected void paintDataPoint(BoundedDrawingBox drawing, double prevX,
 			double prevY, double x, double y) {
 		drawing.drawLineSegment(prevX, prevY, x, y);
+	}
+
+	/**
+	 * Draws a single point on the graph, in highlighted style.
+	 *
+	 * <p>This is designed to be overridden by subclasses.  It is
+	 * called by {@link #paint()} after all data points have been
+	 * painted, and the parameter is the data point closest to
+	 * the mouse.  Note that this means that, by the time this
+	 * method is called, point has already been drawn.</p>
+	 *
+	 * <p>This draws a larger dot at point, although of course a subclass
+	 * implementation does not have to follow that lead.</p>
+	 *
+	 * @param drawing
+	 * 		the
+	 * 		{@link org.bodytrack.client.BoundedDrawingBox BoundedDrawingBox}
+	 * 		that should constrain the drawing.  Forwarding graphics calls
+	 * 		through drawing will ensure that everything draws up to the edge
+	 * 		of the viewing window but no farther
+	 * @param point
+	 * 		the data point closest to the mouse.  It is guaranteed that
+	 * 		point will never be <tt>null</tt> or equal to
+	 * 		{@link #HIGHLIGHTED_NO_SINGLE_POINT}
+	 */
+	protected void paintHighlightedPoint(BoundedDrawingBox drawing,
+			PlottablePoint point) {
+		double x = xAxis.project2D(point.getDate()).getX();
+		double y = yAxis.project2D(point.getValue()).getY();
+
+		// Draw three concentric circles to look like one filled-in circle
+		// The real radius is the first: HIGHLIGHTED_DOT_RADIUS
+		drawing.drawDot(x, y, HIGHLIGHTED_DOT_RADIUS);
+		drawing.drawDot(x, y, HIGHLIGHT_STROKE_WIDTH);
+		drawing.drawDot(x, y, NORMAL_STROKE_WIDTH);
 	}
 
 	/**

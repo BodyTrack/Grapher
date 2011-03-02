@@ -134,8 +134,7 @@ public class BodyTrackWidget extends VerticalPanel {
 					false);
 			
 			graphWidget.addDataPlot(new DataPlot(graphWidget, timeAxis,
-				yAxis, channel.tileUrl(), minLevel, DATA_PLOT_COLORS[i],
-				true));
+				yAxis, channel.tileUrl(), minLevel, DATA_PLOT_COLORS[i]));
 		}
 	}
 	
