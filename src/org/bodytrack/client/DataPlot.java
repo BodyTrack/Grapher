@@ -4,12 +4,14 @@ import gwt.g2d.client.graphics.Color;
 import gwt.g2d.client.math.Vector2;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.NumberFormat;
 
 /**
@@ -77,7 +79,7 @@ public class DataPlot implements Alertable<GrapherTile> {
 	/**
 	 * The radius to use when drawing a highlighted dot on the grapher.
 	 */
-	private static final double HIGHLIGHTED_DOT_RADIUS = 5;
+	private static final double HIGHLIGHTED_DOT_RADIUS = 4;
 
 	/**
 	 * We never re-request a URL with MAX_REQUESTS_PER_URL or more failures
@@ -759,7 +761,7 @@ public class DataPlot implements Alertable<GrapherTile> {
 		double y = yAxis.project2D(point.getValue()).getY();
 
 		// Draw three concentric circles to look like one filled-in circle
-		// The real radius is the first: HIGHLIGHTED_DOT_RADIUS
+		// The real radius is the first one used: HIGHLIGHTED_DOT_RADIUS
 		drawing.drawDot(x, y, HIGHLIGHTED_DOT_RADIUS);
 		drawing.drawDot(x, y, HIGHLIGHT_STROKE_WIDTH);
 		drawing.drawDot(x, y, NORMAL_STROKE_WIDTH);
@@ -887,7 +889,7 @@ public class DataPlot implements Alertable<GrapherTile> {
 	 * @return
 	 * 		the floor of the log (base 2) of x
 	 */
-	private int log2(double x) {
+	private static int log2(double x) {
 		if (x <= 0)
 			return Integer.MIN_VALUE;
 
@@ -946,7 +948,7 @@ public class DataPlot implements Alertable<GrapherTile> {
 	 * @return
 	 * 		the width of a tile at the given level
 	 */
-	private double getTileWidth(int level) {
+	private static double getTileWidth(int level) {
 		return (new TileDescription(level, 0)).getTileWidth();
 	}
 
@@ -1259,13 +1261,73 @@ public class DataPlot implements Alertable<GrapherTile> {
 		double value = p.getValue();
 		double absValue = Math.abs(value);
 
+		String timeString = getTimeString((long) p.getDate()) + "   ";
+
 		if (absValue == 0.0) // Rare, but possible
-			return "0.0";
+			return timeString + "0.0";
 
 		if (absValue < 1e-3 || absValue > 1e7)
-			return NumberFormat.getScientificFormat().format(value);
+			return timeString + NumberFormat.getScientificFormat().format(value);
 
-		return NumberFormat.getFormat("###,##0.0##").format(value);
+		return timeString + NumberFormat.getFormat("###,##0.0##").format(value);
+	}
+
+	/**
+	 * Returns a time string representing the specified time.
+	 *
+	 * @param time
+	 * 		the number of seconds since the epoch
+	 * @return
+	 * 		a string representation of time
+	 */
+	private String getTimeString(long time) {
+		String formatString = "EEE MMM dd yyyy, HH:mm:ss";
+		int fractionalSecondDigits = getFractionalSecondDigits();
+		if (fractionalSecondDigits > 0)
+			formatString += "." + duplicate('S', fractionalSecondDigits);
+
+		DateTimeFormat format = DateTimeFormat.getFormat(formatString);
+		return format.format(new Date(time));
+	}
+
+	/**
+	 * Returns a string consisting of times copies of c.
+	 *
+	 * @param c
+	 * 		the character to duplicate
+	 * @param times
+	 * 		the number of copies of c that should appear
+	 * 		in the return value
+	 * @return
+	 */
+	private static String duplicate(char c, int times) {
+		char[] result = new char[times];
+		for (int i = 0; i < times; i++)
+			result[i] = c;
+		return new String(result);
+	}
+
+	/**
+	 * Computes the number of fractional second digits that should
+	 * appear in a displayed time string, based on the current level.
+	 *
+	 * @return
+	 * 		the number of fractional second digits that should appear
+	 * 		in a displayed times string
+	 */
+	private int getFractionalSecondDigits() {
+		int level = computeCurrentLevel();
+		if (level > 1)
+			return 0;
+		if (level == 1)
+			return 1;
+		if (level == 0)
+			return 2;
+
+		// This adds a digit at every other level change, which seems
+		// to provide a good tradeoff between information and
+		// readability
+		return 2 + ((-level) / 2);
 	}
 
 	/**
