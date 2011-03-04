@@ -1261,55 +1261,58 @@ public class DataPlot implements Alertable<GrapherTile> {
 		double value = p.getValue();
 		double absValue = Math.abs(value);
 
-		String timeString = getTimeString((long) p.getDate()) + "   ";
+		String timeString =
+			getTimeString((long) (p.getDate() * 1000)) + "   ";
 
 		if (absValue == 0.0) // Rare, but possible
 			return timeString + "0.0";
 
 		if (absValue < 1e-3 || absValue > 1e7)
-			return timeString + NumberFormat.getScientificFormat().format(value);
+			return timeString
+				+ NumberFormat.getScientificFormat().format(value);
 
-		return timeString + NumberFormat.getFormat("###,##0.0##").format(value);
+		return timeString
+			+ NumberFormat.getFormat("###,##0.0##").format(value);
 	}
 
 	/**
 	 * Returns a time string representing the specified time.
 	 *
+	 * <p>A caveat: time should be the number of <em>milliseconds</em>,
+	 * not seconds, since the epoch.  If a caller forgets to multiply
+	 * a time by 1000, wrong date strings will come back.</p>
+	 *
 	 * @param time
-	 * 		the number of seconds since the epoch
+	 * 		the number of milliseconds since the epoch
 	 * @return
 	 * 		a string representation of time
 	 */
 	private String getTimeString(long time) {
 		String formatString = "EEE MMM dd yyyy, HH:mm:ss";
 		int fractionalSecondDigits = getFractionalSecondDigits();
-		if (fractionalSecondDigits > 0)
-			formatString += "." + duplicate('S', fractionalSecondDigits);
+
+		// We know that fractionalSecondDigits will always be 0, 1, 2, or 3
+		switch (fractionalSecondDigits) {
+		case 1:
+			formatString += ".S";
+			break;
+		case 2:
+			formatString += ".SS";
+			break;
+		case 3:
+			formatString += ".SSS";
+		}
 
 		DateTimeFormat format = DateTimeFormat.getFormat(formatString);
 		return format.format(new Date(time));
 	}
 
 	/**
-	 * Returns a string consisting of times copies of c.
-	 *
-	 * @param c
-	 * 		the character to duplicate
-	 * @param times
-	 * 		the number of copies of c that should appear
-	 * 		in the return value
-	 * @return
-	 */
-	private static String duplicate(char c, int times) {
-		char[] result = new char[times];
-		for (int i = 0; i < times; i++)
-			result[i] = c;
-		return new String(result);
-	}
-
-	/**
 	 * Computes the number of fractional second digits that should
 	 * appear in a displayed time string, based on the current level.
+	 *
+	 * <p>This <em>always</em> returns a nonnegative integer less than
+	 * or equal to 3.</p>
 	 *
 	 * @return
 	 * 		the number of fractional second digits that should appear
@@ -1321,13 +1324,9 @@ public class DataPlot implements Alertable<GrapherTile> {
 			return 0;
 		if (level == 1)
 			return 1;
-		if (level == 0)
+		if (level > -2) // 0 or -1
 			return 2;
-
-		// This adds a digit at every other level change, which seems
-		// to provide a good tradeoff between information and
-		// readability
-		return 2 + ((-level) / 2);
+		return 3; // We can't get better than millisecond precision
 	}
 
 	/**
