@@ -625,14 +625,17 @@ public class DataPlot implements Alertable<GrapherTile> {
 
 					// So that we don't draw a boundary point, we (relying
 					// on the fact that MIN_DRAWABLE_VALUE is negative)
-					// set prevX and prevY to something smaller than
+					// set prevY to something smaller than
 					// MIN_DRAWABLE_VALUE, ensuring that paintEdgePoint
 					// will be called on the next loop iteration
-					prevX = MIN_DRAWABLE_VALUE * 1.01;
 					prevY = MIN_DRAWABLE_VALUE * 1.01;
 
 					continue;
 				}
+
+				// Skip any "reverse" drawing
+				if (prevX > x)
+					continue;
 
 				// Draw this part of the line
 				if (prevX > MIN_DRAWABLE_VALUE
