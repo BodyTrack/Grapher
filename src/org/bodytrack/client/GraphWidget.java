@@ -235,55 +235,58 @@ public class GraphWidget extends Surface {
 	}
 
 	private void handleMouseWheelEvent(MouseWheelEvent event) {
-		Vector2 eventLoc = new Vector2(event.getX(), event.getY());
-		GraphAxis axis = findAxis(eventLoc);
+		Vector2 pos = new Vector2(event.getX(), event.getY());
+		GraphAxis axis = findAxis(pos);
+		double zoomFactor = Math.pow(mouseWheelZoomRate, event.getDeltaY());
 
-		double zoomFactor = Math.pow(mouseWheelZoomRate,
-			event.getDeltaY());
+		// We can be zooming exactly one of: an axis, one or
+		// more data plots, and the whole viewing window
+		if (mouseDragAxis != null || axis != null) {
+			// Single axis
 
-		if (axis != null) {
-			boolean canZoomIn = true;
+			// Zoom the correct single axis
+			if (axis == null)
+				axis = mouseDragAxis;
 
-			// Enforce minimum zoom: if any axis allows zooming,
-			// the user is able to zoom on the X-axis
+			double zoomAbout = axis.unproject(pos);
+
 			if (xAxes.containsKey(axis)) {
-				canZoomIn = false;
+				// Enforce minimum zoom: if any axis allows zooming,
+				// the user is able to zoom on the X-axes
+				boolean canZoomIn = false;
 
 				for (DataPlot plot: xAxes.get(axis))
-					if (plot.shouldZoomIn())
-						canZoomIn = true;
-			}
+					canZoomIn = canZoomIn || plot.shouldZoomIn();
 
-			if (zoomFactor >= 1 || canZoomIn) {
-				double zoomAbout = axis.unproject(eventLoc);
+				if (zoomFactor >= 1 || canZoomIn) {
+					axis.zoom(zoomFactor, zoomAbout);
+				}
+			} else {
+				// Y-axis zooming is easy
 				axis.zoom(zoomFactor, zoomAbout);
 			}
 		} else {
-			// We are in the main viewing area
-
-			boolean highlighted = false;
+			// The mouse is over the viewing window
 			Set<DataPlot> highlightedPlots = new HashSet<DataPlot>();
-
-			for (DataPlot plot: dataPlots) {
-				if (plot.isHighlighted()) {
-					highlighted = true;
+			for (DataPlot plot: dataPlots)
+				if (plot.isHighlighted())
 					highlightedPlots.add(plot);
-				}
-			}
 
-			if (highlighted) {
-				// Only move the axes for highlighted data plot(s)
-				for (DataPlot plot: highlightedPlots) {
-					GraphAxis yAxis = plot.getYAxis();
-					double zoomAbout = yAxis.unproject(eventLoc);
-					yAxis.zoom(zoomFactor, zoomAbout);
-				}
+			if (highlightedPlots.size() > 0) {
+				// We are dragging at least one data plot, so we zoom
+				// the associated Y-axes
+
+				Set<GraphAxis> highlightedYAxes = new HashSet<GraphAxis>();
+				for (DataPlot plot: highlightedPlots)
+					highlightedYAxes.add(plot.getYAxis());
+				for (GraphAxis yAxis: highlightedYAxes)
+					yAxis.zoom(zoomFactor, yAxis.unproject(pos));
 			} else {
-				// Zoom all Y-axes
-				for (GraphAxis yAxis: yAxes.keySet()) {
-					double zoomAbout = yAxis.unproject(eventLoc);
-					yAxis.zoom(zoomFactor, zoomAbout);
-				}
+				// We are not highlighting any plots, so we
+				// zoom all Y-axes
+
+				for (GraphAxis yAxis: yAxes.keySet())
+					yAxis.zoom(zoomFactor, yAxis.unproject(pos));
 			}
 		}
 

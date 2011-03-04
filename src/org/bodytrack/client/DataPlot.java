@@ -1280,7 +1280,8 @@ public class DataPlot implements Alertable<GrapherTile> {
 	 *
 	 * <p>A caveat: time should be the number of <em>milliseconds</em>,
 	 * not seconds, since the epoch.  If a caller forgets to multiply
-	 * a time by 1000, wrong date strings will come back.</p>
+	 * a time by 1000, wrong date strings (usually something
+	 * involving January 15, 1970) will come back.</p>
 	 *
 	 * @param time
 	 * 		the number of milliseconds since the epoch
