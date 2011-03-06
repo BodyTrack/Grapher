@@ -6,6 +6,7 @@ import gwt.g2d.client.graphics.TextAlign;
 import gwt.g2d.client.math.Vector2;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -68,12 +69,12 @@ public class GraphWidget extends Surface {
 	private static final int INITIAL_MESSAGE_ID = 1;
 	private static final Color LOADING_MSG_COLOR = Canvas.DARK_GRAY;
 	private static final double LOADING_MSG_X_MARGIN = 5;
-	private static final double LOADING_MSG_Y_MARGIN = 5;
+	private static final double LOADING_MSG_Y_MARGIN = 3;
 	private static final double VALUE_MSG_X_MARGIN = 5;
-	private static final double VALUE_MSG_Y_MARGIN = 5;
+	private static final double VALUE_MSG_Y_MARGIN = 3;
 	private static final double VALUE_MSG_GAP = 2;
 	private static final double TEXT_HEIGHT = 12;
-	private static final double TEXT_LINE_WIDTH = 1;
+	private static final double TEXT_LINE_WIDTH = 0.75;
 
 	private final List<DataPlot> dataPlots;
 
@@ -559,11 +560,13 @@ public class GraphWidget extends Surface {
 		double oldLineWidth = getLineWidth();
 
 		// Change settings
-		setTextAlign(TextAlign.LEFT);
+		setTextAlign(TextAlign.RIGHT);
 		setLineWidth(TEXT_LINE_WIDTH);
 
 		// Actually write the text
 		double bottom = height - VALUE_MSG_Y_MARGIN;
+		double x = width - VALUE_MSG_X_MARGIN;
+			// Right edge X-value with right text alignment
 
 		for (DisplayMessage msg: messages) {
 			setStrokeStyle(msg.getColor());
@@ -572,7 +575,6 @@ public class GraphWidget extends Surface {
 			String text = msg.getText();
 
 			// Find left edge, given that we know right edge
-			double x = width - VALUE_MSG_X_MARGIN - measureText(text);
 			strokeText(text, x, textTop);
 
 			// Move upwards for next loop iteration
@@ -605,7 +607,26 @@ public class GraphWidget extends Surface {
 	public boolean refersToAxis(GraphAxis axis) {
 		return xAxes.containsKey(axis) || yAxes.containsKey(axis);
 	}
-	
+
+	/**
+	 * Returns an unmodifiable view of this widget's internal list of
+	 * {@link org.bodytrack.client.DataPlot DataPlot} objects.
+	 *
+	 * <p>Note that, since this method's return value contains the
+	 * same data plots used by this widget, it is possible to make
+	 * changes to the internals of this widget by going through these
+	 * data plots.  However, this method is intended only to be used
+	 * as a way to get the set of data plots available to be
+	 * removed.</p>
+	 *
+	 * @return
+	 * 		an unmodifiable view of the list of data plots showing on
+	 * 		this widget
+	 */
+	public List<DataPlot> getDataPlots() {
+		return Collections.unmodifiableList(dataPlots);
+	}
+
 	/**
 	 * Adds plot to the list of data plots to be drawn.
 	 * 
