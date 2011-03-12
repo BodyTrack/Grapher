@@ -6,8 +6,6 @@ import gwt.g2d.client.graphics.TextAlign;
 import gwt.g2d.client.math.Vector2;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -76,15 +74,7 @@ public class GraphWidget extends Surface {
 	private static final double TEXT_HEIGHT = 12;
 	private static final double TEXT_LINE_WIDTH = 0.75;
 
-	private final List<DataPlot> dataPlots;
-
-	/* xAxes and yAxes provide the reverse mapping from
-	 * dataPlots.get(i).getXAxis() and dataPlots.get(i).getYAxis().
-	 * They map from axes to sets of data plots associated with
-	 * those axes
-	 */
-	private final Map<GraphAxis, List<DataPlot>> xAxes;
-	private final Map<GraphAxis, List<DataPlot>> yAxes;
+	private final ChannelManager channelMgr;
 
 	// For the loading message API, which shows one message at a time
 	// on the bottom left, without regard to width
@@ -118,9 +108,7 @@ public class GraphWidget extends Surface {
 		this.height = height;
 		this.axisMargin = axisMargin;
 
-		dataPlots = new ArrayList<DataPlot>();
-		xAxes = new HashMap<GraphAxis, List<DataPlot>>();
-		yAxes = new HashMap<GraphAxis, List<DataPlot>>();
+		channelMgr = new ChannelManager();
 
 		nextLoadingMessageId = INITIAL_MESSAGE_ID;
 		loadingMessages = new ArrayList<DisplayMessage>();
@@ -222,12 +210,12 @@ public class GraphWidget extends Surface {
 	 * 		on top of a vector
 	 */
 	private GraphAxis findAxis(Vector2 pos) {
-		for (GraphAxis axis: xAxes.keySet()) {
+		for (GraphAxis axis: channelMgr.getXAxes()) {
 			if (axis.contains(pos))
 				return axis;
 		}
 
-		for (GraphAxis axis: yAxes.keySet()) {
+		for (GraphAxis axis: channelMgr.getYAxes()) {
 			if (axis.contains(pos))
 				return axis;
 		}
@@ -251,12 +239,12 @@ public class GraphWidget extends Surface {
 
 			double zoomAbout = axis.unproject(pos);
 
-			if (xAxes.containsKey(axis)) {
+			if (channelMgr.getXAxes().contains(axis)) {
 				// Enforce minimum zoom: if any axis allows zooming,
 				// the user is able to zoom on the X-axes
 				boolean canZoomIn = false;
 
-				for (DataPlot plot: xAxes.get(axis))
+				for (DataPlot plot: channelMgr.getXAxisMap().get(axis))
 					canZoomIn = canZoomIn || plot.shouldZoomIn();
 
 				if (zoomFactor >= 1 || canZoomIn) {
@@ -269,7 +257,7 @@ public class GraphWidget extends Surface {
 		} else {
 			// The mouse is over the viewing window
 			Set<DataPlot> highlightedPlots = new HashSet<DataPlot>();
-			for (DataPlot plot: dataPlots)
+			for (DataPlot plot: channelMgr.getDataPlots())
 				if (plot.isHighlighted())
 					highlightedPlots.add(plot);
 
@@ -286,7 +274,7 @@ public class GraphWidget extends Surface {
 				// We are not highlighting any plots, so we
 				// zoom all Y-axes
 
-				for (GraphAxis yAxis: yAxes.keySet())
+				for (GraphAxis yAxis: channelMgr.getYAxes())
 					yAxis.zoom(zoomFactor, yAxis.unproject(pos));
 			}
 		}
@@ -317,7 +305,7 @@ public class GraphWidget extends Surface {
 			// or the whole viewing window
 
 			Set<DataPlot> highlightedPlots = new HashSet<DataPlot>();
-			for (DataPlot plot: dataPlots)
+			for (DataPlot plot: channelMgr.getDataPlots())
 				if (plot.isHighlighted())
 					highlightedPlots.add(plot);
 
@@ -337,10 +325,12 @@ public class GraphWidget extends Surface {
 				// We are dragging the entire viewing window, so we
 				// drag all axes
 
-				for (GraphAxis xAxis: xAxes.keySet())
+				// TODO: Replace such doubled loops with a single
+				// loop across all axes
+				for (GraphAxis xAxis: channelMgr.getXAxes())
 					xAxis.drag(mouseDragLastPos, pos);
 
-				for (GraphAxis yAxis: yAxes.keySet())
+				for (GraphAxis yAxis: channelMgr.getYAxes())
 					yAxis.drag(mouseDragLastPos, pos);
 			}
 
@@ -349,7 +339,7 @@ public class GraphWidget extends Surface {
 			// We are not dragging anything, so we just update the
 			// highlighting on the data plots and axes
 
-			for (DataPlot plot: dataPlots) {
+			for (DataPlot plot: channelMgr.getDataPlots()) {
 				plot.unhighlight();
 
 				double distanceThreshold = (plot instanceof PhotoDataPlot)
@@ -359,8 +349,8 @@ public class GraphWidget extends Surface {
 			}
 
 			// Now we handle highlighting of the axes
-			setAxisHighlighting(xAxes);
-			setAxisHighlighting(yAxes);
+			setAxisHighlighting(channelMgr.getXAxisMap());
+			setAxisHighlighting(channelMgr.getYAxisMap());
 		}
 
 		paint();
@@ -407,31 +397,31 @@ public class GraphWidget extends Surface {
 		// Ensure that all data plots are unhighlighted, as are
 		// all axes
 
-		for (DataPlot plot: dataPlots)
+		for (DataPlot plot: channelMgr.getDataPlots())
 			plot.unhighlight();
 
-		for (GraphAxis axis: xAxes.keySet())
+		for (GraphAxis axis: channelMgr.getXAxes())
 			axis.unhighlight();
 
-		for (GraphAxis axis: yAxes.keySet())
+		for (GraphAxis axis: channelMgr.getYAxes())
 			axis.unhighlight();
 
 		paint();
 	}
 
 	private void layout() {
-		int xAxesWidth = calculateAxesWidth(xAxes.keySet());
-		int yAxesWidth = calculateAxesWidth(yAxes.keySet());
+		int xAxesWidth = calculateAxesWidth(channelMgr.getXAxes());
+		int yAxesWidth = calculateAxesWidth(channelMgr.getYAxes());
 		int graphWidth = width - graphMargin - yAxesWidth;
 		int graphHeight = height - graphMargin - xAxesWidth;
 		Vector2 xAxesBegin = new Vector2(graphMargin,
 			graphHeight + graphMargin);
-		layoutAxes(xAxes.keySet(), graphWidth, xAxesBegin,
+		layoutAxes(channelMgr.getXAxes(), graphWidth, xAxesBegin,
 			Basis.xDownYRight);
 
 		Vector2 yAxesBegin = new Vector2(graphWidth+graphMargin,
 			graphHeight + graphMargin);
-		layoutAxes(yAxes.keySet(), graphHeight, yAxesBegin,
+		layoutAxes(channelMgr.getYAxes(), graphHeight, yAxesBegin,
 			Basis.xRightYUp);
 	}
 
@@ -502,14 +492,14 @@ public class GraphWidget extends Surface {
 		}
 
 		// Draw the axes
-		for (GraphAxis xAxis: xAxes.keySet())
+		for (GraphAxis xAxis: channelMgr.getXAxes())
 			xAxis.paint(this);
 
-		for (GraphAxis yAxis: yAxes.keySet())
+		for (GraphAxis yAxis: channelMgr.getYAxes())
 			yAxis.paint(this);
 
 		// Now draw the data
-		for (DataPlot plot: dataPlots)
+		for (DataPlot plot: channelMgr.getDataPlots())
 			plot.paint();
 
 		this.restore();
@@ -605,7 +595,7 @@ public class GraphWidget extends Surface {
 	 * 		to axis
 	 */
 	public boolean refersToAxis(GraphAxis axis) {
-		return xAxes.containsKey(axis) || yAxes.containsKey(axis);
+		return channelMgr.hasAxis(axis);
 	}
 
 	/**
@@ -616,7 +606,7 @@ public class GraphWidget extends Surface {
 	 * same data plots used by this widget, it is possible to make
 	 * changes to the internals of this widget by going through these
 	 * data plots.  However, this method is intended only to be used
-	 * as a way to get the set of data plots available to be
+	 * as a way to look at the set of data plots available to be
 	 * removed.</p>
 	 *
 	 * @return
@@ -624,7 +614,8 @@ public class GraphWidget extends Surface {
 	 * 		this widget
 	 */
 	public List<DataPlot> getDataPlots() {
-		return Collections.unmodifiableList(dataPlots);
+		// We know this returns an immutable list
+		return channelMgr.getDataPlots();
 	}
 
 	/**
@@ -638,30 +629,7 @@ public class GraphWidget extends Surface {
 	 * 		if plot is <tt>null</tt>
 	 */
 	public void addDataPlot(DataPlot plot) {
-		if (plot == null)
-			throw new NullPointerException("Cannot add a null DataPlot");
-
-		if (! dataPlots.contains(plot))
-			dataPlots.add(plot);
-		else
-			return;
-
-		// TODO: Check for bug if the same axis is both an X-axis
-		// and a Y-axis, which should never happen in reality
-
-		if (! xAxes.containsKey(plot.getXAxis())) {
-			List<DataPlot> axisList = new ArrayList<DataPlot>();
-			axisList.add(plot);
-			xAxes.put(plot.getXAxis(), axisList);
-		} else
-			xAxes.get(plot.getXAxis()).add(plot);
-
-		if (! yAxes.containsKey(plot.getYAxis())) {
-			List<DataPlot> axisList = new ArrayList<DataPlot>();
-			axisList.add(plot);
-			yAxes.put(plot.getYAxis(), axisList);
-		} else
-			yAxes.get(plot.getYAxis()).add(plot);
+		channelMgr.addChannel(plot);
 	}
 	
 	/**
@@ -680,24 +648,11 @@ public class GraphWidget extends Surface {
 		if (plot == null)
 			throw new NullPointerException("Cannot remove null DataPlot");
 
-		if (! dataPlots.contains(plot))
+		if (! channelMgr.hasChannel(plot))
 			throw new NoSuchElementException("Cannot remove DataPlot "
 				+ "that is not used in this GraphWidget");
 
-		GraphAxis xAxis = plot.getXAxis();
-		GraphAxis yAxis = plot.getYAxis();
-
-		dataPlots.remove(plot);
-
-		if (xAxes.get(xAxis).size() > 1)
-			xAxes.get(xAxis).remove(plot);
-		else
-			xAxes.remove(xAxis);
-
-		if (yAxes.get(yAxis).size() > 1)
-			yAxes.get(yAxis).remove(plot);
-		else
-			yAxes.remove(yAxis);
+		channelMgr.removeChannel(plot);
 	}
 
 	/**
@@ -969,9 +924,8 @@ public class GraphWidget extends Surface {
 		public int compareTo(DisplayMessage other) {
 			if (id > other.id)
 				return 1;
-			else if (id < other.id)
+			if (id < other.id)
 				return -1;
-
 			return 0;
 		}
 	}
