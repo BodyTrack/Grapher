@@ -32,6 +32,13 @@ public class ChannelManager {
 	private Map<GraphAxis, List<DataPlot>> unmodYAxisMap;
 	private Set<GraphAxis> unmodYAxes;
 
+	private final Map<StringPair, DataPlot> channelMap;
+	// TODO: Provide getters for the following two objects
+	private Map<StringPair, DataPlot> unmodChannelMap;
+	private Set<StringPair> unmodChannels;
+
+	private final List<ChannelChangedListener> listeners;
+
 	/**
 	 * Creates a new <tt>ChannelManager</tt> that does not include
 	 * any channels.
@@ -40,6 +47,8 @@ public class ChannelManager {
 		dataPlots = new ArrayList<DataPlot>();
 		xAxisMap = new HashMap<GraphAxis, List<DataPlot>>();
 		yAxisMap = new HashMap<GraphAxis, List<DataPlot>>();
+		channelMap = new HashMap<StringPair, DataPlot>();
+		listeners = new ArrayList<ChannelChangedListener>();
 
 		refreshUnmodifiableCaches();
 	}
@@ -56,6 +65,9 @@ public class ChannelManager {
 
 		unmodYAxisMap = Collections.unmodifiableMap(yAxisMap);
 		unmodYAxes = Collections.unmodifiableSet(yAxisMap.keySet());
+
+		unmodChannelMap = Collections.unmodifiableMap(channelMap);
+		unmodChannels = Collections.unmodifiableSet(channelMap.keySet());
 	}
 
 	/**
@@ -139,6 +151,25 @@ public class ChannelManager {
 	}
 
 	/**
+	 * Checks for whether the specified channel is contained in this
+	 * <tt>ChannelManager</tt>.
+	 *
+	 * @param deviceName
+	 * 		the name of the device for the channel to check
+	 * @param channelName
+	 * 		the name of the channel on the device
+	 * @return
+	 * 		<tt>true</tt> if and only if there is some plot with
+	 * 		the specified device and channel name in this
+	 * 		<tt>ChannelManager</tt>.  If deviceName or channelName
+	 * 		is <tt>null</tt>, always returns <tt>false</tt>
+	 */
+	public boolean hasChannel(String deviceName, String channelName) {
+		return deviceName != null && channelName != null
+			&& channelMap.containsKey(new StringPair(deviceName, channelName));
+	}
+
+	/**
 	 * Returns <tt>true</tt> if and only if axis is an X-axis or
 	 * Y-axis for some <tt>DataPlot</tt> object this holds.
 	 *
@@ -193,6 +224,14 @@ public class ChannelManager {
 		} else
 			yAxisMap.get(plot.getYAxis()).add(plot);
 
+		channelMap.put(
+			new StringPair(plot.getDeviceName(), plot.getChannelName()),
+			plot);
+
+		// Notify our event listeners to the occurrence of an event
+		for (ChannelChangedListener l: listeners)
+			l.channelAdded(plot.getDeviceName(), plot.getChannelName());
+
 		// Very important to refresh the cache after any mutation
 		refreshUnmodifiableCaches();
 	}
@@ -215,6 +254,9 @@ public class ChannelManager {
 		GraphAxis xAxis = plot.getXAxis();
 		GraphAxis yAxis = plot.getYAxis();
 
+		if (! dataPlots.contains(plot))
+			return;
+
 		dataPlots.remove(plot);
 
 		if (xAxisMap.get(xAxis).size() > 1)
@@ -227,8 +269,34 @@ public class ChannelManager {
 		else
 			yAxisMap.remove(yAxis);
 
+		channelMap.remove(new StringPair(
+				plot.getDeviceName(), plot.getChannelName()));
+
+		// Notify our event listeners to the occurrence of an event
+		for (ChannelChangedListener l: listeners)
+			l.channelRemoved(plot.getDeviceName(), plot.getChannelName());
+
 		// Very important to refresh the cache after any mutation
 		refreshUnmodifiableCaches();
+	}
+
+	/**
+	 * Adds a listener to the list of listeners to receive event
+	 * notifications whenever a channel is added, removed, etc.
+	 *
+	 * @param l
+	 * 		some {@link org.bodytrack.client.ChannelChangedListener
+	 * 		ChannelChangedListener} that should receive notifications
+	 * 		whenever an event occurs
+	 * @throws NullPointerException
+	 * 		if l is <tt>null</tt>
+	 */
+	public void addChannelListener(ChannelChangedListener l) {
+		if (l == null)
+			throw new NullPointerException(
+				"Can't fire events to null listener");
+
+		listeners.add(l);
 	}
 
 	/**
