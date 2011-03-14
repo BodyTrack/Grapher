@@ -116,7 +116,7 @@ public class BodyTrackWidget extends VerticalPanel {
 			int axisMargin = 10;
 			Graphable channel = channels.get(i);
 			int minLevel = -20;
-			
+
 			// Reduce vertical scale by 10x.  Offset vertically
 			double min = channel.min_value();
 			double max = channel.max_value();
@@ -126,25 +126,25 @@ public class BodyTrackWidget extends VerticalPanel {
 			span *= 10;
 			min = center - .5 * span;
 			max = center + .5 * span;
-			
+
 			GraphAxis yAxis = new GraphAxis(channel.ch_name(),
 					min, max,
 					Basis.xRightYUp,
 					axisMargin * 3,
 					false);
-			
+
 			graphWidget.addDataPlot(new DataPlot(graphWidget, timeAxis,
-				yAxis, channel.tileUrl(), minLevel, DATA_PLOT_COLORS[i]));
+				yAxis, channel.dev_nickname(), channel.ch_name(),
+				channel.tileUrl(), minLevel, DATA_PLOT_COLORS[i], true));
 		}
 	}
-	
-	
+
 	void selectGraph() {
 		if (!loginWidget.isLoggedIn()) return;
 		unselect();
-		
+
 		int axisMargin = 10;
-					
+
 		graphWidget = new GraphWidget(Window.getClientWidth(), 
 					         Window.getClientHeight() - 100, 
 					         axisMargin);
@@ -156,12 +156,11 @@ public class BodyTrackWidget extends VerticalPanel {
 				axisMargin * 7,
 				true);
 
-		
 		mainPanel = graphWidget;
 		this.add(mainPanel);
-		
+
 		graphWidget.paint();		
-		
+
 		receiveChannels(jsArrayGraphableFromJSON(fetchChannelsJSON()));
 	}
 
@@ -172,6 +171,7 @@ public class BodyTrackWidget extends VerticalPanel {
 			1293861600+86400*365);
 		add(mainPanel);
 	}
+
 	void changeLoginStatus(boolean loggedIn) {
 		if (!loggedIn) unselect();
 	}

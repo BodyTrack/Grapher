@@ -97,6 +97,9 @@ public class DataPlot implements Alertable<GrapherTile> {
 	private final GraphAxis yAxis;
 	private final Canvas canvas;
 
+	private final String deviceName;
+	private final String channelName;
+
 	private final int minLevel;
 	private final Color color;
 
@@ -129,67 +132,6 @@ public class DataPlot implements Alertable<GrapherTile> {
 	private int publishedValueId;
 
 	/**
-	 * Constructor for the DataPlot object that allows unlimited zoom.
-	 * 
-	 * <p>The parameter url is the trickiest to get right.  See the
-	 * main constructor for details.</p>
-	 *
-	 * @param container
-	 * 		the {@link org.bodytrack.client.GraphWidget GraphWidget} on
-	 * 		which this DataPlot will draw itself and its axes
-	 * @param xAxis
-	 * 		the X-axis along which this data set will be aligned when
-	 * 		drawn.  Usually this is a
-	 * 		{@link org.bodytrack.client.TimeGraphAxis TimeGraphAxis}
-	 * @param yAxis
-	 * 		the Y-axis along which this data set will be aligned when
-	 * 		drawn
-	 * @param url
-	 * 		the beginning of the URL for fetching this data with Ajax
-	 * 		calls
-	 * @throws NullPointerException
-	 * 		if container, xAxis, yAxis, or url is <tt>null</tt>
-	 */
-	public DataPlot(GraphWidget container, GraphAxis xAxis, GraphAxis yAxis,
-			String url) {
-		this(container, xAxis, yAxis, url, Integer.MIN_VALUE,
-			Canvas.BLACK, true);
-	}
-
-	/**
-	 * Constructor for the DataPlot object that publishes its data values
-	 * and draws its highlighted points larger.
-	 *
-	 * <p>The parameter url is the trickiest to get right.  See the
-	 * main constructor for details.</p>
-	 *
-	 * @param container
-	 * 		the {@link org.bodytrack.client.GraphWidget GraphWidget} on
-	 * 		which this DataPlot will draw itself and its axes
-	 * @param xAxis
-	 * 		the X-axis along which this data set will be aligned when
-	 * 		drawn.  Usually this is a
-	 * 		{@link org.bodytrack.client.TimeGraphAxis TimeGraphAxis}
-	 * @param yAxis
-	 * 		the Y-axis along which this data set will be aligned when
-	 * 		drawn
-	 * @param url
-	 * 		the beginning of the URL for fetching this data with Ajax
-	 * 		calls
-	 * @param minLevel
-	 * 		the minimum level to which the user will be allowed to zoom
-	 * @param color
-	 * 		the color in which to draw these data points (note that
-	 * 		this does not affect the color of the axes)
-	 * @throws NullPointerException
-	 * 		if container, xAxis, yAxis, url, or color is <tt>null</tt>
-	 */
-	public DataPlot(GraphWidget container, GraphAxis xAxis, GraphAxis yAxis,
-			String url, int minLevel, Color color) {
-		this(container, xAxis, yAxis, url, minLevel, color, true);
-	}
-
-	/**
 	 * Main constructor for the DataPlot object.
 	 *
 	 * <p>The parameter url is the trickiest to get right.  This parameter
@@ -212,6 +154,10 @@ public class DataPlot implements Alertable<GrapherTile> {
 	 * @param yAxis
 	 * 		the Y-axis along which this data set will be aligned when
 	 * 		drawn
+	 * @param deviceName
+	 * 		the name of the device from which this channel came
+	 * @param channelName
+	 * 		the name of the channel on the device specified by deviceName
 	 * @param url
 	 * 		the beginning of the URL for fetching this data with Ajax
 	 * 		calls
@@ -225,19 +171,23 @@ public class DataPlot implements Alertable<GrapherTile> {
 	 * 		on this <tt>DataPlot</tt>, the value should show up in the
 	 * 		corner of container
 	 * @throws NullPointerException
-	 * 		if container, xAxis, yAxis, url, or color is <tt>null</tt>
+	 * 		if container, xAxis, yAxis, deviceName, channelName, url,
+	 * 		or color is <tt>null</tt>
 	 */
 	public DataPlot(GraphWidget container, GraphAxis xAxis, GraphAxis yAxis,
-			String url, int minLevel, Color color,
-			boolean publishValueOnHighlight) {
-		if (container == null || xAxis == null
-				|| yAxis == null || url == null || color == null)
-			throw new NullPointerException(
-				"Cannot have a null container, axis, url, or color");
+			String deviceName, String channelName, String url, int minLevel,
+			Color color, boolean publishValueOnHighlight) {
+		if (container == null || xAxis == null || yAxis == null
+				|| deviceName == null || channelName == null
+				|| url == null || color == null)
+			throw new NullPointerException("Cannot have a null container, "
+				+ "axis, device or channel name, url, or color");
 
 		this.container = container;
 		this.xAxis = xAxis;
 		this.yAxis = yAxis;
+		this.deviceName = deviceName;
+		this.channelName = channelName;
 		baseUrl = url;
 		shouldZoomIn = true;
 		this.minLevel = minLevel;
@@ -263,6 +213,51 @@ public class DataPlot implements Alertable<GrapherTile> {
 		publishedValueId = 0;
 
 		shouldZoomIn = checkForFetch();
+	}
+
+	/**
+	 * Puts together the base URL for a channel, based on the URL
+	 * specification for tiles.
+	 *
+	 * @param userId
+	 * 		the ID of the current user
+	 * @param deviceName
+	 * 		the device for the channel we want to pull tiles from
+	 * @param channelName
+	 * 		the channel name for the channel we want to pull tiles from
+	 * @return
+	 * 		a base URL that is suitable for passing to one of the
+	 * 		constructors for <tt>DataPlot</tt> or one of its subclasses
+	 * @throws NullPointerException
+	 * 		if deviceName or channelName is <tt>null</tt>
+	 */
+	public static String buildBaseUrl(int userId, String deviceName,
+			String channelName) {
+		if (deviceName == null || channelName == null)
+			throw new NullPointerException(
+				"Null part of base URL not allowed");
+
+		return "/tiles/" + userId + "/" + channelName + "/";
+	}
+
+	/**
+	 * Returns the device name for this plot.
+	 *
+	 * @return
+	 * 		the device name passed to the constructor
+	 */
+	public String getDeviceName() {
+		return deviceName;
+	}
+
+	/**
+	 * Returns the channel name for this plot.
+	 *
+	 * @return
+	 * 		the channel name passed to the constructor
+	 */
+	public String getChannelName() {
+		return channelName;
 	}
 
 	/**

@@ -68,6 +68,10 @@ public class PhotoDataPlot extends DataPlot {
 	 * @param yAxis
 	 * 		the Y-axis that will determine the position of images
 	 * 		on container
+	 * @param deviceName
+	 * 		the name of the device from which this channel came
+	 * @param channelName
+	 * 		the name of the channel on the device specified by deviceName
 	 * @param url
 	 * 		the base URL for retrieving JSON descriptions of images,
 	 * 		<em>NOT</em> for getting the images themselves
@@ -81,8 +85,9 @@ public class PhotoDataPlot extends DataPlot {
 	 * 		int, gwt.g2d.client.graphics.Color)
 	 */
 	public PhotoDataPlot(GraphWidget container, GraphAxis xAxis,
-			PhotoGraphAxis yAxis, String url, int userId, int minLevel) {
-		super(container, xAxis, yAxis, url, minLevel,
+			PhotoGraphAxis yAxis, String deviceName, String channelName,
+			String url, int userId, int minLevel) {
+		super(container, xAxis, yAxis, channelName, deviceName, url, minLevel,
 			Canvas.DEFAULT_COLOR, false);
 		// Note that we know that our Y-axis is a PhotoGraphAxis,
 		// so we will be able to cast freely later on

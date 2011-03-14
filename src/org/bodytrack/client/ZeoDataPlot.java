@@ -50,6 +50,10 @@ public class ZeoDataPlot extends DataPlot {
 	 * @param yAxis
 	 * 		the Y-axis along which this data set will be aligned when
 	 * 		drawn
+	 * @param deviceName
+	 * 		the name of the device from which this channel came
+	 * @param channelName
+	 * 		the name of the channel on the device specified by deviceName
 	 * @param url
 	 * 		the beginning of the URL for fetching this data with Ajax
 	 * 		calls
@@ -59,9 +63,10 @@ public class ZeoDataPlot extends DataPlot {
 	 * 		String, int, Color)
 	 */
 	public ZeoDataPlot(GraphWidget container, GraphAxis xAxis,
-			GraphAxis yAxis, String url, int minLevel) {
-		super(container, xAxis, yAxis, url, minLevel,
-			Canvas.DEFAULT_COLOR, false);
+			GraphAxis yAxis, String deviceName, String channelName,
+			String url, int minLevel) {
+		super(container, xAxis, yAxis, deviceName, channelName,
+			url, minLevel, Canvas.DEFAULT_COLOR, false);
 		// Doesn't make sense to publish data values as 1, 2, 3, 4,
 		// at least until we have a way to provide more description
 	}

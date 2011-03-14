@@ -21,7 +21,9 @@ public class Grapher2 implements EntryPoint {
 	private static final Color[] DATA_PLOT_COLORS = {Canvas.BLACK,
 													Canvas.GREEN,
 													Canvas.BLUE,
-													Canvas.RED};
+													Canvas.RED,
+													Canvas.GRAY,
+													Canvas.YELLOW};
 	private static final String ZEO_COLOR_STRING = "ZEO";
 	private static final String PHOTO_COLOR_STRING = "PHOTO";
 
@@ -74,12 +76,12 @@ public class Grapher2 implements EntryPoint {
 		List<DataPlot> temporaryPlots = new ArrayList<DataPlot>();
 
 		for (int i = 0; i < channels.length(); i++) {
-			String channelName = channels.get(i);
+			String deviceChanName = channels.get(i);
 
-			double initialMin = getInitialMin(channelName);
-			double initialMax = getInitialMax(channelName);
+			double initialMin = getInitialMin(deviceChanName);
+			double initialMax = getInitialMax(deviceChanName);
 
-			GraphAxis value = new GraphAxis(channelName,
+			GraphAxis value = new GraphAxis(deviceChanName,
 				initialMin > -1e300 ? initialMin : -1,
 				initialMax > -1e300 ? initialMax : 1,
 				Basis.xRightYUp,
@@ -88,30 +90,48 @@ public class Grapher2 implements EntryPoint {
 
 			DataPlot plot;
 			String chartType = getChartType(channels.get(i)).toLowerCase();
-			String baseUrl = "/tiles/" + userId + "/" + channels.get(i) + "/";
 
+			// Pull out the device name, channel name, and base URL
+			String baseUrl, deviceName, channelName;
+			int dotIndex = deviceChanName.indexOf('.');
+			if (dotIndex > 0) {
+				deviceName = deviceChanName.substring(0, dotIndex);
+				channelName = deviceChanName.substring(dotIndex + 1);
+				baseUrl = DataPlot.buildBaseUrl(userId,
+					deviceName, channelName);
+			} else {
+				baseUrl = "/tiles/" + userId + "/" + deviceChanName + "/";
+				deviceName = "";
+				channelName = deviceChanName;
+			}
+
+			// Now initialize the plot
 			if ("zeo".equals(chartType)) {
-				plot = new ZeoDataPlot(gw, time, value, baseUrl, minLevel);
+				plot = new ZeoDataPlot(gw, time, value, deviceName,
+					channelName, baseUrl, minLevel);
 				temporaryPlots.add(0, plot);
-				publisher.publishChannelColor(channelName,
+				publisher.publishChannelColor(deviceChanName,
 					ZEO_COLOR_STRING);
 			} else if ("photo".equals(chartType)) {
 				// baseUrl should be /photos/:user_id/ for photos
 				baseUrl = "/photos/" + userId + "/";
 
 				plot = new PhotoDataPlot(gw, time,
-					new PhotoGraphAxis(channelName, yAxisWidth),
+					new PhotoGraphAxis(deviceChanName, yAxisWidth),
+					deviceName, channelName,
 					baseUrl, userId, minLevel);
 				temporaryPlots.add(plot);
 
-				publisher.publishChannelColor(channelName, PHOTO_COLOR_STRING);
+				publisher.publishChannelColor(deviceChanName,
+					PHOTO_COLOR_STRING);
 			} else {
 				Color color = DATA_PLOT_COLORS[i % DATA_PLOT_COLORS.length];
 
-				plot = new DataPlot(gw, time, value, baseUrl, minLevel, color);
+				plot = new DataPlot(gw, time, value, deviceName,
+					channelName, baseUrl, minLevel, color, true);
 				temporaryPlots.add(plot);
 
-				publisher.publishChannelColor(channelName,
+				publisher.publishChannelColor(deviceChanName,
 					Canvas.friendlyName(color));
 			}
 		}
