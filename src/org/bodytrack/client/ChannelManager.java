@@ -41,21 +41,21 @@ public class ChannelManager {
 		xAxisMap = new HashMap<GraphAxis, List<DataPlot>>();
 		yAxisMap = new HashMap<GraphAxis, List<DataPlot>>();
 
-		dropUnmodifiableCaches();
+		refreshUnmodifiableCaches();
 	}
 
 	/**
-	 * Drops the caches of unmodifiable copies of the private
-	 * variables.
+	 * Drops and then recalculates the caches of unmodifiable copies
+	 * of the private variables.
 	 */
-	private void dropUnmodifiableCaches() {
-		unmodDataPlots = null;
+	private void refreshUnmodifiableCaches() {
+		unmodDataPlots = Collections.unmodifiableList(dataPlots);
 
-		unmodXAxisMap = null;
-		unmodXAxes = null;
+		unmodXAxisMap = Collections.unmodifiableMap(xAxisMap);
+		unmodXAxes = Collections.unmodifiableSet(xAxisMap.keySet());
 
-		unmodYAxisMap = null;
-		unmodYAxes = null;
+		unmodYAxisMap = Collections.unmodifiableMap(yAxisMap);
+		unmodYAxes = Collections.unmodifiableSet(yAxisMap.keySet());
 	}
 
 	/**
@@ -68,9 +68,6 @@ public class ChannelManager {
 	 * 		objects this holds
 	 */
 	public List<DataPlot> getDataPlots() {
-		if (unmodDataPlots == null)
-			unmodDataPlots = Collections.unmodifiableList(dataPlots);
-
 		return unmodDataPlots;
 	}
 
@@ -84,9 +81,6 @@ public class ChannelManager {
 	 * 		objects
 	 */
 	public Map<GraphAxis, List<DataPlot>> getXAxisMap() {
-		if (unmodXAxisMap == null)
-			unmodXAxisMap = Collections.unmodifiableMap(xAxisMap);
-
 		return unmodXAxisMap;
 	}
 
@@ -100,9 +94,6 @@ public class ChannelManager {
 	 * 		objects
 	 */
 	public Map<GraphAxis, List<DataPlot>> getYAxisMap() {
-		if (unmodYAxisMap == null)
-			unmodYAxisMap = Collections.unmodifiableMap(yAxisMap);
-
 		return unmodYAxisMap;
 	}
 
@@ -116,9 +107,6 @@ public class ChannelManager {
 	 * 		<tt>DataPlot</tt> objects this holds
 	 */
 	public Set<GraphAxis> getXAxes() {
-		if (unmodXAxes == null)
-			unmodXAxes = Collections.unmodifiableSet(xAxisMap.keySet());
-
 		return unmodXAxes;
 	}
 
@@ -132,9 +120,6 @@ public class ChannelManager {
 	 * 		<tt>DataPlot</tt> objects this holds
 	 */
 	public Set<GraphAxis> getYAxes() {
-		if (unmodYAxes == null)
-			unmodYAxes = Collections.unmodifiableSet(yAxisMap.keySet());
-
 		return unmodYAxes;
 	}
 
@@ -191,9 +176,6 @@ public class ChannelManager {
 		else
 			return;
 
-		// Very important to drop the cache
-		dropUnmodifiableCaches();
-
 		// TODO: Check for bug if the same axis is both an X-axis
 		// and a Y-axis, which should never happen in reality
 
@@ -210,6 +192,9 @@ public class ChannelManager {
 			yAxisMap.put(plot.getYAxis(), axisList);
 		} else
 			yAxisMap.get(plot.getYAxis()).add(plot);
+
+		// Very important to refresh the cache after any mutation
+		refreshUnmodifiableCaches();
 	}
 
 	/**
@@ -227,9 +212,6 @@ public class ChannelManager {
 		if (plot == null)
 			return;
 
-		// Very important to drop the cache
-		dropUnmodifiableCaches();
-
 		GraphAxis xAxis = plot.getXAxis();
 		GraphAxis yAxis = plot.getYAxis();
 
@@ -244,5 +226,8 @@ public class ChannelManager {
 			yAxisMap.get(yAxis).remove(plot);
 		else
 			yAxisMap.remove(yAxis);
+
+		// Very important to refresh the cache after any mutation
+		refreshUnmodifiableCaches();
 	}
 }
