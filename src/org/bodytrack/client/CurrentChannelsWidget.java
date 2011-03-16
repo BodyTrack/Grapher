@@ -9,8 +9,8 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.Label;
 
 /**
  * A widget that shows the names of the current panels in a flowing layout.
@@ -120,7 +120,7 @@ public class CurrentChannelsWidget extends FlowPanel
 		private static final String CHANNEL_LINK_WIDTH = "7em";
 
 		private final StringPair name;
-		private final Label link;
+		private final HTML link;
 		private final Anchor remove;
 
 		/**
@@ -140,7 +140,7 @@ public class CurrentChannelsWidget extends FlowPanel
 					"Null channel name not allowed");
 
 			this.name = name;
-			link = new Label(name.toDisplayString());
+			link = new HTML(getLinkString(), true);
 			remove = new Anchor(REMOVE_HTML, true);
 			remove.addClickHandler(new RemoveHandler());
 
@@ -148,6 +148,25 @@ public class CurrentChannelsWidget extends FlowPanel
 			add(remove);
 
 			setWidth(CHANNEL_LINK_WIDTH);
+		}
+
+		/**
+		 * Builds a string representation of the HTML link should
+		 * use when initialized.
+		 *
+		 * @return
+		 * 		the non-<tt>null</tt> HTML string the link private
+		 * 		variable should use as its content
+		 */
+		private String getLinkString() {
+			DataPlot chan = channelMgr.getChannel(name);
+
+			if (chan != null && chan.getColor() != null)
+				return "<span style=\"color: "
+					+ chan.getColor().getColorCode() + "\">"
+					+ name.toDisplayString() + "</span>";
+
+			return name.toDisplayString();
 		}
 
 		/**
