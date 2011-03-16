@@ -38,7 +38,12 @@ public class Grapher2 implements EntryPoint {
 
 			setupGraphWidget();
 
+			ChannelManager mgr = gw.getChannelManager();
+			CurrentChannelsWidget currentChans =
+				new CurrentChannelsWidget(mgr);
+
 			mainLayout.add(gw);
+			mainLayout.add(currentChans);
 			RootPanel.get(getDivName()).add(mainLayout);
 		}
 

@@ -17,6 +17,10 @@ import com.google.gwt.user.client.ui.Label;
  */
 public class CurrentChannelsWidget extends FlowPanel
 		implements ChannelChangedListener {
+	/**
+	 * The height of this widget.
+	 */
+	private static final String WIDGET_HEIGHT = "5em";
 
 	// The real job of this class is to make sure that
 	// channelMgr and channels stay in sync, and that everything
@@ -27,12 +31,20 @@ public class CurrentChannelsWidget extends FlowPanel
 	/**
 	 * Creates a new <tt>CurrentChannelsWidget</tt>.
 	 *
-	 * <p>After this widget is constructed, it is <em>required</em>
-	 * that this be added to the set of listeners on mgr.</p>
+	 * <p>This widget adds itself to the set of listeners for mgr,
+	 * and also adds all channels in mgr to itself initially.  Any
+	 * new channels, however, must be added through the
+	 * {@link #channelAdded(String, String)} alert.
 	 */
 	public CurrentChannelsWidget(ChannelManager mgr) {
 		channelMgr = mgr;
 		channels = new HashMap<StringPair, ChannelLink>();
+
+		for (DataPlot plot: channelMgr.getDataPlots())
+			channelAdded(plot.getDeviceName(), plot.getChannelName());
+
+		setHeight(WIDGET_HEIGHT);
+		channelMgr.addChannelListener(this);
 	}
 
 	/**
@@ -58,7 +70,10 @@ public class CurrentChannelsWidget extends FlowPanel
 		if (channels.containsKey(chan))
 			return;
 
-		channels.put(chan, new ChannelLink(chan));
+		ChannelLink visibleRepr = new ChannelLink(chan);
+
+		channels.put(chan, visibleRepr);
+		add(visibleRepr);
 	}
 
 	/**
@@ -99,6 +114,11 @@ public class CurrentChannelsWidget extends FlowPanel
 		// Perhaps have this CSS put a box around the X, to make the
 		// look clear
 
+		/**
+		 * The width to use for one of these objects
+		 */
+		private static final String CHANNEL_LINK_WIDTH = "7em";
+
 		private final StringPair name;
 		private final Label link;
 		private final Anchor remove;
@@ -126,6 +146,8 @@ public class CurrentChannelsWidget extends FlowPanel
 
 			add(link);
 			add(remove);
+
+			setWidth(CHANNEL_LINK_WIDTH);
 		}
 
 		/**
