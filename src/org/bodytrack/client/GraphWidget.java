@@ -10,7 +10,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.Map.Entry;
 
@@ -579,46 +578,6 @@ public class GraphWidget extends Surface {
 	}
 
 	/**
-	 * Returns <tt>true</tt> if and only if this widget holds a
-	 * <strong>reference</strong> to axis.
-	 *
-	 * In other words, this will not return <tt>true</tt> unless
-	 * this GraphWidget contains the exact GraphAxis object axis,
-	 * regardless of whether this contains an axis identical
-	 * to (but with a different memory location from) axis.
-	 *
-	 * @param axis
-	 * 		the {@link org.bodytrack.client.GraphAxis GraphAxis}
-	 * 		for which to look
-	 * @return
-	 * 		<tt>true</tt> iff this GraphWidget holds a reference
-	 * 		to axis
-	 */
-	public boolean refersToAxis(GraphAxis axis) {
-		return channelMgr.hasAxis(axis);
-	}
-
-	/**
-	 * Returns an unmodifiable view of this widget's internal list of
-	 * {@link org.bodytrack.client.DataPlot DataPlot} objects.
-	 *
-	 * <p>Note that, since this method's return value contains the
-	 * same data plots used by this widget, it is possible to make
-	 * changes to the internals of this widget by going through these
-	 * data plots.  However, this method is intended only to be used
-	 * as a way to look at the set of data plots available to be
-	 * removed.</p>
-	 *
-	 * @return
-	 * 		an unmodifiable view of the list of data plots showing on
-	 * 		this widget
-	 */
-	public List<DataPlot> getDataPlots() {
-		// We know this returns an immutable list
-		return channelMgr.getDataPlots();
-	}
-
-	/**
 	 * Adds plot to the list of data plots to be drawn.
 	 * 
 	 * Note that a plot can only be added once to this internal list.
@@ -634,25 +593,31 @@ public class GraphWidget extends Surface {
 	
 	/**
 	 * Removes plot from the list of data plots to be drawn.
-	 * 
+	 *
+	 * <p>Does nothing if plot is <tt>null</tt> or not present in
+	 * this <tt>GraphWidget</tt>.</p>
+	 *
 	 * @param plot
 	 * 		the plot to remove from the list of plots to be drawn
-	 * @throws NullPointerException
-	 * 		if plot is <tt>null</tt>
-	 * @throws NoSuchElementException
-	 * 		if plot is not one of the
-	 * 		{@link org.bodytrack.client.DataPlot DataPlot} objects
-	 * 		referenced by this GraphWidget
 	 */
 	public void removeDataPlot(DataPlot plot) {
-		if (plot == null)
-			throw new NullPointerException("Cannot remove null DataPlot");
-
-		if (! channelMgr.hasChannel(plot))
-			throw new NoSuchElementException("Cannot remove DataPlot "
-				+ "that is not used in this GraphWidget");
-
 		channelMgr.removeChannel(plot);
+	}
+
+	/**
+	 * An <em>intra-package</em> method for retrieving the
+	 * {@link org.bodytrack.client.ChannelManager ChannelManager} this
+	 * class holds.
+	 *
+	 * <p>It is very important that this only be used by classes within
+	 * this package.  This method really does break some abstraction
+	 * barriers.</p>
+	 *
+	 * @return
+	 * 		the <tt>ChannelManager</tt> this class uses
+	 */
+	ChannelManager getChannelManager() {
+		return channelMgr;
 	}
 
 	/**
