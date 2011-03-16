@@ -188,6 +188,25 @@ public class ChannelManager {
 	}
 
 	/**
+	 * Returns the {@link org.bodytrack.client.DataPlot DataPlot} associated
+	 * with the specified (deviceName, channelName) pair, if such a channel
+	 * is available.
+	 *
+	 * @param name
+	 * 		the name of the channel
+	 * @return
+	 * 		the <tt>DataPlot</tt> associated with name, if possible, or
+	 * 		<tt>null</tt> if either name is <tt>null</tt> or has not
+	 * 		been added through any channel
+	 */
+	public DataPlot getChannel(StringPair name) {
+		if (name == null)
+			return null;
+
+		return channelMap.get(name);
+	}
+
+	/**
 	 * Adds the specified channel to the list of
 	 * {@link org.bodytrack.client.DataPlot DataPlot} objects
 	 * held by this <tt>ChannelManager</tt>, and updates axis references
@@ -202,10 +221,12 @@ public class ChannelManager {
 		if (plot == null)
 			throw new NullPointerException("Cannot add a null DataPlot");
 
-		if (! dataPlots.contains(plot))
-			dataPlots.add(plot);
-		else
+		StringPair name =
+			new StringPair(plot.getDeviceName(), plot.getChannelName());
+		if (dataPlots.contains(plot) || channelMap.containsKey(name))
 			return;
+
+		dataPlots.add(plot);
 
 		// TODO: Check for bug if the same axis is both an X-axis
 		// and a Y-axis, which should never happen in reality
@@ -224,9 +245,7 @@ public class ChannelManager {
 		} else
 			yAxisMap.get(plot.getYAxis()).add(plot);
 
-		channelMap.put(
-			new StringPair(plot.getDeviceName(), plot.getChannelName()),
-			plot);
+		channelMap.put(name, plot);
 
 		// Notify our event listeners to the occurrence of an event
 		for (ChannelChangedListener l: listeners)
