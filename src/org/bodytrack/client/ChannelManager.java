@@ -237,15 +237,16 @@ public class ChannelManager {
 	}
 
 	/**
-	 * Adds the specified channel to the list of
+	 * Removes the specified channel from the list of
 	 * {@link org.bodytrack.client.DataPlot DataPlot} objects
-	 * held by this <tt>ChannelManager</tt>, and updates axis references
-	 * as well.
+	 * held by this <tt>ChannelManager</tt>, if it is part of that list,
+	 * and updates axis references as well.
 	 *
-	 * <p>If plot is <tt>null</tt>, does absolutely nothing.</p>
+	 * <p>If plot is <tt>null</tt> or has not yet been added using a call
+	 * to {@link #addChannel(DataPlot)}, does absolutely nothing.</p>
 	 *
 	 * @param plot
-	 * 		the <tt>DataPlot</tt> to add to the set of plots this hold
+	 * 		the <tt>DataPlot</tt> to remove from the set of plots this holds
 	 */
 	public void removeChannel(DataPlot plot) {
 		if (plot == null)
@@ -278,6 +279,22 @@ public class ChannelManager {
 
 		// Very important to refresh the cache after any mutation
 		refreshUnmodifiableCaches();
+	}
+
+	/**
+	 * Removes the channel with the specified device and channel names,
+	 * if such a channel is part of this <tt>ChannelManager</tt>.
+	 *
+	 * @param deviceName
+	 * 		the device name for the channel to remove
+	 * @param channelName
+	 * 		the name for the channel to remove on the device
+	 */
+	public void removeChannel(String deviceName, String channelName) {
+		StringPair name = new StringPair(deviceName, channelName);
+
+		if (channelMap.containsKey(name))
+			removeChannel(channelMap.get(name));
 	}
 
 	/**
@@ -343,6 +360,25 @@ public class ChannelManager {
 		 */
 		public String getSecond() {
 			return s2;
+		}
+
+		/**
+		 * Builds and returns a string representation of this object,
+		 * suitable for display to a user.
+		 *
+		 * <p>Never throws an exception or returns <tt>null</tt>.</p>
+		 */
+		public String toDisplayString() {
+			return s1 + "." + s2;
+		}
+
+		/**
+		 * Builds and returns a string representation of this object.
+		 * Never throws an exception or returns <tt>null</tt>.
+		 */
+		@Override
+		public String toString() {
+			return toDisplayString();
 		}
 
 		/**
