@@ -151,8 +151,8 @@ public class CurrentChannelsWidget extends FlowPanel
 		}
 
 		/**
-		 * Builds a string representation of the HTML link should
-		 * use when initialized.
+		 * Builds a string representation of the HTML that the
+		 * link private variable should use when initialized.
 		 *
 		 * @return
 		 * 		the non-<tt>null</tt> HTML string the link private
