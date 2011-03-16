@@ -277,6 +277,16 @@ public class DataPlot implements Alertable<GrapherTile> {
 	}
 
 	/**
+	 * Returns the color at which this <tt>DataPlot</tt> is drawn.
+	 *
+	 * @return
+	 * 		the color used to draw this <tt>DataPlot</tt>
+	 */
+	public Color getColor() {
+		return color;
+	}
+
+	/**
 	 * Gives subclasses a reference to the
 	 * {@link org.bodytrack.client.Canvas Canvas} object on which they
 	 * can draw.
