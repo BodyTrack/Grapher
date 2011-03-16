@@ -237,7 +237,11 @@ public class DataPlot implements Alertable<GrapherTile> {
 			throw new NullPointerException(
 				"Null part of base URL not allowed");
 
-		return "/tiles/" + userId + "/" + channelName + "/";
+		if (deviceName.equals(""))
+			return "/tiles/" + userId + "/" + channelName + "/";
+
+		return "/tiles/" + userId + "/" + deviceName + "."
+			+ channelName + "/";
 	}
 
 	/**
