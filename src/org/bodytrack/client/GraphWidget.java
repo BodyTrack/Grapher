@@ -25,7 +25,7 @@ import com.google.gwt.event.dom.client.MouseWheelEvent;
 import com.google.gwt.event.dom.client.MouseWheelHandler;
 import com.google.gwt.user.client.Timer;
 
-public class GraphWidget extends Surface {
+public class GraphWidget extends Surface implements ChannelChangedListener {
 	/**
 	 * The value at which the ID attribute of this HTML canvas should
 	 * be set, unless there is a good reason to set it to something
@@ -108,6 +108,7 @@ public class GraphWidget extends Surface {
 		this.axisMargin = axisMargin;
 
 		channelMgr = new ChannelManager();
+		channelMgr.addChannelListener(this);
 
 		nextLoadingMessageId = INITIAL_MESSAGE_ID;
 		loadingMessages = new ArrayList<DisplayMessage>();
@@ -618,6 +619,38 @@ public class GraphWidget extends Surface {
 	 */
 	ChannelManager getChannelManager() {
 		return channelMgr;
+	}
+
+	/**
+	 * Fires whenever a channel is added to this widget through the
+	 * widget's {@link org.bodytrack.client.ChannelManager ChannelManager}.
+	 *
+	 * @param deviceName
+	 * 		ignored
+	 * @param channelName
+	 * 		ignored
+	 */
+	@Override
+	public void channelAdded(String deviceName, String channelName) {
+		// Don't need to keep any other data in sync, since the
+		// ChannelManager handles all that for us
+		paint();
+	}
+
+	/**
+	 * Fires whenever a channel is removed from this widget through the
+	 * widget's {@link org.bodytrack.client.ChannelManager ChannelManager}.
+	 *
+	 * @param deviceName
+	 * 		ignored
+	 * @param channelName
+	 * 		ignored
+	 */
+	@Override
+	public void channelRemoved(String deviceName, String channelName) {
+		// Don't need to keep any other data in sync, since the
+		// ChannelManager handles all that for us
+		paint();
 	}
 
 	/**
