@@ -237,11 +237,39 @@ public class DataPlot implements Alertable<GrapherTile> {
 			throw new NullPointerException(
 				"Null part of base URL not allowed");
 
+		// TODO: Use getDeviceChanName
 		if (deviceName.equals(""))
 			return "/tiles/" + userId + "/" + channelName + "/";
 
 		return "/tiles/" + userId + "/" + deviceName + "."
 			+ channelName + "/";
+	}
+
+	/**
+	 * Combines the device and channel name to get the overall
+	 * name for the channel.
+	 *
+	 * @param deviceName
+	 * 		the name of the device, which may be <tt>null</tt>
+	 * @param channelName
+	 * 		the name of the channel, which may be <tt>null</tt>
+	 * @return
+	 * 		a string representing the device and channel name
+	 * 		together
+	 */
+	// TODO: Rename to a more useful name
+	public static String getDeviceChanName(String deviceName,
+			String channelName) {
+		if (deviceName == null)
+			deviceName = "";
+
+		if (channelName == null)
+			channelName = "";
+
+		if (deviceName.equals(""))
+			return channelName;
+
+		return deviceName + "." + channelName;
 	}
 
 	/**
