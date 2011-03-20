@@ -228,6 +228,7 @@ public class ChannelNamesWidget extends VerticalPanel
 		} else {
 			// Need to make a new panel
 			List<String> channelNames = new ArrayList<String>();
+			channelNames.add(channelName);
 			add(buildSingleDevicePanel(deviceName, channelNames,
 					valueChangeHandler));
 		}
@@ -297,6 +298,9 @@ public class ChannelNamesWidget extends VerticalPanel
 			String deviceName, String channelName,
 			ValueChangeHandler<Boolean> handler) {
 		CheckBox box = new CheckBox(channelName);
+		box.setValue(visible.hasChannel(deviceName, channelName));
+			// If visible contains the channel, this box should be
+			// checked
 		HandlerRegistration reg = box.addValueChangeHandler(handler);
 
 		StringPair channelNamePair =
@@ -312,13 +316,37 @@ public class ChannelNamesWidget extends VerticalPanel
 		// on one DisclosurePanel
 	}
 
-	// TODO: COMMENT
+	/**
+	 * Called whenever a channel is added to the underlying
+	 * {@link org.bodytrack.client.ChannelManager ChannelManager}
+	 * containing the set of visible channels.
+	 *
+	 * <p>This simply checks the appropriate box.</p>
+	 *
+	 * @param deviceName
+	 * 		the name of the device for the channel whose box should
+	 * 		be checked
+	 * @param channelName
+	 * 		the name of the channel whose box should be checked
+	 */
 	@Override
 	public void channelAdded(String deviceName, String channelName) {
 		setCheckBoxValue(deviceName, channelName, true);
 	}
 
-	// TODO: COMMENT
+	/**
+	 * Called whenever a channel is removed from the underlying
+	 * {@link org.bodytrack.client.ChannelManager ChannelManager}
+	 * containing the set of visible channels.
+	 *
+	 * <p>This simply unchecks the appropriate box.</p>
+	 *
+	 * @param deviceName
+	 * 		the name of the device for the channel whose box should
+	 * 		be unchecked
+	 * @param channelName
+	 * 		the name of the channel whose box should be unchecked
+	 */
 	@Override
 	public void channelRemoved(String deviceName, String channelName) {
 		setCheckBoxValue(deviceName, channelName, false);
