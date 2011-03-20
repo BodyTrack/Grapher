@@ -94,7 +94,7 @@ public class ChannelNamesWidget extends VerticalPanel
 	 * 		JSON map of devices and channels
 	 */
 	private static String buildDevicesUrl(int userId) {
-		return "/users/" + userId + "devices.json";
+		return "/users/" + userId + "/devices.json";
 	}
 
 	/**
@@ -115,20 +115,20 @@ public class ChannelNamesWidget extends VerticalPanel
 				@Override
 				public void onError(Request request,
 						Throwable exception) {
-					loadFailure();
+					loadFailure(devicesUrl);
 				}
 
 				@Override
 				public void onResponseReceived(Request request,
 						Response response) {
-					if (response.getStatusCode() == 200)
+					if (GrapherTile.isSuccessful(response))
 						loadSuccess(response.getText());
 					else
-						loadFailure();
+						loadFailure(devicesUrl);
 				}
 			});
 		} catch (RequestException e) {
-			loadFailure();
+			loadFailure(devicesUrl);
 		}
 	}
 
@@ -137,9 +137,13 @@ public class ChannelNamesWidget extends VerticalPanel
 	 *
 	 * <p>This simply alerts the user to an error in loading the
 	 * channels.<p>
+	 *
+	 * @param requestUrl
+	 * 		the URL at which the failed tile was requested (this should
+	 * 		be the devicesUrl instance variable)
 	 */
-	private native void loadFailure() /*-{
-		alert("Failed to load list of channels, using URL " + devicesUrl);
+	private native void loadFailure(String requestUrl) /*-{
+		alert("Failed to load list of channels, using URL " + requestUrl);
 	}-*/;
 
 	/**
@@ -162,7 +166,7 @@ public class ChannelNamesWidget extends VerticalPanel
 	 */
 	private void loadSuccess(String json) {
 		// TODO: Possibly add DeviceMap overlay type that will
-		// persistently hold this info in a more usable form
+		// persistently hold deviceMap info in a more usable form
 
 		// We know that json represents a map
 		JSONValue deviceValue = JSONParser.parse(json);
@@ -201,6 +205,11 @@ public class ChannelNamesWidget extends VerticalPanel
 	/**
 	 * Adds the specified channel to the widget, not to the channel manager.
 	 *
+	 * <p>Note that we require that the channel is not already part of this
+	 * widget, unless the caller wants to add that channel twice (a sticky
+	 * situation).  We do not attempt to check whether the channel is already
+	 * part of this widget or not.</p>
+	 *
 	 * @param deviceName
 	 * 		the name of the device for the channel to add
 	 * @param channelName
@@ -208,9 +217,6 @@ public class ChannelNamesWidget extends VerticalPanel
 	 */
 	private void addChannelToWidget(String deviceName,
 			String channelName) {
-		if (visible.hasChannel(deviceName, channelName))
-			return;
-
 		if (devices.containsKey(deviceName)) {
 			// Need to add to the existing panel
 			DisclosurePanel panel = devices.get(deviceName);
@@ -295,11 +301,13 @@ public class ChannelNamesWidget extends VerticalPanel
 		panel.add(box);
 	}
 
+	// TODO: COMMENT
 	@Override
 	public void channelAdded(String deviceName, String channelName) {
 		setCheckBoxValue(deviceName, channelName, true);
 	}
 
+	// TODO: COMMENT
 	@Override
 	public void channelRemoved(String deviceName, String channelName) {
 		setCheckBoxValue(deviceName, channelName, false);
