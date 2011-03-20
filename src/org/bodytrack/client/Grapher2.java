@@ -16,7 +16,9 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 public class Grapher2 implements EntryPoint {
 	private VerticalPanel mainLayout;
 	private GraphWidget gw;
+	private GraphAxis timeAxis;
 	private List<DataPlot> plots;
+	private int userId;
 
 	private static final Color[] DATA_PLOT_COLORS = {Canvas.BLACK,
 													Canvas.GREEN,
@@ -41,9 +43,12 @@ public class Grapher2 implements EntryPoint {
 			ChannelManager mgr = gw.getChannelManager();
 			CurrentChannelsWidget currentChans =
 				new CurrentChannelsWidget(mgr);
+			ChannelNamesWidget allChans =
+				new ChannelNamesWidget(mgr, userId, this);
 
 			mainLayout.add(gw);
 			mainLayout.add(currentChans);
+			mainLayout.add(allChans);
 			RootPanel.get(getDivName()).add(mainLayout);
 		}
 
@@ -61,7 +66,7 @@ public class Grapher2 implements EntryPoint {
 		gw = new GraphWidget(getGrapherWidth(),
 			getGrapherHeight(), axisMargin);
 
-		GraphAxis time = new TimeGraphAxis(
+		timeAxis = new TimeGraphAxis(
 			getInitialStartTime(),
 			getInitialEndTime(),
 			Basis.xDownYRight,
@@ -70,11 +75,11 @@ public class Grapher2 implements EntryPoint {
 
 		plots = new ArrayList<DataPlot>();
 
-		int userId = getUserId();
+		userId = getUserId();
 		JsArrayString channels = getChannelNames();
 		int minLevel = getMinLevel();
 
-		double yAxisWidth = axisMargin * 3;
+		double yAxisWidth = getYAxisWidth();
 
 		// This is used to ensure the plots are added in the
 		// right order (Zeo first, default type last)
@@ -83,15 +88,7 @@ public class Grapher2 implements EntryPoint {
 		for (int i = 0; i < channels.length(); i++) {
 			String deviceChanName = channels.get(i);
 
-			double initialMin = getInitialMin(deviceChanName);
-			double initialMax = getInitialMax(deviceChanName);
-
-			GraphAxis value = new GraphAxis(deviceChanName,
-				initialMin > -1e300 ? initialMin : -1,
-				initialMax > -1e300 ? initialMax : 1,
-				Basis.xRightYUp,
-				yAxisWidth,
-				false);
+			GraphAxis value = getValueAxis(deviceChanName);
 
 			DataPlot plot;
 			String chartType = getChartType(channels.get(i)).toLowerCase();
@@ -112,7 +109,7 @@ public class Grapher2 implements EntryPoint {
 
 			// Now initialize the plot
 			if ("zeo".equals(chartType)) {
-				plot = new ZeoDataPlot(gw, time, value, deviceName,
+				plot = new ZeoDataPlot(gw, timeAxis, value, deviceName,
 					channelName, baseUrl, minLevel);
 				temporaryPlots.add(0, plot);
 				publisher.publishChannelColor(deviceChanName,
@@ -121,7 +118,7 @@ public class Grapher2 implements EntryPoint {
 				// baseUrl should be /photos/:user_id/ for photos
 				baseUrl = "/photos/" + userId + "/";
 
-				plot = new PhotoDataPlot(gw, time,
+				plot = new PhotoDataPlot(gw, timeAxis,
 					new PhotoGraphAxis(deviceChanName, yAxisWidth),
 					deviceName, channelName,
 					baseUrl, userId, minLevel);
@@ -131,13 +128,12 @@ public class Grapher2 implements EntryPoint {
 					PHOTO_COLOR_STRING);
 			} else {
 				Color color = DATA_PLOT_COLORS[i % DATA_PLOT_COLORS.length];
-
-				plot = new DataPlot(gw, time, value, deviceName,
-					channelName, baseUrl, minLevel, color, true);
+				plot = buildDataPlot(deviceName, channelName,
+					baseUrl, color);
 				temporaryPlots.add(plot);
 
 				publisher.publishChannelColor(deviceChanName,
-					Canvas.friendlyName(color));
+					Canvas.friendlyName(plot.getColor()));
 			}
 		}
 
@@ -149,6 +145,37 @@ public class Grapher2 implements EntryPoint {
 		}
 
 		gw.paint();
+	}
+
+	private double getYAxisWidth() {
+		return getAxisMargin() * 3;
+	}
+
+	private GraphAxis getValueAxis(String deviceChanName) {
+		double initialMin = getInitialMin(deviceChanName);
+		double initialMax = getInitialMax(deviceChanName);
+
+		return new GraphAxis(deviceChanName,
+			initialMin > -1e300 ? initialMin : -1,
+			initialMax > -1e300 ? initialMax : 1,
+			Basis.xRightYUp,
+			getYAxisWidth(),
+			false);
+	}
+
+	public final DataPlot buildDataPlot(String deviceName,
+			String channelName) {
+		return buildDataPlot(deviceName,
+			channelName,
+			DataPlot.buildBaseUrl(userId, deviceName, channelName),
+			Canvas.DEFAULT_COLOR);
+	}
+
+	public final DataPlot buildDataPlot(String deviceName,
+			String channelName, String baseUrl, Color color) {
+		return new DataPlot(gw, timeAxis,
+			getValueAxis(DataPlot.getDeviceChanName(deviceName, channelName)),
+			deviceName, channelName, baseUrl, getMinLevel(), color, true);
 	}
 
 	/**
