@@ -219,7 +219,7 @@ public final class GrapherTile {
 				@Override
 				public void onResponseReceived(Request request,
 						Response response) {
-					if (response.getStatusCode() == 200) {
+					if (isSuccessful(response)) {
 						GrapherTile successTile = new GrapherTile(url,
 							level,
 							offset,
@@ -234,6 +234,28 @@ public final class GrapherTile {
 		} catch (RequestException e) {
 			callback.onFailure(failureTile);
 		}
+	}
+
+	/**
+	 * Returns <tt>true</tt> if and only if response should be
+	 * considered a success.
+	 *
+	 * @param response
+	 * 		the response to check
+	 * @return
+	 * 		<tt>true</tt> if and only if response should be considered
+	 * 		to be successful and thus a container of useful content
+	 * @throws NullPointerException
+	 * 		if response is <tt>null</tt>
+	 */
+	public static boolean isSuccessful(Response response) {
+		if (response == null)
+			throw new NullPointerException("Can't check a null response");
+
+		int sc = response.getStatusCode();
+
+		// Anything in the 200 range, or a 304, is considered a success
+		return (sc >= 200 && sc < 300) || sc == 304;
 	}
 
 	/**
