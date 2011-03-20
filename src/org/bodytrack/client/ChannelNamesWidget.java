@@ -22,7 +22,9 @@ import com.google.gwt.json.client.JSONString;
 import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.DisclosurePanel;
+import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.Widget;
 
 /**
  * A panel that offers a way to show the current channel names available to
@@ -261,6 +263,10 @@ public class ChannelNamesWidget extends VerticalPanel
 	private DisclosurePanel buildSingleDevicePanel(String deviceName,
 			List<String> channelNames, ValueChangeHandler<Boolean> handler) {
 		DisclosurePanel result = new DisclosurePanel(deviceName);
+		result.add(new VerticalPanel());
+		// We can only add 1 widget directly to a DisclosurePanel,
+		// so we use a second panel to allow multiple check boxes
+		// on one DisclosurePanel
 
 		for (String name: channelNames)
 			addChannelToDisclosurePanel(result, deviceName, name, handler);
@@ -298,7 +304,12 @@ public class ChannelNamesWidget extends VerticalPanel
 		checkBoxes.put(box, channelNamePair);
 		handlerRegs.put(box, reg);
 
-		panel.add(box);
+		Widget innerWidget = panel.getContent();
+		if (innerWidget instanceof Panel)
+			((Panel) innerWidget).add(box);
+		// We can only add 1 widget directly to a DisclosurePanel,
+		// so we use a second panel to allow multiple check boxes
+		// on one DisclosurePanel
 	}
 
 	// TODO: COMMENT
