@@ -258,6 +258,8 @@ public class DataPlot implements Alertable<GrapherTile> {
 	 * 		together
 	 */
 	// TODO: Rename to a more useful name
+	// TODO: Move this to StringPair, then refactor StringPair to have
+	// a different name
 	public static String getDeviceChanName(String deviceName,
 			String channelName) {
 		if (deviceName == null)

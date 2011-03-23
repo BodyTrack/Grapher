@@ -1,7 +1,5 @@
 package org.bodytrack.client;
 
-import gwt.g2d.client.graphics.Color;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,18 +12,12 @@ import com.google.gwt.user.client.ui.VerticalPanel;
  * Entry point classes define <code>onModuleLoad()</code>.
  */
 public class Grapher2 implements EntryPoint {
+	// Values that don't make sense in standalone mode
 	private VerticalPanel mainLayout;
 	private GraphWidget gw;
-	private GraphAxis timeAxis;
 	private List<DataPlot> plots;
-	private int userId;
+	private DataPlotFactory factory;
 
-	private static final Color[] DATA_PLOT_COLORS = {Canvas.BLACK,
-													Canvas.GREEN,
-													Canvas.BLUE,
-													Canvas.RED,
-													Canvas.GRAY,
-													Canvas.YELLOW};
 	private static final String ZEO_COLOR_STRING = "ZEO";
 	private static final String PHOTO_COLOR_STRING = "PHOTO";
 
@@ -44,7 +36,7 @@ public class Grapher2 implements EntryPoint {
 			CurrentChannelsWidget currentChans =
 				new CurrentChannelsWidget(mgr);
 			ChannelNamesWidget allChans =
-				new ChannelNamesWidget(mgr, userId, this);
+				new ChannelNamesWidget(mgr, factory);
 
 			mainLayout.add(gw);
 			mainLayout.add(currentChans);
@@ -65,21 +57,11 @@ public class Grapher2 implements EntryPoint {
 
 		gw = new GraphWidget(getGrapherWidth(),
 			getGrapherHeight(), axisMargin);
-
-		timeAxis = new TimeGraphAxis(
-			getInitialStartTime(),
-			getInitialEndTime(),
-			Basis.xDownYRight,
-			axisMargin * 7,
-			true);
+		factory = DataPlotFactory.getInstance(gw);
 
 		plots = new ArrayList<DataPlot>();
 
-		userId = getUserId();
 		JsArrayString channels = getChannelNames();
-		int minLevel = getMinLevel();
-
-		double yAxisWidth = getYAxisWidth();
 
 		// This is used to ensure the plots are added in the
 		// right order (Zeo first, default type last)
@@ -88,48 +70,37 @@ public class Grapher2 implements EntryPoint {
 		for (int i = 0; i < channels.length(); i++) {
 			String deviceChanName = channels.get(i);
 
-			GraphAxis value = getValueAxis(deviceChanName);
-
 			DataPlot plot;
 			String chartType = getChartType(channels.get(i)).toLowerCase();
 
 			// Pull out the device name, channel name, and base URL
-			String baseUrl, deviceName, channelName;
+			String deviceName, channelName;
 			int dotIndex = deviceChanName.indexOf('.');
 			if (dotIndex > 0) {
 				deviceName = deviceChanName.substring(0, dotIndex);
 				channelName = deviceChanName.substring(dotIndex + 1);
-				baseUrl = DataPlot.buildBaseUrl(userId,
-					deviceName, channelName);
 			} else {
-				baseUrl = "/tiles/" + userId + "/" + deviceChanName + "/";
 				deviceName = "";
 				channelName = deviceChanName;
 			}
 
 			// Now initialize the plot
 			if ("zeo".equals(chartType)) {
-				plot = new ZeoDataPlot(gw, timeAxis, value, deviceName,
-					channelName, baseUrl, minLevel);
+				plot = factory.buildZeoPlot(
+					deviceName, channelName);
 				temporaryPlots.add(0, plot);
 				publisher.publishChannelColor(deviceChanName,
 					ZEO_COLOR_STRING);
 			} else if ("photo".equals(chartType)) {
-				// baseUrl should be /photos/:user_id/ for photos
-				baseUrl = "/photos/" + userId + "/";
-
-				plot = new PhotoDataPlot(gw, timeAxis,
-					new PhotoGraphAxis(deviceChanName, yAxisWidth),
-					deviceName, channelName,
-					baseUrl, userId, minLevel);
+				plot = factory.buildPhotoPlot(
+					deviceName, channelName);
 				temporaryPlots.add(plot);
 
 				publisher.publishChannelColor(deviceChanName,
 					PHOTO_COLOR_STRING);
 			} else {
-				Color color = DATA_PLOT_COLORS[i % DATA_PLOT_COLORS.length];
-				plot = buildDataPlot(deviceName, channelName,
-					baseUrl, color);
+				plot = factory.buildDataPlot(
+					deviceName, channelName);
 				temporaryPlots.add(plot);
 
 				publisher.publishChannelColor(deviceChanName,
@@ -145,37 +116,6 @@ public class Grapher2 implements EntryPoint {
 		}
 
 		gw.paint();
-	}
-
-	private double getYAxisWidth() {
-		return getAxisMargin() * 3;
-	}
-
-	private GraphAxis getValueAxis(String deviceChanName) {
-		double initialMin = getInitialMin(deviceChanName);
-		double initialMax = getInitialMax(deviceChanName);
-
-		return new GraphAxis(deviceChanName,
-			initialMin > -1e300 ? initialMin : -1,
-			initialMax > -1e300 ? initialMax : 1,
-			Basis.xRightYUp,
-			getYAxisWidth(),
-			false);
-	}
-
-	public final DataPlot buildDataPlot(String deviceName,
-			String channelName) {
-		return buildDataPlot(deviceName,
-			channelName,
-			DataPlot.buildBaseUrl(userId, deviceName, channelName),
-			Canvas.DEFAULT_COLOR);
-	}
-
-	public final DataPlot buildDataPlot(String deviceName,
-			String channelName, String baseUrl, Color color) {
-		return new DataPlot(gw, timeAxis,
-			getValueAxis(DataPlot.getDeviceChanName(deviceName, channelName)),
-			deviceName, channelName, baseUrl, getMinLevel(), color, true);
 	}
 
 	/**
@@ -240,14 +180,14 @@ public class Grapher2 implements EntryPoint {
 	 * Returns the starting time of this grapher widget, or one hour
 	 * prior to the current time if that cannot be determined.
 	 *
-	 * Uses the init_min_time field in the return value of
-	 * window.initializeGrapher() if possible.
+	 * <p>Uses the init_min_time field in the return value of
+	 * window.initializeGrapher() if possible.</p>
 	 *
 	 * @return
 	 * 		the time, in seconds, which should be used for the
 	 * 		start time of the grapher
 	 */
-	private native double getInitialStartTime() /*-{
+	static native double getInitialStartTime() /*-{
 		// Equal to the current time, minus one hour
 		var DEFAULT_VALUE = ((new Date()).valueOf() / 1000.0) - 3600.0;
 		var KEY = "init_min_time";
@@ -276,7 +216,7 @@ public class Grapher2 implements EntryPoint {
 	 * 		the time, in seconds, which should be used for the
 	 * 		initial end time of the grapher
 	 */
-	private native double getInitialEndTime() /*-{
+	static native double getInitialEndTime() /*-{
 		// Equal to the current time
 		var DEFAULT_VALUE = (new Date()).valueOf() / 1000.0;
 		var KEY = "init_max_time";
@@ -329,16 +269,16 @@ public class Grapher2 implements EntryPoint {
 	 * Returns the user ID of the current user, or 0 if the
 	 * user's ID cannot be determined.
 	 *
-	 * Calls the window.initializeGrapher() function from JavaScript,
+	 * <p>Calls the window.initializeGrapher() function from JavaScript,
 	 * and checks the return value for a user_id key.  If such
 	 * a key is found, returns the value (which is an integer)
-	 * corresponding to that key.  Otherwise, returns 0.
+	 * corresponding to that key.  Otherwise, returns 0.</p>
 	 *
 	 * @return
 	 * 		the integer user id of the current user, as determined
 	 * 		from the return value of window.initializeGrapher()
 	 */
-	private native int getUserId() /*-{
+	static native int getUserId() /*-{
 		var DEFAULT_VALUE = 0;
 		var KEY = "user_id";
 
@@ -389,10 +329,10 @@ public class Grapher2 implements EntryPoint {
 	 * Returns the height the grapher should be, or 400 if that parameter
 	 * is missing or cannot be determined.
 	 *
-	 * Calls the window.initializeGrapher() function from JavaScript,
+	 * <p>Calls the window.initializeGrapher() function from JavaScript,
 	 * and checks the return value for a widget_height key.  If such
 	 * a key is found, returns the value (which is an integer)
-	 * corresponding to that key.  Otherwise, returns 400.
+	 * corresponding to that key.  Otherwise, returns 400.</p>
 	 *
 	 * @return
 	 * 		the integer height to use for the grapher, as determined
@@ -419,16 +359,16 @@ public class Grapher2 implements EntryPoint {
 	 * Returns the axis margin the page says the grapher should use, or
 	 * 10 if that parameter is missing or cannot be determined.
 	 *
-	 * Calls the window.initializeGrapher() function from JavaScript,
+	 * <p>Calls the window.initializeGrapher() function from JavaScript,
 	 * and checks the return value for an axis_margin key.  If such
 	 * a key is found, returns the value (which is an integer)
-	 * corresponding to that key.  Otherwise, returns 10.
+	 * corresponding to that key.  Otherwise, returns 10.</p>
 	 *
 	 * @return
 	 * 		the integer axis margin to use for the grapher, as determined
 	 * 		from the return value of window.initializeGrapher()
 	 */
-	private native int getAxisMargin() /*-{
+	static native int getAxisMargin() /*-{
 		var DEFAULT_VALUE = 10;
 		var KEY = "axis_margin";
 
@@ -449,14 +389,14 @@ public class Grapher2 implements EntryPoint {
 	 * Returns the minimum value for the axes when the channel
 	 * channelName is showing.
 	 *
-	 * Uses the channel_specs field in the return value of
-	 * window.initializeGrapher() if possible, and -1e308 otherwise.
+	 * <p>Uses the channel_specs field in the return value of
+	 * window.initializeGrapher() if possible, and -1e308 otherwise.</p>
 	 *
 	 * @return
 	 * 		the Y-value to show as the initial minimum of the
 	 * 		plot for the data
 	 */
-	private native double getInitialMin(String channelName) /*-{
+	static native double getInitialMin(String channelName) /*-{
 		var DEFAULT_VALUE = -1e308;
 		var KEY_1 = "channel_specs";
 		var KEY_2 = "min_val";
@@ -479,14 +419,14 @@ public class Grapher2 implements EntryPoint {
 	 * Returns the maximum value for the axes when the channel
 	 * channelName is showing.
 	 *
-	 * Uses the channel_specs field in the return value of
-	 * window.initializeGrapher() if possible, and -1e308 otherwise.
+	 * <p>Uses the channel_specs field in the return value of
+	 * window.initializeGrapher() if possible, and -1e308 otherwise.</p>
 	 *
 	 * @return
 	 * 		the Y-value to show as the initial maximum of the
 	 * 		plot for the data
 	 */
-	private native double getInitialMax(String channelName) /*-{
+	static native double getInitialMax(String channelName) /*-{
 		var DEFAULT_VALUE = -1e308;
 		var KEY_1 = "channel_specs";
 		var KEY_2 = "max_val";
@@ -544,7 +484,7 @@ public class Grapher2 implements EntryPoint {
 	 * @return
 	 * 		the supplied min_level, or -20 if no such value exists
 	 */
-	private native int getMinLevel() /*-{
+	static native int getMinLevel() /*-{
 		var DEFAULT_VALUE = -1000;
 		var KEY = "min_level";
 

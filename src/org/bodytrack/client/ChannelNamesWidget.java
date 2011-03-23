@@ -34,7 +34,7 @@ public class ChannelNamesWidget extends VerticalPanel
 		implements ChannelChangedListener {
 	private final ChannelManager visible; // Channels currently on the grapher
 	private final String devicesUrl;
-	private final Grapher2 channelGenerator;
+	private final DataPlotFactory channelGenerator;
 
 	private final Map<String, DisclosurePanel> devices;
 	private final Map<CheckBox, StringPair> checkBoxes;
@@ -55,22 +55,20 @@ public class ChannelNamesWidget extends VerticalPanel
 	 * @param mgr
 	 * 		the {@link org.bodytrack.client.ChannelManager ChannelManager}
 	 * 		that holds the list of channels on the grapher at any time
-	 * @param userId
-	 * 		the ID of the current user
 	 * @param channelGenerator
-	 * 		the <tt>Grapher2</tt> that can be used to generate a new
-	 * 		<tt>DataPlot</tt> to add to the grapher
+	 * 		some <tt>DataPlotFactory</tt> that can be used to generate
+	 * 		a new <tt>DataPlot</tt> to add to the grapher
 	 * @throws NullPointerException
 	 * 		if mgr or channelGenerator is <tt>null</tt>
 	 */
-	public ChannelNamesWidget(ChannelManager mgr, int userId,
-			Grapher2 channelGenerator) {
+	public ChannelNamesWidget(ChannelManager mgr,
+			DataPlotFactory channelGenerator) {
 		if (mgr == null || channelGenerator == null)
 			throw new NullPointerException(
 				"Cannot use null value to initialize ChannelNamesWidget");
 
 		visible = mgr;
-		devicesUrl = buildDevicesUrl(userId);
+		devicesUrl = buildDevicesUrl(channelGenerator.getUserId());
 		this.channelGenerator = channelGenerator;
 
 		devices = new HashMap<String, DisclosurePanel>();
