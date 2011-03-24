@@ -87,9 +87,27 @@ public final class DataPlotFactory {
 		return userId;
 	}
 
-	// TODO: COMMENT
+	/**
+	 * Builds a new {@link org.bodytrack.client.DataPlot DataPlot}
+	 * with the specified device and channel name.
+	 *
+	 * @param deviceName
+	 * 		the name of the device from which this channel came
+	 * @param channelName
+	 * 		the name of this channel on the device
+	 * @return
+	 * 		a <tt>DataPlot</tt> with the specified device and channel
+	 * 		name, ready to add to the graph widget used by this
+	 * 		factory
+	 * @throws NullPointerException
+	 * 		if deviceName or channelName is <tt>null</tt>
+	 */
 	public DataPlot buildDataPlot(String deviceName,
 			String channelName) {
+		if (deviceName == null || channelName == null)
+			throw new NullPointerException(
+				"Cannot build plot with null name");
+
 		Color color =
 			DATA_PLOT_COLORS[numCreatedPlots % DATA_PLOT_COLORS.length];
 		numCreatedPlots++;
@@ -103,8 +121,26 @@ public final class DataPlotFactory {
 				deviceName, channelName, baseUrl, minLevel, color, true);
 	}
 
-	// TODO: COMMENT
+	/**
+	 * Builds a new {@link org.bodytrack.client.ZeoDataPlot ZeoDataPlot}
+	 * with the specified device and channel name.
+	 *
+	 * @param deviceName
+	 * 		the name of the device from which this channel came
+	 * @param channelName
+	 * 		the name of this channel on the device
+	 * @return
+	 * 		a <tt>ZeoDataPlot</tt> with the specified device and channel
+	 * 		name, ready to add to the graph widget used by this
+	 * 		factory
+	 * @throws NullPointerException
+	 * 		if deviceName or channelName is <tt>null</tt>
+	 */
 	public ZeoDataPlot buildZeoPlot(String deviceName, String channelName) {
+		if (deviceName == null || channelName == null)
+			throw new NullPointerException(
+				"Cannot build plot with null name");
+
 		String baseUrl = DataPlot.buildBaseUrl(userId,
 			deviceName, channelName);
 		return new ZeoDataPlot(widget, timeAxis,
@@ -112,8 +148,27 @@ public final class DataPlotFactory {
 			deviceName, channelName, baseUrl, minLevel);
 	}
 
-	// TODO: COMMENT
-	public PhotoDataPlot buildPhotoPlot(String deviceName, String channelName) {
+	/**
+	 * Builds a new {@link org.bodytrack.client.PhotoDataPlot PhotoDataPlot}
+	 * with the specified device and channel name.
+	 *
+	 * @param deviceName
+	 * 		the name of the device from which this channel came
+	 * @param channelName
+	 * 		the name of this channel on the device
+	 * @return
+	 * 		a <tt>PhotoDataPlot</tt> with the specified device and
+	 * 		channel name, ready to add to the graph widget used by
+	 * 		this factory
+	 * @throws NullPointerException
+	 * 		if deviceName or channelName is <tt>null</tt>
+	 */
+	public PhotoDataPlot buildPhotoPlot(String deviceName,
+			String channelName) {
+		if (deviceName == null || channelName == null)
+			throw new NullPointerException(
+				"Cannot build plot with null name");
+
 		// baseUrl should be /photos/:user_id/ for photos
 		String baseUrl = "/photos/" + userId + "/";
 		String deviceChanName =
@@ -125,13 +180,25 @@ public final class DataPlotFactory {
 			baseUrl, userId, minLevel);
 	}
 
-	// TODO: COMMENT
-	private double getYAxisWidth() {
-		return axisMargin * 3;
-	}
-
-	// TODO: COMMENT
+	/**
+	 * Builds a new axis to use as the value axis for a plain
+	 * vanilla {@link org.bodytrack.client.DataPlot DataPlot}.
+	 *
+	 * @param deviceChanName
+	 * 		the deviceName.channelName representation of a
+	 * 		device and channel name
+	 * @return
+	 * 		a new {@link org.bodytrack.client.GraphAxis} available
+	 * 		to pass as a parameter to a <tt>DataPlot</tt>
+	 * 		constructor
+	 * @throws NullPointerException
+	 * 		if deviceChanName is <tt>null</tt>
+	 */
 	private GraphAxis getValueAxis(String deviceChanName) {
+		if (deviceChanName == null)
+			throw new NullPointerException(
+				"Can't build axis for null device and channel name");
+
 		double initialMin = Grapher2.getInitialMin(deviceChanName);
 		double initialMax = Grapher2.getInitialMax(deviceChanName);
 
@@ -141,5 +208,16 @@ public final class DataPlotFactory {
 			Basis.xRightYUp,
 			getYAxisWidth(),
 			false);
+	}
+
+	/**
+	 * Computes the width a Y-axis should be.
+	 *
+	 * @return
+	 * 		the width a Y-axis should be, based on the value of
+	 * 		axisMargin
+	 */
+	private double getYAxisWidth() {
+		return axisMargin * 3;
 	}
 }
