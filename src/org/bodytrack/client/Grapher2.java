@@ -29,6 +29,9 @@ public class Grapher2 implements EntryPoint {
 			RootPanel.get("graph").add(new BodyTrackWidget());
 		} else {		
 			mainLayout = new VerticalPanel();
+			// Ensure that everything on the page is the same
+			// width
+			mainLayout.setWidth((int) (getGrapherWidth()) + "px");
 
 			setupGraphWidget();
 

@@ -20,7 +20,7 @@ public class CurrentChannelsWidget extends FlowPanel
 	/**
 	 * The height of this widget.
 	 */
-	private static final String WIDGET_HEIGHT = "5em";
+	private static final String WIDGET_HEIGHT = "7em";
 
 	// The real job of this class is to make sure that
 	// channelMgr and channels stay in sync, and that everything
@@ -107,17 +107,7 @@ public class CurrentChannelsWidget extends FlowPanel
 		/**
 		 * The HTML that shows on the remove link.
 		 */
-		private static final String REMOVE_HTML =
-			"<span style=\"border: 1px solid blue\">X</span>";
-		// TODO: Set the HTML for remove to include a CSS class e.g.
-		// <span class="hyperlink-remove">X</span>
-		// Perhaps have this CSS put a box around the X, to make the
-		// look clear
-
-		/**
-		 * The width to use for one of these objects
-		 */
-		private static final String CHANNEL_LINK_WIDTH = "7em";
+		private static final String REMOVE_HTML = "X";
 
 		private final StringPair name;
 		private final HTML link;
@@ -142,12 +132,13 @@ public class CurrentChannelsWidget extends FlowPanel
 			this.name = name;
 			link = new HTML(getLinkString(), true);
 			remove = new Anchor(REMOVE_HTML, true);
+			remove.setStyleName("channelRemoveLink");
 			remove.addClickHandler(new RemoveHandler());
 
 			add(link);
 			add(remove);
 
-			setWidth(CHANNEL_LINK_WIDTH);
+			setStyleName("channelLinkFlow");
 		}
 
 		/**

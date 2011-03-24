@@ -57,3 +57,14 @@ h1 {
 #closeButton {
   margin: 15px 6px 6px;
 }
+
+.channelRemoveLink {
+	border: 1px solid blue;
+}
+
+.channelLinkFlow {
+	width: 8em;
+	margin-left: 1em;
+	margin-right: 1em;
+	display: inline-table;
+}
