@@ -32,8 +32,9 @@ public class ChannelManager {
 	private Map<GraphAxis, List<DataPlot>> unmodYAxisMap;
 	private Set<GraphAxis> unmodYAxes;
 
+	// There is some redundancy provided by this variable, but it
+	// does increase efficiency when dealing with channel names
 	private final Map<StringPair, DataPlot> channelMap;
-	// TODO: Provide getters for the following two objects
 	private Map<StringPair, DataPlot> unmodChannelMap;
 	private Set<StringPair> unmodChannels;
 
@@ -81,6 +82,31 @@ public class ChannelManager {
 	 */
 	public List<DataPlot> getDataPlots() {
 		return unmodDataPlots;
+	}
+
+	/**
+	 * Returns an unmodifiable view of the map from channel names
+	 * back to the plots that actually make those channels
+	 * available to the user.
+	 *
+	 * @return
+	 * 		a map from channel names to plots that graph those
+	 * 		channels
+	 */
+	public Map<StringPair, DataPlot> getChannelMap() {
+		return unmodChannelMap;
+	}
+
+	/**
+	 * Returns an unmodifiable view of the set of currently available
+	 * channel names.
+	 *
+	 * @return
+	 * 		an unmodifiable view of the set of names for all channels
+	 * 		currently held by this <tt>ChannelManager</tt>
+	 */
+	public Set<StringPair> getChannelNames() {
+		return unmodChannels;
 	}
 
 	/**
