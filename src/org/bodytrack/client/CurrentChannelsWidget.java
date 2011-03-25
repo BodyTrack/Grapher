@@ -18,9 +18,9 @@ import com.google.gwt.user.client.ui.HorizontalPanel;
 public class CurrentChannelsWidget extends FlowPanel
 		implements ChannelChangedListener {
 	/**
-	 * The height of this widget.
+	 * The CSS ID we will use for this widget.
 	 */
-	private static final String WIDGET_HEIGHT = "7em";
+	private static final String WIDGET_ID = "currentChannelsWidget";
 
 	// The real job of this class is to make sure that
 	// channelMgr and channels stay in sync, and that everything
@@ -43,7 +43,7 @@ public class CurrentChannelsWidget extends FlowPanel
 		for (DataPlot plot: channelMgr.getDataPlots())
 			channelAdded(plot.getDeviceName(), plot.getChannelName());
 
-		setHeight(WIDGET_HEIGHT);
+		getElement().setId(WIDGET_ID);
 		channelMgr.addChannelListener(this);
 	}
 

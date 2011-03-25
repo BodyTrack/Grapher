@@ -22,6 +22,7 @@ import com.google.gwt.json.client.JSONString;
 import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.DisclosurePanel;
+import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
@@ -29,8 +30,17 @@ import com.google.gwt.user.client.ui.Widget;
 /**
  * A panel that offers a way to show the current channel names available to
  * the user, not necessarily just the current channels that are showing.
+ *
+ * <p>This extends FlowPanel so that the surrounding page can change the
+ * layout of the devices on this panel, simply by using CSS.  The CSS class
+ * that is applied to the {@link com.google.gwt.user.client.ui.DisclosurePanel
+ * DisclosurePanel} objects representing individual devices is always
+ * &quot;gwt-DisclosurePanel&quot;.  Also, exactly one of
+ * &quot;gwt-DisclosurePanel-closed&quot; and
+ * &quot;gwt-DisclosurePanel-open&quot; is also applied, depending on the
+ * open/closed state of the panel.</p>
  */
-public class ChannelNamesWidget extends VerticalPanel
+public class ChannelNamesWidget extends FlowPanel
 		implements ChannelChangedListener {
 	private final ChannelManager visible; // Channels currently on the grapher
 	private final String devicesUrl;
