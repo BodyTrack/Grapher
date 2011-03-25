@@ -62,9 +62,27 @@ h1 {
 	border: 1px solid blue;
 }
 
+/* Items that show up below the grapher canvas itself and aid in adding
+and removing channels */
+
 .channelLinkFlow {
 	width: 8em;
 	margin-left: 1em;
 	margin-right: 1em;
 	display: inline-table;
+}
+
+table.channelLinkFlow td {
+    float: left;
+    margin-right: 0.5em;
+}
+
+table.gwt-DisclosurePanel {
+    float: left;
+    display: inline-table;
+}
+
+#currentChannelsWidget {
+    min-height: 3em;
+    margin-bottom: 0.75em;
 }
