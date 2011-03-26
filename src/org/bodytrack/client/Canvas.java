@@ -117,6 +117,7 @@ public final class Canvas {
 		result.surface = s;
 		result.renderer = new DirectShapeRenderer(result.surface);
 
+		instances.put(s, result);
 		return result;
 	}
 

@@ -1,5 +1,8 @@
 package org.bodytrack.client;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import gwt.g2d.client.graphics.Color;
 
 /**
@@ -8,9 +11,13 @@ import gwt.g2d.client.graphics.Color;
  *
  * <p>Objects of this class are mutable, so a caller should be careful to
  * keep only one of these objects available at once.</p>
+ *
+ * <p>This class is instance-controlled, meaning that, if a request
+ * is made to build a new <tt>DataPlotFactory</tt> using the
+ * {@link #getInstance(GraphWidget)} method, an existing
+ * <tt>DataPlotFactory</tt> for the supplied widget will be returned, if
+ * such a factory exists.</p>
  */
-// TODO: Switch to instance-controlled in the manner of Canvas, with
-// an internal static map that allows only one instance per GraphWidget
 public final class DataPlotFactory {
 	/**
 	 * The set of colors we use in our returned <tt>DataPlot</tt>
@@ -32,6 +39,12 @@ public final class DataPlotFactory {
 		ColorUtils.PURPLE,
 		ColorUtils.TEAL,
 		ColorUtils.OLIVE};
+
+	// Used for instance control
+	private static Map<GraphWidget, DataPlotFactory> instances;
+	static {
+		instances = new HashMap<GraphWidget, DataPlotFactory>();
+	}
 
 	private final GraphWidget widget;
 	private final double axisMargin;
@@ -72,9 +85,20 @@ public final class DataPlotFactory {
 	 * @return
 	 * 		a non-<tt>null</tt> ready-to-use <tt>DataPlotFactory</tt>
 	 * 		instance
+	 * @throws NullPointerException
+	 * 		if widget is <tt>null</tt>
 	 */
 	public static DataPlotFactory getInstance(GraphWidget widget) {
-		return new DataPlotFactory(widget);
+		if (widget == null)
+			throw new NullPointerException(
+				"Cannot use null widget to show plots");
+
+		if (instances.containsKey(widget))
+			return instances.get(widget);
+
+		DataPlotFactory result = new DataPlotFactory(widget);
+		instances.put(widget, result);
+		return result;
 	}
 
 	/**
