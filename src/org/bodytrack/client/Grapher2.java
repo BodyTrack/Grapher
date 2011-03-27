@@ -33,13 +33,18 @@ public class Grapher2 implements EntryPoint {
 			// width
 			mainLayout.setWidth((int) (getGrapherWidth()) + "px");
 
-			setupGraphWidget();
+			gw = new GraphWidget(getGrapherWidth(),
+					getGrapherHeight(), getAxisMargin());
+			factory = DataPlotFactory.getInstance(gw);
+			plots = new ArrayList<DataPlot>();
 
 			ChannelManager mgr = gw.getChannelManager();
 			CurrentChannelsWidget currentChans =
 				new CurrentChannelsWidget(mgr);
 			ChannelNamesWidget allChans =
 				new ChannelNamesWidget(mgr, factory);
+
+			setupGraphWidget();
 
 			mainLayout.add(gw);
 			mainLayout.add(currentChans);
@@ -55,14 +60,6 @@ public class Grapher2 implements EntryPoint {
 	private void setupGraphWidget() {
 		// Have to put this early
 		InfoPublisher publisher = InfoPublisher.getInstance();
-
-		int axisMargin = getAxisMargin();
-
-		gw = new GraphWidget(getGrapherWidth(),
-			getGrapherHeight(), axisMargin);
-		factory = DataPlotFactory.getInstance(gw);
-
-		plots = new ArrayList<DataPlot>();
 
 		JsArrayString channels = getChannelNames();
 
