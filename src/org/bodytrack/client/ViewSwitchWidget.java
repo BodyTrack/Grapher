@@ -2,18 +2,25 @@ package org.bodytrack.client;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.PushButton;
 
 /**
  * A widget that allows the user to switch between, add,
  * and modify views.
  */
 public class ViewSwitchWidget extends HorizontalPanel {
+	/**
+	 * The ID attribute of this element.  Note that this only
+	 * works properly if there is only one <tt>ViewSwitchWidget</tt>
+	 * per page.
+	 */
+	private static final String WIDGET_ID = "viewSwitchWidget";
+
 	private final ChannelManager channels;
 	private final ViewSwitchClickHandler clickHandler;
-	private final Button saveView;
-	private final Button restoreView;
+	private final PushButton saveView;
+	private final PushButton restoreView;
 
 	/**
 	 * Creates a new <tt>ViewSwitchWidget</tt>.
@@ -31,8 +38,13 @@ public class ViewSwitchWidget extends HorizontalPanel {
 
 		channels = mgr;
 		clickHandler = new ViewSwitchClickHandler();
-		saveView = new Button("Save", clickHandler);
-		restoreView = new Button("Restore", clickHandler);
+		saveView = new PushButton("Save", clickHandler);
+		restoreView = new PushButton("Restore", clickHandler);
+
+		getElement().setId(WIDGET_ID);
+
+		add(saveView);
+		add(restoreView);
 	}
 
 	/**
