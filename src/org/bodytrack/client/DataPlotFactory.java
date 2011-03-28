@@ -62,11 +62,11 @@ public final class DataPlotFactory {
 		widget = gw;
 
 		axisMargin = Grapher2.getAxisMargin();
-		userId = Grapher2.getUserId();
-		minLevel = Grapher2.getMinLevel();
+		userId = findUserId();
+		minLevel = getMinLevel();
 		timeAxis = new TimeGraphAxis(
-				Grapher2.getInitialStartTime(),
-				Grapher2.getInitialEndTime(),
+				getInitialStartTime(),
+				getInitialEndTime(),
 				Basis.xDownYRight,
 				axisMargin * 7,
 				true);
@@ -223,8 +223,8 @@ public final class DataPlotFactory {
 			throw new NullPointerException(
 				"Can't build axis for null device and channel name");
 
-		double initialMin = Grapher2.getInitialMin(deviceChanName);
-		double initialMax = Grapher2.getInitialMax(deviceChanName);
+		double initialMin = getInitialMin(deviceChanName);
+		double initialMax = getInitialMax(deviceChanName);
 
 		return new GraphAxis(deviceChanName,
 			initialMin > -1e300 ? initialMin : -1,
@@ -244,4 +244,175 @@ public final class DataPlotFactory {
 	private double getYAxisWidth() {
 		return axisMargin * 3;
 	}
+
+	/**
+	 * Returns the starting time of this grapher widget, or one hour
+	 * prior to the current time if that cannot be determined.
+	 *
+	 * <p>Uses the init_min_time field in the return value of
+	 * window.initializeGrapher() if possible.</p>
+	 *
+	 * @return
+	 * 		the time, in seconds, which should be used for the
+	 * 		start time of the grapher
+	 */
+	private static native double getInitialStartTime() /*-{
+		// Equal to the current time, minus one hour
+		var DEFAULT_VALUE = ((new Date()).valueOf() / 1000.0) - 3600.0;
+		var KEY = "init_min_time";
+
+		if (! $wnd.initializeGrapher) {
+			return DEFAULT_VALUE;
+		}
+
+		var data = $wnd.initializeGrapher();
+
+		if (! (data && data[KEY])) {
+			return DEFAULT_VALUE;
+		}
+
+		return data[KEY];
+	}-*/;
+
+	/**
+	 * Returns the starting time of this grapher widget, or the
+	 * current time if that cannot be determined.
+	 *
+	 * Uses the init_max_time field in the return value of
+	 * window.initializeGrapher() if possible.
+	 *
+	 * @return
+	 * 		the time, in seconds, which should be used for the
+	 * 		initial end time of the grapher
+	 */
+	private static native double getInitialEndTime() /*-{
+		// Equal to the current time
+		var DEFAULT_VALUE = (new Date()).valueOf() / 1000.0;
+		var KEY = "init_max_time";
+
+		if (! $wnd.initializeGrapher) {
+			return DEFAULT_VALUE;
+		}
+
+		var data = $wnd.initializeGrapher();
+
+		if (! (data && data[KEY])) {
+			return DEFAULT_VALUE;
+		}
+
+		return data[KEY];
+	}-*/;
+
+	/**
+	 * Returns the user ID of the current user, or 0 if the
+	 * user's ID cannot be determined.
+	 *
+	 * <p>Calls the window.initializeGrapher() function from JavaScript,
+	 * and checks the return value for a user_id key.  If such
+	 * a key is found, returns the value (which is an integer)
+	 * corresponding to that key.  Otherwise, returns 0.</p>
+	 *
+	 * @return
+	 * 		the integer user id of the current user, as determined
+	 * 		from the return value of window.initializeGrapher()
+	 */
+	private static native int findUserId() /*-{
+		var DEFAULT_VALUE = 0;
+		var KEY = "user_id";
+
+		if (! $wnd.initializeGrapher) {
+			return DEFAULT_VALUE;
+		}
+
+		var data = $wnd.initializeGrapher();
+
+		if (! (data && data[KEY])) {
+			return DEFAULT_VALUE;
+		}
+
+		return data[KEY];
+	}-*/;
+
+	/**
+	 * Returns the minimum value for the axes when the channel
+	 * channelName is showing.
+	 *
+	 * <p>Uses the channel_specs field in the return value of
+	 * window.initializeGrapher() if possible, and -1e308 otherwise.</p>
+	 *
+	 * @return
+	 * 		the Y-value to show as the initial minimum of the
+	 * 		plot for the data
+	 */
+	private static native double getInitialMin(String channelName) /*-{
+		var DEFAULT_VALUE = -1e308;
+		var KEY_1 = "channel_specs";
+		var KEY_2 = "min_val";
+
+		if (! $wnd.initializeGrapher) {
+			return DEFAULT_VALUE;
+		}
+
+		var data = $wnd.initializeGrapher();
+
+		if (! (data && data[KEY_1] && data[KEY_1][channelName]
+				&& data[KEY_1][channelName][KEY_2])) {
+			return DEFAULT_VALUE;
+		}
+
+		return data[KEY_1][channelName][KEY_2];
+	}-*/;
+
+	/**
+	 * Returns the maximum value for the axes when the channel
+	 * channelName is showing.
+	 *
+	 * <p>Uses the channel_specs field in the return value of
+	 * window.initializeGrapher() if possible, and -1e308 otherwise.</p>
+	 *
+	 * @return
+	 * 		the Y-value to show as the initial maximum of the
+	 * 		plot for the data
+	 */
+	private static native double getInitialMax(String channelName) /*-{
+		var DEFAULT_VALUE = -1e308;
+		var KEY_1 = "channel_specs";
+		var KEY_2 = "max_val";
+
+		if (! $wnd.initializeGrapher) {
+			return DEFAULT_VALUE;
+		}
+
+		var data = $wnd.initializeGrapher();
+
+		if (! (data && data[KEY_1] && data[KEY_1][channelName]
+				&& data[KEY_1][channelName][KEY_2])) {
+			return DEFAULT_VALUE;
+		}
+
+		return data[KEY_1][channelName][KEY_2];
+	}-*/;
+
+	/**
+	 * Returns the supplied min_level variable from window.initializeGrapher.
+	 *
+	 * @return
+	 * 		the supplied min_level, or -20 if no such value exists
+	 */
+	static native int getMinLevel() /*-{
+		var DEFAULT_VALUE = -1000;
+		var KEY = "min_level";
+
+		if (! $wnd.initializeGrapher) {
+			return DEFAULT_VALUE;
+		}
+
+		var data = $wnd.initializeGrapher();
+
+		if (! (data && data[KEY])) {
+			return DEFAULT_VALUE;
+		}
+
+		return data[KEY];
+	}-*/;
 }

@@ -39,6 +39,7 @@ public class Grapher2 implements EntryPoint {
 			plots = new ArrayList<DataPlot>();
 
 			ChannelManager mgr = gw.getChannelManager();
+			ViewSwitchWidget viewSwitcher = new ViewSwitchWidget(mgr);
 			CurrentChannelsWidget currentChans =
 				new CurrentChannelsWidget(mgr);
 			ChannelNamesWidget allChans =
@@ -46,6 +47,7 @@ public class Grapher2 implements EntryPoint {
 
 			setupGraphWidget();
 
+			mainLayout.add(viewSwitcher);
 			mainLayout.add(gw);
 			mainLayout.add(currentChans);
 			mainLayout.add(allChans);
@@ -71,7 +73,7 @@ public class Grapher2 implements EntryPoint {
 			String deviceChanName = channels.get(i);
 
 			DataPlot plot;
-			String chartType = getChartType(channels.get(i)).toLowerCase();
+			String chartType = getPlotType(channels.get(i)).toLowerCase();
 
 			// Pull out the device name, channel name, and base URL
 			String deviceName, channelName;
@@ -177,64 +179,6 @@ public class Grapher2 implements EntryPoint {
 	}-*/;
 
 	/**
-	 * Returns the starting time of this grapher widget, or one hour
-	 * prior to the current time if that cannot be determined.
-	 *
-	 * <p>Uses the init_min_time field in the return value of
-	 * window.initializeGrapher() if possible.</p>
-	 *
-	 * @return
-	 * 		the time, in seconds, which should be used for the
-	 * 		start time of the grapher
-	 */
-	static native double getInitialStartTime() /*-{
-		// Equal to the current time, minus one hour
-		var DEFAULT_VALUE = ((new Date()).valueOf() / 1000.0) - 3600.0;
-		var KEY = "init_min_time";
-
-		if (! $wnd.initializeGrapher) {
-			return DEFAULT_VALUE;
-		}
-
-		var data = $wnd.initializeGrapher();
-
-		if (! (data && data[KEY])) {
-			return DEFAULT_VALUE;
-		}
-
-		return data[KEY];
-	}-*/;
-
-	/**
-	 * Returns the starting time of this grapher widget, or the
-	 * current time if that cannot be determined.
-	 *
-	 * Uses the init_max_time field in the return value of
-	 * window.initializeGrapher() if possible.
-	 *
-	 * @return
-	 * 		the time, in seconds, which should be used for the
-	 * 		initial end time of the grapher
-	 */
-	static native double getInitialEndTime() /*-{
-		// Equal to the current time
-		var DEFAULT_VALUE = (new Date()).valueOf() / 1000.0;
-		var KEY = "init_max_time";
-
-		if (! $wnd.initializeGrapher) {
-			return DEFAULT_VALUE;
-		}
-
-		var data = $wnd.initializeGrapher();
-
-		if (! (data && data[KEY])) {
-			return DEFAULT_VALUE;
-		}
-
-		return data[KEY];
-	}-*/;
-
-	/**
 	 * Returns the list of channel names, or [&quot;foo.bar&quot;] if
 	 * the channel names cannot be determined.
 	 *
@@ -251,36 +195,6 @@ public class Grapher2 implements EntryPoint {
 	private native JsArrayString getChannelNames() /*-{
 		var DEFAULT_VALUE = ["foo.bar"];
 		var KEY = "channel_names";
-
-		if (! $wnd.initializeGrapher) {
-			return DEFAULT_VALUE;
-		}
-
-		var data = $wnd.initializeGrapher();
-
-		if (! (data && data[KEY])) {
-			return DEFAULT_VALUE;
-		}
-
-		return data[KEY];
-	}-*/;
-
-	/**
-	 * Returns the user ID of the current user, or 0 if the
-	 * user's ID cannot be determined.
-	 *
-	 * <p>Calls the window.initializeGrapher() function from JavaScript,
-	 * and checks the return value for a user_id key.  If such
-	 * a key is found, returns the value (which is an integer)
-	 * corresponding to that key.  Otherwise, returns 0.</p>
-	 *
-	 * @return
-	 * 		the integer user id of the current user, as determined
-	 * 		from the return value of window.initializeGrapher()
-	 */
-	static native int getUserId() /*-{
-		var DEFAULT_VALUE = 0;
-		var KEY = "user_id";
 
 		if (! $wnd.initializeGrapher) {
 			return DEFAULT_VALUE;
@@ -386,80 +300,20 @@ public class Grapher2 implements EntryPoint {
 	}-*/;
 
 	/**
-	 * Returns the minimum value for the axes when the channel
+	 * Returns the plot type that should be used when the channel
 	 * channelName is showing.
 	 *
 	 * <p>Uses the channel_specs field in the return value of
-	 * window.initializeGrapher() if possible, and -1e308 otherwise.</p>
-	 *
-	 * @return
-	 * 		the Y-value to show as the initial minimum of the
-	 * 		plot for the data
-	 */
-	static native double getInitialMin(String channelName) /*-{
-		var DEFAULT_VALUE = -1e308;
-		var KEY_1 = "channel_specs";
-		var KEY_2 = "min_val";
-
-		if (! $wnd.initializeGrapher) {
-			return DEFAULT_VALUE;
-		}
-
-		var data = $wnd.initializeGrapher();
-
-		if (! (data && data[KEY_1] && data[KEY_1][channelName]
-				&& data[KEY_1][channelName][KEY_2])) {
-			return DEFAULT_VALUE;
-		}
-
-		return data[KEY_1][channelName][KEY_2];
-	}-*/;
-
-	/**
-	 * Returns the maximum value for the axes when the channel
-	 * channelName is showing.
-	 *
-	 * <p>Uses the channel_specs field in the return value of
-	 * window.initializeGrapher() if possible, and -1e308 otherwise.</p>
-	 *
-	 * @return
-	 * 		the Y-value to show as the initial maximum of the
-	 * 		plot for the data
-	 */
-	static native double getInitialMax(String channelName) /*-{
-		var DEFAULT_VALUE = -1e308;
-		var KEY_1 = "channel_specs";
-		var KEY_2 = "max_val";
-
-		if (! $wnd.initializeGrapher) {
-			return DEFAULT_VALUE;
-		}
-
-		var data = $wnd.initializeGrapher();
-
-		if (! (data && data[KEY_1] && data[KEY_1][channelName]
-				&& data[KEY_1][channelName][KEY_2])) {
-			return DEFAULT_VALUE;
-		}
-
-		return data[KEY_1][channelName][KEY_2];
-	}-*/;
-
-	/**
-	 * Returns the chart type that should be used when the channel
-	 * channelName is showing.
-	 *
-	 * Uses the channel_specs field in the return value of
 	 * window.initializeGrapher() if possible, and returns
 	 * &quot;default&quot; otherwise (also returns &quot;default&quot;
 	 * if there is no type field in the channel_specs field for the
-	 * specified channel.
+	 * specified channel.</p>
 	 *
 	 * @return
 	 * 		the Y-value to show as the initial maximum of the
 	 * 		plot for the data
 	 */
-	private native String getChartType(String channelName) /*-{
+	private native String getPlotType(String channelName) /*-{
 		var DEFAULT_VALUE = "default";
 		var KEY_1 = "channel_specs";
 		var KEY_2 = "type";
@@ -476,28 +330,5 @@ public class Grapher2 implements EntryPoint {
 		}
 
 		return data[KEY_1][channelName][KEY_2];
-	}-*/;
-
-	/**
-	 * Returns the supplied min_level variable from window.initializeGrapher.
-	 *
-	 * @return
-	 * 		the supplied min_level, or -20 if no such value exists
-	 */
-	static native int getMinLevel() /*-{
-		var DEFAULT_VALUE = -1000;
-		var KEY = "min_level";
-
-		if (! $wnd.initializeGrapher) {
-			return DEFAULT_VALUE;
-		}
-
-		var data = $wnd.initializeGrapher();
-
-		if (! (data && data[KEY])) {
-			return DEFAULT_VALUE;
-		}
-
-		return data[KEY];
 	}-*/;
 }
