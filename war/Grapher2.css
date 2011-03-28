@@ -86,3 +86,17 @@ table.gwt-DisclosurePanel {
     min-height: 3em;
     margin-bottom: 0.75em;
 }
+
+#viewSwitchWidget div.gwt-PushButton {
+    border: 2px solid #DDD;
+    margin-right: 3px;
+    margin-left: 3px;
+    margin-bottom: 5px;
+    background: white;
+    color: blue;
+}
+
+#viewSwitchWidget div.gwt-PushButton-down-hovering {
+    border: 2px outset black;
+    background: #EEF;
+}
