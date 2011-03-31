@@ -91,9 +91,16 @@ table.gwt-DisclosurePanel {
     border: 2px solid #DDD;
     margin-right: 3px;
     margin-left: 3px;
+    margin-top: 3px;
     margin-bottom: 5px;
     background: white;
     color: blue;
+}
+
+.viewSavePopup input.gwt-TextBox, .viewSavePopup div.gwt-PushButton {
+    margin: 3px;
+    height: 1.2em;
+    padding-top: 0em;
 }
 
 #viewSwitchWidget div.gwt-PushButton-down-hovering,

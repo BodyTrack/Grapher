@@ -15,13 +15,12 @@ import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONParser;
 import com.google.gwt.json.client.JSONString;
 import com.google.gwt.json.client.JSONValue;
-import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.PushButton;
 import com.google.gwt.user.client.ui.TextBox;
+import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.PopupPanel.PositionCallback;
 
 /**
@@ -168,7 +167,12 @@ public class ViewSwitchWidget extends HorizontalPanel {
 		private final String currentView;
 		private final List<String> viewNames;
 
-		private final FlowPanel content;
+		private final VerticalPanel content;
+		// We know that the top panel of content will be a HorizontalPanel
+		// containing the saveName box on the left and the save button
+		// on the right.  The bottom panel of content will be devoted
+		// to viewNamesList
+
 		private final TextBox saveName;
 		private final PushButton save;
 		private final ListBox viewNamesList;
@@ -204,10 +208,17 @@ public class ViewSwitchWidget extends HorizontalPanel {
 
 			viewNamesList = new ListBox();
 
-			// Add all the content to the panel
-			content = new FlowPanel();
-			content.add(saveName);
-			content.add(save);
+			// Add all the controls to content - see the
+			// comments next to the declaration of content
+			// for the layout
+			HorizontalPanel topMatter = new HorizontalPanel();
+			topMatter.add(saveName);
+			topMatter.add(save);
+
+			content = new VerticalPanel();
+			content.add(topMatter);
+			// We will add viewNamesList whenever we create it
+
 			setWidget(content);
 			addStyleName(CLASS_NAME);
 
