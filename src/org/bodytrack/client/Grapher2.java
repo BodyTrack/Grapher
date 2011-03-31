@@ -39,7 +39,8 @@ public class Grapher2 implements EntryPoint {
 			plots = new ArrayList<DataPlot>();
 
 			ChannelManager mgr = gw.getChannelManager();
-			ViewSwitchWidget viewSwitcher = new ViewSwitchWidget(mgr);
+			ViewSwitchWidget viewSwitcher =
+				new ViewSwitchWidget(factory.getUserId(), mgr);
 			CurrentChannelsWidget currentChans =
 				new CurrentChannelsWidget(mgr);
 			ChannelNamesWidget allChans =
