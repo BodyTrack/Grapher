@@ -87,7 +87,7 @@ table.gwt-DisclosurePanel {
     margin-bottom: 0.75em;
 }
 
-#viewSwitchWidget div.gwt-PushButton {
+#viewSwitchWidget div.gwt-PushButton, .viewSavePopup div.gwt-PushButton {
     border: 2px solid #DDD;
     margin-right: 3px;
     margin-left: 3px;
@@ -96,7 +96,8 @@ table.gwt-DisclosurePanel {
     color: blue;
 }
 
-#viewSwitchWidget div.gwt-PushButton-down-hovering {
+#viewSwitchWidget div.gwt-PushButton-down-hovering,
+        .viewSavePopup div.gwt-PushButton-down-hovering {
     border: 2px outset black;
     background: #EEF;
 }

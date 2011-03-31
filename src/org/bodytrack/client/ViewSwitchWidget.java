@@ -155,6 +155,11 @@ public class ViewSwitchWidget extends HorizontalPanel {
 	 */
 	private class ViewSavePopup extends PopupPanel {
 		/**
+		 * The name of the CSS class on this widget.
+		 */
+		public static final String CLASS_NAME = "viewSavePopup";
+
+		/**
 		 * The maximum number of view names that will be visible to
 		 * the user at any time.
 		 */
@@ -165,7 +170,7 @@ public class ViewSwitchWidget extends HorizontalPanel {
 
 		private final FlowPanel content;
 		private final TextBox saveName;
-		private final Button save;
+		private final PushButton save;
 		private final ListBox viewNamesList;
 		// TODO: better variable name
 		// TODO: drop the viewNames variable as a list and just
@@ -179,7 +184,7 @@ public class ViewSwitchWidget extends HorizontalPanel {
 
 			saveName = new TextBox();
 
-			save = new Button("Save", new ClickHandler() {
+			save = new PushButton("Save", new ClickHandler() {
 				/**
 				 * Called whenever save is clicked.
 				 */
@@ -204,6 +209,7 @@ public class ViewSwitchWidget extends HorizontalPanel {
 			content.add(saveName);
 			content.add(save);
 			setWidget(content);
+			addStyleName(CLASS_NAME);
 
 			// Funny ordering because saveName.selectAll() only
 			// works when saveName is attached to the document
