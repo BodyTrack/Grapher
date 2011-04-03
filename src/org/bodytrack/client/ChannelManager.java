@@ -19,10 +19,14 @@ public class ChannelManager {
 	private final List<DataPlot> dataPlots;
 	private List<DataPlot> unmodDataPlots;
 
-	/* xAxisMap and yAxisMap provide the reverse mapping from
+	/*
+	 * xAxisMap and yAxisMap provide the reverse mapping from
 	 * dataPlots.get(i).getXAxis() and dataPlots.get(i).getYAxis().
 	 * They map from axes to sets of data plots associated with
 	 * those axes.
+	 *
+	 * An invariant is that each element of xAxisMap and yAxisMap
+	 * has at least one plot in dataPlots referencing it.
 	 */
 	private final Map<GraphAxis, List<DataPlot>> xAxisMap;
 	private Map<GraphAxis, List<DataPlot>> unmodXAxisMap;
@@ -359,6 +363,19 @@ public class ChannelManager {
 				"Can't fire events to null listener");
 
 		listeners.add(l);
+	}
+
+	/**
+	 * Clears the contents of this <tt>ChannelManager</tt>, except
+	 * for the listeners.
+	 *
+	 * <p>In other words, removes all channels from this
+	 * <tt>ChannelManager</tt>.  Additionally, the listeners are
+	 * notified about each change to the set of channels.</p>
+	 */
+	public void clear() {
+		while (dataPlots.size() > 0)
+			removeChannel(dataPlots.get(0));
 	}
 
 	/**

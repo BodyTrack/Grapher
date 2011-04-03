@@ -24,7 +24,8 @@ public final class PlottablePointTile extends JavaScriptObject {
 	protected PlottablePointTile() { }
 
 	/**
-	 * Returns a single GrapherTile, given a JSON string containing the data.
+	 * Returns a single PlottablePointTile, given a JSON string containing
+	 * the data.
 	 *
 	 * <h2 style="color: red">WARNING:</h2>
 	 *
@@ -41,7 +42,8 @@ public final class PlottablePointTile extends JavaScriptObject {
 	 * @param json
 	 * 		a JSON string containing data for a single tile
 	 * @return
-	 * 		a GrapherTile object with the same data as is found in json
+	 * 		a PlottablePointTile object with the same data as is found
+	 * 		in json
 	 */
 	public static native PlottablePointTile buildTile(String json) /*-{
 		eval("var tile = " + json);
