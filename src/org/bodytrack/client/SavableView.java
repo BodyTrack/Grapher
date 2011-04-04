@@ -1,6 +1,13 @@
 package org.bodytrack.client;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.bodytrack.client.ChannelManager.StringPair;
+
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.JsArray;
+import com.google.gwt.core.client.JsArrayString;
 
 /**
  * A class representing a view and the information that needs to be saved
@@ -27,6 +34,8 @@ import com.google.gwt.core.client.JavaScriptObject;
  * for the x-axis on that channel name.  Similarly, the y_axis key is a
  * pointer into the y_axes array.  In both cases, indices start at 0.</p>
  */
+// TODO: implement units and label fields for Y-axes, which are not
+// currently used or supported in the DataPlot and ChannelManager classes
 public class SavableView extends JavaScriptObject {
 	/* JavaScript overlay types always have protected empty constructors */
 	protected SavableView() {}
@@ -220,6 +229,60 @@ public class SavableView extends JavaScriptObject {
 				+ " cannot index into array of size " + countYAxes());
 
 		return getMaxValueUnchecked(yAxisIndex);
+	}
+
+	/**
+	 * Generates the list of channels in this <tt>SavableView</tt>.
+	 *
+	 * <p>Returns an array of arrays, where the outer array is the list of
+	 * channels, and each inner array represents a channel, with the first
+	 * element representing the device and the second representing the
+	 * channel name.</p>
+	 *
+	 * @return
+	 * 		the list of channel names in this <tt>SavableView</tt>
+	 */
+	private native JsArray<JsArrayString> getChannelNames() /*-{
+		var channelNames = [];
+		// The calls to hasOwnProperty filters out keys that come because
+		// of some function being grafted onto the JavaScript core
+		for (var device in keys(this.channels)) {
+			if (this.channels.hasOwnProperty(device)) {
+				var channeldict = this.channels[device];
+				for (var chan in keys(channeldict)) {
+					if (channeldict.hasOwnProperty(chan)) {
+						channelNames.push([device, chan]);
+					}
+				}
+			}
+		}
+		return channelNames;
+	}-*/;
+
+	/**
+	 * Generates a list of channels stored in this view.
+	 *
+	 * @return
+	 * 		a list of the channels stored in this view
+	 */
+	public List<StringPair> getChannels() {
+		List<StringPair> channels = new ArrayList<StringPair>();
+
+		JsArray<JsArrayString> channelNames = getChannelNames();
+
+		for (int i = 0; i < channelNames.length(); i++) {
+			JsArrayString rawChannel = channelNames.get(i);
+			// Silently ignore errors.  Not ideal, but probably the best
+			// for the user in the face of such a rare event
+			if (rawChannel.length() != 2)
+				continue;
+
+			String device = rawChannel.get(0);
+			String channel = rawChannel.get(1);
+			channels.add(new StringPair(device, channel));
+		}
+
+		return channels;
 	}
 
 	// TODO: implement getters for the remaining fields
