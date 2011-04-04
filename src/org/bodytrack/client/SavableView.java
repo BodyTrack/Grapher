@@ -6,19 +6,26 @@ import com.google.gwt.core.client.JavaScriptObject;
  * A class representing a view and the information that needs to be saved
  * or restored.
  *
- * <p>A <tt>SavableView</tt> is represented as a JSON dictionary.  One
+ * <p>A <tt>SavableView</tt> is represented as a JSON dictionary, with four
+ * required keys.  At the moment, all other keys are ignored, although future
+ * implementations may add more keys and use those keys.  The first required
  * required field is name, which has a non-null, nonempty string as its
  * value.  Another required field is x_axes, which has a list as its value.
  * Each element of this list should be a dictionary, with two keys, min_time
  * and max_time.  Each of these values is a number representing seconds
- * since the epoch.  A third required field is channels.  The value for
- * this should be a dictionary, with device names as keys.  Each device name
- * points to a nonempty dictionary, with channel names as keys.  Each
- * channel name points to a dictionary, with required keys x_axis, min_val,
- * and max_val.  The x_axis key has a nonnegative integer value, which
- * points to the index in x_axes to use for the x-axis on that channel name
- * (indices start at 0).  The min_val and max_val values should be numeric,
- * representing the axis bounds on the new channel's Y-axis.</p>
+ * since the epoch.  A third required field is y_axes, which has a list as
+ * its value.  Each element of the list should be a dictionary, with two
+ * required keys, min_val and max_val, and two optional keys, units and
+ * label.  The min_val and max_val values should be numbers representing
+ * the minimum and maximum bounds on the Y-axis, and the units and label
+ * values should be strings.  The final required field in the top-level
+ * dictionary is channels.  The value for this should be itself a
+ * dictionary, with device names as keys.  Each device name points to a
+ * nonempty dictionary, with channel names as keys.  Each channel name points
+ * to a dictionary, with required keys x_axis and y_axis. The x_axis key has
+ * a nonnegative integer value, which points to the index in x_axes to use
+ * for the x-axis on that channel name.  Similarly, the y_axis key is a
+ * pointer into the y_axes array.  In both cases, indices start at 0.</p>
  */
 public class SavableView extends JavaScriptObject {
 	/* JavaScript overlay types always have protected empty constructors */
@@ -68,6 +75,152 @@ public class SavableView extends JavaScriptObject {
 	public native int countXAxes() /*-{
 		return this.x_axes.length;
 	}-*/;
+
+	/**
+	 * Retrieves the min_time field from the X-axis at the specified
+	 * index.
+	 *
+	 * <p>Performs no checks on the index used.</p>
+	 *
+	 * @param xAxisIndex
+	 * 		the index of the axis for which to get the min time
+	 * @return
+	 * 		the min time of the X-axis at index xAxisIndex
+	 */
+	private native double getMinTimeUnchecked(int xAxisIndex) /*-{
+		return this.x_axes[xAxisIndex].min_time;
+	}-*/;
+
+	/**
+	 * Retrieves the minimum time from the X-axis at the specified index.
+	 *
+	 * @param xAxisIndex
+	 * 		the index of the X-axis for which to get the minimum time
+	 * @return
+	 * 		the minimum time for the X-axis at index xAxisIndex
+	 * @throws ArrayIndexOutOfBoundsException
+	 * 		if xAxisIndex is negative or greater than or equal to
+	 * 		the return value of {@link #countXAxes()}
+	 */
+	public double getMinTime(int xAxisIndex) {
+		if (xAxisIndex < 0 || xAxisIndex >= countXAxes())
+			throw new ArrayIndexOutOfBoundsException("Index " + xAxisIndex
+				+ " cannot index into array of size " + countXAxes());
+
+		return getMinTimeUnchecked(xAxisIndex);
+	}
+
+	/**
+	 * Retrieves the max_time field from the X-axis at the specified
+	 * index.
+	 *
+	 * <p>Performs no checks on the index used.</p>
+	 *
+	 * @param xAxisIndex
+	 * 		the index of the axis for which to get the max time
+	 * @return
+	 * 		the max time of the X-axis at index xAxisIndex
+	 */
+	private native double getMaxTimeUnchecked(int xAxisIndex) /*-{
+		return this.x_axes[xAxisIndex].max_time;
+	}-*/;
+
+	/**
+	 * Retrieves the maximum time from the X-axis at the specified index.
+	 *
+	 * @param xAxisIndex
+	 * 		the index of the X-axis for which to get the maximum time
+	 * @return
+	 * 		the maximum time for the X-axis at index xAxisIndex
+	 * @throws ArrayIndexOutOfBoundsException
+	 * 		if xAxisIndex is negative or greater than or equal to
+	 * 		the return value of {@link #countXAxes()}
+	 */
+	public double getMaxTime(int xAxisIndex) {
+		if (xAxisIndex < 0 || xAxisIndex >= countXAxes())
+			throw new ArrayIndexOutOfBoundsException("Index " + xAxisIndex
+				+ " cannot index into array of size " + countXAxes());
+
+		return getMaxTimeUnchecked(xAxisIndex);
+	}
+
+	/**
+	 * Returns the number of Y-axes for this object.
+	 *
+	 * @return
+	 * 		the number of Y-axes for this object
+	 */
+	public native int countYAxes() /*-{
+		return this.y_axes.length;
+	}-*/;
+
+	/**
+	 * Retrieves the min_val field from the Y-axis at the specified
+	 * index.
+	 *
+	 * <p>Performs no checks on the index used.</p>
+	 *
+	 * @param yAxisIndex
+	 * 		the index of the axis for which to get the min value
+	 * @return
+	 * 		the min value of the Y-axis at index yAxisIndex
+	 */
+	private native double getMinValueUnchecked(int yAxisIndex) /*-{
+		return this.y_axes[yAxisIndex].min_val;
+	}-*/;
+
+	/**
+	 * Retrieves the minimum value from the Y-axis at the specified index.
+	 *
+	 * @param yAxisIndex
+	 * 		the index of the Y-axis for which to get the minimum value
+	 * @return
+	 * 		the minimum time for the Y-axis at index yAxisIndex
+	 * @throws ArrayIndexOutOfBoundsException
+	 * 		if yAxisIndex is negative or greater than or equal to
+	 * 		the return value of {@link #countYAxes()}
+	 */
+	public double getMinValue(int yAxisIndex) {
+		if (yAxisIndex < 0 || yAxisIndex >= countYAxes())
+			throw new ArrayIndexOutOfBoundsException("Index " + yAxisIndex
+				+ " cannot index into array of size " + countYAxes());
+
+		return getMinValueUnchecked(yAxisIndex);
+	}
+
+	/**
+	 * Retrieves the max_val field from the Y-axis at the specified
+	 * index.
+	 *
+	 * <p>Performs no checks on the index used.</p>
+	 *
+	 * @param yAxisIndex
+	 * 		the index of the axis for which to get the max value
+	 * @return
+	 * 		the max value of the Y-axis at index yAxisIndex
+	 */
+	private native double getMaxValueUnchecked(int yAxisIndex) /*-{
+		return this.y_axes[yAxisIndex].max_val;
+	}-*/;
+
+	/**
+	 * Retrieves the maximum value from the Y-axis at the specified index.
+	 *
+	 * @param yAxisIndex
+	 * 		the index of the Y-axis for which to get the maximum value
+	 * @return
+	 * 		the maximum time for the Y-axis at index yAxisIndex
+	 * @throws ArrayIndexOutOfBoundsException
+	 * 		if yAxisIndex is negative or greater than or equal to
+	 * 		the return value of {@link #countYAxes()}
+	 */
+	public double getMaxValue(int yAxisIndex) {
+		if (yAxisIndex < 0 || yAxisIndex >= countYAxes())
+			throw new ArrayIndexOutOfBoundsException("Index " + yAxisIndex
+				+ " cannot index into array of size " + countYAxes());
+
+		return getMaxValueUnchecked(yAxisIndex);
+	}
 
 	// TODO: implement getters for the remaining fields
 	// TODO: implement conversion methods between a SavableView and
