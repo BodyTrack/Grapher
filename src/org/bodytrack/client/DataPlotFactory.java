@@ -18,6 +18,9 @@ import gwt.g2d.client.graphics.Color;
  * <tt>DataPlotFactory</tt> for the supplied widget will be returned, if
  * such a factory exists.</p>
  */
+// TODO: Major revamp to allow information for this factory to come in
+// from window.initializeGrapher OR from a view
+// TODO: Support outside axes for plots other than the standard DataPlot
 public final class DataPlotFactory {
 	/**
 	 * The set of colors we use in our returned <tt>DataPlot</tt>
@@ -126,11 +129,36 @@ public final class DataPlotFactory {
 	 * @throws NullPointerException
 	 * 		if deviceName or channelName is <tt>null</tt>
 	 */
-	public DataPlot buildDataPlot(String deviceName,
-			String channelName) {
+	public DataPlot buildDataPlot(String deviceName, String channelName) {
+		return buildDataPlot(deviceName, channelName, timeAxis,
+			getValueAxis(DataPlot.getDeviceChanName(deviceName, channelName)));
+	}
+
+	/**
+	 * Builds a new {@link org.bodytrack.client.DataPlot DataPlot}
+	 * with the specified device and channel names, and axes.
+	 *
+	 * @param deviceName
+	 * 		the name of the device from which this channel came
+	 * @param channelName
+	 * 		the name of this channel on the device
+	 * @param xAxis
+	 * 		the X-axis to use to build the plot
+	 * @param yAxis
+	 * 		the Y-axis to use to build the plot
+	 * @return
+	 * 		a <tt>DataPlot</tt> with the specified device and channel
+	 * 		name, ready to add to the graph widget used by this
+	 * 		factory
+	 * @throws NullPointerException
+	 * 		if any parameter is <tt>null</tt>
+	 */
+	public DataPlot buildDataPlot(String deviceName, String channelName,
+			GraphAxis xAxis, GraphAxis yAxis) {
 		if (deviceName == null || channelName == null)
-			throw new NullPointerException(
-				"Cannot build plot with null name");
+			throw new NullPointerException("Cannot build plot with null name");
+		if (deviceName == null || channelName == null)
+			throw new NullPointerException("Cannot build plot with null axis");
 
 		Color color =
 			DATA_PLOT_COLORS[numCreatedPlots % DATA_PLOT_COLORS.length];
@@ -139,10 +167,8 @@ public final class DataPlotFactory {
 		String baseUrl =
 			DataPlot.buildBaseUrl(userId, deviceName, channelName);
 
-		return new DataPlot(widget, timeAxis,
-				getValueAxis(
-					DataPlot.getDeviceChanName(deviceName, channelName)),
-				deviceName, channelName, baseUrl, minLevel, color, true);
+		return new DataPlot(widget, xAxis, yAxis, deviceName, channelName,
+			baseUrl, minLevel, color, true);
 	}
 
 	/**
