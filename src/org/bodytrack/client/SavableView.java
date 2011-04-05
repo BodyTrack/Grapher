@@ -112,33 +112,20 @@ public class SavableView extends JavaScriptObject {
 	}
 
 	/**
-	 * Returns a new, empty <tt>SavableView</tt>.
+	 * Converts this object into a
+	 * {@link org.bodytrack.client.ChannelManager ChannelManager}.
 	 *
+	 * @param widget
+	 * 		the widget on which the new plots should be drawn
 	 * @return
-	 * 		a new empty <tt>SavableView</tt>
+	 * 		a new <tt>ChannelManager</tt>
+	 * @throws NullPointerException
+	 * 		if widget is <tt>null</tt>
 	 */
-	//private static native SavableView newEmptyView() /*-{
-	//	return {};
-	//}-*/;
-
-	/**
-	 * The only way to mutate a <tt>SavableView</tt>.
-	 *
-	 * <p>This is designed only to be used when creating a new
-	 * <tt>SavableView</tt>, and not for any other purpose.</p>
-	 *
-	 * @param name
-	 * 		the name of the property to set
-	 * @param value
-	 * 		the value to use for that property
-	 */
-	// TODO: Will need a more general property setting method
-	// that handles arrays and dictionaries as well
-	//private native void setProperty(String name, String value) /*-{
-	//	this[name] = value;
-	//}-*/;
-
 	public ChannelManager getDataPlots(GraphWidget widget) {
+		if (widget == null)
+			throw new NullPointerException("Cannot draw on null widget");
+
 		int axisMargin = Grapher2.getAxisMargin();
 		DataPlotFactory factory = DataPlotFactory.getInstance(widget);
 		ChannelManager result = new ChannelManager();
