@@ -379,6 +379,25 @@ public class ChannelManager {
 	}
 
 	/**
+	 * Replaces all the channels of this with the channels of other.
+	 *
+	 * <p>This is a thread-unsafe method - any call in multithreaded
+	 * code must be externally synchronized to prevent any concurrent
+	 * changes to this or to other.  Then again, JavaScript is
+	 * single-threaded, which stops this problem.</p>
+	 *
+	 * @param other
+	 * 		the <tt>ChannelManager</tt> whose channels to use
+	 * 		for this
+	 */
+	public void replaceChannels(ChannelManager other) {
+		clear();
+
+		for (DataPlot plot: other.getDataPlots())
+			addChannel(plot);
+	}
+
+	/**
 	 * A simple class to hold an immutable pair of non-<tt>null</tt> strings.
 	 */
 	public static final class StringPair {
