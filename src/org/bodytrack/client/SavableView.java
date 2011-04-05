@@ -8,6 +8,10 @@ import org.bodytrack.client.ChannelManager.StringPair;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.JsArrayString;
+import com.google.gwt.json.client.JSONArray;
+import com.google.gwt.json.client.JSONNumber;
+import com.google.gwt.json.client.JSONObject;
+import com.google.gwt.json.client.JSONString;
 
 /**
  * A class representing a view and the information that needs to be saved
@@ -36,6 +40,7 @@ import com.google.gwt.core.client.JsArrayString;
  */
 // TODO: implement units and label fields for Y-axes, which are not
 // currently used or supported in the DataPlot and ChannelManager classes
+// TODO: firm up and comment current API
 public class SavableView extends JavaScriptObject {
 	/* JavaScript overlay types always have protected empty constructors */
 	protected SavableView() {}
@@ -64,6 +69,120 @@ public class SavableView extends JavaScriptObject {
 		eval("var view = " + json);
 		return view;
 	}-*/;
+
+	public static SavableView buildView(ChannelManager mgr, String name) {
+		List<GraphAxis> xAxes = new ArrayList<GraphAxis>(mgr.getXAxes());
+		List<GraphAxis> yAxes = new ArrayList<GraphAxis>(mgr.getYAxes());
+		List<DataPlot> plots = mgr.getDataPlots();
+
+		// SavableView result = newEmptyView();
+		// result.setProperty("name", name);
+		// Need to finish filling in the properties for result, perhaps
+		// building result as a JavaScriptObject or JSONValue and then
+		// making a final cast in the end
+
+		// Handle X-axes
+		JSONArray xAxesJson = new JSONArray();
+		for (int i = 0; i < xAxes.size(); i++) {
+			JSONObject axis = new JSONObject();
+			axis.put("min_value", new JSONNumber(xAxes.get(i).getMin()));
+			axis.put("max_value", new JSONNumber(xAxes.get(i).getMax()));
+			xAxesJson.set(i, axis);
+		}
+
+		// Handle Y-axes
+		// Don't set units or label
+		JSONArray yAxesJson = new JSONArray();
+		for (int i = 0; i < yAxes.size(); i++) {
+			JSONObject axis = new JSONObject();
+			axis.put("min_value", new JSONNumber(yAxes.get(i).getMin()));
+			axis.put("max_value", new JSONNumber(yAxes.get(i).getMax()));
+			yAxesJson.set(i, axis);
+		}
+
+		// TODO: Handle plots themselves
+
+		JSONObject result = new JSONObject();
+		result.put("name", new JSONString(name));
+		result.put("x_axes", xAxesJson);
+		result.put("y_axes", yAxesJson);
+		// TODO: Add plots
+
+		return buildView(result.toString());
+	}
+
+	/**
+	 * Returns a new, empty <tt>SavableView</tt>.
+	 *
+	 * @return
+	 * 		a new empty <tt>SavableView</tt>
+	 */
+	//private static native SavableView newEmptyView() /*-{
+	//	return {};
+	//}-*/;
+
+	/**
+	 * The only way to mutate a <tt>SavableView</tt>.
+	 *
+	 * <p>This is designed only to be used when creating a new
+	 * <tt>SavableView</tt>, and not for any other purpose.</p>
+	 *
+	 * @param name
+	 * 		the name of the property to set
+	 * @param value
+	 * 		the value to use for that property
+	 */
+	// TODO: Will need a more general property setting method
+	// that handles arrays and dictionaries as well
+	//private native void setProperty(String name, String value) /*-{
+	//	this[name] = value;
+	//}-*/;
+
+	public ChannelManager getDataPlots(GraphWidget widget) {
+		int axisMargin = Grapher2.getAxisMargin();
+		DataPlotFactory factory = DataPlotFactory.getInstance(widget);
+		ChannelManager result = new ChannelManager();
+
+		GraphAxis[] xAxes = generateXAxes(axisMargin);
+
+		for (StringPair channel: getChannels()) {
+			DataPlot plot = factory.buildDataPlot(channel.getFirst(),
+				channel.getSecond(),
+				xAxes[getXAxisIndex(channel.getFirst(), channel.getSecond())],
+				generateYAxis(channel, axisMargin));
+			result.addChannel(plot);
+		}
+
+		return result;
+	}
+
+	private GraphAxis[] generateXAxes(int axisMargin) {
+		GraphAxis[] xAxes = new GraphAxis[countXAxes()];
+
+		for (int i = 0; i < xAxes.length; i++)
+			xAxes[i] = new TimeGraphAxis(getMinTime(i),
+					getMaxTime(i),
+					Basis.xDownYRight,
+					axisMargin * 7,
+					true);
+
+		return xAxes;
+	}
+
+	private GraphAxis generateYAxis(StringPair channel,
+			int axisMargin) {
+		int yAxisIndex = getYAxisIndex(channel.getFirst(),
+			channel.getSecond());
+
+		return new GraphAxis(
+			DataPlot.getDeviceChanName(channel.getFirst(),
+				channel.getSecond()),
+			getMinValue(yAxisIndex),
+			getMaxValue(yAxisIndex),
+			Basis.xRightYUp,
+			axisMargin * 3,
+			false);
+	}
 
 	/**
 	 * Returns the name for this view.
@@ -380,7 +499,4 @@ public class SavableView extends JavaScriptObject {
 
 		return getYAxisIndexUnchecked(deviceName, channelName);
 	}
-
-	// TODO: implement conversion methods between a SavableView and
-	// a ChannelManager
 }
