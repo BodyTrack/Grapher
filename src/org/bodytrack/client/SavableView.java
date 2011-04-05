@@ -286,6 +286,26 @@ public class SavableView extends JavaScriptObject {
 	}
 
 	/**
+	 * Returns <tt>true</tt> if and only if this contains the specified
+	 * channel.
+	 *
+	 * @param deviceName
+	 * 		the device name we want to check
+	 * @param channelName
+	 * 		the channel name we want to check
+	 * @return
+	 * 		<tt>true</tt> if and only if this contains the specified channel.
+	 * 		If deviceName or channelName is <tt>null</tt>, automatically
+	 * 		returns <tt>false</tt>
+	 */
+	public native boolean hasChannel(String deviceName,
+			String channelName) /*-{
+		return (!! deviceName) && (!! channelName) && (!! this.channels) &&
+			(!! this.channels[deviceName]) &&
+			(!! this.channels[deviceName][channelName]);
+	}-*/;
+
+	/**
 	 * Retrieves the x_axis field from the specified channel.
 	 *
 	 * <p>Performs no checks on the key and value.</p>
@@ -316,13 +336,7 @@ public class SavableView extends JavaScriptObject {
 	 * 		return values of {@link #getChannels()}
 	 */
 	public int getXAxisIndex(String deviceName, String channelName) {
-		// TODO: Something that doesn't involve generating the
-		// set of channels every time
-
-		List<StringPair> channels = getChannels();
-		StringPair channel = new StringPair(deviceName, channelName);
-
-		if (! channels.contains(channel))
+		if (! hasChannel(deviceName, channelName))
 			throw new IllegalArgumentException(
 				"Cannot find index for channel that does not exist");
 
@@ -360,13 +374,7 @@ public class SavableView extends JavaScriptObject {
 	 * 		return values of {@link #getChannels()}
 	 */
 	public int getYAxisIndex(String deviceName, String channelName) {
-		// TODO: Something that doesn't involve generating the
-		// set of channels every time
-
-		List<StringPair> channels = getChannels();
-		StringPair channel = new StringPair(deviceName, channelName);
-
-		if (! channels.contains(channel))
+		if (! hasChannel(deviceName, channelName))
 			throw new IllegalArgumentException(
 				"Cannot find index for channel that does not exist");
 
