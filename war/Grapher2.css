@@ -62,9 +62,6 @@ h1 {
 	border: 1px solid blue;
 }
 
-/* Items that show up below the grapher canvas itself and aid in adding
-and removing channels */
-
 .channelLinkFlow {
 	width: 8em;
 	margin-left: 1em;
@@ -77,9 +74,19 @@ table.channelLinkFlow td {
     margin-right: 0.5em;
 }
 
-table.gwt-DisclosurePanel {
+/* Items that show up below the grapher canvas itself and aid in adding
+and removing channels */
+
+#graph table.gwt-DisclosurePanel {
     float: left;
     display: inline-table;
+}
+
+/* Oddly enough, GWT makes the background black when the user mouses
+ * over the disclosure panel.  This changes that to a light blue.
+ */
+#graph table.gwt-DisclosurePanel :hover {
+    background: #EEF;
 }
 
 #currentChannelsWidget {
