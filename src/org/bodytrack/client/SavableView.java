@@ -285,7 +285,94 @@ public class SavableView extends JavaScriptObject {
 		return channels;
 	}
 
-	// TODO: implement getters for the remaining fields
+	/**
+	 * Retrieves the x_axis field from the specified channel.
+	 *
+	 * <p>Performs no checks on the key and value.</p>
+	 *
+	 * @param deviceName
+	 * 		the device name for which we want the X-axis index
+	 * @param channelName
+	 * 		the channel name for which we want the X-axis index
+	 * @return
+	 * 		the X-axis index for the specified channel
+	 */
+	private native int getXAxisIndexUnchecked(String deviceName,
+			String channelName) /*-{
+		return this.channels[deviceName][channelName].x_axis;
+	}-*/;
+
+	/**
+	 * Returns the X-axis index for the specified channel.
+	 *
+	 * @param deviceName
+	 * 		the device name for which we want the X-axis index
+	 * @param channelName
+	 * 		the channel name for which we want the X-axis index
+	 * @return
+	 * 		the X-axis index for the specified channel
+	 * @throws IllegalArgumentException
+	 * 		if the specified channel is not an element of the
+	 * 		return values of {@link #getChannels()}
+	 */
+	public int getXAxisIndex(String deviceName, String channelName) {
+		// TODO: Something that doesn't involve generating the
+		// set of channels every time
+
+		List<StringPair> channels = getChannels();
+		StringPair channel = new StringPair(deviceName, channelName);
+
+		if (! channels.contains(channel))
+			throw new IllegalArgumentException(
+				"Cannot find index for channel that does not exist");
+
+		return getXAxisIndexUnchecked(deviceName, channelName);
+	}
+
+	/**
+	 * Retrieves the y_axis field from the specified channel.
+	 *
+	 * <p>Performs no checks on the key and value.</p>
+	 *
+	 * @param deviceName
+	 * 		the device name for which we want the Y-axis index
+	 * @param channelName
+	 * 		the channel name for which we want the Y-axis index
+	 * @return
+	 * 		the Y-axis index for the specified channel
+	 */
+	private native int getYAxisIndexUnchecked(String deviceName,
+			String channelName) /*-{
+		return this.channels[deviceName][channelName].y_axis;
+	}-*/;
+
+	/**
+	 * Returns the Y-axis index for the specified channel.
+	 *
+	 * @param deviceName
+	 * 		the device name for which we want the Y-axis index
+	 * @param channelName
+	 * 		the channel name for which we want the Y-axis index
+	 * @return
+	 * 		the Y-axis index for the specified channel
+	 * @throws IllegalArgumentException
+	 * 		if the specified channel is not an element of the
+	 * 		return values of {@link #getChannels()}
+	 */
+	public int getYAxisIndex(String deviceName, String channelName) {
+		// TODO: Something that doesn't involve generating the
+		// set of channels every time
+
+		List<StringPair> channels = getChannels();
+		StringPair channel = new StringPair(deviceName, channelName);
+
+		if (! channels.contains(channel))
+			throw new IllegalArgumentException(
+				"Cannot find index for channel that does not exist");
+
+		return getYAxisIndexUnchecked(deviceName, channelName);
+	}
+
 	// TODO: implement conversion methods between a SavableView and
 	// a ChannelManager
 }
