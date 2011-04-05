@@ -73,7 +73,6 @@ public class SavableView extends JavaScriptObject {
 	public static SavableView buildView(ChannelManager mgr, String name) {
 		List<GraphAxis> xAxes = new ArrayList<GraphAxis>(mgr.getXAxes());
 		List<GraphAxis> yAxes = new ArrayList<GraphAxis>(mgr.getYAxes());
-		List<DataPlot> plots = mgr.getDataPlots();
 
 		// SavableView result = newEmptyView();
 		// result.setProperty("name", name);
@@ -100,13 +99,36 @@ public class SavableView extends JavaScriptObject {
 			yAxesJson.set(i, axis);
 		}
 
-		// TODO: Handle plots themselves
+		// Handle the plots themselves
+		JSONObject plotsJson = new JSONObject();
+
+		// First, fill in the set of device names
+		for (StringPair channel: mgr.getChannelNames())
+			if (! plotsJson.containsKey(channel.getFirst()))
+				plotsJson.put(channel.getFirst(), new JSONObject());
+		// Now fill in the x_axis and y_axis fields for each device
+		for (DataPlot plot: mgr.getDataPlots()) {
+			String deviceName = plot.getDeviceName();
+			String channelName = plot.getChannelName();
+
+			JSONObject axisIndices = new JSONObject();
+			axisIndices.put("x_axis",
+				new JSONNumber(xAxes.indexOf(plot.getXAxis())));
+			axisIndices.put("y_axis",
+				new JSONNumber(yAxes.indexOf(plot.getYAxis())));
+
+			// We know this conversion is safe, since we just
+			// created the object in the previous loop
+			JSONObject deviceJson = plotsJson.get(deviceName).isObject();
+			if (deviceJson == null) continue; // Should never happen
+			deviceJson.put(channelName, axisIndices);
+		}
 
 		JSONObject result = new JSONObject();
 		result.put("name", new JSONString(name));
 		result.put("x_axes", xAxesJson);
 		result.put("y_axes", yAxesJson);
-		// TODO: Add plots
+		result.put("channels", plotsJson);
 
 		return buildView(result.toString());
 	}
@@ -118,7 +140,9 @@ public class SavableView extends JavaScriptObject {
 	 * @param widget
 	 * 		the widget on which the new plots should be drawn
 	 * @return
-	 * 		a new <tt>ChannelManager</tt>
+	 * 		a new <tt>ChannelManager</tt> that has plots for the
+	 * 		information contained in this <tt>SavableView</tt>, and
+	 * 		is attached to widget
 	 * @throws NullPointerException
 	 * 		if widget is <tt>null</tt>
 	 */
