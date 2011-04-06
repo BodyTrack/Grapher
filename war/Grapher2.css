@@ -85,7 +85,7 @@ and removing channels */
 /* Oddly enough, GWT makes the background black when the user mouses
  * over the disclosure panel.  This changes that to a light blue.
  */
-#graph table.gwt-DisclosurePanel :hover {
+#graph table.gwt-DisclosurePanel a.header :hover {
     background: #EEF;
 }
 
