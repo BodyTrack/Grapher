@@ -5,8 +5,6 @@ import java.util.List;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.KeyPressEvent;
-import com.google.gwt.event.dom.client.KeyPressHandler;
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.RequestCallback;
@@ -276,13 +274,17 @@ public class ViewSwitchWidget extends HorizontalPanel {
 		}
 
 		/**
-		 * Does exactly the same thing that show does for any other
+		 * Does exactly the same thing that setVisible does for any other
 		 * popup, along with handling highlighting in the text box
 		 * for this popup window.
 		 */
 		@Override
-		public void show() {
-			super.show();
+		public void setVisible(boolean visible) {
+			super.setVisible(visible);
+
+			// Only do something different when we become visible
+			if (! visible)
+				return;
 
 			// Funny ordering because saveName.selectAll() only
 			// works when saveName is attached to the document
@@ -297,17 +299,6 @@ public class ViewSwitchWidget extends HorizontalPanel {
 			// TODO: Add some kind of keyboard listener that fires
 			// a click event on the save button whenever Enter is
 			// pressed
-
-			// This is the next best thing
-			saveName.addKeyPressHandler(new KeyPressHandler() {
-				@Override
-				public void onKeyPress(KeyPressEvent event) {
-					if (event.getCharCode() == '\t') {
-						save.setFocus(true);
-						event.stopPropagation();
-					}
-				}
-			});
 		}
 	}
 
