@@ -200,17 +200,17 @@ public class ViewSwitchWidget extends HorizontalPanel {
 					builder.setHeader("Content-type",
 						"application/x-www-form-urlencoded");
 					try {
-						builder.setRequestData(URL.encode("name=" +
+						builder.sendRequest(URL.encode("name=" +
 							viewName + "&data=" +
-							new JSONObject(view).toString()));
-						builder.send();
+							new JSONObject(view).toString()),
+							new EmptyRequestCallback());
 						// Just ignore the return value
 						// TODO: Check the return value
 					} catch (RequestException e) {
 						// Nothing to do here
 					}
 
-					// Hid the popup
+					// Hide the popup
 					ViewSavePopup.this.hide();
 				}
 			});
@@ -331,6 +331,20 @@ public class ViewSwitchWidget extends HorizontalPanel {
 				}
 			}
 		}
+	}
+
+	/**
+	 * A class that represents an empty callback on a request.  Does
+	 * nothing, regardless of circumstances, so is useful for
+	 * situations in which we don't care about the server's return value.
+	 */
+	private static class EmptyRequestCallback implements RequestCallback {
+		@Override
+		public void onError(Request request, Throwable exception) { }
+
+		@Override
+		public void onResponseReceived(Request request,
+				Response response) { }
 	}
 
 	private class ViewRestorePopup extends PopupPanel {
