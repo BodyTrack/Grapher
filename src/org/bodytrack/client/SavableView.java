@@ -41,7 +41,7 @@ import com.google.gwt.json.client.JSONString;
 // TODO: implement units and label fields for Y-axes, which are not
 // currently used or supported in the DataPlot and ChannelManager classes
 // TODO: firm up and comment current API
-public class SavableView extends JavaScriptObject {
+public final class SavableView extends JavaScriptObject {
 	/* JavaScript overlay types always have protected empty constructors */
 	protected SavableView() {}
 
