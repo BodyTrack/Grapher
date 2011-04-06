@@ -164,10 +164,7 @@ public class ViewSwitchWidget extends HorizontalPanel {
 
 		private final TextBox saveName;
 		private final PushButton save;
-		private final ListBox viewNamesList;
-		// TODO: better variable name
-		// TODO: drop the viewNames variable as a list and just
-		// use the widget
+		private final ListBox viewNamesControl;
 
 		public ViewSavePopup(String currentView) {
 			super(true, true);
@@ -204,7 +201,6 @@ public class ViewSwitchWidget extends HorizontalPanel {
 							viewName + "&data=" +
 							new JSONObject(view).toString()),
 							new EmptyRequestCallback());
-						// Just ignore the return value
 						// TODO: Check the return value
 					} catch (RequestException e) {
 						// Nothing to do here
@@ -215,7 +211,7 @@ public class ViewSwitchWidget extends HorizontalPanel {
 				}
 			});
 
-			viewNamesList = new ListBox();
+			viewNamesControl = new ListBox();
 
 			// Add all the controls to content - see the
 			// comments next to the declaration of content
@@ -248,34 +244,14 @@ public class ViewSwitchWidget extends HorizontalPanel {
 		 * adds those view names to this popup window.
 		 */
 		private void loadViewNamesAndShow() {
-			// Send request to server and catch any errors.
-			RequestBuilder builder =
-				new RequestBuilder(RequestBuilder.GET, getViewNamesUrl());
-
-			try {
-				builder.sendRequest(null, new RequestCallback() {
+			retrieveViewNames(getViewNamesUrl(), viewNames,
+				new Alertable<Object>() {
 					@Override
-					public void onError(Request request,
-							Throwable exception) {
-						// Nothing to do in this case
-					}
+					public void onFailure(Object message) {	}
 
 					@Override
-					public void onResponseReceived(Request request,
-							Response response) {
-						if (GrapherTile.isSuccessful(response)) {
-							fillViewNames(response.getText());
-							showViewNames();
-						}
-					}
+					public void onSuccess(Object message) { showViewNames(); }
 				});
-			} catch (RequestException e) {
-				// Nothing to do here
-			}
-		}
-
-		private String getViewNamesUrl() {
-			return "/users/" + userId + "/views.json";
 		}
 
 		private String getViewWriteUrl() {
@@ -288,47 +264,103 @@ public class ViewSwitchWidget extends HorizontalPanel {
 				return;
 
 			for (String name: viewNames)
-				viewNamesList.addItem(name);
+				viewNamesControl.addItem(name);
 
-			viewNamesList.setVisibleItemCount(
+			viewNamesControl.setVisibleItemCount(
 				Math.min(MAX_VISIBLE_VIEW_NAMES, numViews));
-			content.add(viewNamesList);
+			content.add(viewNamesControl);
 		}
+	}
 
-		/**
-		 * Fills the viewNames private variable with the list of
-		 * view names.
-		 *
-		 * @param responseBody
-		 * 		the body of the response to our request for view
-		 * 		names
-		 */
-		private void fillViewNames(String responseBody) {
-			JSONValue response = JSONParser.parse(responseBody);
-			JSONArray views = response.isArray();
-			if (views == null)
-				return;
+	/**
+	 * Returns the URL that should be used to retrieve the set of view
+	 * names.
+	 *
+	 * @return
+	 * 		the URL from which we can get the list of view names
+	 */
+	private String getViewNamesUrl() {
+		return "/users/" + userId + "/views.json";
+	}
 
-			for (int i = 0; i < views.size(); i++) {
-				JSONValue viewValue = views.get(i);
-				JSONObject viewObject = viewValue.isObject();
-				if (viewObject != null) {
-					// Success - this should always happen
-					JSONValue nameValue = viewObject.get("name");
-					if (nameValue == null)
-						continue;
-					JSONString nameString = nameValue.isString();
-					if (nameString == null)
-						continue;
-					viewNames.add(nameString.toString());
-				} else {
-					// Also accept an array of strings coming from
-					// the server, even though this isn't part of
-					// the API
-					JSONString viewString = viewValue.isString();
-					if (viewString != null)
-						viewNames.add(viewString.toString());
+	/**
+	 * Fills the viewNames parameter with a list of view names retrieved
+	 * from url.
+	 *
+	 * @param url
+	 * 		the URL at which we can get the view names
+	 * @param viewNames
+	 * 		the list that will be filled with the view names
+	 * @param callback
+	 * 		an object that will be alerted whenever results come back.
+	 * 		If the asynchronous request succeeds, calls
+	 * 		<code>callback.onSuccess(null)</code>.  However, if the
+	 * 		request fails, calls <code>callback.onFailure(null)</code>.
+	 */
+	// TODO: Add more useful parameters to the callback calls?
+	private static void retrieveViewNames(String url,
+			final List<String> viewNames,
+			final Alertable<Object> callback) {
+		RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, url);
+
+		try {
+			builder.sendRequest(null, new RequestCallback() {
+				@Override
+				public void onError(Request request,
+						Throwable exception) {
+					callback.onFailure(null);
 				}
+
+				@Override
+				public void onResponseReceived(Request request,
+						Response response) {
+					if (GrapherTile.isSuccessful(response)) {
+						fillViewNames(viewNames, response.getText());
+						callback.onSuccess(null);
+					} else
+						callback.onFailure(null);
+				}
+			});
+		} catch (RequestException e) {
+			callback.onFailure(null);
+		}
+	}
+
+	/**
+	 * Fills the viewNames list with the set of view names.
+	 *
+	 * @param viewNames
+	 * 		the list to be filled
+	 * @param responseBody
+	 * 		the body of the response to our request for view
+	 * 		names
+	 */
+	private static void fillViewNames(List<String> viewNames,
+			String responseBody) {
+		JSONValue response = JSONParser.parse(responseBody);
+		JSONArray views = response.isArray();
+		if (views == null)
+			return;
+
+		for (int i = 0; i < views.size(); i++) {
+			JSONValue viewValue = views.get(i);
+			JSONObject viewObject = viewValue.isObject();
+			if (viewObject != null) {
+				// Success - this should always happen
+				JSONValue nameValue = viewObject.get("name");
+				if (nameValue == null)
+					continue;
+				JSONString nameString = nameValue.isString();
+				if (nameString == null)
+					continue;
+				viewNames.add(nameString.toString());
+			} else {
+				// Also accept an array of strings coming from
+				// the server, even though this isn't part of
+				// the API
+				JSONString viewString = viewValue.isString();
+				if (viewString != null)
+					viewNames.add(viewString.toString());
 			}
 		}
 	}
@@ -347,6 +379,10 @@ public class ViewSwitchWidget extends HorizontalPanel {
 				Response response) { }
 	}
 
+	/**
+	 * Gives the user a way to restore to a particular view, selected
+	 * from a list.
+	 */
 	private class ViewRestorePopup extends PopupPanel {
 		// TODO: Implement
 	}
