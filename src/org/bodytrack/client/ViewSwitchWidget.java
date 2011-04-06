@@ -10,6 +10,7 @@ import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.RequestCallback;
 import com.google.gwt.http.client.RequestException;
 import com.google.gwt.http.client.Response;
+import com.google.gwt.http.client.URL;
 import com.google.gwt.json.client.JSONArray;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONParser;
@@ -27,26 +28,14 @@ import com.google.gwt.user.client.ui.PopupPanel.PositionCallback;
  * A widget that allows the user to switch between, add,
  * and modify views.
  */
-// TODO: Make a new SavableView class that represents all pertinent
-// information about a view.  This should be a JavaScript overlay
-// type, which will allow server reading and writing with ease.
-
 // TODO: Keep track of current view, probably in ChannelManager
-
-// TODO: Add a way to change views to the ChannelManager class
 
 // TODO: Add writing capabilities to ViewSavePopupWidget
 
 // TODO: Implement ViewRestorePopupWidget
 
-// TODO: Put the dropdown box of current view names below the text
-// box and button on the save popup
-
 // TODO: On save popup, get the highlighting to work correctly when
 // there is a current view
-
-// TODO: Consistent styling of buttons (use PushButton instead of
-// Button for the popup windows) and lists (drop the scroll bar
 
 // TODO: Comment new code
 
@@ -195,14 +184,34 @@ public class ViewSwitchWidget extends HorizontalPanel {
 				@Override
 				public void onClick(ClickEvent event) {
 					if (event.getSource() != save)
-						// The above condition should never hold
+						// We should never enter this
 						return;
 
 					String viewName = saveName.getText();
 					if (viewName.isEmpty())
 						return;
 
-					// TODO: Write the data to the server here
+					SavableView view = SavableView.buildView(channels,
+						viewName);
+
+					// Send data to the server
+					RequestBuilder builder = new RequestBuilder(
+						RequestBuilder.POST, getViewWriteUrl());
+					builder.setHeader("Content-type",
+						"application/x-www-form-urlencoded");
+					try {
+						builder.setRequestData(URL.encode("name=" +
+							viewName + "&data=" +
+							new JSONObject(view).toString()));
+						builder.send();
+						// Just ignore the return value
+						// TODO: Check the return value
+					} catch (RequestException e) {
+						// Nothing to do here
+					}
+
+					// Hid the popup
+					ViewSavePopup.this.hide();
 				}
 			});
 
