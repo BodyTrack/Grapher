@@ -5,6 +5,8 @@ import java.util.List;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.KeyPressEvent;
+import com.google.gwt.event.dom.client.KeyPressHandler;
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.RequestCallback;
@@ -166,6 +168,11 @@ public class ViewSwitchWidget extends HorizontalPanel {
 		private final PushButton save;
 		private final ListBox viewNamesControl;
 
+		/**
+		 * Creates a new <tt>ViewSavePopup</tt> object but does not show it.
+		 *
+		 * @param currentView
+		 */
 		public ViewSavePopup(String currentView) {
 			super(true, true);
 
@@ -227,23 +234,6 @@ public class ViewSwitchWidget extends HorizontalPanel {
 			setWidget(content);
 			addStyleName(CLASS_NAME);
 
-			// Funny ordering because saveName.selectAll() only
-			// works when saveName is attached to the document
-			// and not hidden
-			if (this.currentView != null) {
-				saveName.setText(currentView);
-				saveName.selectAll();
-			}
-
-			loadViewNamesAndShow();
-		}
-
-		/**
-		 * Fills the viewNames private variable with the data loaded
-		 * from the URL pointed to by the url private variable, then
-		 * adds those view names to this popup window.
-		 */
-		private void loadViewNamesAndShow() {
 			retrieveViewNames(getViewNamesUrl(), viewNames,
 				new Alertable<Object>() {
 					@Override
@@ -254,10 +244,24 @@ public class ViewSwitchWidget extends HorizontalPanel {
 				});
 		}
 
+		/**
+		 * Puts together the URL at which we can write data back to the
+		 * server, adding or changing a view.
+		 *
+		 * @return
+		 * 		the URL used to set views on the server
+		 */
 		private String getViewWriteUrl() {
 			return "/users/" + userId + "/views/set.json";
 		}
 
+		/**
+		 * Fills and shows the viewNamesControl widget.
+		 *
+		 * <p>Uses the viewNames private variable to get the list of
+		 * current views, and then adds all those names to
+		 * viewNamesControl.</p>
+		 */
 		private void showViewNames() {
 			int numViews = viewNames.size();
 			if (numViews == 0)
@@ -269,6 +273,41 @@ public class ViewSwitchWidget extends HorizontalPanel {
 			viewNamesControl.setVisibleItemCount(
 				Math.min(MAX_VISIBLE_VIEW_NAMES, numViews));
 			content.add(viewNamesControl);
+		}
+
+		/**
+		 * Does exactly the same thing that show does for any other
+		 * popup, along with handling highlighting in the text box
+		 * for this popup window.
+		 */
+		@Override
+		public void show() {
+			super.show();
+
+			// Funny ordering because saveName.selectAll() only
+			// works when saveName is attached to the document
+			// and not hidden
+			if (this.currentView != null) {
+				saveName.setText(currentView);
+				saveName.selectAll();
+			}
+
+			// Make sure saveName gets the focus
+			saveName.setFocus(true);
+			// TODO: Add some kind of keyboard listener that fires
+			// a click event on the save button whenever Enter is
+			// pressed
+
+			// This is the next best thing
+			saveName.addKeyPressHandler(new KeyPressHandler() {
+				@Override
+				public void onKeyPress(KeyPressEvent event) {
+					if (event.getCharCode() == '\t') {
+						save.setFocus(true);
+						event.stopPropagation();
+					}
+				}
+			});
 		}
 	}
 
