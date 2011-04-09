@@ -104,11 +104,21 @@ and removing channels */
     color: blue;
 }
 
-.viewSavePopup input.gwt-TextBox, .viewSavePopup div.gwt-PushButton {
+.viewSavePopup input.gwt-TextBox, .viewSavePopup div.gwt-PushButton,
+        .viewSavePopup select.gwt-ListBox {
     margin: 3px;
     height: 1.2em;
     padding-top: 0em;
 }
+
+.viewSavePopup select.gwt-ListBox {
+    width: 17em;
+    height: auto;
+    margin-top: 8px;
+    background: white;
+    color: darkBlue;
+}
+
 
 #viewSwitchWidget div.gwt-PushButton-down-hovering,
         .viewSavePopup div.gwt-PushButton-down-hovering {
