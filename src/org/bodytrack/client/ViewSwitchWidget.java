@@ -17,6 +17,7 @@ import com.google.gwt.json.client.JSONParser;
 import com.google.gwt.json.client.JSONString;
 import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.PushButton;
@@ -26,11 +27,11 @@ import com.google.gwt.user.client.ui.PopupPanel.PositionCallback;
 
 /**
  * A widget that allows the user to switch between, add,
- * and modify views.
+ * and modify views.  This is usually shown above the grapher itself,
+ * and handles buttons and popup windows so that the user interface
+ * for views is all out of this class.
  */
-// TODO: Keep track of current view, probably in ChannelManager
-
-// TODO: Add writing capabilities to ViewSavePopupWidget
+// TODO: Keep track of current view, probably in this class
 
 // TODO: Implement ViewRestorePopupWidget
 
@@ -170,6 +171,7 @@ public class ViewSwitchWidget extends HorizontalPanel {
 		 * Creates a new <tt>ViewSavePopup</tt> object but does not show it.
 		 *
 		 * @param currentView
+		 * 		the name of the current view
 		 */
 		public ViewSavePopup(String currentView) {
 			super(true, true);
@@ -192,6 +194,7 @@ public class ViewSwitchWidget extends HorizontalPanel {
 					String viewName = saveName.getText();
 					if (viewName.isEmpty())
 						return;
+					// TODO: Enforce rules on valid view names
 
 					SavableView view = SavableView.buildView(channels,
 						viewName);
@@ -268,8 +271,12 @@ public class ViewSwitchWidget extends HorizontalPanel {
 			for (String name: viewNames)
 				viewNamesControl.addItem(name);
 
-			viewNamesControl.setVisibleItemCount(
-				Math.min(MAX_VISIBLE_VIEW_NAMES, numViews));
+			if (numViews == 1)
+				viewNamesControl.setVisibleItemCount(2);
+			else
+				viewNamesControl.setVisibleItemCount(
+					Math.min(numViews, MAX_VISIBLE_VIEW_NAMES));
+
 			content.add(viewNamesControl);
 		}
 
@@ -282,7 +289,8 @@ public class ViewSwitchWidget extends HorizontalPanel {
 		public void setVisible(boolean visible) {
 			super.setVisible(visible);
 
-			// Only do something different when we become visible
+			// Only do something different from the default
+			// when we become visible
 			if (! visible)
 				return;
 
@@ -358,6 +366,9 @@ public class ViewSwitchWidget extends HorizontalPanel {
 
 	/**
 	 * Fills the viewNames list with the set of view names.
+	 *
+	 * <p>This is intended only as a helper method for
+	 * {@link #retrieveViewNames(String, List, Alertable)}.</p>
 	 *
 	 * @param viewNames
 	 * 		the list to be filled
