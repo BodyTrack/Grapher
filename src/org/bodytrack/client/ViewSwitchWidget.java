@@ -3,6 +3,8 @@ package org.bodytrack.client;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.http.client.Request;
@@ -17,7 +19,6 @@ import com.google.gwt.json.client.JSONParser;
 import com.google.gwt.json.client.JSONString;
 import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.PushButton;
@@ -220,6 +221,17 @@ public class ViewSwitchWidget extends HorizontalPanel {
 			});
 
 			viewNamesControl = new ListBox();
+			viewNamesControl.addChangeHandler(new ChangeHandler() {
+				@Override
+				public void onChange(ChangeEvent event) {
+					int selectedIndex = viewNamesControl.getSelectedIndex();
+					String selectedValue =
+						viewNamesControl.getValue(selectedIndex);
+
+					saveName.setText(selectedValue);
+					saveName.selectAll();
+				}
+			});
 
 			// Add all the controls to content - see the
 			// comments next to the declaration of content
