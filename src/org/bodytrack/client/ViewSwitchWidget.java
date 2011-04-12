@@ -33,14 +33,7 @@ import com.google.gwt.user.client.ui.PopupPanel.PositionCallback;
  * for views is all out of this class.
  */
 // TODO: Keep track of current view, probably in this class
-
-// TODO: Implement ViewRestorePopupWidget
-
-// TODO: On save popup, get the highlighting to work correctly when
-// there is a current view
-
 // TODO: Comment new code
-
 public class ViewSwitchWidget extends HorizontalPanel {
 	/**
 	 * The ID attribute of this element.  Note that this only
@@ -48,6 +41,18 @@ public class ViewSwitchWidget extends HorizontalPanel {
 	 * per page.
 	 */
 	private static final String WIDGET_ID = "viewSwitchWidget";
+
+	/**
+	 * The name of the CSS class on the popups that come from
+	 * this widget.
+	 */
+	public static final String POPUP_CLASS_NAME = "savedViewPopup";
+
+	/**
+	 * The maximum number of view names that will be visible to
+	 * the user at any time, in any popup from this widget.
+	 */
+	private static final int MAX_VISIBLE_VIEW_NAMES = 10;
 
 	private final int userId;
 	private final ChannelManager channels;
@@ -144,17 +149,6 @@ public class ViewSwitchWidget extends HorizontalPanel {
 	 * should be created every time.</p>
 	 */
 	private class ViewSavePopup extends PopupPanel {
-		/**
-		 * The name of the CSS class on this widget.
-		 */
-		public static final String CLASS_NAME = "viewSavePopup";
-
-		/**
-		 * The maximum number of view names that will be visible to
-		 * the user at any time.
-		 */
-		private static final int MAX_VISIBLE_VIEW_NAMES = 10;
-
 		private final String currentView;
 		private final List<String> viewNames;
 
@@ -245,7 +239,7 @@ public class ViewSwitchWidget extends HorizontalPanel {
 			// We will add viewNamesList whenever we create it
 
 			setWidget(content);
-			addStyleName(CLASS_NAME);
+			addStyleName(POPUP_CLASS_NAME);
 
 			retrieveViewNames(getViewNamesUrl(), viewNames,
 				new Alertable<Object>() {
@@ -316,9 +310,8 @@ public class ViewSwitchWidget extends HorizontalPanel {
 
 			// Make sure saveName gets the focus
 			saveName.setFocus(true);
-			// TODO: Add some kind of keyboard listener that fires
-			// a click event on the save button whenever Enter is
-			// pressed
+			// TODO: Maybe add some kind of keyboard listener that fires
+			// a click event on the save button whenever Enter is pressed
 		}
 	}
 
@@ -437,6 +430,85 @@ public class ViewSwitchWidget extends HorizontalPanel {
 	 * from a list.
 	 */
 	private class ViewRestorePopup extends PopupPanel {
-		// TODO: Implement
+		private final String currentView;
+		private final List<String> viewNames;
+
+		private final VerticalPanel content;
+		// content will contain nothing until the set of view names
+		// loads
+
+		private final ListBox viewNamesControl;
+
+		/**
+		 * Creates a new <tt>ViewSavePopup</tt> object but does not show it.
+		 *
+		 * @param currentView
+		 * 		the name of the current view
+		 */
+		public ViewRestorePopup(String currentView) {
+			super(true, true);
+
+			this.currentView = currentView;
+			viewNames = new ArrayList<String>();
+
+			viewNamesControl = new ListBox();
+			viewNamesControl.addChangeHandler(new ChangeHandler() {
+				@Override
+				public void onChange(ChangeEvent event) {
+					int selectedIndex = viewNamesControl.getSelectedIndex();
+					String selectedValue =
+						viewNamesControl.getValue(selectedIndex);
+
+					// TODO: FINISH THIS METHOD
+				}
+			});
+
+			content = new VerticalPanel();
+			setWidget(content);
+			addStyleName(POPUP_CLASS_NAME);
+
+			retrieveViewNames(getViewNamesUrl(), viewNames,
+				new Alertable<Object>() {
+					@Override
+					public void onFailure(Object message) {	}
+
+					@Override
+					public void onSuccess(Object message) { showViewNames(); }
+				});
+		}
+
+		/**
+		 * Fills and shows the viewNamesControl widget.
+		 *
+		 * <p>Uses the viewNames private variable to get the list of
+		 * current views, and then adds all those names to
+		 * viewNamesControl.</p>
+		 */
+		// TODO: Remove one of the copies of this method, since this
+		// is a clone of the ViewSavePopup method
+		private void showViewNames() {
+			int numViews = viewNames.size();
+			if (numViews == 0)
+				return;
+
+			for (String name: viewNames)
+				viewNamesControl.addItem(name);
+
+			if (numViews == 1)
+				viewNamesControl.setVisibleItemCount(2);
+			else
+				viewNamesControl.setVisibleItemCount(
+					Math.min(numViews, MAX_VISIBLE_VIEW_NAMES));
+
+			content.add(viewNamesControl);
+
+			// The only part that differs from ViewSavePopup
+			if (currentView != null)
+				viewNamesControl.setSelectedIndex(
+					viewNames.indexOf(currentView));
+		}
+
+		// TODO: Maybe override setVisible to set invisible when we
+		// don't have a list of view names?
 	}
 }

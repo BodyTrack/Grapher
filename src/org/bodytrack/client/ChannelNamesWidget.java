@@ -152,6 +152,7 @@ public class ChannelNamesWidget extends FlowPanel
 	 * 		the URL at which the failed tile was requested (this should
 	 * 		be the devicesUrl instance variable)
 	 */
+	// TODO: Pick something less obtrusive to the user
 	private native void loadFailure(String requestUrl) /*-{
 		alert("Failed to load list of channels, using URL " + requestUrl);
 	}-*/;

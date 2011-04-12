@@ -94,7 +94,7 @@ and removing channels */
     margin-bottom: 0.75em;
 }
 
-#viewSwitchWidget div.gwt-PushButton, .viewSavePopup div.gwt-PushButton {
+#viewSwitchWidget div.gwt-PushButton, .savedViewPopup div.gwt-PushButton {
     border: 2px solid #DDD;
     margin-right: 3px;
     margin-left: 3px;
@@ -104,14 +104,14 @@ and removing channels */
     color: blue;
 }
 
-.viewSavePopup input.gwt-TextBox, .viewSavePopup div.gwt-PushButton,
-        .viewSavePopup select.gwt-ListBox {
+.savedViewPopup input.gwt-TextBox, .savedViewPopup div.gwt-PushButton,
+        .savedViewPopup select.gwt-ListBox {
     margin: 3px;
     height: 1.2em;
     padding-top: 0em;
 }
 
-.viewSavePopup select.gwt-ListBox {
+.savedViewPopup select.gwt-ListBox {
     width: 17em;
     height: auto;
     margin-top: 8px;
@@ -121,7 +121,7 @@ and removing channels */
 
 
 #viewSwitchWidget div.gwt-PushButton-down-hovering,
-        .viewSavePopup div.gwt-PushButton-down-hovering {
+        .savedViewPopup div.gwt-PushButton-down-hovering {
     border: 2px outset black;
     background: #EEF;
 }
