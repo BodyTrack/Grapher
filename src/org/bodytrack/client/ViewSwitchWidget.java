@@ -18,12 +18,13 @@ import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONParser;
 import com.google.gwt.json.client.JSONString;
 import com.google.gwt.json.client.JSONValue;
-import com.google.gwt.user.cellview.client.CellList;
 import com.google.gwt.user.client.ui.Anchor;
+import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.PushButton;
+import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.PopupPanel.PositionCallback;
@@ -432,14 +433,13 @@ public class ViewSwitchWidget extends HorizontalPanel {
 	 * from a list.
 	 */
 	private class ViewRestorePopup extends PopupPanel {
-		private final String currentView;
 		private final List<String> viewNames;
 
-		private final VerticalPanel content;
+		private final ScrollPanel content;
 		// content will contain nothing until the set of view names
 		// loads
 
-		private final CellList<HorizontalPanel> viewNamesControl;
+		private final Grid viewNamesControl;
 
 		/**
 		 * Creates a new <tt>ViewRestorePopup</tt> object but does not show it.
@@ -448,11 +448,9 @@ public class ViewSwitchWidget extends HorizontalPanel {
 			super(true, true);
 
 			viewNames = new ArrayList<String>();
+			viewNamesControl = new Grid(10, 3);
+			content = new ScrollPanel();
 
-			// TODO: FIX THIS
-			viewNamesControl = new CellList<HorizontalPanel>(/* ? */);
-
-			content = new VerticalPanel();
 			setWidget(content);
 			addStyleName(POPUP_CLASS_NAME);
 
@@ -480,14 +478,15 @@ public class ViewSwitchWidget extends HorizontalPanel {
 			if (numViews == 0)
 				return;
 
-			for (String name: viewNames) {
-				// The only part that differs from ViewSavePopup.showViewNames
-				HorizontalPanel cell = new HorizontalPanel();
-				cell.add(new Anchor(name)); // TODO: Larger font
-				cell.add(new Anchor("Channels Only"));
-				cell.add(new Anchor("Time Only"));
+			viewNamesControl.resizeRows(numViews);
+
+			for (int i = 0; i < numViews; i++) {
+				String name = viewNames.get(i);
+
+				viewNamesControl.setWidget(i, 0, new Anchor(name));
+				viewNamesControl.setWidget(i, 1, new Anchor("Channels Only"));
+				viewNamesControl.setWidget(i, 2, new Anchor("Time Only"));
 				// TODO: Event handlers on all three links
-				// TODO: Add cell to viewNamesControl
 			}
 
 			content.add(viewNamesControl);
