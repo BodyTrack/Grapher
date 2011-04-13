@@ -5,6 +5,7 @@
 # GWT specific information
 war/WEB-INF/classes/
 war/WEB-INF/lib/
+.gwt/
 
 # Eclipse information
 .settings/
