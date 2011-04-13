@@ -585,14 +585,20 @@ public class ViewSwitchWidget extends HorizontalPanel {
 			 * 		information from the saved view
 			 */
 			// TODO: Update current view name in this method
+			// TODO: Check to make sure this isn't executed multiple
+			// times on a single click.  Working with the generated
+			// JavaScript in Chrome's developer tools seems to indicate
+			// that this is called more than once
 			private void substituteView(String responseText) {
 				SavableView view = SavableView.buildView(responseText);
 
 				ChannelManager newChannels = view.getDataPlots(graphWidget);
 				switch (this.action) {
 				case TIME_ONLY:
+					// TODO: Action here
 					break;
 				case CHANNELS_ONLY:
+					// TODO: Action here
 					break;
 				case FULL_VIEW:
 					channels.replaceChannels(newChannels);

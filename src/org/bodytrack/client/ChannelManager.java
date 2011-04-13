@@ -245,11 +245,13 @@ public class ChannelManager {
 	 * @param plot
 	 * 		the <tt>DataPlot</tt> to add to the set of plots this hold
 	 * @throws NullPointerException
-	 * 		if plot is <tt>null</tt>
+	 * 		if plot or one of its axes is <tt>null</tt>
 	 */
 	public void addChannel(DataPlot plot) {
 		if (plot == null)
 			throw new NullPointerException("Cannot add a null DataPlot");
+		if (plot.getXAxis() == null || plot.getYAxis() == null)
+			throw new NullPointerException("Cannot add plot with null axis");
 
 		StringPair name =
 			new StringPair(plot.getDeviceName(), plot.getChannelName());
@@ -389,8 +391,14 @@ public class ChannelManager {
 	 * @param other
 	 * 		the <tt>ChannelManager</tt> whose channels to use
 	 * 		for this
+	 * @throws NullPointerException
+	 * 		if other is <tt>null</tt>
 	 */
 	public void replaceChannels(ChannelManager other) {
+		if (other == null)
+			throw new NullPointerException(
+				"Can't replace contents of this with a null set of channels");
+
 		clear();
 
 		for (DataPlot plot: other.getDataPlots())
