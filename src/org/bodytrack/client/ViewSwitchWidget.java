@@ -395,7 +395,7 @@ public class ViewSwitchWidget extends HorizontalPanel {
 				JSONString nameString = nameValue.isString();
 				if (nameString == null)
 					continue;
-				viewNames.add(nameString.toString());
+				viewNames.add(nameString.stringValue());
 			} else {
 				// Also accept an array of strings coming from
 				// the server, even though this isn't part of
@@ -445,6 +445,7 @@ public class ViewSwitchWidget extends HorizontalPanel {
 			viewNames = new ArrayList<String>();
 			viewNamesControl = new Grid(10, 3);
 			content = new ScrollPanel();
+			// TODO: Set a max height on content
 
 			setWidget(content);
 			addStyleName(POPUP_CLASS_NAME);
