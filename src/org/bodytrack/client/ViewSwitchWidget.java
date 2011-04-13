@@ -295,8 +295,6 @@ public class ViewSwitchWidget extends HorizontalPanel {
 		public void setVisible(boolean visible) {
 			super.setVisible(visible);
 
-			// Only do something different from the default
-			// when we become visible
 			if (! visible)
 				return;
 
@@ -308,10 +306,7 @@ public class ViewSwitchWidget extends HorizontalPanel {
 				saveName.selectAll();
 			}
 
-			// Make sure saveName gets the focus
 			saveName.setFocus(true);
-			// TODO: Maybe add some kind of keyboard listener that fires
-			// a click event on the save button whenever Enter is pressed
 		}
 	}
 
@@ -589,7 +584,7 @@ public class ViewSwitchWidget extends HorizontalPanel {
 				ChannelManager newChannels = view.getDataPlots(graphWidget);
 				switch (this.action) {
 				case TIME_ONLY:
-					// TODO: Action here
+					restoreTime(newChannels);
 					break;
 				case CHANNELS_ONLY:
 					// TODO: Action here
@@ -600,6 +595,40 @@ public class ViewSwitchWidget extends HorizontalPanel {
 				}
 
 				ViewRestorePopup.this.hide();
+			}
+
+			/**
+			 * Restores just the time component of the
+			 * {@link org.bodytrack.client.ChannelManager ChannelManager}
+			 * newChannels.
+			 *
+			 * <p>The rules for restoring times are pretty complicated: if
+			 * there is exactly one X-axis on both the current set of
+			 * channels and newChannels, we just reset the times on
+			 * the current X-axis to the times from newChannels.  If
+			 * there is exactly one X-axis on the current set of channels
+			 * but more than one on newChannels, we search through the
+			 * new set of X-axes for the one that corresponds most
+			 * closely to the channels we have on the current graph.
+			 * If we have more than one X-axis on both the current graph
+			 * and newChannels, we again search for correspondences and
+			 * try to match up X-axes intelligently with their channels.</p>
+			 *
+			 * @param newChannels
+			 * 		the set of channels which we should use as a basis
+			 * 		for shifting our X-axes
+			 */
+			private void restoreTime(ChannelManager newChannels) {
+				int currCount = channels.getXAxes().size();
+				int newCount = newChannels.getXAxes().size();
+
+				if (currCount == 0 || newCount == 0)
+					return;
+
+				// TODO: Implement
+				if (currCount == 1) {
+				} else {
+				}
 			}
 
 			/**
