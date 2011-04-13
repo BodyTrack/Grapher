@@ -409,7 +409,7 @@ public class ViewSwitchWidget extends HorizontalPanel {
 				// the API
 				JSONString viewString = viewValue.isString();
 				if (viewString != null)
-					viewNames.add(viewString.toString());
+					viewNames.add(viewString.stringValue());
 			}
 		}
 	}
