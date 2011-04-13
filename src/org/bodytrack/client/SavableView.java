@@ -79,8 +79,8 @@ public final class SavableView extends JavaScriptObject {
 		JSONArray xAxesJson = new JSONArray();
 		for (int i = 0; i < xAxes.size(); i++) {
 			JSONObject axis = new JSONObject();
-			axis.put("min_value", new JSONNumber(xAxes.get(i).getMin()));
-			axis.put("max_value", new JSONNumber(xAxes.get(i).getMax()));
+			axis.put("min_time", new JSONNumber(xAxes.get(i).getMin()));
+			axis.put("max_time", new JSONNumber(xAxes.get(i).getMax()));
 			xAxesJson.set(i, axis);
 		}
 
@@ -89,8 +89,8 @@ public final class SavableView extends JavaScriptObject {
 		JSONArray yAxesJson = new JSONArray();
 		for (int i = 0; i < yAxes.size(); i++) {
 			JSONObject axis = new JSONObject();
-			axis.put("min_value", new JSONNumber(yAxes.get(i).getMin()));
-			axis.put("max_value", new JSONNumber(yAxes.get(i).getMax()));
+			axis.put("min_val", new JSONNumber(yAxes.get(i).getMin()));
+			axis.put("max_val", new JSONNumber(yAxes.get(i).getMax()));
 			yAxesJson.set(i, axis);
 		}
 
