@@ -3,8 +3,6 @@ package org.bodytrack.client;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.google.gwt.event.dom.client.ChangeEvent;
-import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.http.client.Request;
@@ -217,9 +215,9 @@ public class ViewSwitchWidget extends HorizontalPanel {
 			});
 
 			viewNamesControl = new ListBox();
-			viewNamesControl.addChangeHandler(new ChangeHandler() {
+			viewNamesControl.addClickHandler(new ClickHandler() {
 				@Override
-				public void onChange(ChangeEvent event) {
+				public void onClick(ClickEvent event) {
 					int selectedIndex = viewNamesControl.getSelectedIndex();
 					String selectedValue =
 						viewNamesControl.getValue(selectedIndex);
