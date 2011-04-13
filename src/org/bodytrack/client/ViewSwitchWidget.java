@@ -484,13 +484,16 @@ public class ViewSwitchWidget extends HorizontalPanel {
 				String name = viewNames.get(i);
 
 				Anchor nameAnchor = new Anchor(name);
-				nameAnchor.addClickHandler(new ViewNameClickHandler(name));
+				nameAnchor.addClickHandler(new ViewClickHandler(name,
+					ViewClickHandler.FULL_VIEW));
 
 				Anchor channelsAnchor = new Anchor("Channels Only");
-				// TODO: Add click handler
+				nameAnchor.addClickHandler(new ViewClickHandler(name,
+					ViewClickHandler.CHANNELS_ONLY));
 
 				Anchor timeAnchor = new Anchor("Time Only");
-				// TODO: Add click handler
+				nameAnchor.addClickHandler(new ViewClickHandler(name,
+					ViewClickHandler.TIME_ONLY));
 
 				viewNamesControl.setWidget(i, 0, nameAnchor);
 				viewNamesControl.setWidget(i, 1, channelsAnchor);
@@ -505,22 +508,106 @@ public class ViewSwitchWidget extends HorizontalPanel {
 		 *
 		 * <p>Objects of this class are immutable.  Then again, they
 		 * don't carry much state that could be mutated.</p>
+		 *
+		 * <p>The constants CHANNELS_ONLY, TIME_ONLY, and FULL_VIEW are
+		 * the only acceptable values for the action this class is
+		 * supposed to take.  I would use an enum to implement this
+		 * behavior, but I would have to put the enum code inside the
+		 * <tt>ViewSwitchWidget</tt> class, since you can't put an enum
+		 * inside a non-static private class.</p>
 		 */
-		private class ViewNameClickHandler implements ClickHandler {
-			private final String viewName;
+		private class ViewClickHandler implements ClickHandler {
+			public static final int CHANNELS_ONLY = 1;
+			public static final int TIME_ONLY = 2;
+			public static final int FULL_VIEW = 3;
+			// Notice that FULL_VIEW == CHANNELS_ONLY | TIME_ONLY
 
-			public ViewNameClickHandler(String viewName) {
+			private final String viewName;
+			private final int action;
+
+			/**
+			 * Creates a new ViewClickHandler.
+			 *
+			 * @param viewName
+			 * 		the name of the view that should be used if this
+			 * 		is clicked
+			 * @param action
+			 * 		the action to take on click, which should be one of
+			 * 		{@link #CHANNELS_ONLY}, {@link #TIME_ONLY}, and
+			 * 		{@link #FULL_VIEW}
+			 * @throws NullPointerException
+			 * 		if viewName is <tt>null</tt>
+			 */
+			public ViewClickHandler(String viewName, int action) {
+				if (viewName == null)
+					throw new NullPointerException("Can't use null view name");
 				this.viewName = viewName;
+				this.action = action;
 			}
 
+			/**
+			 * Called whenever the user clicks on a link with this handler
+			 * attached.
+			 *
+			 * <p>This method completely ignores event, instead blindly
+			 * performing the actions specified in the constructor.</p>
+			 */
 			@Override
 			public void onClick(ClickEvent event) {
-				// TODO: Write wrapper ClickHandler around the three
-				// handlers we are writing, such that the wrapper
-				// handles the click, makes a web request, and then
-				// passes off the result to the right object
+				RequestBuilder builder =
+					new RequestBuilder(RequestBuilder.GET, getViewUrl());
 
-				// TODO: Load data from server and then use it
+				// We do nothing on failure
+				try {
+					builder.sendRequest(null, new RequestCallback() {
+						@Override
+						public void onError(Request request,
+								Throwable exception) { }
+
+						@Override
+						public void onResponseReceived(Request request,
+								Response response) {
+							if (GrapherTile.isSuccessful(response)) {
+								substituteView(response.getText());
+							}
+						}
+					});
+				} catch (RequestException e) { }
+			}
+
+			/**
+			 * Substitutes the view specified in responseText in for
+			 * the current view, based on the action specified to the
+			 * constructor for this object.
+			 *
+			 * @param responseText
+			 * 		the text we received from the server, giving the
+			 * 		information from the saved view
+			 */
+			// TODO: Update current view name in this method
+			private void substituteView(String responseText) {
+				SavableView view = SavableView.buildView(responseText);
+
+				ChannelManager newChannels = view.getDataPlots(graphWidget);
+				switch (this.action) {
+				case TIME_ONLY:
+					break;
+				case CHANNELS_ONLY:
+					break;
+				case FULL_VIEW:
+					channels.replaceChannels(newChannels);
+					break;
+				}
+			}
+
+			/**
+			 * Returns the URL to use to get the view information.
+			 *
+			 * @return
+			 * 		the URL to use to get the view information
+			 */
+			private String getViewUrl() {
+				return "/users/" + userId + "/views/get.json?name=" + viewName;
 			}
 		}
 
