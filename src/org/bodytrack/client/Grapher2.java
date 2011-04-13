@@ -33,18 +33,17 @@ public class Grapher2 implements EntryPoint {
 			// width
 			mainLayout.setWidth((int) (getGrapherWidth()) + "px");
 
-			gw = new GraphWidget(getGrapherWidth(),
-					getGrapherHeight(), getAxisMargin());
+			gw = new GraphWidget(getGrapherWidth(), getGrapherHeight(),
+				getAxisMargin());
 			factory = DataPlotFactory.getInstance(gw);
 			plots = new ArrayList<DataPlot>();
 
 			ChannelManager mgr = gw.getChannelManager();
-			ViewSwitchWidget viewSwitcher =
-				new ViewSwitchWidget(factory.getUserId(), mgr);
+			ViewSwitchWidget viewSwitcher = new ViewSwitchWidget(gw,
+				factory.getUserId(), mgr);
 			CurrentChannelsWidget currentChans =
 				new CurrentChannelsWidget(mgr);
-			ChannelNamesWidget allChans =
-				new ChannelNamesWidget(mgr, factory);
+			ChannelNamesWidget allChans = new ChannelNamesWidget(mgr, factory);
 
 			setupGraphWidget();
 

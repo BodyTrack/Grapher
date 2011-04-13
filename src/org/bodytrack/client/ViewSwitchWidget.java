@@ -57,6 +57,7 @@ public class ViewSwitchWidget extends HorizontalPanel {
 	 */
 	private static final int MAX_VISIBLE_VIEW_NAMES = 10;
 
+	private final GraphWidget graphWidget;
 	private final int userId;
 	private final ChannelManager channels;
 	private final ViewSwitchClickHandler clickHandler;
@@ -66,19 +67,24 @@ public class ViewSwitchWidget extends HorizontalPanel {
 	/**
 	 * Creates a new <tt>ViewSwitchWidget</tt>.
 	 *
+	 * @param graphWidget
+	 * 		the {@link org.bodytrack.client.GraphWidget GraphWidget} on
+	 * 		which the channels are drawn
 	 * @param userId
 	 * 		the ID of the current user
 	 * @param mgr
 	 * 		the {@link org.bodytrack.client.ChannelManager ChannelManager}
 	 * 		that keeps the current set of channels
 	 * @throws NullPointerException
-	 * 		if mgr is <tt>null</tt>
+	 * 		if widget or mgr is <tt>null</tt>
 	 */
-	public ViewSwitchWidget(int userId, ChannelManager mgr) {
-		if (mgr == null)
+	public ViewSwitchWidget(GraphWidget graphWidget, int userId,
+			ChannelManager mgr) {
+		if (graphWidget == null || mgr == null)
 			throw new NullPointerException(
-				"Cannot use null ChannelManager");
+				"Cannot use null widget or ChannelManager");
 
+		this.graphWidget = graphWidget;
 		this.userId = userId;
 		channels = mgr;
 		clickHandler = new ViewSwitchClickHandler();
@@ -467,8 +473,6 @@ public class ViewSwitchWidget extends HorizontalPanel {
 		 * current views, and then adds all those names to
 		 * viewNamesControl.</p>
 		 */
-		// TODO: Combine this with ViewSavePopup.showViewNames, which
-		// does something pretty similar
 		private void showViewNames() {
 			int numViews = viewNames.size();
 			if (numViews == 0)
@@ -479,16 +483,48 @@ public class ViewSwitchWidget extends HorizontalPanel {
 			for (int i = 0; i < numViews; i++) {
 				String name = viewNames.get(i);
 
-				viewNamesControl.setWidget(i, 0, new Anchor(name));
-				viewNamesControl.setWidget(i, 1, new Anchor("Channels Only"));
-				viewNamesControl.setWidget(i, 2, new Anchor("Time Only"));
-				// TODO: Event handlers on all three links
+				Anchor nameAnchor = new Anchor(name);
+				nameAnchor.addClickHandler(new ViewNameClickHandler(name));
+
+				Anchor channelsAnchor = new Anchor("Channels Only");
+				// TODO: Add click handler
+
+				Anchor timeAnchor = new Anchor("Time Only");
+				// TODO: Add click handler
+
+				viewNamesControl.setWidget(i, 0, nameAnchor);
+				viewNamesControl.setWidget(i, 1, channelsAnchor);
+				viewNamesControl.setWidget(i, 2, timeAnchor);
 			}
 
 			content.add(viewNamesControl);
 		}
 
-		// TODO: Maybe override setVisible to set invisible when we
-		// don't have a list of view names?
+		/**
+		 * Handles clicks on the anchor with text equal to the view name.
+		 *
+		 * <p>Objects of this class are immutable.  Then again, they
+		 * don't carry much state that could be mutated.</p>
+		 */
+		private class ViewNameClickHandler implements ClickHandler {
+			private final String viewName;
+
+			public ViewNameClickHandler(String viewName) {
+				this.viewName = viewName;
+			}
+
+			@Override
+			public void onClick(ClickEvent event) {
+				// TODO: Write wrapper ClickHandler around the three
+				// handlers we are writing, such that the wrapper
+				// handles the click, makes a web request, and then
+				// passes off the result to the right object
+
+				// TODO: Load data from server and then use it
+			}
+		}
+
+		// TODO: Maybe override setVisible to set this to invisible
+		// until we have a list of view names?
 	}
 }
