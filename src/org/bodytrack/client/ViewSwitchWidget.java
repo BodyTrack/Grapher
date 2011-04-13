@@ -115,30 +115,23 @@ public class ViewSwitchWidget extends HorizontalPanel {
 
 			Object sourceObject = event.getSource();
 			if (sourceObject == saveView) {
-				final ViewSavePopup popup = new ViewSavePopup(null);
-				// TODO: Keep track of the current view
-
-				popup.setPopupPositionAndShow(new PositionCallback() {
-					/**
-					 * Called to place popup.
-					 *
-					 * @param offsetWidth
-					 * 		the width of popup
-					 * @param offsetHeight
-					 * 		the height of popup
-					 */
-					@Override
-					public void setPosition(int offsetWidth,
-							int offsetHeight) {
-						int left = saveView.getAbsoluteLeft();
-						int top = saveView.getAbsoluteTop()
-							+ saveView.getOffsetHeight();
-						popup.setPopupPosition(left, top);
-					}
-				});
+				showPopup(new ViewSavePopup(null), saveView);
 			} else if (sourceObject == restoreView) {
-				// TODO: Some restore action here
+				showPopup(new ViewRestorePopup(), restoreView);
 			}
+		}
+
+		private void showPopup(final PopupPanel popup, final PushButton pos) {
+			popup.setPopupPositionAndShow(new PositionCallback() {
+				@Override
+				public void setPosition(int offsetWidth,
+						int offsetHeight) {
+					int left = pos.getAbsoluteLeft();
+					int top = pos.getAbsoluteTop()
+						+ pos.getOffsetHeight();
+					popup.setPopupPosition(left, top);
+				}
+			});
 		}
 	}
 
@@ -433,6 +426,8 @@ public class ViewSwitchWidget extends HorizontalPanel {
 	 * from a list.
 	 */
 	private class ViewRestorePopup extends PopupPanel {
+		// TODO: Possibly use the current view name to stop
+		// that name from appearing in the list of views
 		private final List<String> viewNames;
 
 		private final ScrollPanel content;
