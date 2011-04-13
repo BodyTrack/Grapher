@@ -101,7 +101,7 @@ public class DataPlot implements Alertable<GrapherTile> {
 	private final String channelName;
 
 	private final int minLevel;
-	private final Color color;
+	private Color color;
 
 	private boolean shouldZoomIn;
 
@@ -237,7 +237,6 @@ public class DataPlot implements Alertable<GrapherTile> {
 			throw new NullPointerException(
 				"Null part of base URL not allowed");
 
-		// TODO: Use getDeviceChanName
 		if (deviceName.equals(""))
 			return "/tiles/" + userId + "/" + channelName + "/";
 
@@ -314,6 +313,22 @@ public class DataPlot implements Alertable<GrapherTile> {
 	 */
 	public Color getColor() {
 		return color;
+	}
+
+	/**
+	 * Sets the color at which this <tt>DataPlot</tt> is drawn.
+	 *
+	 * @param newColor
+	 * 		the color that should be used to draw this <tt>DataPlot</tt>
+	 * @throws NullPointerException
+	 * 		if newColor is <tt>null</tt>
+	 */
+	public void setColor(Color newColor) {
+		if (newColor == null)
+			throw new NullPointerException(
+				"Cannot use null color to draw plot");
+
+		color = newColor;
 	}
 
 	/**
