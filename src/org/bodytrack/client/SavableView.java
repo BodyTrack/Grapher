@@ -41,6 +41,7 @@ import com.google.gwt.json.client.JSONString;
 // TODO: implement units and label fields for Y-axes, which are not
 // currently used or supported in the DataPlot and ChannelManager classes
 // TODO: firm up and comment current API
+// TODO: Comment
 public final class SavableView extends JavaScriptObject {
 	/* JavaScript overlay types always have protected empty constructors */
 	protected SavableView() {}
@@ -74,12 +75,6 @@ public final class SavableView extends JavaScriptObject {
 		List<GraphAxis> xAxes = new ArrayList<GraphAxis>(mgr.getXAxes());
 		List<GraphAxis> yAxes = new ArrayList<GraphAxis>(mgr.getYAxes());
 
-		// SavableView result = newEmptyView();
-		// result.setProperty("name", name);
-		// Need to finish filling in the properties for result, perhaps
-		// building result as a JavaScriptObject or JSONValue and then
-		// making a final cast in the end
-
 		// Handle X-axes
 		JSONArray xAxesJson = new JSONArray();
 		for (int i = 0; i < xAxes.size(); i++) {
@@ -106,6 +101,7 @@ public final class SavableView extends JavaScriptObject {
 		for (StringPair channel: mgr.getChannelNames())
 			if (! plotsJson.containsKey(channel.getFirst()))
 				plotsJson.put(channel.getFirst(), new JSONObject());
+
 		// Now fill in the x_axis and y_axis fields for each device
 		for (DataPlot plot: mgr.getDataPlots()) {
 			String deviceName = plot.getDeviceName();
@@ -376,10 +372,10 @@ public final class SavableView extends JavaScriptObject {
 		var channelNames = [];
 		// The calls to hasOwnProperty filters out keys that come because
 		// of some function being grafted onto the JavaScript core
-		for (var device in keys(this.channels)) {
+		for (var device in this.channels) {
 			if (this.channels.hasOwnProperty(device)) {
 				var channeldict = this.channels[device];
-				for (var chan in keys(channeldict)) {
+				for (var chan in channeldict) {
 					if (channeldict.hasOwnProperty(chan)) {
 						channelNames.push([device, chan]);
 					}

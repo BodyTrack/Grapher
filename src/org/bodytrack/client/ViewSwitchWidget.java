@@ -598,6 +598,8 @@ public class ViewSwitchWidget extends HorizontalPanel {
 					channels.replaceChannels(newChannels);
 					break;
 				}
+
+				ViewRestorePopup.this.hide();
 			}
 
 			/**
