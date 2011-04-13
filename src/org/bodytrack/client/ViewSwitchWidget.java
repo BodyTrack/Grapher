@@ -18,6 +18,8 @@ import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONParser;
 import com.google.gwt.json.client.JSONString;
 import com.google.gwt.json.client.JSONValue;
+import com.google.gwt.user.cellview.client.CellList;
+import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.PopupPanel;
@@ -437,31 +439,18 @@ public class ViewSwitchWidget extends HorizontalPanel {
 		// content will contain nothing until the set of view names
 		// loads
 
-		private final ListBox viewNamesControl;
+		private final CellList<HorizontalPanel> viewNamesControl;
 
 		/**
-		 * Creates a new <tt>ViewSavePopup</tt> object but does not show it.
-		 *
-		 * @param currentView
-		 * 		the name of the current view
+		 * Creates a new <tt>ViewRestorePopup</tt> object but does not show it.
 		 */
-		public ViewRestorePopup(String currentView) {
+		public ViewRestorePopup() {
 			super(true, true);
 
-			this.currentView = currentView;
 			viewNames = new ArrayList<String>();
 
-			viewNamesControl = new ListBox();
-			viewNamesControl.addChangeHandler(new ChangeHandler() {
-				@Override
-				public void onChange(ChangeEvent event) {
-					int selectedIndex = viewNamesControl.getSelectedIndex();
-					String selectedValue =
-						viewNamesControl.getValue(selectedIndex);
-
-					// TODO: FINISH THIS METHOD
-				}
-			});
+			// TODO: FIX THIS
+			viewNamesControl = new CellList<HorizontalPanel>(/* ? */);
 
 			content = new VerticalPanel();
 			setWidget(content);
@@ -484,28 +473,24 @@ public class ViewSwitchWidget extends HorizontalPanel {
 		 * current views, and then adds all those names to
 		 * viewNamesControl.</p>
 		 */
-		// TODO: Remove one of the copies of this method, since this
-		// is a clone of the ViewSavePopup method
+		// TODO: Combine this with ViewSavePopup.showViewNames, which
+		// does something pretty similar
 		private void showViewNames() {
 			int numViews = viewNames.size();
 			if (numViews == 0)
 				return;
 
-			for (String name: viewNames)
-				viewNamesControl.addItem(name);
-
-			if (numViews == 1)
-				viewNamesControl.setVisibleItemCount(2);
-			else
-				viewNamesControl.setVisibleItemCount(
-					Math.min(numViews, MAX_VISIBLE_VIEW_NAMES));
+			for (String name: viewNames) {
+				// The only part that differs from ViewSavePopup.showViewNames
+				HorizontalPanel cell = new HorizontalPanel();
+				cell.add(new Anchor(name)); // TODO: Larger font
+				cell.add(new Anchor("Channels Only"));
+				cell.add(new Anchor("Time Only"));
+				// TODO: Event handlers on all three links
+				// TODO: Add cell to viewNamesControl
+			}
 
 			content.add(viewNamesControl);
-
-			// The only part that differs from ViewSavePopup
-			if (currentView != null)
-				viewNamesControl.setSelectedIndex(
-					viewNames.indexOf(currentView));
 		}
 
 		// TODO: Maybe override setVisible to set invisible when we
