@@ -615,6 +615,24 @@ public class GraphAxis {
 
 	public void drag(Vector2 from, Vector2 to) {
 		double motion = unproject(from) - unproject(to);
+		uncheckedDrag(motion);
+	}
+
+	/**
+	 * Drags this axis by motion, which is expressed in terms of
+	 * the units for this axis.
+	 *
+	 * <p>This is designed to be used only within this package,
+	 * with a class that knows exactly what needs to happen with this
+	 * axis.  In most cases, callers should use the regular
+	 * {@link #drag(Vector2, Vector2)} method instead.</p>
+	 *
+	 * @param motion
+	 * 		the amount to move this axis in logical units (seconds
+	 * 		for an axis representing time, other values for another
+	 * 		axis), not in screen pixels
+	 */
+	void uncheckedDrag(double motion) {
 		uncheckedTranslate(motion);
 		clampToRange();
 		rescale();
