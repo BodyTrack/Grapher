@@ -2,6 +2,7 @@ package org.bodytrack.client;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -602,17 +603,16 @@ public class ViewSwitchWidget extends HorizontalPanel {
 			 * {@link org.bodytrack.client.ChannelManager ChannelManager}
 			 * newChannels.
 			 *
-			 * <p>The rules for restoring times are pretty complicated: if
+			 * <p>The rules for restoring times are somewhat complicated: if
 			 * there is exactly one X-axis on both the current set of
 			 * channels and newChannels, we just reset the times on
 			 * the current X-axis to the times from newChannels.  If
 			 * there is exactly one X-axis on the current set of channels
-			 * but more than one on newChannels, we search through the
-			 * new set of X-axes for the one that corresponds most
-			 * closely to the channels we have on the current graph.
-			 * If we have more than one X-axis on both the current graph
-			 * and newChannels, we again search for correspondences and
-			 * try to match up X-axes intelligently with their channels.</p>
+			 * but more than one on newChannels, we just use the time from
+			 * the first channel in newChannels.  If there is more than
+			 * one X-axis on the current set of channels, we step through
+			 * the axes in newChannels and sequentially assign channels,
+			 * repeating the last axis in newChannels if necessary.</p>
 			 *
 			 * @param newChannels
 			 * 		the set of channels which we should use as a basis
@@ -625,10 +625,80 @@ public class ViewSwitchWidget extends HorizontalPanel {
 				if (currCount == 0 || newCount == 0)
 					return;
 
-				// TODO: Implement
 				if (currCount == 1) {
+					// In either case, we use the first new axis as the
+					// new set of bounds for currX
+					GraphAxis currX = getFirst(channels.getXAxes());
+					GraphAxis newX = getFirst(newChannels.getXAxes());
+					replaceBounds(currX, newX);
 				} else {
+					GraphAxis newX = null;
+					// We won't actually use null, since there is at
+					// least one X-axis in newChannels
+
+					int currIndex = 0;
+					List<GraphAxis> currAxes =
+						new ArrayList<GraphAxis>(channels.getXAxes());
+
+					for (GraphAxis temp: newChannels.getXAxes()) {
+						newX = temp; // Need newX to persist after the loop
+						if (currIndex >= currCount) break;
+						replaceBounds(currAxes.get(currIndex), newX);
+						currIndex++;
+					}
+
+					// Repeat the last new axis down the remaining
+					// current axes
+					for (; currIndex < currCount; currIndex++)
+						replaceBounds(currAxes.get(currIndex), newX);
 				}
+			}
+
+			/**
+			 * Replaces the bounds of currX with the bounds of newX.
+			 *
+			 * <p>It is expected, but not checked explicitly, that currX
+			 * and newX are not <tt>null</tt>.  If either is <tt>null</tt>,
+			 * a {@link java.lang.NullPointerException NullPointerException}
+			 * will be thrown.  However, it is not a problem that we don't
+			 * check, since this is an internal method, allowing us to control
+			 * all calls to it.</p>
+			 *
+			 * @param currX
+			 * 		the axis to change
+			 * @param newX
+			 * 		the axis with the bounds to use for currX
+			 */
+			private void replaceBounds(GraphAxis currX, GraphAxis newX) {
+				double oldMin = currX.getMin();
+				double oldMax = currX.getMax();
+				double newMin = newX.getMin();
+				double newMax = newX.getMax();
+
+				// Zoom in place to the right factor
+				currX.zoom((newMax - newMin) / (oldMax - oldMin),
+					(oldMin + oldMax) / 2);
+
+				// Now translate
+				oldMin = currX.getMin();
+				currX.uncheckedDrag(newMin - oldMin);
+			}
+
+			/**
+			 * Returns the first item in s.
+			 *
+			 * @param <T>
+			 * 		the type of object we should return
+			 * @param s
+			 * 		a nonempty set of objects
+			 * @return
+			 * 		the first item returned by the iterator
+			 * 		for s
+			 */
+			private <T> T getFirst(Set<T> s) {
+				for (T value: s)
+					return value;
+				return null;
 			}
 
 			/**
