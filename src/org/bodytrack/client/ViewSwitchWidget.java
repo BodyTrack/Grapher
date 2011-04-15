@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.bodytrack.client.ChannelManager.StringPair;
+
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.http.client.Request;
@@ -570,6 +572,16 @@ public class ViewSwitchWidget extends HorizontalPanel {
 			}
 
 			/**
+			 * Returns the URL to use to get the view information.
+			 *
+			 * @return
+			 * 		the URL to use to get the view information
+			 */
+			private String getViewUrl() {
+				return "/users/" + userId + "/views/get.json?name=" + viewName;
+			}
+
+			/**
 			 * Substitutes the view specified in responseText in for
 			 * the current view, based on the action specified to the
 			 * constructor for this object.
@@ -588,7 +600,7 @@ public class ViewSwitchWidget extends HorizontalPanel {
 					restoreTime(newChannels);
 					break;
 				case CHANNELS_ONLY:
-					// TODO: Action here
+					restoreChannels(newChannels);
 					break;
 				case FULL_VIEW:
 					channels.replaceChannels(newChannels);
@@ -702,13 +714,49 @@ public class ViewSwitchWidget extends HorizontalPanel {
 			}
 
 			/**
-			 * Returns the URL to use to get the view information.
+			 * Restores the channels from newChannels into the channels
+			 * instance variable.
 			 *
-			 * @return
-			 * 		the URL to use to get the view information
+			 * <p>This method is smart enough to keep existing channels
+			 * if they are part of newChannels, and only load those that
+			 * are not already available.  Any channels that are in
+			 * newChannels but not in the channels instance variable are
+			 * placed on the first X-axis in the grapher.</p>
+			 *
+			 * @param newChannels
+			 * 		a {@link org.bodytrack.client.ChannelManager
+			 * 		ChannelManager} containing the channels that we
+			 * 		should use to replace the channels in the channels
+			 * 		instance variable
 			 */
-			private String getViewUrl() {
-				return "/users/" + userId + "/views/get.json?name=" + viewName;
+			private void restoreChannels(ChannelManager newChannels) {
+				if (channels.getXAxes().size() == 0) {
+					// If we don't have any channels now, we do a full
+					// replacement, including any X-axes from newChannels
+					channels.replaceChannels(newChannels);
+					return;
+				}
+
+				// First remove all old plots that shouldn't stay around
+				for (DataPlot currPlot: channels.getDataPlots()) {
+					StringPair name = new StringPair(currPlot.getDeviceName(),
+						currPlot.getChannelName());
+					if (! (newChannels.getChannelNames().contains(name)))
+						channels.removeChannel(currPlot);
+				}
+
+				// Now add in all plots that aren't in the intersection of the
+				// old and new
+				for (DataPlot newPlot: newChannels.getDataPlots()) {
+					StringPair name = new StringPair(
+						newPlot.getDeviceName(), newPlot.getChannelName());
+
+					// Keep existing channels
+					if (channels.getChannelNames().contains(name))
+						continue;
+
+					channels.addChannel(newPlot);
+				}
 			}
 		}
 
