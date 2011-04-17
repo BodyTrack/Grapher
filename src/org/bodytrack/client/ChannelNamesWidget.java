@@ -180,7 +180,7 @@ public class ChannelNamesWidget extends FlowPanel
 		// persistently hold deviceMap info in a more usable form
 
 		// We know that json represents a map
-		JSONValue deviceValue = JSONParser.parse(json);
+		JSONValue deviceValue = JSONParser.parseStrict(json);
 
 		JSONObject deviceMap = deviceValue.isObject();
 		if (deviceMap == null)

@@ -10,6 +10,7 @@ import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.RequestCallback;
 import com.google.gwt.http.client.RequestException;
 import com.google.gwt.http.client.Response;
+import com.google.gwt.json.client.JSONParser;
 
 /**
  * Represents a single tile of data.
@@ -112,28 +113,15 @@ public final class GrapherTile {
 	 * Tells if the specified text refers to a JavaScript
 	 * Array object rather than to a dictionary.
 	 *
-	 * <h2 style="color: red">WARNING:</h2>
-	 *
-	 * <p>This uses the JavaScript eval() function, which makes
-	 * it dangerous if json is from an untrusted source.  See the
-	 * full warning at
-	 * {@link #retrieveTile(String, int, int, List, Alertable)}, which
-	 * completely applies here as well.</p>
-	 *
 	 * @param json
 	 * 		the JSON string to parse
 	 * @return
 	 * 		<tt>true</tt> if json represents a JavaScript
 	 * 		Array value, not a dictionary
 	 */
-	// TODO: This only works in GWT 2.1 and later:
-	// JSONValue parsed = JSONParser.parseStrict(json);
-
-	// This is still a hack, just less of a hack than before
-	private static native boolean isArray(String json) /*-{
-		eval("var obj = " + json);
-		return obj.__proto__["constructor"].toString().indexOf("Array") >= 0;
-	}-*/;
+	private static boolean isArray(String json) {
+		return JSONParser.parseStrict(json).isArray() != null;
+	}
 
 	/**
 	 * Reads an array from json, which is assumed to be a JSON

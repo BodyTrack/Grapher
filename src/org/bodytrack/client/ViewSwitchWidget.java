@@ -378,7 +378,7 @@ public class ViewSwitchWidget extends HorizontalPanel {
 	 */
 	private static void fillViewNames(List<String> viewNames,
 			String responseBody) {
-		JSONValue response = JSONParser.parse(responseBody);
+		JSONValue response = JSONParser.parseStrict(responseBody);
 		JSONArray views = response.isArray();
 		if (views == null)
 			return;
