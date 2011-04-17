@@ -730,12 +730,19 @@ public class ViewSwitchWidget extends HorizontalPanel {
 			 * 		instance variable
 			 */
 			private void restoreChannels(ChannelManager newChannels) {
+				// It's possible to move this if and the declaration of
+				// xAxis below the loop checking for intersection, but if
+				// the intersection between channels and newChannels is
+				// the empty set, this method becomes a call to
+				// channels.replaceChannels, which isn't what we want
 				if (channels.getXAxes().size() == 0) {
 					// If we don't have any channels now, we do a full
 					// replacement, including any X-axes from newChannels
 					channels.replaceChannels(newChannels);
 					return;
 				}
+
+				GraphAxis xAxis = getFirst(channels.getXAxes());
 
 				// First remove all old plots that shouldn't stay around
 				for (DataPlot currPlot: channels.getDataPlots()) {
@@ -755,6 +762,7 @@ public class ViewSwitchWidget extends HorizontalPanel {
 					if (channels.getChannelNames().contains(name))
 						continue;
 
+					newPlot.setXAxis(xAxis);
 					channels.addChannel(newPlot);
 				}
 			}
