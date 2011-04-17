@@ -2,9 +2,6 @@ package org.bodytrack.client;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-
-import org.bodytrack.client.ChannelManager.StringPair;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -640,8 +637,10 @@ public class ViewSwitchWidget extends HorizontalPanel {
 				if (currCount == 1) {
 					// In either case, we use the first new axis as the
 					// new set of bounds for currX
-					GraphAxis currX = getFirst(channels.getXAxes());
-					GraphAxis newX = getFirst(newChannels.getXAxes());
+					GraphAxis currX =
+						CollectionUtil.getFirst(channels.getXAxes());
+					GraphAxis newX =
+						CollectionUtil.getFirst(newChannels.getXAxes());
 					replaceBounds(currX, newX);
 				} else {
 					GraphAxis newX = null;
@@ -697,23 +696,6 @@ public class ViewSwitchWidget extends HorizontalPanel {
 			}
 
 			/**
-			 * Returns the first item in s.
-			 *
-			 * @param <T>
-			 * 		the type of object we should return
-			 * @param s
-			 * 		a nonempty set of objects
-			 * @return
-			 * 		the first item returned by the iterator
-			 * 		for s
-			 */
-			private <T> T getFirst(Set<T> s) {
-				for (T value: s)
-					return value;
-				return null;
-			}
-
-			/**
 			 * Restores the channels from newChannels into the channels
 			 * instance variable.
 			 *
@@ -731,7 +713,7 @@ public class ViewSwitchWidget extends HorizontalPanel {
 					return;
 				}
 
-				GraphAxis xAxis = getFirst(channels.getXAxes());
+				GraphAxis xAxis = CollectionUtil.getFirst(channels.getXAxes());
 				channels.clear();
 
 				for (DataPlot newPlot: newChannels.getDataPlots()) {
