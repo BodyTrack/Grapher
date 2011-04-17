@@ -93,8 +93,8 @@ public class DataPlot implements Alertable<GrapherTile> {
 	private static final double LN_2 = Math.log(2);
 
 	private final GraphWidget container;
-	private final GraphAxis xAxis;
-	private final GraphAxis yAxis;
+	private GraphAxis xAxis;
+	private GraphAxis yAxis;
 	private final Canvas canvas;
 
 	private final String deviceName;
@@ -916,6 +916,23 @@ public class DataPlot implements Alertable<GrapherTile> {
 	}
 
 	/**
+	 * Sets the X-axis for this <tt>DataPlot</tt>.
+	 *
+	 * <p>This is only intended to be used within this package.
+	 * In almost all cases, there is no need for this method.</p>
+	 *
+	 * @param axis
+	 * 		the new X-axis to use
+	 * @throws NullPointerException
+	 * 		if axis is <tt>null</tt>
+	 */
+	void setXAxis(GraphAxis axis) {
+		if (axis == null)
+			throw new NullPointerException("Cannot use null X-axis");
+		xAxis = axis;
+	}
+
+	/**
 	 * Returns the Y-Axis for this DataPlot.
 	 *
 	 * @return
@@ -923,6 +940,23 @@ public class DataPlot implements Alertable<GrapherTile> {
 	 */
 	public GraphAxis getYAxis() {
 		return yAxis;
+	}
+
+	/**
+	 * Sets the Y-axis for this <tt>DataPlot</tt>.
+	 *
+	 * <p>This is only intended to be used within this package.
+	 * In almost all cases, there is no need for this method.</p>
+	 *
+	 * @param axis
+	 * 		the new Y-axis to use
+	 * @throws NullPointerException
+	 * 		if axis is <tt>null</tt>
+	 */
+	void setYAxis(GraphAxis axis) {
+		if (axis == null)
+			throw new NullPointerException("Cannot use null Y-axis");
+		yAxis = axis;
 	}
 
 	/**
