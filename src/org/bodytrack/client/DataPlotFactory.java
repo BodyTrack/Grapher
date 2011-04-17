@@ -1,9 +1,9 @@
 package org.bodytrack.client;
 
+import gwt.g2d.client.graphics.Color;
+
 import java.util.HashMap;
 import java.util.Map;
-
-import gwt.g2d.client.graphics.Color;
 
 /**
  * A class with methods to create new objects of
@@ -130,7 +130,7 @@ public final class DataPlotFactory {
 	 * 		if deviceName or channelName is <tt>null</tt>
 	 */
 	public DataPlot buildDataPlot(String deviceName, String channelName) {
-		return buildDataPlot(deviceName, channelName, timeAxis,
+		return buildDataPlot(deviceName, channelName, getXAxis(),
 			getValueAxis(DataPlot.getDeviceChanName(deviceName, channelName)));
 	}
 
@@ -193,7 +193,7 @@ public final class DataPlotFactory {
 
 		String baseUrl = DataPlot.buildBaseUrl(userId,
 			deviceName, channelName);
-		return new ZeoDataPlot(widget, timeAxis,
+		return new ZeoDataPlot(widget, getXAxis(),
 			getValueAxis(DataPlot.getDeviceChanName(deviceName, channelName)),
 			deviceName, channelName, baseUrl, minLevel);
 	}
@@ -224,10 +224,25 @@ public final class DataPlotFactory {
 		String deviceChanName =
 			DataPlot.getDeviceChanName(deviceName, channelName);
 
-		return new PhotoDataPlot(widget, timeAxis,
+		return new PhotoDataPlot(widget, getXAxis(),
 			new PhotoGraphAxis(deviceChanName, getYAxisWidth()),
 			deviceName, channelName,
 			baseUrl, userId, minLevel);
+	}
+
+	/**
+	 * Returns the correct X-axis to use for a new plot.
+	 *
+	 * @return
+	 * 		the first axis currently being used, or the timeAxis
+	 * 		private variable, if no axes are currently being used
+	 */
+	private GraphAxis getXAxis() {
+		ChannelManager channels = widget.getChannelManager();
+		if (channels != null && channels.getXAxes().size() > 0)
+			return CollectionUtil.getFirst(channels.getXAxes());
+
+		return timeAxis;
 	}
 
 	/**

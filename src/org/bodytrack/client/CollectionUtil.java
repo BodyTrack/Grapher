@@ -12,10 +12,10 @@ public class CollectionUtil {
 	 * @param <T>
 	 * 		the type of object we should return
 	 * @param s
-	 * 		a nonempty set of objects
+	 * 		a set of objects
 	 * @return
 	 * 		the first item returned by the iterator
-	 * 		for s
+	 * 		for s, or <tt>null</tt> if s is empty
 	 */
 	public static <T> T getFirst(Set<T> s) {
 		for (T value: s)
