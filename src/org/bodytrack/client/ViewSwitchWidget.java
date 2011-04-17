@@ -717,12 +717,6 @@ public class ViewSwitchWidget extends HorizontalPanel {
 			 * Restores the channels from newChannels into the channels
 			 * instance variable.
 			 *
-			 * <p>This method is smart enough to keep existing channels
-			 * if they are part of newChannels, and only load those that
-			 * are not already available.  Any channels that are in
-			 * newChannels but not in the channels instance variable are
-			 * placed on the first X-axis in the grapher.</p>
-			 *
 			 * @param newChannels
 			 * 		a {@link org.bodytrack.client.ChannelManager
 			 * 		ChannelManager} containing the channels that we
@@ -730,11 +724,6 @@ public class ViewSwitchWidget extends HorizontalPanel {
 			 * 		instance variable
 			 */
 			private void restoreChannels(ChannelManager newChannels) {
-				// It's possible to move this if and the declaration of
-				// xAxis below the loop checking for intersection, but if
-				// the intersection between channels and newChannels is
-				// the empty set, this method becomes a call to
-				// channels.replaceChannels, which isn't what we want
 				if (channels.getXAxes().size() == 0) {
 					// If we don't have any channels now, we do a full
 					// replacement, including any X-axes from newChannels
@@ -743,32 +732,13 @@ public class ViewSwitchWidget extends HorizontalPanel {
 				}
 
 				GraphAxis xAxis = getFirst(channels.getXAxes());
+				channels.clear();
 
-				// First remove all old plots that shouldn't stay around
-				for (DataPlot currPlot: channels.getDataPlots()) {
-					StringPair name = new StringPair(currPlot.getDeviceName(),
-						currPlot.getChannelName());
-					if (! (newChannels.getChannelNames().contains(name)))
-						channels.removeChannel(currPlot);
-				}
-
-				// Now add in all plots that aren't in the intersection of the
-				// old and new
 				for (DataPlot newPlot: newChannels.getDataPlots()) {
-					StringPair name = new StringPair(
-						newPlot.getDeviceName(), newPlot.getChannelName());
-
-					// Keep existing channels
-					if (channels.getChannelNames().contains(name))
-						continue;
-
 					newPlot.setXAxis(xAxis);
 					channels.addChannel(newPlot);
 				}
 			}
 		}
-
-		// TODO: Maybe override setVisible to set this to invisible
-		// until we have a list of view names?
 	}
 }
