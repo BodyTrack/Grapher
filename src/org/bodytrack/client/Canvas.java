@@ -3,6 +3,8 @@ package org.bodytrack.client;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.bodytrack.client.InstanceController.InstanceProducer;
+
 import gwt.g2d.client.graphics.Color;
 import gwt.g2d.client.graphics.DirectShapeRenderer;
 import gwt.g2d.client.graphics.Surface;
@@ -62,13 +64,52 @@ public final class Canvas {
 	 */
 	public static final double DEFAULT_ALPHA = 1.0;
 
-	private Surface surface;
-	private DirectShapeRenderer renderer;
+	private final Surface surface;
+	private final DirectShapeRenderer renderer;
 
-	private static Map<Surface, Canvas> instances;
+	private static InstanceController<Surface, Canvas> instances;
 
 	static {
-		instances = new HashMap<Surface, Canvas>();
+		instances = new InstanceController<Surface, Canvas>(
+			new InstanceProducer<Surface, Canvas>() {
+				@Override
+				public Canvas newInstance(Surface param) {
+					// The constructor will throw the NullPointerException
+					// if param is null
+					return new Canvas(param);
+				}
+			});
+	}
+
+	/**
+	 * Creates a new <tt>Canvas</tt> that draws on the specified surface.
+	 *
+	 * @param s
+	 * 		the surface on which the new <tt>Canvas</tt> will draw
+	 * @throws NullPointerException
+	 * 		if s is <tt>null</tt>
+	 */
+	private Canvas(Surface s) {
+		if (s == null)
+			throw new NullPointerException("Can't draw on a null surface");
+
+		surface = s;
+		renderer = new DirectShapeRenderer(surface);
+	}
+
+	/**
+	 * Factory method to create a new Canvas object.
+	 *
+	 * @param s
+	 * 		the {@link gwt.g2d.client.graphics.Surface Surface}
+	 * 		on which the new Canvas will draw
+	 * @return
+	 * 		a Canvas with a pointer to s and to an associated
+	 * 		{@link gwt.g2d.client.graphics.DirectShapeRenderer
+	 * 		DirectShapeRenderer}
+	 */
+	public static Canvas buildCanvas(Surface s) {
+		return instances.newInstance(s);
 	}
 
 	/**
@@ -90,35 +131,6 @@ public final class Canvas {
 			return colorsToNames.get(color);
 
 		return color.getColorCode();
-	}
-
-	private Canvas() { }
-
-	/**
-	 * Factory method to create a new Canvas object.
-	 *
-	 * @param s
-	 * 		the {@link gwt.g2d.client.graphics.Surface Surface}
-	 * 		on which the new Canvas will draw
-	 * @return
-	 * 		a Canvas with a pointer to s and to an associated
-	 * 		{@link gwt.g2d.client.graphics.DirectShapeRenderer
-	 * 		DirectShapeRenderer}
-	 */
-	public static Canvas buildCanvas(Surface s) {
-		if (s == null)
-			throw new NullPointerException("Surface cannot be null");
-
-		// We have already made a Canvas that points to s
-		if (instances.containsKey(s))
-			return instances.get(s);
-
-		Canvas result = new Canvas();
-		result.surface = s;
-		result.renderer = new DirectShapeRenderer(result.surface);
-
-		instances.put(s, result);
-		return result;
 	}
 
 	/**
