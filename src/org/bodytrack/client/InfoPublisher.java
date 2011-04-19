@@ -34,7 +34,7 @@ public final class InfoPublisher {
 		$wnd.grapherState = function() {
 			// In Java-like syntax:
 			// return widget.getCurrentSavableView();
-			return widget.@org.bodytrack.client.ViewSwitchWidget::getCurrentSavableView();
+			return widget.@org.bodytrack.client.ViewSwitchWidget::getCurrentSavableView()();
 		};
 	}-*/;
 
