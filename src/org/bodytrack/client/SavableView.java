@@ -9,6 +9,7 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.json.client.JSONArray;
+import com.google.gwt.json.client.JSONNull;
 import com.google.gwt.json.client.JSONNumber;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONString;
@@ -121,7 +122,11 @@ public final class SavableView extends JavaScriptObject {
 		}
 
 		JSONObject result = new JSONObject();
-		result.put("name", new JSONString(name));
+		result.put("name", name != null ? new JSONString(name)
+										: JSONNull.getInstance());
+			// The JSONString constructor throws an exception on
+			// null, so we handle that gracefully with the line above
+
 		result.put("x_axes", xAxesJson);
 		result.put("y_axes", yAxesJson);
 		result.put("channels", plotsJson);
