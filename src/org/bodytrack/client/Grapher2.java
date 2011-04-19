@@ -18,9 +18,6 @@ public class Grapher2 implements EntryPoint {
 	private List<DataPlot> plots;
 	private DataPlotFactory factory;
 
-	private static final String ZEO_COLOR_STRING = "ZEO";
-	private static final String PHOTO_COLOR_STRING = "PHOTO";
-
 	/**
 	 * This is the entry point method.
 	 */
@@ -45,6 +42,10 @@ public class Grapher2 implements EntryPoint {
 				new CurrentChannelsWidget(mgr);
 			ChannelNamesWidget allChans = new ChannelNamesWidget(mgr, factory);
 
+			// Now that we have a ViewSwitchWidget, we want to make
+			// InfoPublisher work for everyone
+			InfoPublisher.setWidget(viewSwitcher);
+
 			setupGraphWidget();
 
 			mainLayout.add(viewSwitcher);
@@ -60,9 +61,6 @@ public class Grapher2 implements EntryPoint {
 	}
 
 	private void setupGraphWidget() {
-		// Have to put this early
-		InfoPublisher publisher = InfoPublisher.getInstance();
-
 		JsArrayString channels = getChannelNames();
 
 		// This is used to ensure the plots are added in the
@@ -91,22 +89,14 @@ public class Grapher2 implements EntryPoint {
 				plot = factory.buildZeoPlot(
 					deviceName, channelName);
 				temporaryPlots.add(0, plot);
-				publisher.publishChannelColor(deviceChanName,
-					ZEO_COLOR_STRING);
 			} else if ("photo".equals(chartType)) {
 				plot = factory.buildPhotoPlot(
 					deviceName, channelName);
 				temporaryPlots.add(plot);
-
-				publisher.publishChannelColor(deviceChanName,
-					PHOTO_COLOR_STRING);
 			} else {
 				plot = factory.buildDataPlot(
 					deviceName, channelName);
 				temporaryPlots.add(plot);
-
-				publisher.publishChannelColor(deviceChanName,
-					Canvas.friendlyName(plot.getColor()));
 			}
 		}
 

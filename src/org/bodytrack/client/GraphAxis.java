@@ -1,8 +1,5 @@
 package org.bodytrack.client;
 
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-
 import gwt.g2d.client.graphics.Color;
 import gwt.g2d.client.graphics.DirectShapeRenderer;
 import gwt.g2d.client.graphics.Surface;
@@ -10,11 +7,12 @@ import gwt.g2d.client.graphics.TextAlign;
 import gwt.g2d.client.graphics.TextBaseline;
 import gwt.g2d.client.math.Vector2;
 
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+
 import com.google.gwt.i18n.client.NumberFormat;
 
 public class GraphAxis {
-	public static final String NO_CHANNEL_NAME = "";
-
 	public double majorTickMinSpacingPixels = 50;
 	public double majorTickWidthPixels = 8;
 
@@ -38,7 +36,6 @@ public class GraphAxis {
 	private BBox bounds;
 
 	private final boolean isXAxis;
-	private final String channelName;
 
 	// For determining whether to highlight this GraphAxis
 	private PlottablePoint highlightedPoint; // null if this isn't highlighted
@@ -54,15 +51,13 @@ public class GraphAxis {
 
 	// Same as the other constructor, but attempts to guess whether this
 	// is an X-axis by examining basis.
-	public GraphAxis(String channelName, double min, double max,
-			Basis basis, double width) {
-		this(channelName, min, max, basis, width,
+	public GraphAxis(double min, double max, Basis basis, double width) {
+		this(min, max, basis, width,
 			Basis.xDownYRight.equals(basis));
 	}
 
-	public GraphAxis(String channelName, double min, double max,
-			Basis basis, double width, boolean isXAxis) {
-		this.channelName = channelName;
+	public GraphAxis(double min, double max, Basis basis, double width,
+			boolean isXAxis) {
 		this.min = min;
 		this.max = max;
 		this.basis = basis;
@@ -70,11 +65,6 @@ public class GraphAxis {
 		this.isXAxis = isXAxis;
 
 		highlightedPoint = null;
-
-		if (! this.isXAxis)
-			InfoPublisher.getInstance().addYAxis(this.channelName);
-
-		publishBounds();
 	}
 
 	public void layout(Vector2 begin, double length) {
@@ -610,7 +600,6 @@ public class GraphAxis {
 		this.max = about + factor * (this.max - about);
 		clampToRange();
 		rescale();
-		publishBounds();
 	}
 
 	public void drag(Vector2 from, Vector2 to) {
@@ -636,22 +625,5 @@ public class GraphAxis {
 		uncheckedTranslate(motion);
 		clampToRange();
 		rescale();
-		publishBounds();
-	}
-
-	/**
-	 * Uses an InfoPublisher to publish the min and max values to
-	 * the rest of the webpage.
-	 *
-	 * <p> Note that this method is intended to be used by
-	 * subclasses.</p>
-	 */
-	protected void publishBounds() {
-		InfoPublisher pub = InfoPublisher.getInstance();
-
-		if (isXAxis)
-			pub.publishXAxisBounds(min, max);
-		else
-			pub.publishYAxisBounds(channelName, min, max);
 	}
 }

@@ -60,7 +60,7 @@ public final class InfoPublisher {
 	 * @return
 	 * 		an InfoPublisher to be used by this widget
 	 */
-	public static InfoPublisher getInstance(ViewSwitchWidget widget) {
+	public static InfoPublisher getInstance() {
 		return instance;
 	}
 }

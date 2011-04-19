@@ -127,7 +127,7 @@ public class BodyTrackWidget extends VerticalPanel {
 			min = center - .5 * span;
 			max = center + .5 * span;
 
-			GraphAxis yAxis = new GraphAxis(channel.ch_name(),
+			GraphAxis yAxis = new GraphAxis(
 					min, max,
 					Basis.xRightYUp,
 					axisMargin * 3,

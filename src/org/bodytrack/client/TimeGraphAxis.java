@@ -22,7 +22,7 @@ public class TimeGraphAxis extends GraphAxis {
 
 	public TimeGraphAxis(double min, double max, Basis basis,
 			double width, boolean isXAxis) {
-		super(GraphAxis.NO_CHANNEL_NAME, min, max, basis, width, isXAxis);
+		super(min, max, basis, width, isXAxis);
 		minRange = -2147483640;
 		maxRange = 2147483640;
 		hasMinRange = hasMaxRange = true;

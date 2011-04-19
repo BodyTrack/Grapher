@@ -182,8 +182,6 @@ public final class SavableView extends JavaScriptObject {
 			channel.getSecond());
 
 		return new GraphAxis(
-			DataPlot.getDeviceChanName(channel.getFirst(),
-				channel.getSecond()),
 			getMinValue(yAxisIndex),
 			getMaxValue(yAxisIndex),
 			Basis.xRightYUp,

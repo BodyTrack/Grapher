@@ -221,11 +221,9 @@ public final class DataPlotFactory {
 
 		// baseUrl should be /photos/:user_id/ for photos
 		String baseUrl = "/photos/" + userId + "/";
-		String deviceChanName =
-			DataPlot.getDeviceChanName(deviceName, channelName);
 
 		return new PhotoDataPlot(widget, getXAxis(),
-			new PhotoGraphAxis(deviceChanName, getYAxisWidth()),
+			new PhotoGraphAxis(getYAxisWidth()),
 			deviceName, channelName,
 			baseUrl, userId, minLevel);
 	}
@@ -267,8 +265,7 @@ public final class DataPlotFactory {
 		double initialMin = getInitialMin(deviceChanName);
 		double initialMax = getInitialMax(deviceChanName);
 
-		return new GraphAxis(deviceChanName,
-			initialMin > -1e300 ? initialMin : -1,
+		return new GraphAxis(initialMin > -1e300 ? initialMin : -1,
 			initialMax > -1e300 ? initialMax : 1,
 			Basis.xRightYUp,
 			getYAxisWidth(),

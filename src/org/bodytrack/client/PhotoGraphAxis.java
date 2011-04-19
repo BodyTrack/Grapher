@@ -38,9 +38,8 @@ public class PhotoGraphAxis extends GraphAxis {
 	 */
 	public static final double PHOTO_HEIGHT = 0.35;
 
-	public PhotoGraphAxis(String channelName, double width) {
-		super(channelName, INITIAL_MIN, INITIAL_MAX,
-			VERTICAL_AXIS_BASIS, width, false);
+	public PhotoGraphAxis(double width) {
+		super(INITIAL_MIN, INITIAL_MAX, VERTICAL_AXIS_BASIS, width, false);
 	}
 
 	/**
