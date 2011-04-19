@@ -17,6 +17,7 @@ package org.bodytrack.client;
  * and the rest of the webpage.  This is through the window.grapherState
  * function, which returns the current view.</p>
  */
+// TODO: Maybe make this into a static class, with no instances
 public final class InfoPublisher {
 	private static InfoPublisher instance = null;
 

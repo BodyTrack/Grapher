@@ -541,13 +541,14 @@ public class ViewSwitchWidget extends HorizontalPanel {
 			if (numViews == 0)
 				return;
 
-			viewNamesControl.resizeRows(numViews);
-
-			for (int i = 0; i < numViews; i++) {
-				String name = viewNames.get(i);
-
-				if (name.equals(currentView))
+			int row = 0;
+			for (String name: viewNames) {
+				// Don't show the current view name
+				if (name.equals(currentView)) {
+					numViews--;
 					continue;
+				}
+				// TODO: Do I really want to disable this?
 
 				Anchor nameAnchor = new Anchor(name);
 				nameAnchor.addClickHandler(new ViewClickHandler(name,
@@ -561,11 +562,13 @@ public class ViewSwitchWidget extends HorizontalPanel {
 				timeAnchor.addClickHandler(new ViewClickHandler(name,
 					ViewClickHandler.TIME_ONLY));
 
-				viewNamesControl.setWidget(i, 0, nameAnchor);
-				viewNamesControl.setWidget(i, 1, channelsAnchor);
-				viewNamesControl.setWidget(i, 2, timeAnchor);
+				viewNamesControl.setWidget(row, 0, nameAnchor);
+				viewNamesControl.setWidget(row, 1, channelsAnchor);
+				viewNamesControl.setWidget(row, 2, timeAnchor);
+				row++;
 			}
 
+			viewNamesControl.resizeRows(numViews);
 			content.add(viewNamesControl);
 		}
 
