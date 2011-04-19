@@ -417,6 +417,11 @@ public class ViewSwitchWidget extends HorizontalPanel {
 	 * <p>This is intended only as a helper method for
 	 * {@link #retrieveViewNames(String, List, Alertable)}.</p>
 	 *
+	 * <p>As does the
+	 * {@link GrapherTile#retrieveTile(String, int, int, List, Alertable)}
+	 * method, this method uses JavaScript eval, which represents a
+	 * security risk.  Only pass trusted content to this method.</p>
+	 *
 	 * @param viewNames
 	 * 		the list to be filled
 	 * @param responseBody
@@ -425,7 +430,7 @@ public class ViewSwitchWidget extends HorizontalPanel {
 	 */
 	private static void fillViewNames(List<String> viewNames,
 			String responseBody) {
-		JSONValue response = JSONParser.parseStrict(responseBody);
+		JSONValue response = JSONParser.parseLenient(responseBody);
 		JSONArray views = response.isArray();
 		if (views == null)
 			return;
