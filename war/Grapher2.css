@@ -125,3 +125,12 @@ and removing channels */
     border: 2px outset black;
     background: #EEF;
 }
+
+.savedViewPopup a.currentViewName {
+    text-decoration: none;
+    color: blue;
+}
+
+.savedViewPopup a.currentViewName:hover {
+    background: lightBlue;
+}
