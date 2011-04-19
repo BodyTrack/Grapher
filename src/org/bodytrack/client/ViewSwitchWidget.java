@@ -33,8 +33,6 @@ import com.google.gwt.user.client.ui.PopupPanel.PositionCallback;
  * and handles buttons and popup windows so that the user interface
  * for views is all out of this class.
  */
-// TODO: Keep track of current view, probably in this class
-// TODO: Comment new code
 public class ViewSwitchWidget extends HorizontalPanel {
 	/**
 	 * The ID attribute of this element.  Note that this only
@@ -47,7 +45,7 @@ public class ViewSwitchWidget extends HorizontalPanel {
 	 * The name of the CSS class on the popups that come from
 	 * this widget.
 	 */
-	public static final String POPUP_CLASS_NAME = "savedViewPopup";
+	private static final String POPUP_CLASS_NAME = "savedViewPopup";
 
 	/**
 	 * The maximum number of view names that will be visible to
@@ -58,6 +56,8 @@ public class ViewSwitchWidget extends HorizontalPanel {
 	private final GraphWidget graphWidget;
 	private final int userId;
 	private final ChannelManager channels;
+	private String currentView;
+
 	private final ViewSwitchClickHandler clickHandler;
 	private final PushButton saveView;
 	private final PushButton restoreView;
@@ -85,6 +85,8 @@ public class ViewSwitchWidget extends HorizontalPanel {
 		this.graphWidget = graphWidget;
 		this.userId = userId;
 		channels = mgr;
+		currentView = null;
+
 		clickHandler = new ViewSwitchClickHandler();
 		saveView = new PushButton("Save", clickHandler);
 		restoreView = new PushButton("Restore", clickHandler);
@@ -93,6 +95,46 @@ public class ViewSwitchWidget extends HorizontalPanel {
 
 		add(saveView);
 		add(restoreView);
+	}
+
+	/**
+	 * Returns the name of the current view, or <tt>null</tt> if there
+	 * is no current view.
+	 *
+	 * @return
+	 * 		the name of the current view (<tt>null</tt> represents no view)
+	 */
+	public String getCurrentViewName() {
+		return currentView;
+	}
+
+	/**
+	 * Generates the current view as a <tt>SavableView</tt>.
+	 *
+	 * @return
+	 * 		the current view as a <tt>SavableView</tt>
+	 */
+	public SavableView getCurrentSavableView() {
+		return SavableView.buildView(channels, currentView);
+	}
+
+	/**
+	 * Navigates to the view specified by viewName.
+	 *
+	 * <p>It is expected that viewName references a valid view.  If this
+	 * is not the case, this method does absolutely nothing.</p>
+	 *
+	 * @param viewName
+	 * 		the name of the view to use to replace the current view
+	 * @throws NullPointerException
+	 * 		if viewName is <tt>null</tt>
+	 */
+	public void navigateToView(String viewName) {
+		if (viewName == null)
+			throw new NullPointerException("Can't navigate to null view");
+
+		new ViewRestorePopup().replaceCurrentView(viewName,
+			ViewRestorePopup.ViewClickHandler.FULL_VIEW);
 	}
 
 	/**
@@ -118,21 +160,30 @@ public class ViewSwitchWidget extends HorizontalPanel {
 				return;
 
 			Object sourceObject = event.getSource();
-			if (sourceObject == saveView) {
-				showPopup(new ViewSavePopup(null), saveView);
-			} else if (sourceObject == restoreView) {
+			if (sourceObject == saveView)
+				showPopup(new ViewSavePopup(), saveView);
+			else if (sourceObject == restoreView)
 				showPopup(new ViewRestorePopup(), restoreView);
-			}
 		}
 
-		private void showPopup(final PopupPanel popup, final PushButton pos) {
+		/**
+		 * Utility method to show a <tt>PopupPanel</tt> aligned such that
+		 * the top left of the popup is at the bottom left of the button.
+		 *
+		 * @param popup
+		 * 		the non-<tt>null</tt> panel to show aligned with alignButton
+		 * @param alignButton
+		 * 		the button to use to align popup
+		 */
+		private void showPopup(final PopupPanel popup,
+				final PushButton alignButton) {
 			popup.setPopupPositionAndShow(new PositionCallback() {
 				@Override
 				public void setPosition(int offsetWidth,
 						int offsetHeight) {
-					int left = pos.getAbsoluteLeft();
-					int top = pos.getAbsoluteTop()
-						+ pos.getOffsetHeight();
+					int left = alignButton.getAbsoluteLeft();
+					int top = alignButton.getAbsoluteTop()
+						+ alignButton.getOffsetHeight();
 					popup.setPopupPosition(left, top);
 				}
 			});
@@ -149,7 +200,6 @@ public class ViewSwitchWidget extends HorizontalPanel {
 	 * should be created every time.</p>
 	 */
 	private class ViewSavePopup extends PopupPanel {
-		private final String currentView;
 		private final List<String> viewNames;
 
 		private final VerticalPanel content;
@@ -164,18 +214,12 @@ public class ViewSwitchWidget extends HorizontalPanel {
 
 		/**
 		 * Creates a new <tt>ViewSavePopup</tt> object but does not show it.
-		 *
-		 * @param currentView
-		 * 		the name of the current view
 		 */
-		public ViewSavePopup(String currentView) {
+		public ViewSavePopup() {
 			super(true, true);
 
-			this.currentView = currentView;
 			viewNames = new ArrayList<String>();
-
 			saveName = new TextBox();
-
 			save = new PushButton("Save", new ClickHandler() {
 				/**
 				 * Called whenever save is clicked.
@@ -218,12 +262,15 @@ public class ViewSwitchWidget extends HorizontalPanel {
 			viewNamesControl.addClickHandler(new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
+					// Just set the content of saveName to the selected value,
+					// and highlight it and give it the focus
 					int selectedIndex = viewNamesControl.getSelectedIndex();
 					String selectedValue =
 						viewNamesControl.getValue(selectedIndex);
 
 					saveName.setText(selectedValue);
 					saveName.selectAll();
+					saveName.setFocus(true);
 				}
 			});
 
@@ -301,8 +348,8 @@ public class ViewSwitchWidget extends HorizontalPanel {
 			// Funny ordering because saveName.selectAll() only
 			// works when saveName is attached to the document
 			// and not hidden
-			if (this.currentView != null) {
-				saveName.setText(currentView);
+			if (getCurrentViewName() != null) {
+				saveName.setText(getCurrentViewName());
 				saveName.selectAll();
 			}
 
@@ -425,8 +472,6 @@ public class ViewSwitchWidget extends HorizontalPanel {
 	 * from a list.
 	 */
 	private class ViewRestorePopup extends PopupPanel {
-		// TODO: Possibly use the current view name to stop
-		// that name from appearing in the list of views
 		private final List<String> viewNames;
 
 		private final ScrollPanel content;
@@ -460,11 +505,31 @@ public class ViewSwitchWidget extends HorizontalPanel {
 		}
 
 		/**
+		 * Just a front-end for the {@link ViewClickHandler#replaceCurrentView()}
+		 * method.
+		 *
+		 * @param viewName
+		 * 		the name of the view to navigate to
+		 * @param action
+		 * 		the action to take, as defined by the constants in
+		 * 		the {@link ViewClickHandler} class
+		 * @throws NullPointerException
+		 * 		if viewName is <tt>null</tt>
+		 */
+		public void replaceCurrentView(String viewName, int action) {
+			if (viewName == null)
+				throw new NullPointerException("Can't navigate to null view");
+
+			new ViewClickHandler(viewName, action).replaceCurrentView();
+		}
+
+		/**
 		 * Fills and shows the viewNamesControl widget.
 		 *
 		 * <p>Uses the viewNames private variable to get the list of
 		 * current views, and then adds all those names to
-		 * viewNamesControl.</p>
+		 * viewNamesControl.  There is one exception, however: the current
+		 * view name does not show up in the list of possible views.</p>
 		 */
 		private void showViewNames() {
 			int numViews = viewNames.size();
@@ -475,6 +540,9 @@ public class ViewSwitchWidget extends HorizontalPanel {
 
 			for (int i = 0; i < numViews; i++) {
 				String name = viewNames.get(i);
+
+				if (name.equals(currentView))
+					continue;
 
 				Anchor nameAnchor = new Anchor(name);
 				nameAnchor.addClickHandler(new ViewClickHandler(name,
@@ -543,10 +611,24 @@ public class ViewSwitchWidget extends HorizontalPanel {
 			 * attached.
 			 *
 			 * <p>This method completely ignores event, instead blindly
-			 * performing the actions specified in the constructor.</p>
+			 * performing the actions specified in the constructor.  In fact,
+			 * all this does is call {@link #replaceCurrentView()}</p>
+			 *
+			 * @see #replaceCurrentView()
 			 */
 			@Override
 			public void onClick(ClickEvent event) {
+				replaceCurrentView();
+			}
+
+			/**
+			 * Performs the actions specified in the constructor.
+			 *
+			 * <p>This method is available publicly so that a caller does
+			 * not have to go though the {@link #onClick(ClickEvent)}
+			 * event in order to replace the current view.</p>
+			 */
+			public void replaceCurrentView() {
 				RequestBuilder builder =
 					new RequestBuilder(RequestBuilder.GET, getViewUrl());
 
@@ -583,11 +665,14 @@ public class ViewSwitchWidget extends HorizontalPanel {
 			 * the current view, based on the action specified to the
 			 * constructor for this object.
 			 *
+			 * <p>If the action is equal to FULL_VIEW, this also updates
+			 * the currentView field of the parent
+			 * {@link ViewSwitchWidget}.</p>
+			 *
 			 * @param responseText
 			 * 		the text we received from the server, giving the
 			 * 		information from the saved view
 			 */
-			// TODO: Update current view name in this method
 			private void substituteView(String responseText) {
 				SavableView view = SavableView.buildView(responseText);
 
@@ -601,6 +686,7 @@ public class ViewSwitchWidget extends HorizontalPanel {
 					break;
 				case FULL_VIEW:
 					channels.replaceChannels(newChannels);
+					currentView = view.getName();
 					break;
 				}
 
