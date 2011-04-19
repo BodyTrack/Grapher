@@ -248,6 +248,7 @@ public class ViewSwitchWidget extends HorizontalPanel {
 						RequestBuilder.POST, getViewWriteUrl());
 					builder.setHeader("Content-type",
 						"application/x-www-form-urlencoded");
+					boolean shouldChangeCurrentView = true;
 					try {
 						builder.sendRequest(URL.encode("name=" +
 							viewName + "&data=" +
@@ -255,8 +256,13 @@ public class ViewSwitchWidget extends HorizontalPanel {
 							new EmptyRequestCallback());
 						// TODO: Check the return value
 					} catch (RequestException e) {
-						// Nothing to do here
+						shouldChangeCurrentView = false;
 					}
+
+					// Update the current view name, as long as there
+					// is no error
+					if (shouldChangeCurrentView)
+						currentView = viewName;
 
 					// Hide the popup
 					ViewSavePopup.this.hide();
