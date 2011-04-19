@@ -48,6 +48,11 @@ public class ViewSwitchWidget extends HorizontalPanel {
 	private static final String POPUP_CLASS_NAME = "savedViewPopup";
 
 	/**
+	 * The CSS class name that is added to the anchor for the current view
+	 */
+	private static final String CURRENT_VIEW_CLASS = "currentViewName";
+
+	/**
 	 * The maximum number of view names that will be visible to
 	 * the user at any time, in any popup from this widget.
 	 */
@@ -541,18 +546,14 @@ public class ViewSwitchWidget extends HorizontalPanel {
 			if (numViews == 0)
 				return;
 
-			int row = 0;
-			for (String name: viewNames) {
-				// Don't show the current view name
-				if (name.equals(currentView)) {
-					numViews--;
-					continue;
-				}
-				// TODO: Do I really want to disable this?
+			for (int row = 0; row < numViews; row++) {
+				String name = viewNames.get(row);
 
 				Anchor nameAnchor = new Anchor(name);
 				nameAnchor.addClickHandler(new ViewClickHandler(name,
 					ViewClickHandler.FULL_VIEW));
+				if (name.equals(currentView))
+					nameAnchor.addStyleName(CURRENT_VIEW_CLASS);
 
 				Anchor channelsAnchor = new Anchor("Channels Only");
 				channelsAnchor.addClickHandler(new ViewClickHandler(name,
@@ -565,7 +566,6 @@ public class ViewSwitchWidget extends HorizontalPanel {
 				viewNamesControl.setWidget(row, 0, nameAnchor);
 				viewNamesControl.setWidget(row, 1, channelsAnchor);
 				viewNamesControl.setWidget(row, 2, timeAnchor);
-				row++;
 			}
 
 			viewNamesControl.resizeRows(numViews);
