@@ -24,6 +24,7 @@ import gwt.g2d.client.graphics.Surface;
  * <p>This class is instance-controlled for efficiency: under this
  * system, only one DirectShapeRenderer is created per Surface.</p>
  */
+// TODO: Use the colors out of ColorUtils
 public final class Canvas {
 	/*
 	 * All the following colors should have exactly the same values as

@@ -13,7 +13,9 @@ import gwt.g2d.client.graphics.Color;
  * <a href="http://www.w3.org/TR/css3-color/">w3.org</a>.</p>
  */
 // TODO: Add all named CSS colors, not just the basic colors
-public class ColorUtils {
+// TODO: To do this, define my own list of KnownColor instances, since
+// KnownColor already defines all the constants I need
+public final class ColorUtils {
 	// --------------------------------------------------------------
 	// The CSS basic colors
 	// --------------------------------------------------------------
@@ -163,9 +165,146 @@ public class ColorUtils {
 	}
 
 	public static Color getColor(String name) {
+		if (name == null)
+			throw new NullPointerException("Can't get color for null name");
+
 		if (haveColorObject(name))
 			return basicNameToColor.get(name);
 
 		return null;
+	}
+
+	/**
+	 * A smarter version of {@link #getColor(String)}.
+	 *
+	 * <p>This first tries to use {@link #getColor(String)}, and, if that
+	 * fails, tries to parse name for some common color code types.  If
+	 * that also fails, returns <tt>null</tt>.</p>
+	 *
+	 * @param name
+	 * 		the name of the color to check
+	 * @return
+	 * 		a color for name if possible, <tt>null</tt> otherwise
+	 * @throws NullPointerException
+	 * 		if name is <tt>null</tt>
+	 */
+	public static Color buildColor(String name) {
+		Color namedColor = getColor(name);
+		if (namedColor != null)
+			return namedColor;
+
+		name = name.toUpperCase(); // Important for both method calls
+
+		if (name.startsWith("#"))
+			return parseHexColor(name);
+		else if (name.startsWith("RGBA")) // We just upper-cased name
+			return parseRgbaColor(name);
+
+		return null;
+	}
+
+	/**
+	 * Parses a color code of the form &quot;#RGB&quot; or &quot;#RRGGBB&quot;
+	 *
+	 * @param name
+	 * 		the non-<tt>null</tt> upper-case color code to parse
+	 * @return
+	 * 		a color representing the color a browser would handle name as,
+	 * 		or <tt>null</tt> if we can't parse it
+	 */
+	private static Color parseHexColor(String name) {
+		if (name.startsWith("#"))
+			name = name.substring(1);
+		else
+			return null; // We only deal with colors of the form "#RRGGBB"
+
+		if (name.length() == 3) {
+			// Case where "#ABC" is interpreted to mean "#AABBCC"
+			char r = name.charAt(0);
+			char g = name.charAt(1);
+			char b = name.charAt(2);
+
+			try {
+				// TODO: Possibly replace this with a recursive
+				// call, after doubling the characters and putting
+				// the # sign back on
+				int redHalf = Character.digit(r, 16);
+				int greenHalf = Character.digit(g, 16);
+				int blueHalf = Character.digit(b, 16);
+
+				int red = (redHalf << 4) + redHalf;
+				int green = (greenHalf << 4) + greenHalf;
+				int blue = (blueHalf << 4) + blueHalf;
+
+				return new Color(red, green, blue);
+			} catch (NumberFormatException e) {
+				return null;
+			}
+		} else if (name.length() == 6) {
+			// Normal case
+			String r = name.substring(0, 2);
+			String g = name.substring(2, 4);
+			String b = name.substring(4);
+
+			try {
+				int red = Integer.parseInt(r, 16);
+				int green = Integer.parseInt(g, 16);
+				int blue = Integer.parseInt(b, 16);
+
+				return new Color(red, green, blue);
+			} catch (NumberFormatException e) {
+				return null;
+			}
+		}
+
+		return null; // Ill-formed color code
+	}
+
+	/**
+	 * Parses a color code of the form &quot;RGBA(red,green,blue,alpha)&quot;
+	 *
+	 * <p>This is especially useful, since it parses the default returned value
+	 * of {@link gwt.g2d.client.graphics.Color#getColorCode()
+	 * Color.getColorCode()}.</p>
+	 *
+	 * @param name
+	 * 		the non-<tt>null</tt> upper-case color code to parse
+	 * @return
+	 * 		a color representing the color a browser would handle name as,
+	 * 		or <tt>null</tt> if we can't parse it
+	 */
+	private static Color parseRgbaColor(String name) {
+		// Pull off the rgba
+		if (name.startsWith("RGBA"))
+			name = name.substring(4);
+		else
+			return null; // We only deal with colors of the form RGBA(...)
+
+		// Pull off the parens
+		if (name.startsWith("(") && name.endsWith(")"))
+			name = name.substring(1, name.length() - 1);
+		else
+			return null;
+
+		// Now for the real parsing
+		String[] parts = name.split(",");
+		if (parts.length != 4)
+			return null;
+
+		String r = parts[0].trim();
+		String g = parts[1].trim();
+		String b = parts[2].trim();
+		String a = parts[3].trim();
+
+		try {
+			int red = Integer.parseInt(r);
+			int green = Integer.parseInt(g);
+			int blue = Integer.parseInt(b);
+			double alpha = Double.parseDouble(a);
+
+			return new Color(red, green, blue, alpha);
+		} catch (NumberFormatException e) {
+			return null;
+		}
 	}
 }
