@@ -164,7 +164,7 @@ public final class ColorUtils {
 		return basicNameToColor.containsKey(name.toLowerCase());
 	}
 
-	public static Color getColor(String name) {
+	public static Color getBasicColor(String name) {
 		if (name == null)
 			throw new NullPointerException("Can't get color for null name");
 
@@ -175,11 +175,11 @@ public final class ColorUtils {
 	}
 
 	/**
-	 * A smarter version of {@link #getColor(String)}.
+	 * A smarter version of {@link #getBasicColor(String)}.
 	 *
-	 * <p>This first tries to use {@link #getColor(String)}, and, if that
-	 * fails, tries to parse name for some common color code types.  If
-	 * that also fails, returns <tt>null</tt>.</p>
+	 * <p>This first tries to use {@link #getBasicColor(String)}, and, if
+	 * that fails, tries to parse name for some common color code styles.
+	 * If that also fails, returns <tt>null</tt>.</p>
 	 *
 	 * @param name
 	 * 		the name of the color to check
@@ -189,7 +189,7 @@ public final class ColorUtils {
 	 * 		if name is <tt>null</tt>
 	 */
 	public static Color buildColor(String name) {
-		Color namedColor = getColor(name);
+		Color namedColor = getBasicColor(name);
 		if (namedColor != null)
 			return namedColor;
 

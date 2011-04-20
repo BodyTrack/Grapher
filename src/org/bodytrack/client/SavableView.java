@@ -1,5 +1,7 @@
 package org.bodytrack.client;
 
+import gwt.g2d.client.graphics.Color;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,10 +36,12 @@ import com.google.gwt.json.client.JSONString;
  * dictionary is channels.  The value for this should be itself a
  * dictionary, with device names as keys.  Each device name points to a
  * nonempty dictionary, with channel names as keys.  Each channel name points
- * to a dictionary, with required keys x_axis and y_axis. The x_axis key has
- * a nonnegative integer value, which points to the index in x_axes to use
- * for the x-axis on that channel name.  Similarly, the y_axis key is a
- * pointer into the y_axes array.  In both cases, indices start at 0.</p>
+ * to a dictionary, with required keys x_axis, y_axis, and color.  The x_axis
+ * key has a nonnegative integer value, which points to the index in x_axes
+ * to use for the x-axis on that channel name.  Similarly, the y_axis key
+ * is a pointer into the y_axes array.  In both cases, indices start at 0.
+ * The color key is some HTML color string that represents the color of
+ * the plotted channel.</p>
  */
 // TODO: implement units and label fields for Y-axes, which are not
 // currently used or supported in the DataPlot and ChannelManager classes
@@ -108,17 +112,19 @@ public final class SavableView extends JavaScriptObject {
 			String deviceName = plot.getDeviceName();
 			String channelName = plot.getChannelName();
 
-			JSONObject axisIndices = new JSONObject();
-			axisIndices.put("x_axis",
+			JSONObject specificChannelInfo = new JSONObject();
+			specificChannelInfo.put("x_axis",
 				new JSONNumber(xAxes.indexOf(plot.getXAxis())));
-			axisIndices.put("y_axis",
+			specificChannelInfo.put("y_axis",
 				new JSONNumber(yAxes.indexOf(plot.getYAxis())));
+			specificChannelInfo.put("color",
+				new JSONString(plot.getColor().getColorCode()));
 
 			// We know this conversion is safe, since we just
 			// created the object in the previous loop
 			JSONObject deviceJson = plotsJson.get(deviceName).isObject();
 			if (deviceJson == null) continue; // Should never happen
-			deviceJson.put(channelName, axisIndices);
+			deviceJson.put(channelName, specificChannelInfo);
 		}
 
 		JSONObject result = new JSONObject();
@@ -158,10 +164,22 @@ public final class SavableView extends JavaScriptObject {
 		GraphAxis[] xAxes = generateXAxes(axisMargin);
 
 		for (StringPair channel: getChannels()) {
-			DataPlot plot = factory.buildDataPlot(channel.getFirst(),
-				channel.getSecond(),
-				xAxes[getXAxisIndex(channel.getFirst(), channel.getSecond())],
+			String deviceName = channel.getFirst();
+			String channelName = channel.getSecond();
+
+			DataPlot plot = factory.buildDataPlot(deviceName, channelName,
+				xAxes[getXAxisIndex(deviceName, channelName)],
 				generateYAxis(channel, axisMargin));
+
+			// Set color of the plot, ensuring compatibility even when
+			// the required color field isn't present
+			String colorName = getColor(deviceName, channelName);
+			if (colorName != null) {
+				Color properColor = ColorUtils.buildColor(colorName);
+				if (properColor != null)
+					plot.setColor(properColor);
+			}
+
 			result.addChannel(plot);
 		}
 
@@ -508,5 +526,43 @@ public final class SavableView extends JavaScriptObject {
 				"Cannot find index for channel that does not exist");
 
 		return getYAxisIndexUnchecked(deviceName, channelName);
+	}
+
+	/**
+	 * Retrieves the color field from the specified channel.
+	 *
+	 * <p>Performs no checks on the key and value.</p>
+	 *
+	 * @param deviceName
+	 * 		the device name for which we want the color string
+	 * @param channelName
+	 * 		the channel name for which we want the color string
+	 * @return
+	 * 		the color string for the specified channel
+	 */
+	private native String getColorUnchecked(String deviceName,
+			String channelName) /*-{
+		return this.channels[deviceName][channelName].color;
+	}-*/;
+
+	/**
+	 * Returns the color string for the specified channel.
+	 *
+	 * @param deviceName
+	 * 		the device name for which we want the color string
+	 * @param channelName
+	 * 		the channel name for which we want the color string
+	 * @return
+	 * 		the color string for the specified channel
+	 * @throws IllegalArgumentException
+	 * 		if the specified channel is not an element of the
+	 * 		return values of {@link #getChannels()}
+	 */
+	public String getColor(String deviceName, String channelName) {
+		if (! hasChannel(deviceName, channelName))
+			throw new IllegalArgumentException(
+				"Cannot find color for channel that does not exist");
+
+		return getColorUnchecked(deviceName, channelName);
 	}
 }
