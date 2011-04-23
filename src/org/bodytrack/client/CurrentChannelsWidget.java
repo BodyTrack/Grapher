@@ -39,6 +39,10 @@ public class CurrentChannelsWidget extends FlowPanel
 	 */
 	private static final String COLOR_POPUP_CLASS = "colorPopup";
 
+	// The dimensions for the color popup
+	private static final String COLOR_POPUP_WIDTH = "16em";
+	private static final String COLOR_POPUP_HEIGHT = "10em";
+
 	/**
 	 * The CSS class for the colored buttons that are shown on the color
 	 * picker.
@@ -258,10 +262,8 @@ public class CurrentChannelsWidget extends FlowPanel
 				}
 
 				content = new ScrollPanel(colorGrid);
-				content.setWidth("16em");
-				content.setHeight("10em");
-				// TODO: Replace hardcoded strings with CSS, or at least
-				// some class-level constants
+				content.setWidth(COLOR_POPUP_WIDTH);
+				content.setHeight(COLOR_POPUP_HEIGHT);
 
 				this.setWidget(content);
 				this.addStyleName(COLOR_POPUP_CLASS);
