@@ -94,6 +94,24 @@ and removing channels */
     margin-bottom: 0.75em;
 }
 
+.colorPopup {
+    background-color: white;
+}
+
+.colorPopup td {
+    padding: 0px;
+    margin: 0px;
+}
+
+.colorPopup .colorPopup-colorButton {
+    width: 1em;
+    height: 1em;
+    border: 1px solid black;
+    padding: 0px;
+    margin: 0px;
+    background-image: none;
+}
+
 #viewSwitchWidget div.gwt-PushButton, .savedViewPopup div.gwt-PushButton {
     border: 2px solid #DDD;
     margin-right: 3px;
