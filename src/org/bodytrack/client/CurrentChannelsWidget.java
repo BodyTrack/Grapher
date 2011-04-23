@@ -175,12 +175,39 @@ public class CurrentChannelsWidget extends FlowPanel
 
 			remove = new Anchor(REMOVE_HTML, true);
 			remove.setStyleName("channelRemoveLink");
-			remove.addClickHandler(new RemoveHandler());
+			remove.addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					channelMgr.removeChannel(
+						ChannelLink.this.name.getFirst(),
+						ChannelLink.this.name.getSecond());
+				}
+			});
 
 			add(link);
 			add(remove);
 
 			setStyleName("channelLinkFlow");
+		}
+
+
+		/**
+		 * Builds a string representation of the HTML that the
+		 * link private variable should use when initialized.
+		 *
+		 * @return
+		 * 		the non-<tt>null</tt> HTML string the link private
+		 * 		variable should use as its content
+		 */
+		private String getLinkString() {
+			DataPlot chan = channelMgr.getChannel(name);
+
+			if (chan != null && chan.getColor() != null)
+				return "<span style=\"color: "
+					+ chan.getColor().getColorCode() + "\">"
+					+ name.toDisplayString() + "</span>";
+
+			return name.toDisplayString();
 		}
 
 		/**
@@ -281,42 +308,11 @@ public class CurrentChannelsWidget extends FlowPanel
 					DataPlot plot = channelMgr.getChannel(name);
 					if (plot == null)
 						return;
+
 					plot.setColor(newColor);
+					link.setHTML(getLinkString());
 					ChannelColorChanger.this.hide();
 				}
-			}
-		}
-
-		/**
-		 * Builds a string representation of the HTML that the
-		 * link private variable should use when initialized.
-		 *
-		 * @return
-		 * 		the non-<tt>null</tt> HTML string the link private
-		 * 		variable should use as its content
-		 */
-		private String getLinkString() {
-			DataPlot chan = channelMgr.getChannel(name);
-
-			if (chan != null && chan.getColor() != null)
-				return "<span style=\"color: "
-					+ chan.getColor().getColorCode() + "\">"
-					+ name.toDisplayString() + "</span>";
-
-			return name.toDisplayString();
-		}
-
-		/**
-		 * Class that allows removal of a channel whenever the user clicks
-		 * the remove anchor.
-		 */
-		private class RemoveHandler implements ClickHandler {
-			/**
-			 * Called whenever the user requests to remove the channel.
-			 */
-			@Override
-			public void onClick(ClickEvent event) {
-				channelMgr.removeChannel(name.getFirst(), name.getSecond());
 			}
 		}
 	}
