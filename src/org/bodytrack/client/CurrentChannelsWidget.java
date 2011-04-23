@@ -1,16 +1,28 @@
 package org.bodytrack.client;
 
+import gwt.g2d.client.graphics.Color;
+import gwt.g2d.client.graphics.KnownColor;
+
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.bodytrack.client.ChannelManager.StringPair;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.DoubleClickEvent;
+import com.google.gwt.event.dom.client.DoubleClickHandler;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.PopupPanel;
+import com.google.gwt.user.client.ui.PushButton;
+import com.google.gwt.user.client.ui.ScrollPanel;
+import com.google.gwt.user.client.ui.PopupPanel.PositionCallback;
 
 /**
  * A widget that shows the names of the current panels in a flowing layout.
@@ -21,6 +33,17 @@ public class CurrentChannelsWidget extends FlowPanel
 	 * The CSS ID we will use for this widget.
 	 */
 	private static final String WIDGET_ID = "currentChannelsWidget";
+
+	/**
+	 * The CSS class for the color picker itself.
+	 */
+	private static final String COLOR_POPUP_CLASS = "colorPopup";
+
+	/**
+	 * The CSS class for the colored buttons that are shown on the color
+	 * picker.
+	 */
+	private static final String COLOR_BUTTON_CLASS = "colorPopup-colorButton";
 
 	// The real job of this class is to make sure that
 	// channelMgr and channels stay in sync, and that everything
@@ -131,6 +154,25 @@ public class CurrentChannelsWidget extends FlowPanel
 
 			this.name = name;
 			link = new HTML(getLinkString(), true);
+			link.addDoubleClickHandler(new DoubleClickHandler() {
+				// On double-click, a color picker pops up that allows
+				// the user to change the color of the channel
+				@Override
+				public void onDoubleClick(DoubleClickEvent event) {
+					final int x = (int) Math.round(event.getClientX());
+					final int y = (int) Math.round(event.getClientY());
+					final ChannelColorChanger changer =
+						new ChannelColorChanger();
+					changer.setPopupPositionAndShow(new PositionCallback() {
+						@Override
+						public void setPosition(int offsetWidth,
+								int offsetHeight) {
+							changer.setPopupPosition(x, y);
+						}
+					});
+				}
+			});
+
 			remove = new Anchor(REMOVE_HTML, true);
 			remove.setStyleName("channelRemoveLink");
 			remove.addClickHandler(new RemoveHandler());
@@ -139,6 +181,102 @@ public class CurrentChannelsWidget extends FlowPanel
 			add(remove);
 
 			setStyleName("channelLinkFlow");
+		}
+
+		/**
+		 * A color picker that allows changing the color of the
+		 * current channel.
+		 *
+		 * <p>This just uses the name field of the enclosing class to
+		 * determine which channel's color to change, so it is important
+		 * that this field be immutable, as it is.</p>
+		 */
+		private class ChannelColorChanger extends PopupPanel {
+			private final int numColors;
+			private final PushButton[][] colorButtons;
+
+			private final ScrollPanel content;
+			private final Grid colorGrid; // array of buttons from colorButtons
+
+			/**
+			 * Creates a new <tt>ChannelColorChanger</tt> using all the known
+			 * colors.
+			 */
+			public ChannelColorChanger() {
+				List<Color> knownColors = getKnownColors();
+
+				numColors = knownColors.size();
+
+				int cols = (int) (Math.floor(Math.sqrt(numColors)));
+				int rows = (int) (Math.ceil(((double) numColors) / cols));
+
+				colorButtons = new PushButton[rows][cols];
+				colorGrid = new Grid(rows, cols);
+
+				ClickHandler handler = new ColorButtonClickHandler();
+
+				for (int i = 0; i < numColors; i++) {
+					int r = i / cols;
+					int c = i % cols;
+
+					PushButton btn = new PushButton("save", handler);
+					btn.addStyleName(COLOR_BUTTON_CLASS);
+					btn.getElement().getStyle().setBackgroundColor(
+						knownColors.get(i).getColorCode());
+
+					colorButtons[r][c] = btn;
+					colorGrid.setWidget(r, c, btn);
+				}
+
+				content = new ScrollPanel(colorGrid);
+				this.setWidget(content);
+				this.addStyleName(COLOR_POPUP_CLASS);
+			}
+
+			/**
+			 * Returns a series of known colors.
+			 *
+			 * @return
+			 * 		a set of known colors to use for the color picker.  For
+			 * 		now, this is just the return value of a call to
+			 * 		{@link gwt.g2d.client.graphics.KnownColor#getKnownColors()
+			 * 		KnownColor.getKnownColors}, converted to a list
+			 */
+			private List<Color> getKnownColors() {
+				return new ArrayList<Color>(KnownColor.getKnownColors());
+			}
+
+			/**
+			 * A class whose sole job is to set the name of the current
+			 * channel to the background color of some clicked
+			 * {@link com.google.gwt.user.client.ui.PushButton PushButton}.
+			 */
+			private class ColorButtonClickHandler implements ClickHandler {
+				/**
+				 * Called whenever a button is clicked.
+				 *
+				 * <p>Sets the color of the current channel to the same
+				 * color that the button has, if this is possible.</p>
+				 */
+				@Override
+				public void onClick(ClickEvent event) {
+					Object eventSource = event.getSource();
+					if (! (eventSource instanceof PushButton))
+						return;
+
+					PushButton source = (PushButton) eventSource;
+					String colorName =
+						source.getElement().getStyle().getBackgroundColor();
+					Color newColor = ColorUtils.buildColor(colorName);
+					if (newColor == null)
+						return;
+
+					DataPlot plot = channelMgr.getChannel(name);
+					if (plot == null)
+						return;
+					plot.setColor(newColor);
+				}
+			}
 		}
 
 		/**
