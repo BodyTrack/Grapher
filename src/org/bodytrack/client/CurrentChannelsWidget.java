@@ -258,8 +258,8 @@ public class CurrentChannelsWidget extends FlowPanel
 				}
 
 				content = new ScrollPanel(colorGrid);
-				content.setWidth("11em");
-				content.setHeight("5em");
+				content.setWidth("16em");
+				content.setHeight("10em");
 				// TODO: Replace hardcoded strings with CSS, or at least
 				// some class-level constants
 
