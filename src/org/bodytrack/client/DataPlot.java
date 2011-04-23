@@ -329,6 +329,7 @@ public class DataPlot implements Alertable<GrapherTile> {
 				"Cannot use null color to draw plot");
 
 		color = newColor;
+		container.paintTwice();
 	}
 
 	/**

@@ -203,6 +203,8 @@ public class CurrentChannelsWidget extends FlowPanel
 			 * colors.
 			 */
 			public ChannelColorChanger() {
+				super(true, true);
+
 				List<Color> knownColors = getKnownColors();
 
 				numColors = knownColors.size();
@@ -219,7 +221,7 @@ public class CurrentChannelsWidget extends FlowPanel
 					int r = i / cols;
 					int c = i % cols;
 
-					PushButton btn = new PushButton("save", handler);
+					PushButton btn = new PushButton("", handler);
 					btn.addStyleName(COLOR_BUTTON_CLASS);
 					btn.getElement().getStyle().setBackgroundColor(
 						knownColors.get(i).getColorCode());
@@ -229,6 +231,11 @@ public class CurrentChannelsWidget extends FlowPanel
 				}
 
 				content = new ScrollPanel(colorGrid);
+				content.setWidth("11em");
+				content.setHeight("5em");
+				// TODO: Replace hardcoded strings with CSS, or at least
+				// some class-level constants
+
 				this.setWidget(content);
 				this.addStyleName(COLOR_POPUP_CLASS);
 			}
@@ -275,6 +282,7 @@ public class CurrentChannelsWidget extends FlowPanel
 					if (plot == null)
 						return;
 					plot.setColor(newColor);
+					ChannelColorChanger.this.hide();
 				}
 			}
 		}
