@@ -197,8 +197,10 @@ public final class ColorUtils {
 
 		if (name.startsWith("#"))
 			return parseHexColor(name);
-		else if (name.startsWith("RGBA")) // We just upper-cased name
+		if (name.startsWith("RGBA"))
 			return parseRgbaColor(name);
+		if (name.startsWith("RGB"))
+			return parseRgbColor(name);
 
 		return null;
 	}
@@ -303,6 +305,48 @@ public final class ColorUtils {
 			double alpha = Double.parseDouble(a);
 
 			return new Color(red, green, blue, alpha);
+		} catch (NumberFormatException e) {
+			return null;
+		}
+	}
+
+	/**
+	 * Parses a color code of the form &quot;RGB(red,green,blue)&quot;
+	 *
+	 * @param name
+	 * 		the non-<tt>null</tt> upper-case color code to parse
+	 * @return
+	 * 		a color representing the color a browser would handle name as,
+	 * 		or <tt>null</tt> if we can't parse it
+	 */
+	private static Color parseRgbColor(String name) {
+		// Pull off the rgb
+		if (name.startsWith("RGB"))
+			name = name.substring(3);
+		else
+			return null; // We only deal with colors of the form RGB(...)
+
+		// Pull off the parens
+		if (name.startsWith("(") && name.endsWith(")"))
+			name = name.substring(1, name.length() - 1);
+		else
+			return null;
+
+		// Now for the real parsing
+		String[] parts = name.split(",");
+		if (parts.length != 3)
+			return null;
+
+		String r = parts[0].trim();
+		String g = parts[1].trim();
+		String b = parts[2].trim();
+
+		try {
+			int red = Integer.parseInt(r);
+			int green = Integer.parseInt(g);
+			int blue = Integer.parseInt(b);
+
+			return new Color(red, green, blue);
 		} catch (NumberFormatException e) {
 			return null;
 		}
