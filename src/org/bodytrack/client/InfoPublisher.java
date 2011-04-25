@@ -1,38 +1,31 @@
 package org.bodytrack.client;
 
 /**
- * Publishes information to the page outside of the Grapher
- * widget.  This information is available outside of GWT and
- * offers a consistent interface to the rest of the page,
- * regardless of how GWT compiles this widget.
- *
- * <p>Note that race conditions are possible, since this modifies the
- * global state, but race conditions are not a problem with a single
- * thread.  Since JavaScript is single-threaded (notwithstanding the
- * very limited threading model provided by Web Workers), there is
- * no harm in guarantees that only hold for a single-threaded
- * program.</p>
+ * Publishes information to the page outside of the Grapher widget.  This
+ * information is available outside of GWT and offers a consistent interface
+ * to the rest of the page, regardless of how GWT compiles this widget.
  *
  * <p>This class deals with the public API between the GWT application
- * and the rest of the webpage.  This is through the window.grapherState
+ * and the rest of the webpage.  This is through the window.getCurrentView
  * function, which returns the current view.</p>
+ *
+ * <p>There are performance reasons to use a function rather than a global
+ * variable to allow the webpage to access grapher information.  Calling
+ * the window.getCurrentView function from external JavaScript
+ * is expensive, but the overall cost isn't too bad as long as the function
+ * is called infrequently.  On the other hand, updating a global variable
+ * on handled events like scrolling is much more expensive, again as long as
+ * we expect relatively infrequent access to this information.  If we find
+ * frequent access (several times per second) to the current view, we will
+ * have to change the implementation to a global variable that updates on
+ * any change in the grapher.</p>
  */
-// TODO: Maybe make this into a static class, with no instances
 public final class InfoPublisher {
-	private static InfoPublisher instance = null;
-
-	// Don't make constructors for this class available to the
-	// rest of the widget
-	private InfoPublisher(ViewSwitchWidget widget) {
-		initialize(widget);
-	}
-
 	/**
-	 * Used by the constructor to initialize the
-	 * window.grapherState global variable.
+	 * Initializes the window.getCurrentView function.
 	 */
-	private native void initialize(ViewSwitchWidget widget) /*-{
-		$wnd.grapherState = function() {
+	private static native void initialize(ViewSwitchWidget widget) /*-{
+		$wnd.getCurrentView = function() {
 			// In Java-like syntax:
 			// return widget.getCurrentSavableView();
 			return widget.@org.bodytrack.client.ViewSwitchWidget::getCurrentSavableView()();
@@ -42,26 +35,20 @@ public final class InfoPublisher {
 	/**
 	 * Sets the widget that keeps track of the current view name.
 	 *
+	 * <p>This should only be set once during the entire life of the page, and
+	 * should be set as early as possible, so that outside JavaScript can take
+	 * advantage of it.</p>
+	 *
 	 * @param widget
 	 * 		the {@link ViewSwitchWidget} that keeps track of the current
 	 * 		view name
+	 * @throws NullPointerException
+	 * 		if widget is <tt>null</tt>
 	 */
 	public static void setWidget(ViewSwitchWidget widget) {
-		instance = new InfoPublisher(widget);
-	}
-
-	/**
-	 * Returns an InfoPublisher instance.
-	 *
-	 * <p>If the {@link #setWidget(ViewSwitchWidget)} method has not yet
-	 * been called, returns <tt>null</tt>.</p>
-	 *
-	 * @param widget
-	 * 		the widget to use to generate the current savable view
-	 * @return
-	 * 		an InfoPublisher to be used by this widget
-	 */
-	public static InfoPublisher getInstance() {
-		return instance;
+		if (widget == null)
+			throw new NullPointerException("Cannot use null widget to "
+				+ "initialize the window.getCurrentView function");
+		initialize(widget);
 	}
 }
