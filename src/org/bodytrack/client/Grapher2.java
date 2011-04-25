@@ -46,7 +46,8 @@ public class Grapher2 implements EntryPoint {
 			// InfoPublisher work for everyone
 			InfoPublisher.setWidget(viewSwitcher);
 
-			setupGraphWidget();
+			addChannelsToGraphWidget();
+			gw.paint();
 
 			mainLayout.add(viewSwitcher);
 			mainLayout.add(gw);
@@ -60,7 +61,11 @@ public class Grapher2 implements EntryPoint {
 		setCanvasId(GraphWidget.DEFAULT_GRAPHER_ID);
 	}
 
-	private void setupGraphWidget() {
+	/**
+	 * Adds all the channels found in the return value of the
+	 * window.initializeGrapher function.
+	 */
+	private void addChannelsToGraphWidget() {
 		JsArrayString channels = getChannelNames();
 
 		// This is used to ensure the plots are added in the
@@ -86,16 +91,13 @@ public class Grapher2 implements EntryPoint {
 
 			// Now initialize the plot
 			if ("zeo".equals(chartType)) {
-				plot = factory.buildZeoPlot(
-					deviceName, channelName);
+				plot = factory.buildZeoPlot(deviceName, channelName);
 				temporaryPlots.add(0, plot);
 			} else if ("photo".equals(chartType)) {
-				plot = factory.buildPhotoPlot(
-					deviceName, channelName);
+				plot = factory.buildPhotoPlot(deviceName, channelName);
 				temporaryPlots.add(plot);
 			} else {
-				plot = factory.buildDataPlot(
-					deviceName, channelName);
+				plot = factory.buildDataPlot(deviceName, channelName);
 				temporaryPlots.add(plot);
 			}
 		}
@@ -106,8 +108,6 @@ public class Grapher2 implements EntryPoint {
 			gw.addDataPlot(plot);
 			plots.add(plot);
 		}
-
-		gw.paint();
 	}
 
 	/**
