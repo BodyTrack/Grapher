@@ -82,6 +82,26 @@ public final class WebDownloader {
 	}
 
 	/**
+	 * Converts a {@link DownloadSuccessAlertable} into a
+	 * {@link DownloadAlertable} that does nothing on failure.
+	 *
+	 * @param callback
+	 * 		the object to convert
+	 * @return
+	 * 		a {@link DownloadAlertable} that does nothing on
+	 * 		failure, and calls <code>callback.onSuccess</code>
+	 * 		on failure.  If callback is <tt>null</tt>, the returned
+	 * 		object does nothing altogether, whether on success or
+	 * 		failure
+	 */
+	public static DownloadAlertable convertToDownloadAlertable(
+			DownloadSuccessAlertable callback) {
+		// TODO: Cache the null callback case, and return the same
+		// DownloadAlertable any time we get a null parameter
+		return new ConvertedSuccessAlertable(callback);
+	}
+
+	/**
 	 * An interface defining the callbacks which classes must implement
 	 * in order to use the methods of this class.
 	 */
@@ -108,5 +128,51 @@ public final class WebDownloader {
 		// TODO: Possibly have a custom object that gives more
 		// information than this does
 		public void onFailure(Request failed);
+	}
+
+	/**
+	 * A simpler version of DownloadAlertable, which is meant to
+	 * ignore all failure messages.
+	 *
+	 * @see WebDownloader#convertToDownloadAlertable(DownloadSuccessAlertable)
+	 */
+	public interface DownloadSuccessAlertable {
+		/**
+		 * Called whenever there is a successful load of the data.
+		 *
+		 * @param response
+		 * 		the non-<tt>null</tt> body of the response, as a string
+		 */
+		public void onSuccess(String response);
+	}
+
+	/**
+	 * An immutable object that forwards calls to the
+	 * {@link #onSuccess(String)} method to another callback, and does
+	 * nothing in the {@link #onFailure(Request)} method.
+	 */
+	private static class ConvertedSuccessAlertable
+			implements DownloadAlertable, DownloadSuccessAlertable {
+		private final DownloadSuccessAlertable callback;
+
+		public ConvertedSuccessAlertable(DownloadSuccessAlertable callback) {
+			this.callback = callback;
+		}
+
+		/**
+		 * A method that calls callback if and only if callback is not
+		 * <tt>null</tt>.
+		 */
+		@Override
+		public void onSuccess(String response) {
+			if (callback != null)
+				callback.onSuccess(response);
+		}
+
+		/**
+		 * A do-nothing method.
+		 */
+		@Override
+		public void onFailure(Request failed) { }
 	}
 }
