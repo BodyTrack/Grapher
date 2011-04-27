@@ -20,7 +20,12 @@ import java.util.Map;
  */
 // TODO: Major revamp to allow information for this factory to come in
 // from window.initializeGrapher OR from a view
-// TODO: Support outside axes for plots other than the standard DataPlot
+// TODO: Looks like the best way to achieve this revamp is to add
+// addDataPlotAsync(), addZeoPlotAsync(), and addPhotoPlotAsync() methods,
+// which pull in data from the channel specs URL and then add the plot
+// asynchronously (so they return void)
+// TODO: Support externally supplied axes for plots other than the
+// standard DataPlot
 public final class DataPlotFactory {
 	/**
 	 * The set of colors we use in our returned <tt>DataPlot</tt>

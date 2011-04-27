@@ -131,7 +131,7 @@ public class ChannelNamesWidget extends FlowPanel
 				@Override
 				public void onResponseReceived(Request request,
 						Response response) {
-					if (GrapherTile.isSuccessful(response))
+					if (WebDownloader.isSuccessful(response))
 						loadSuccess(response.getText());
 					else
 						loadFailure(devicesUrl);

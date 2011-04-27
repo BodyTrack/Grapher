@@ -410,7 +410,7 @@ public class ViewSwitchWidget extends HorizontalPanel {
 				@Override
 				public void onResponseReceived(Request request,
 						Response response) {
-					if (GrapherTile.isSuccessful(response)) {
+					if (WebDownloader.isSuccessful(response)) {
 						fillViewNames(viewNames, response.getText());
 						callback.onSuccess(null);
 					} else
@@ -656,7 +656,7 @@ public class ViewSwitchWidget extends HorizontalPanel {
 						@Override
 						public void onResponseReceived(Request request,
 								Response response) {
-							if (GrapherTile.isSuccessful(response)) {
+							if (WebDownloader.isSuccessful(response)) {
 								substituteView(response.getText());
 							}
 						}
