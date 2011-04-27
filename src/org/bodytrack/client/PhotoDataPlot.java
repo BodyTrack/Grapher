@@ -14,26 +14,6 @@ import java.util.Set;
  * {@link org.bodytrack.client.GraphWidget GraphWidget}.
  */
 public class PhotoDataPlot extends DataPlot {
-	private final int userId;
-
-	// Images tells us which images are associated with each PlottablePoint
-	// we have to draw
-	private final Map<PlottablePoint, Set<PhotoGetter>> images;
-
-	private final PhotoAlertable loadListener;
-	private final Map<PhotoGetter, Integer> loadingText;
-
-	private Set<PhotoGetter> highlightedImages;
-
-	// Map from photo P to set of photos that overlap P, which
-	// makes this map somewhat redundant (information contained
-	// in two places whenever two photos overlap) but fast
-	private final Map<PhotoGetter, Set<PhotoGetter>> overlap;
-	private double previousHeight;
-		// Since overlap is only valid at a given height (in pixels)
-	private double previousWidth;
-		// Since overlap is only valid at a X-axis width (in seconds)
-
 	/**
 	 * If the difference in height between the current height, in pixels,
 	 * and the value of previousHeight is greater than
@@ -56,6 +36,26 @@ public class PhotoDataPlot extends DataPlot {
 	 * Ratio of heights between highlighted image and regular image.
 	 */
 	private static final double HIGHLIGHTED_SIZE_RATIO = 1.2;
+
+	private final int userId;
+
+	// Images tells us which images are associated with each PlottablePoint
+	// we have to draw
+	private final Map<PlottablePoint, Set<PhotoGetter>> images;
+
+	private final PhotoAlertable loadListener;
+	private final Map<PhotoGetter, Integer> loadingText;
+
+	private Set<PhotoGetter> highlightedImages;
+
+	// Map from photo P to set of photos that overlap P, which
+	// makes this map somewhat redundant (information contained
+	// in two places whenever two photos overlap) but fast
+	private final Map<PhotoGetter, Set<PhotoGetter>> overlap;
+	private double previousHeight;
+		// Since overlap is only valid at a given height (in pixels)
+	private double previousWidth;
+		// Since overlap is only valid at a X-axis width (in seconds)
 
 	/**
 	 * Initializes a new PhotoDataPlot.
@@ -509,8 +509,8 @@ public class PhotoDataPlot extends DataPlot {
 			double width, double height, PhotoGetter photo) {
 		// Now draw the image itself, not allowing it to overflow onto
 		// the axes
-		photo.drawImageBounded(GraphWidget.DEFAULT_GRAPHER_ID, x, y, width,
-			height, drawing);
+		photo.drawImageBounded(getCanvas().getNativeCanvasElement(),
+			x, y, width, height, drawing);
 
 		// Note that the borders are drawn after the image is, so the image
 		// doesn't obscure the borders
@@ -623,8 +623,7 @@ public class PhotoDataPlot extends DataPlot {
 		double xAxisMaxValue = getXAxis().getMax();
 		double thresholdSq = threshold * threshold;
 
-		// TODO: Something better than 2 loops just to walk through all
-		// photos
+		// TODO: Something better than 2 loops just to walk through all photos
 		for (Set<PhotoGetter> second: images.values())
 			for (PhotoGetter photo: second) {
 				double time = photo.getTime();

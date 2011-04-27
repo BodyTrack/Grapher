@@ -5,6 +5,7 @@ import gwt.g2d.client.math.Vector2;
 import org.bodytrack.client.PhotoDataPlot.PhotoAlertable;
 
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.user.client.Element;
 
 /**
  * A class to download a single photo and return the appropriate
@@ -209,9 +210,8 @@ public final class PhotoGetter extends JavaScriptObject {
 	 * Draws the image with the specified <strong>center</strong> location
 	 * and dimensions.
 	 *
-	 * @param canvasId
-	 * 		the value of the ID attribute on the canvas we should use to
-	 * 		draw the image
+	 * @param canvas
+	 * 		the canvas on which we should draw the image
 	 * @param x
 	 * 		the X-position of the <em>center</em> of the image, in pixels
 	 * 		from the left edge of the canvas
@@ -225,14 +225,12 @@ public final class PhotoGetter extends JavaScriptObject {
 	 * @return
 	 * 		<tt>true</tt> if and only if the image was successfully drawn,
 	 * 		meaning that {@link #imageLoaded()} is <tt>true</tt> and that
-	 * 		canvasId is the actual ID for a valid HTML canvas
+	 * 		canvas is a valid HTML canvas
 	 */
-	public native boolean drawImage(String canvasId, double x, double y,
+	public native boolean drawImage(Element canvas, double x, double y,
 			double width, double height) /*-{
 		if (! this.imageLoaded) return false;
-
-		var canvas = $doc.getElementById(canvasId);
-		if (! canvas) return false;
+		if (! (canvas && canvas.getContext)) return false;
 
 		var ctx = canvas.getContext('2d');
 		if (! ctx) return false;
@@ -247,12 +245,13 @@ public final class PhotoGetter extends JavaScriptObject {
 	 * double, double, double, double) drawImageBounded} method.
 	 *
 	 * <p>This gets the position, width, and height of bounds, and uses
-	 * that information to call the other <tt>drawImageBounded</tt>
-	 * with the correct parameters.</p>
+	 * that information to call the other
+	 * {@link #drawImageBounded(String, double, double, double, double,
+	 * double, double, double, double) drawImageBounded} with the correct
+	 * parameters.</p>
 	 *
-	 * @param canvasId
-	 * 		the value of the ID attribute on the canvas we should use to
-	 * 		draw the image
+	 * @param canvas
+	 * 		the canvas we should use to draw the image
 	 * @param x
 	 * 		the X-position of the <em>center</em> of the image, in pixels
 	 * 		from the left edge of the canvas
@@ -270,20 +269,20 @@ public final class PhotoGetter extends JavaScriptObject {
 	 * @return
 	 * 		<tt>true</tt> if and only if the image was successfully drawn,
 	 * 		meaning that {@link #imageLoaded() imageLoaded} returns
-	 * 		<tt>true</tt> and that canvasId is the actual ID for a valid
-	 * 		HTML canvas.  Note that this does <em>not</em> return
-	 * 		<tt>false</tt> if everything else is fine but the image is
-	 * 		outside the bounding box; a caller can check for that
-	 * 		using arithmetic, so we do not alert a caller to that event
+	 * 		<tt>true</tt> and that canvas is a valid HTML canvas.  Note that
+	 * 		this does <em>not</em> return <tt>false</tt> if everything else
+	 * 		is fine but the image is outside the bounding box; a caller can
+	 * 		check for this using arithmetic, so we do not alert a caller to
+	 * 		that event
 	 * @see #drawImageBounded(String, double, double, double, double,
 	 * double, double, double, double)
 	 */
-	public boolean drawImageBounded(String canvasId, double x, double y,
+	public boolean drawImageBounded(Element canvas, double x, double y,
 			double width, double height, BoundedDrawingBox bounds) {
 		Vector2 topLeft = bounds.getTopLeft();
 		Vector2 bottomRight = bounds.getBottomRight();
 
-		return drawImageBounded(canvasId, x, y, width, height,
+		return drawImageBounded(canvas, x, y, width, height,
 			topLeft.getX(),
 			topLeft.getY(),
 			bottomRight.getX() - topLeft.getX(),
@@ -299,9 +298,8 @@ public final class PhotoGetter extends JavaScriptObject {
 	 * except that it also takes parameters for the bounds of the region
 	 * where we might draw the image.</p>
 	 *
-	 * @param canvasId
-	 * 		the value of the ID attribute on the canvas we should use to
-	 * 		draw the image
+	 * @param canvas
+	 * 		the canvas we should use to draw the image
 	 * @param x
 	 * 		the X-position of the <em>center</em> of the image, in pixels
 	 * 		from the left edge of the canvas
@@ -325,21 +323,18 @@ public final class PhotoGetter extends JavaScriptObject {
 	 * @return
 	 * 		<tt>true</tt> if and only if the image was successfully drawn,
 	 * 		meaning that {@link #imageLoaded() imageLoaded} returns
-	 * 		<tt>true</tt> and that canvasId is the actual ID for a valid
-	 * 		HTML canvas.  Note that this does <em>not</em> return
-	 * 		<tt>false</tt> if everything else is fine but the image is
-	 * 		outside the bounding box; a caller can check for that
-	 * 		using arithmetic, so we do not alert a caller to that event
+	 * 		<tt>true</tt> and that canvasId is a valid HTML canvas.  Note
+	 * 		that this does <em>not</em> return <tt>false</tt> if everything
+	 * 		else is fine but the image is outside the bounding box; a caller
+	 * 		can check for that using arithmetic, so we do not alert a caller
+	 * 		to that event
 	 */
-	public native boolean drawImageBounded(String canvasId, double x, double y,
+	public native boolean drawImageBounded(Element canvas, double x, double y,
 			double width, double height, double minX, double minY,
 			double boundsWidth, double boundsHeight) /*-{
 		// Same as drawImage, except with clipping also enabled
-
 		if (! this.imageLoaded) return false;
-
-		var canvas = $doc.getElementById(canvasId);
-		if (! canvas) return false;
+		if (! (canvas && canvas.getContext)) return false;
 
 		var ctx = canvas.getContext('2d');
 		if (! ctx) return false;

@@ -27,13 +27,6 @@ import com.google.gwt.user.client.Timer;
 
 public class GraphWidget extends Surface implements ChannelChangedListener {
 	/**
-	 * The value at which the ID attribute of this HTML canvas should
-	 * be set, unless there is a good reason to set it to something
-	 * else.  Note that this class never actually uses this value.
-	 */
-	public static final String DEFAULT_GRAPHER_ID = "bodytrack-gwt-viewer";
-
-	/**
 	 * The default loading message for this widget to show.  This class
 	 * never actually uses this value, but makes it available for classes
 	 * that use the loading API.
