@@ -5,6 +5,9 @@ import java.util.Map;
 
 import org.bodytrack.client.InstanceController.InstanceProducer;
 
+import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.Element;
+
 import gwt.g2d.client.graphics.Color;
 import gwt.g2d.client.graphics.DirectShapeRenderer;
 import gwt.g2d.client.graphics.Surface;
@@ -67,6 +70,7 @@ public final class Canvas {
 
 	private final Surface surface;
 	private final DirectShapeRenderer renderer;
+	private final Element nativeCanvasElement;
 
 	private static InstanceController<Surface, Canvas> instances;
 
@@ -89,6 +93,8 @@ public final class Canvas {
 	 * 		the surface on which the new <tt>Canvas</tt> will draw
 	 * @throws NullPointerException
 	 * 		if s is <tt>null</tt>
+	 * @throws IllegalArgumentException
+	 * 		if s has no native HTML canvas element inside its DOM tree
 	 */
 	private Canvas(Surface s) {
 		if (s == null)
@@ -96,6 +102,42 @@ public final class Canvas {
 
 		surface = s;
 		renderer = new DirectShapeRenderer(surface);
+		nativeCanvasElement = findCanvasElement(surface.getElement());
+		if (nativeCanvasElement == null)
+			throw new IllegalArgumentException(
+				"No native canvas element available");
+	}
+
+	/**
+	 * Finds the first canvas element in the DOM tree rooted at e.
+	 *
+	 * @param e
+	 * 		the root of the search tree
+	 * @return
+	 * 		the first canvas element found in the subtree rooted
+	 * 		at e, or <tt>null</tt> if there is no canvas element
+	 * 		in the subtree rooted at e
+	 */
+	private Element findCanvasElement(Element e) {
+		if (e == null)
+			return null;
+
+		// This is kind of a heuristic that allows us to ignore
+		// namespaces in the DOM
+		if (e.getTagName().toLowerCase().contains("canvas"))
+			return e;
+
+		int childCount = DOM.getChildCount(e);
+		for (int i = 0; i < childCount; i++) {
+			Element child = DOM.getChild(e, i);
+			if (child == null)
+				continue; // Should never happen
+			Element canvas = findCanvasElement(child);
+			if (canvas != null)
+				return canvas;
+		}
+
+		return null;
 	}
 
 	/**
@@ -153,6 +195,17 @@ public final class Canvas {
 	 */
 	public DirectShapeRenderer getRenderer() {
 		return renderer;
+	}
+
+	/**
+	 * Returns the native HTML canvas element found in the DOM tree
+	 * rooted at the surface passed in to this object's constructor.
+	 *
+	 * @return
+	 * 		the native canvas element
+	 */
+	public Element getNativeCanvasElement() {
+		return nativeCanvasElement;
 	}
 
 	// --------------------------------------------------------------
