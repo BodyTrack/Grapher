@@ -3,13 +3,12 @@ package org.bodytrack.client;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.bodytrack.client.WebDownloader.DownloadAlertable;
+
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.http.client.Request;
-import com.google.gwt.http.client.RequestBuilder;
-import com.google.gwt.http.client.RequestCallback;
-import com.google.gwt.http.client.RequestException;
-import com.google.gwt.http.client.Response;
+import com.google.gwt.json.client.JSONParser;
 
 /**
  * Represents a single tile of data.
@@ -126,13 +125,9 @@ public final class GrapherTile {
 	 * 		<tt>true</tt> if json represents a JavaScript
 	 * 		Array value, not a dictionary
 	 */
-	// TODO: This only works in GWT 2.1 and later:
-	// JSONValue parsed = JSONParser.parseStrict(json);
-	// This is still a hack, just less of a hack than before
-	private static native boolean isArray(String json) /*-{
-		eval("var obj = " + json);
-		return obj.__proto__["constructor"].toString().indexOf("Array") >= 0;
-	}-*/;
+	private static boolean isArray(String json) {
+		return JSONParser.parseLenient(json).isArray() != null;
+	}
 
 	/**
 	 * Reads an array from json, which is assumed to be a JSON
@@ -198,41 +193,20 @@ public final class GrapherTile {
 			final int offset,
 			final List<GrapherTile> destination,
 			final Alertable<GrapherTile> callback) {
-		// Send request to server and catch any errors.
-		RequestBuilder builder =
-			new RequestBuilder(RequestBuilder.GET, url);
+		WebDownloader.doGet(url, new DownloadAlertable() {
+			@Override
+			public void onSuccess(String response) {
+				GrapherTile successTile = new GrapherTile(url, level,
+					offset, response);
+				callback.onSuccess(successTile);
+				destination.add(successTile);
+			}
 
-		// This is simply to clean up code, so we don't construct the
-		// same tile in multiple places
-		final GrapherTile failureTile =
-			new GrapherTile(url, level, offset, "");
-
-		try {
-			builder.sendRequest(null, new RequestCallback() {
-				@Override
-				public void onError(Request request,
-						Throwable exception) {
-					callback.onFailure(failureTile);
-				}
-
-				@Override
-				public void onResponseReceived(Request request,
-						Response response) {
-					if (WebDownloader.isSuccessful(response)) {
-						GrapherTile successTile = new GrapherTile(url,
-							level,
-							offset,
-							response.getText());
-
-						callback.onSuccess(successTile);
-						destination.add(successTile);
-					} else
-						callback.onFailure(failureTile);
-				}
-			});
-		} catch (RequestException e) {
-			callback.onFailure(failureTile);
-		}
+			@Override
+			public void onFailure(Request failed) {
+				callback.onFailure(new GrapherTile(url, level, offset, ""));
+			}
+		});
 	}
 
 	/**
