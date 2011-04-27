@@ -6,15 +6,12 @@ import java.util.List;
 import java.util.Map;
 
 import org.bodytrack.client.ChannelManager.StringPair;
+import org.bodytrack.client.WebDownloader.DownloadAlertable;
 
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.http.client.Request;
-import com.google.gwt.http.client.RequestBuilder;
-import com.google.gwt.http.client.RequestCallback;
-import com.google.gwt.http.client.RequestException;
-import com.google.gwt.http.client.Response;
 import com.google.gwt.json.client.JSONArray;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONParser;
@@ -116,30 +113,17 @@ public class ChannelNamesWidget extends FlowPanel
 	 * otherwise.</p>
 	 */
 	private void loadDevicesAndChannels() {
-		// Send request to server and catch any errors.
-		RequestBuilder builder =
-			new RequestBuilder(RequestBuilder.GET, devicesUrl);
+		WebDownloader.doGet(devicesUrl, new DownloadAlertable() {
+			@Override
+			public void onSuccess(String response) {
+				loadSuccess(response);
+			}
 
-		try {
-			builder.sendRequest(null, new RequestCallback() {
-				@Override
-				public void onError(Request request,
-						Throwable exception) {
-					loadFailure(devicesUrl);
-				}
-
-				@Override
-				public void onResponseReceived(Request request,
-						Response response) {
-					if (WebDownloader.isSuccessful(response))
-						loadSuccess(response.getText());
-					else
-						loadFailure(devicesUrl);
-				}
-			});
-		} catch (RequestException e) {
-			loadFailure(devicesUrl);
-		}
+			@Override
+			public void onFailure(Request failed) {
+				loadFailure(devicesUrl);
+			}
+		});
 	}
 
 	/**

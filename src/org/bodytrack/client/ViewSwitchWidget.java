@@ -3,6 +3,9 @@ package org.bodytrack.client;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.bodytrack.client.WebDownloader.DownloadAlertable;
+import org.bodytrack.client.WebDownloader.DownloadSuccessAlertable;
+
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.http.client.Request;
@@ -397,29 +400,18 @@ public class ViewSwitchWidget extends HorizontalPanel {
 	private static void retrieveViewNames(String url,
 			final List<String> viewNames,
 			final Alertable<Object> callback) {
-		RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, url);
+		WebDownloader.doGet(url, new DownloadAlertable() {
+			@Override
+			public void onSuccess(String response) {
+				fillViewNames(viewNames, response);
+				callback.onSuccess(null);
+			}
 
-		try {
-			builder.sendRequest(null, new RequestCallback() {
-				@Override
-				public void onError(Request request,
-						Throwable exception) {
-					callback.onFailure(null);
-				}
-
-				@Override
-				public void onResponseReceived(Request request,
-						Response response) {
-					if (WebDownloader.isSuccessful(response)) {
-						fillViewNames(viewNames, response.getText());
-						callback.onSuccess(null);
-					} else
-						callback.onFailure(null);
-				}
-			});
-		} catch (RequestException e) {
-			callback.onFailure(null);
-		}
+			@Override
+			public void onFailure(Request failed) {
+				callback.onFailure(null);
+			}
+		});
 	}
 
 	/**
@@ -643,25 +635,14 @@ public class ViewSwitchWidget extends HorizontalPanel {
 			 * event in order to replace the current view.</p>
 			 */
 			public void replaceCurrentView() {
-				RequestBuilder builder =
-					new RequestBuilder(RequestBuilder.GET, getViewUrl());
-
-				// We do nothing on failure
-				try {
-					builder.sendRequest(null, new RequestCallback() {
-						@Override
-						public void onError(Request request,
-								Throwable exception) { }
-
-						@Override
-						public void onResponseReceived(Request request,
-								Response response) {
-							if (WebDownloader.isSuccessful(response)) {
-								substituteView(response.getText());
+				WebDownloader.doGet(getViewUrl(),
+					WebDownloader.convertToDownloadAlertable(
+						new DownloadSuccessAlertable() {
+							@Override
+							public void onSuccess(String response) {
+								substituteView(response);
 							}
-						}
-					});
-				} catch (RequestException e) { }
+						}));
 			}
 
 			/**
