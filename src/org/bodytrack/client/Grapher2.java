@@ -86,16 +86,12 @@ public class Grapher2 implements EntryPoint {
 			}
 
 			// Now initialize the plot
-			if ("zeo".equals(chartType)) {
-				plot = factory.buildZeoPlot(deviceName, channelName);
+			plot = buildGeneralPlot(factory, chartType,
+				deviceName, channelName);
+			if (plot instanceof ZeoDataPlot)
 				temporaryPlots.add(0, plot);
-			} else if ("photo".equals(chartType)) {
-				plot = factory.buildPhotoPlot(deviceName, channelName);
+			else
 				temporaryPlots.add(plot);
-			} else {
-				plot = factory.buildDataPlot(deviceName, channelName);
-				temporaryPlots.add(plot);
-			}
 		}
 
 		// Now actually add the plots to the GraphWidget and to
@@ -104,6 +100,35 @@ public class Grapher2 implements EntryPoint {
 			gw.addDataPlot(plot);
 			plots.add(plot);
 		}
+	}
+
+	/**
+	 * Switches on the chartType parameter for the type of plot to build.
+	 *
+	 * <p>It is expected that none of the parameters will be <tt>null</tt>.
+	 * This is a safe expectation, since this is an internal method.</p>
+	 *
+	 * @param factory
+	 * 		the {@link DataPlotFactory} to use to build the chart
+	 * @param chartType
+	 * 		a string representation of the type of chart to build
+	 * @param deviceName
+	 * 		the name of the device for the channel to add
+	 * @param channelName
+	 * 		the name of the channel to add on the device
+	 * @return
+	 * 		a {@link org.bodytrack.client.DataPlot DataPlot} constructed
+	 * 		from the appropriate method on factory
+	 */
+	private DataPlot buildGeneralPlot(DataPlotFactory factory,
+			String chartType, String deviceName, String channelName) {
+		if ("zeo".equals(chartType))
+			return factory.buildZeoPlot(deviceName, channelName);
+
+		if ("photo".equals(chartType))
+			return factory.buildPhotoPlot(deviceName, channelName);
+
+		return factory.buildDataPlot(deviceName, channelName);
 	}
 
 	/**
