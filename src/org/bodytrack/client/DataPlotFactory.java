@@ -146,8 +146,46 @@ public final class DataPlotFactory {
 	 * 		if deviceName or channelName is <tt>null</tt>
 	 */
 	public DataPlot buildDataPlot(String deviceName, String channelName) {
-		return buildDataPlot(deviceName, channelName, getXAxis(),
-			getValueAxis(DataPlot.getDeviceChanName(deviceName, channelName)));
+		return buildPlotFromSpecs(getInitialSpecs(deviceName, channelName),
+			deviceName, channelName, "plot");
+	}
+
+	/**
+	 * Attempts to get the initial specs from the window.initializeGrapher
+	 * function.
+	 *
+	 * @param deviceName
+	 * 		the name of the device for the channel
+	 * @param channelName
+	 * 		the name of the channel on the device
+	 * @return
+	 * 		some set of specs based on the pair (deviceName, channelName)
+	 * 		and coming from the window.initializeGrapher function.  If it
+	 * 		is impossible to meet both those objectives, returns an
+	 * 		empty {@link JSONObject}
+	 */
+	private JSONObject getInitialSpecs(String deviceName, String channelName) {
+		if (deviceName == null || channelName == null)
+			return new JSONObject();
+
+		String channelKey =
+			DataPlot.getDeviceChanName(deviceName, channelName);
+
+		JSONObject initializeGrapher = initializeGrapher();
+		if (initializeGrapher.containsKey("channel_specs")) {
+			JSONValue overallSpecsVal = initializeGrapher.get("channel_specs");
+			JSONObject overallSpecs = overallSpecsVal.isObject();
+
+			if (overallSpecs != null && overallSpecs.containsKey(channelKey)) {
+				JSONValue specsVal = overallSpecs.get(channelKey);
+				JSONObject specs = specsVal.isObject();
+				if (specs != null)
+					return specs;
+				// Otherwise, the default value is returned
+			}
+		}
+
+		return new JSONObject();
 	}
 
 	/**
@@ -245,7 +283,8 @@ public final class DataPlotFactory {
 	 * Builds a new data plot based on specs.
 	 *
 	 * <p>This switches on the type field in specs to determine which
-	 * kind of plot to return.</p>
+	 * kind of plot to return, and on the bounds for the Y-axis on
+	 * that plot.</p>
 	 *
 	 * @param specs
 	 * 		the channel specs JSON dictionary for the channel
@@ -273,8 +312,45 @@ public final class DataPlotFactory {
 			JSONValue typeValue = specs.get("type");
 			JSONString typeString = typeValue.isString();
 			if (typeString != null)
-				chartType = typeString.stringValue().toLowerCase();
+				chartType = typeString.stringValue();
 		}
+
+		return buildPlotFromSpecs(specs, chartType, deviceName, channelName);
+	}
+
+	/**
+	 * Returns a plot with axis bounds based on specs, but actual type based
+	 * on the chartType parameter.
+	 *
+	 * @param specs
+	 * 		the channel specs JSON dictionary for the channel
+	 * @param chartType
+	 * 		the type of chart to use.  Should be &quot;plot&quot; for a
+	 * 		standard {@link DataPlot}, &quot;zeo&quot; for a
+	 * 		{@link ZeoDataPlot}, or &quot;photo&quot; for a
+	 * 		{@link PhotoDataPlot}.  Anything that is neither &quot;zeo&quot;
+	 * 		nor &quot;photo&quot; will be interpreted as &quot;plot&quot;.  Of
+	 * 		course, in the above discussion, the quotes around values were
+	 * 		meant to set them off as literal strings to be used.  A caller
+	 * 		should not actually add escaped quotes to pass in to this method
+	 * @param deviceName
+	 * 		the name of the device for the channel
+	 * @param channelName
+	 * 		the name of the channel on the device
+	 * @return
+	 * 		a new {@link org.bodytrack.client.DataPlot DataPlot} with
+	 * 		the correct type and Y-axis bounds, based on the information
+	 * 		from specs
+	 * @throws NullPointerException
+	 * 		if any parameter is <tt>null</tt>
+	 */
+	private DataPlot buildPlotFromSpecs(JSONObject specs, String chartType,
+			String deviceName, String channelName) {
+		if (specs == null || chartType == null
+				|| deviceName == null || channelName == null)
+			throw new NullPointerException("Can't use null to create plot");
+
+		chartType = chartType.toLowerCase();
 
 		double minVal = getNumber(specs, "min_val");
 		double maxVal = getNumber(specs, "max_val");
@@ -392,11 +468,9 @@ public final class DataPlotFactory {
 			throw new NullPointerException(
 				"Cannot build plot with null name");
 
-		String baseUrl = DataPlot.buildBaseUrl(userId,
+		return (ZeoDataPlot) buildPlotFromSpecs(
+			getInitialSpecs(deviceName, channelName), "zeo",
 			deviceName, channelName);
-		return new ZeoDataPlot(widget, getXAxis(),
-			getValueAxis(DataPlot.getDeviceChanName(deviceName, channelName)),
-			deviceName, channelName, baseUrl, minLevel);
 	}
 
 	/**
@@ -442,43 +516,6 @@ public final class DataPlotFactory {
 			return CollectionUtil.getFirst(channels.getXAxes());
 
 		return timeAxis;
-	}
-
-	/**
-	 * Builds a new axis to use as the value axis for a plain
-	 * vanilla {@link org.bodytrack.client.DataPlot DataPlot}.
-	 *
-	 * @param deviceChanName
-	 * 		the deviceName.channelName representation of a
-	 * 		device and channel name
-	 * @return
-	 * 		a new {@link org.bodytrack.client.GraphAxis} available
-	 * 		to pass as a parameter to a <tt>DataPlot</tt>
-	 * 		constructor
-	 * @throws NullPointerException
-	 * 		if deviceChanName is <tt>null</tt>
-	 */
-	private GraphAxis getValueAxis(String deviceChanName) {
-		if (deviceChanName == null)
-			throw new NullPointerException(
-				"Can't build axis for null device and channel name");
-
-		double initialMin = getInitialMin(deviceChanName);
-		double initialMax = getInitialMax(deviceChanName);
-
-		// Get the correct values for the bounds
-		if (initialMin < MIN_USABLE_VALUE && initialMax < MIN_USABLE_VALUE) {
-			initialMin = -1;
-			initialMax = 1;
-		} else if (initialMin < MIN_USABLE_VALUE)
-			initialMin = Math.min(initialMax - 2, -1);
-		else if (initialMax < MIN_USABLE_VALUE)
-			initialMax = Math.max(initialMin + 2, 1);
-
-		return new GraphAxis(initialMin, initialMax,
-			Basis.xRightYUp,
-			getYAxisWidth(),
-			false);
 	}
 
 	/**
@@ -578,66 +615,6 @@ public final class DataPlotFactory {
 		}
 
 		return data[KEY];
-	}-*/;
-
-	/**
-	 * Returns the minimum value for the axes when the channel
-	 * channelName is showing.
-	 *
-	 * <p>Uses the channel_specs field in the return value of
-	 * window.initializeGrapher() if possible, and -1e308 otherwise.</p>
-	 *
-	 * @return
-	 * 		the Y-value to show as the initial minimum of the
-	 * 		plot for the data
-	 */
-	private static native double getInitialMin(String channelName) /*-{
-		var DEFAULT_VALUE = -1e308;
-		var KEY_1 = "channel_specs";
-		var KEY_2 = "min_val";
-
-		if (! $wnd.initializeGrapher) {
-			return DEFAULT_VALUE;
-		}
-
-		var data = $wnd.initializeGrapher();
-
-		if (! (data && data[KEY_1] && data[KEY_1][channelName]
-				&& data[KEY_1][channelName][KEY_2])) {
-			return DEFAULT_VALUE;
-		}
-
-		return data[KEY_1][channelName][KEY_2];
-	}-*/;
-
-	/**
-	 * Returns the maximum value for the axes when the channel
-	 * channelName is showing.
-	 *
-	 * <p>Uses the channel_specs field in the return value of
-	 * window.initializeGrapher() if possible, and -1e308 otherwise.</p>
-	 *
-	 * @return
-	 * 		the Y-value to show as the initial maximum of the
-	 * 		plot for the data
-	 */
-	private static native double getInitialMax(String channelName) /*-{
-		var DEFAULT_VALUE = -1e308;
-		var KEY_1 = "channel_specs";
-		var KEY_2 = "max_val";
-
-		if (! $wnd.initializeGrapher) {
-			return DEFAULT_VALUE;
-		}
-
-		var data = $wnd.initializeGrapher();
-
-		if (! (data && data[KEY_1] && data[KEY_1][channelName]
-				&& data[KEY_1][channelName][KEY_2])) {
-			return DEFAULT_VALUE;
-		}
-
-		return data[KEY_1][channelName][KEY_2];
 	}-*/;
 
 	/**
