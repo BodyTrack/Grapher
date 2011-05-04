@@ -29,10 +29,10 @@ import com.google.gwt.json.client.JSONValue;
  * <tt>DataPlotFactory</tt> for the supplied widget will be returned, if
  * such a factory exists.</p>
  */
-// TODO: Make sure we only allow the use of window.initializeGrapher
-// information while the grapher is being populated for the first time
 // TODO: Support externally supplied axes for plots other than the
 // standard DataPlot
+// TODO: Document the package-private methods as such and explain why
+// they should have this level of access
 public final class DataPlotFactory {
 	/**
 	 * The set of colors we use in our returned <tt>DataPlot</tt>
@@ -59,7 +59,8 @@ public final class DataPlotFactory {
 	 * Anything less than this is intended to be a sentinel value for
 	 * &quot;no data present&quot;.
 	 */
-	private static final double MIN_USABLE_VALUE = -1e300;
+	// TODO: Move this to some utility class, along with getNumber
+	static final double MIN_USABLE_VALUE = -1e300;
 
 	// Used for instance control
 	private static Map<GraphWidget, DataPlotFactory> instances;
@@ -630,7 +631,7 @@ public final class DataPlotFactory {
 	 * 		than {@link #MIN_USABLE_VALUE}, if there is some kind
 	 * 		of error or if either parameter is <tt>null</tt>
 	 */
-	private static double getNumber(JSONObject obj, String key) {
+	static double getNumber(JSONObject obj, String key) {
 		// This method takes advantage of the fact that MIN_USABLE_VALUE
 		// is negative, making the result of multiplying by 1.01 less
 		// than MIN_USABLE_VALUE
@@ -656,7 +657,7 @@ public final class DataPlotFactory {
 	 * 		a {@link JSONObject} version of the result of calling
 	 * 		window.initializeGrapher
 	 */
-	public static JSONObject initializeGrapher() {
+	static JSONObject initializeGrapher() {
 		JavaScriptObject obj = callInitializeGrapher();
 		if (obj == null)
 			return new JSONObject();
