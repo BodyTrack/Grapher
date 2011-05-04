@@ -13,6 +13,14 @@ import java.util.NoSuchElementException;
 import com.google.gwt.i18n.client.NumberFormat;
 
 public class GraphAxis {
+	/**
+	 * A point that signals to the {@link #highlight(PlottablePoint)}
+	 * method that there should be no visible highlighted point, just
+	 * a darkening of the axis
+	 */
+	public static final PlottablePoint DARKEN_AXIS_ONLY =
+		new PlottablePoint(Long.MIN_VALUE, Long.MIN_VALUE);
+
 	public double majorTickMinSpacingPixels = 50;
 	public double majorTickWidthPixels = 8;
 
@@ -110,6 +118,13 @@ public class GraphAxis {
 
 	/**
 	 * Marks this GraphAxis as highlighted.
+	 *
+	 * @param point
+	 * 		the point to highlight.  If this is <tt>null</tt>, the
+	 * 		result is the same as calling {@link #unhighlight()}.
+	 * 		Also, if the special value {@link #DARKEN_AXIS_ONLY}
+	 * 		is passed in as point, no line is drawn, but the
+	 * 		axis is still darkened
 	 */
 	public void highlight(PlottablePoint point) {
 		highlightedPoint = point;
@@ -198,6 +213,9 @@ public class GraphAxis {
 	protected void renderHighlight(Canvas canvas,
 			PlottablePoint point) {
 		if (! isHighlighted())
+			return;
+
+		if (point.equals(DARKEN_AXIS_ONLY))
 			return;
 
 		DirectShapeRenderer renderer = canvas.getRenderer();
