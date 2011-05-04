@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.bodytrack.client.WebDownloader.DownloadSuccessAlertable;
 
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.json.client.JSONNumber;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONParser;
@@ -645,20 +646,34 @@ public final class DataPlotFactory {
 	 * @return
 	 * 		the supplied min_level, or -20 if no such value exists
 	 */
-	static native int getMinLevel() /*-{
-		var DEFAULT_VALUE = -1000;
-		var KEY = "min_level";
+	private int getMinLevel() {
+		JSONObject obj = initializeGrapher();
+		double level = getNumber(obj, "min_level");
 
-		if (! $wnd.initializeGrapher) {
-			return DEFAULT_VALUE;
-		}
+		return level < MIN_USABLE_VALUE ? -20 : (int) level;
+	}
 
-		var data = $wnd.initializeGrapher();
+	/**
+	 * Calls window.initializeGrapher and returns the result as a
+	 * {@link JSONObject}.
+	 *
+	 * @return
+	 * 		a {@link JSONObject} version of the result of calling
+	 * 		window.initializeGrapher
+	 */
+	private JSONObject initializeGrapher() {
+		return new JSONObject(callInitializeGrapher());
+	}
 
-		if (! (data && data[KEY])) {
-			return DEFAULT_VALUE;
-		}
-
-		return data[KEY];
+	/**
+	 * Simply calls the native window.initializeGrapher and returns
+	 * the result.
+	 *
+	 * @return
+	 * 		the result of calling window.initializeGrapher in
+	 * 		native JavaScript
+	 */
+	private native JavaScriptObject callInitializeGrapher() /*-{
+		return window.initializeGrapher();
 	}-*/;
 }
