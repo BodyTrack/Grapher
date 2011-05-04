@@ -71,7 +71,6 @@ public class Grapher2 implements EntryPoint {
 		for (int i = 0; i < channels.length(); i++) {
 			String deviceChanName = channels.get(i);
 
-			DataPlot plot;
 			String chartType = getPlotType(channels.get(i)).toLowerCase();
 
 			// Pull out the device name, channel name, and base URL
@@ -85,13 +84,8 @@ public class Grapher2 implements EntryPoint {
 				channelName = deviceChanName;
 			}
 
-			// Now initialize the plot
-			plot = buildGeneralPlot(factory, chartType,
-				deviceName, channelName);
-			if (plot instanceof ZeoDataPlot)
-				temporaryPlots.add(0, plot);
-			else
-				temporaryPlots.add(plot);
+			buildAndAddPlot(factory, temporaryPlots,
+				chartType, deviceName, channelName);
 		}
 
 		// Now actually add the plots to the GraphWidget and to
@@ -108,8 +102,15 @@ public class Grapher2 implements EntryPoint {
 	 * <p>It is expected that none of the parameters will be <tt>null</tt>.
 	 * This is a safe expectation, since this is an internal method.</p>
 	 *
+	 * <p>If the new plot is a Zeo plot, this adds it at the beginning of
+	 * temporaryPlots; otherwise, the new plot is added to the end of
+	 * temporaryPlots.</p>
+	 *
 	 * @param factory
 	 * 		the {@link DataPlotFactory} to use to build the chart
+	 * @param temporaryPlots
+	 * 		the list of data plots to which we will add the newly created
+	 * 		plot
 	 * @param chartType
 	 * 		a string representation of the type of chart to build
 	 * @param deviceName
@@ -120,15 +121,24 @@ public class Grapher2 implements EntryPoint {
 	 * 		a {@link org.bodytrack.client.DataPlot DataPlot} constructed
 	 * 		from the appropriate method on factory
 	 */
-	private DataPlot buildGeneralPlot(DataPlotFactory factory,
+	private DataPlot buildAndAddPlot(DataPlotFactory factory,
+			List<DataPlot> temporaryPlots,
 			String chartType, String deviceName, String channelName) {
-		if ("zeo".equals(chartType))
-			return factory.buildZeoPlot(deviceName, channelName);
+		DataPlot plot;
+
+		if ("zeo".equals(chartType)) {
+			plot = factory.buildZeoPlot(deviceName, channelName);
+			temporaryPlots.add(0, plot);
+			return plot;
+		}
 
 		if ("photo".equals(chartType))
-			return factory.buildPhotoPlot(deviceName, channelName);
+			plot = factory.buildPhotoPlot(deviceName, channelName);
+		else
+			plot = factory.buildDataPlot(deviceName, channelName);
 
-		return factory.buildDataPlot(deviceName, channelName);
+		temporaryPlots.add(plot);
+		return plot;
 	}
 
 	/**
