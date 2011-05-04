@@ -225,78 +225,104 @@ public final class DataPlotFactory {
 				new DownloadSuccessAlertable() {
 				@Override
 				public void onSuccess(String response) {
-					// TODO: Abstract most of this into a method that will
-					// build a new DataPlot of the correct type given the
-					// channel specs, then use that to replace the current
-					// implementation, simply by calling
-					// window.initializeGrapher(), parsing the results, and
-					// pulling out the specs we need
-
 					JSONValue parsedValue = JSONParser.parseStrict(response);
 					if (parsedValue == null) return;
 
 					JSONObject specs = parsedValue.isObject();
 					if (specs == null) return;
 
-					String chartType = "plot";
-					if (specs.containsKey("type")) {
-						JSONValue typeValue = specs.get("type");
-						JSONString typeString = typeValue.isString();
-						if (typeString != null)
-							chartType = typeString.stringValue().toLowerCase();
-					}
-
-					double minVal = getNumber(specs, "min_val");
-					double maxVal = getNumber(specs, "max_val");
-
-					// Handle the case in which there is a missing
-					// or invalid min_val or max_val field
-					if (minVal < MIN_USABLE_VALUE
-							&& maxVal < MIN_USABLE_VALUE) {
-						minVal = -1;
-						maxVal = 1;
-					} else if (minVal < MIN_USABLE_VALUE)
-						minVal = Math.min(maxVal - 2, -1);
-					else if (maxVal < MIN_USABLE_VALUE)
-						maxVal = Math.max(minVal + 2, 1);
-
-					// Now build the axis
-					GraphAxis yAxis;
-					if ("photo".equals(chartType))
-						yAxis = new PhotoGraphAxis(getYAxisWidth());
-					else
-						yAxis = new GraphAxis(minVal, maxVal,
-							Basis.xRightYUp,
-							getYAxisWidth(),
-							false);
-
-					// Now actually build the data plot
-					String baseUrl =
-						DataPlot.buildBaseUrl(userId, deviceName, channelName);
-					DataPlot plot;
-					if ("zeo".equals(chartType))
-						plot = new ZeoDataPlot(widget, getXAxis(), yAxis,
-							deviceName, channelName,
-							baseUrl, minLevel);
-					else if ("photo".equals(chartType))
-						// The cast on yAxis will succeed because we made
-						// yAxis into a PhotoGraphAxis above whenever the
-						// chartType was photo
-						plot = new PhotoDataPlot(widget,
-							getXAxis(), (PhotoGraphAxis) yAxis,
-							deviceName, channelName,
-							baseUrl, userId, minLevel);
-					else
-						plot = new DataPlot(widget, getXAxis(), yAxis,
-							deviceName, channelName,
-							baseUrl, minLevel,
-							getNextColor(),
-							true);
+					DataPlot plot = buildPlotFromSpecs(specs,
+						deviceName, channelName);
 
 					// Finally add that plot to the widget
 					widget.addDataPlot(plot);
 				}
 			}));
+	}
+
+	/**
+	 * Builds a new data plot based on specs.
+	 *
+	 * <p>This switches on the type field in specs to determine which
+	 * kind of plot to return.</p>
+	 *
+	 * @param specs
+	 * 		the channel specs JSON dictionary for the channel
+	 * @param deviceName
+	 * 		the name of the device for the channel
+	 * @param channelName
+	 * 		the name of the channel on the device
+	 * @return
+	 * 		a new {@link org.bodytrack.client.DataPlot DataPlot} with
+	 * 		the correct type and Y-axis bounds, based on the information
+	 * 		from specs
+	 * @throws NullPointerException
+	 * 		if any parameter is <tt>null</tt>
+	 */
+	// TODO: Handle units
+	// TODO: Use this to replace all the native code, and much of the
+	// managed code for adding data plots
+	private DataPlot buildPlotFromSpecs(JSONObject specs, String deviceName,
+			String channelName) {
+		if (specs == null || deviceName == null || channelName == null)
+			throw new NullPointerException("Can't use null to create plot");
+
+		String chartType = "plot";
+		if (specs.containsKey("type")) {
+			JSONValue typeValue = specs.get("type");
+			JSONString typeString = typeValue.isString();
+			if (typeString != null)
+				chartType = typeString.stringValue().toLowerCase();
+		}
+
+		double minVal = getNumber(specs, "min_val");
+		double maxVal = getNumber(specs, "max_val");
+
+		// Handle the case in which there is a missing
+		// or invalid min_val or max_val field
+		if (minVal < MIN_USABLE_VALUE
+				&& maxVal < MIN_USABLE_VALUE) {
+			minVal = -1;
+			maxVal = 1;
+		} else if (minVal < MIN_USABLE_VALUE)
+			minVal = Math.min(maxVal - 2, -1);
+		else if (maxVal < MIN_USABLE_VALUE)
+			maxVal = Math.max(minVal + 2, 1);
+
+		// Now build the axis
+		GraphAxis yAxis;
+		if ("photo".equals(chartType))
+			yAxis = new PhotoGraphAxis(getYAxisWidth());
+		else
+			yAxis = new GraphAxis(minVal, maxVal,
+				Basis.xRightYUp,
+				getYAxisWidth(),
+				false);
+
+		// Now actually build the data plot
+		String baseUrl =
+			DataPlot.buildBaseUrl(userId, deviceName, channelName);
+		DataPlot plot;
+		if ("zeo".equals(chartType))
+			plot = new ZeoDataPlot(widget, getXAxis(), yAxis,
+				deviceName, channelName,
+				baseUrl, minLevel);
+		else if ("photo".equals(chartType))
+			// The cast on yAxis will succeed because we made
+			// yAxis into a PhotoGraphAxis above whenever the
+			// chartType was photo
+			plot = new PhotoDataPlot(widget,
+				getXAxis(), (PhotoGraphAxis) yAxis,
+				deviceName, channelName,
+				baseUrl, userId, minLevel);
+		else
+			plot = new DataPlot(widget, getXAxis(), yAxis,
+				deviceName, channelName,
+				baseUrl, minLevel,
+				getNextColor(),
+				true);
+
+		return plot;
 	}
 
 	/**
