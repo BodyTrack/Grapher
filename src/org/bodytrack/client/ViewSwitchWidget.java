@@ -671,6 +671,11 @@ public class ViewSwitchWidget extends HorizontalPanel {
 			private void substituteView(String responseText) {
 				SavableView view = SavableView.buildView(responseText);
 
+				// TODO: Replace this whole method with asynchronous work
+				// Need to write an asynchronous version of view.getDataPlots
+				// that takes a success continuation, and run the switch
+				// on this.action inside the success continuation
+
 				ChannelManager newChannels = view.getDataPlots(graphWidget);
 				switch (this.action) {
 				case TIME_ONLY:

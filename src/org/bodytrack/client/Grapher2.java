@@ -5,12 +5,16 @@ import java.util.List;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.JsArrayString;
+import com.google.gwt.json.client.JSONObject;
+import com.google.gwt.json.client.JSONString;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
  */
+// TODO: Replace native JavaScript code with calls to
+// DataPlotFactory.initializeGrapher()
 public class Grapher2 implements EntryPoint {
 	// Values that don't make sense in standalone mode
 	private VerticalPanel mainLayout;
@@ -46,7 +50,11 @@ public class Grapher2 implements EntryPoint {
 			// InfoPublisher work for everyone
 			InfoPublisher.setWidget(viewSwitcher);
 
-			addChannelsToGraphWidget();
+			if (shouldBuildFromView())
+				buildFromView(viewSwitcher);
+			else
+				addChannelsToGraphWidget();
+
 			gw.paint();
 
 			mainLayout.add(viewSwitcher);
@@ -142,6 +150,44 @@ public class Grapher2 implements EntryPoint {
 	}
 
 	/**
+	 * Returns <tt>true</tt> if and only if this grapher should build its
+	 * channel list from some view named in window.initializeGrapher.
+	 *
+	 * @return
+	 * 		<tt>true</tt> if and only if the result of calling
+	 * 		window.initializeGrapher is an object which has a key
+	 * 		&quot;view&quot;, which is connected to a value that
+	 * 		JavaScript consider to be <tt>true</tt> (in particular,
+	 * 		any nonempty string meets this description)
+	 */
+	private static native boolean shouldBuildFromView() /*-{
+		if (! $wnd.initializeGrapher) {
+			return false;
+		}
+
+		var data = $wnd.initializeGrapher();
+		return (!! data) && (!! data.view);
+	}-*/;
+
+	/**
+	 * Sets the current view to the view named in window.initializeGrapher.
+	 *
+	 * @param viewSwitcher
+	 * 		the object that keeps track of this grapher's current view
+	 */
+	private void buildFromView(ViewSwitchWidget viewSwitcher) {
+		JSONObject params = DataPlotFactory.initializeGrapher();
+		if (params.containsKey("view")) {
+			JSONString nameValue = params.get("view").isString();
+			if (nameValue != null) {
+				viewSwitcher.navigateToView(nameValue.stringValue());
+				// TODO: Set X-axis bounds if init_min_time and
+				// init_max_time are present
+			}
+		}
+	}
+
+	/**
 	 * Returns <tt>true</tt> if and only if there is no
 	 * window.initializeGrapher method.
 	 *
@@ -198,7 +244,7 @@ public class Grapher2 implements EntryPoint {
 	 * 		by the return value of window.initializeGrapher()
 	 */
 	private native JsArrayString getChannelNames() /*-{
-		var DEFAULT_VALUE = ["foo.bar"];
+		var DEFAULT_VALUE = [];
 		var KEY = "channel_names";
 
 		if (! $wnd.initializeGrapher) {

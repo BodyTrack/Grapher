@@ -29,8 +29,8 @@ import com.google.gwt.json.client.JSONValue;
  * <tt>DataPlotFactory</tt> for the supplied widget will be returned, if
  * such a factory exists.</p>
  */
-// TODO: Make sure we only allow window.initializeGrapher information
-// whenever the grapher is originally populated
+// TODO: Make sure we only allow the use of window.initializeGrapher
+// information while the grapher is being populated for the first time
 // TODO: Support externally supplied axes for plots other than the
 // standard DataPlot
 public final class DataPlotFactory {
@@ -656,7 +656,7 @@ public final class DataPlotFactory {
 	 * 		a {@link JSONObject} version of the result of calling
 	 * 		window.initializeGrapher
 	 */
-	private static JSONObject initializeGrapher() {
+	public static JSONObject initializeGrapher() {
 		JavaScriptObject obj = callInitializeGrapher();
 		if (obj == null)
 			return new JSONObject();
