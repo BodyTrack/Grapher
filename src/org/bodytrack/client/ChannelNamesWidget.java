@@ -391,9 +391,9 @@ public class ChannelNamesWidget extends FlowPanel
 			String channelName = checkBoxes.get(sourceBox).getSecond();
 
 			if (event.getValue())
-				// User just checked a button
-				visible.addChannel(channelGenerator.buildDataPlot(deviceName,
-					channelName));
+				// User just checked a button, so we add the correct new
+				// channel to the grapher itself
+				channelGenerator.addDataPlotAsync(deviceName, channelName);
 			else
 				// User just unchecked a button
 				visible.removeChannel(deviceName, channelName);

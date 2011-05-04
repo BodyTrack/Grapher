@@ -146,6 +146,8 @@ public final class DataPlotFactory {
 	 * @throws NullPointerException
 	 * 		if deviceName or channelName is <tt>null</tt>
 	 */
+	// TODO: This, like all the other buildXXXPlot methods that use the
+	// initial specs only, is meant only for use by the Grapher2 class
 	public DataPlot buildDataPlot(String deviceName, String channelName) {
 		return buildPlotFromSpecs(getInitialSpecs(deviceName, channelName),
 			deviceName, channelName, "plot");
