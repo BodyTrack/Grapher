@@ -390,13 +390,22 @@ public class ChannelNamesWidget extends FlowPanel
 			String deviceName = checkBoxes.get(sourceBox).getFirst();
 			String channelName = checkBoxes.get(sourceBox).getSecond();
 
-			if (event.getValue())
+			if (event.getValue()) {
 				// User just checked a button, so we add the correct new
-				// channel to the grapher itself
-				channelGenerator.addDataPlotAsync(deviceName, channelName);
-			else
+				// channel to the grapher widget
+				channelGenerator.buildDataPlotAsync(deviceName, channelName,
+					new Continuation<DataPlot>() {
+						@Override
+						public void call(DataPlot result) {
+							channelGenerator.getWidget().addDataPlot(result);
+						}
+					},
+					null // Ignore failures
+					);
+			} else {
 				// User just unchecked a button
 				visible.removeChannel(deviceName, channelName);
+			}
 		}
 	}
 }
