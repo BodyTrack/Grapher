@@ -6,9 +6,10 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.bodytrack.client.WebDownloader.DownloadSuccessAlertable;
+import org.bodytrack.client.WebDownloader.DownloadAlertable;
 
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.http.client.Request;
 import com.google.gwt.json.client.JSONNumber;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONParser;
@@ -132,6 +133,17 @@ public final class DataPlotFactory {
 	}
 
 	/**
+	 * Returns the widget that this uses as the parent widget for plots.
+	 *
+	 * @return
+	 * 		the widget that this object uses as the parent widget for
+	 * 		all new plots
+	 */
+	public GraphWidget getWidget() {
+		return widget;
+	}
+
+	/**
 	 * Builds a new {@link org.bodytrack.client.DataPlot DataPlot}
 	 * with the specified device and channel name.
 	 *
@@ -240,46 +252,85 @@ public final class DataPlotFactory {
 	}
 
 	/**
-	 * Asynchronously adds the specified plot to the grapher.
+	 * Asynchronously builds the specified plot, then calls a success
+	 * continuation with that value.
 	 *
 	 * <p>This actually makes a web request to get the channel specs, then
-	 * uses those specs to add the correct type of plot, with the correct
-	 * Y-axis bounds.  Note that, if there is any kind of error at
-	 * all with the request, the channel is not added and is simply
-	 * ignored.</p>
+	 * uses those specs to build the correct type of plot, with the correct
+	 * Y-axis bounds.  Then, calls succ.  However, if there is any kind
+	 * of error at all with the request, the channel is not built and
+	 * the failure continuation is called.</p>
 	 *
 	 * @param deviceName
 	 * 		the name of the device for the channel to add
 	 * @param channelName
 	 * 		the name of the channel on the device
+	 * @param succ
+	 * 		a success continuation that will be called with the plot
+	 * 		that is built, as long as that succeeds
+	 * @param fail
+	 * 		a failure continuation that will be called with parameter
+	 * 		<tt>null</tt> if any part of the process fails.  May be
+	 * 		<tt>null</tt> to signify to do nothing in case of a
+	 * 		failure
 	 * @throws NullPointerException
-	 * 		if either deviceName or channelName is <tt>null</tt>
+	 * 		if deviceName, channelName, or succ is <tt>null</tt>
 	 */
-	// TODO: Do something to alert the user to a failure
-	public void addDataPlotAsync(final String deviceName,
-			final String channelName) {
+	public void buildDataPlotAsync(final String deviceName,
+			final String channelName, final Continuation<DataPlot> succ,
+			Continuation<Object> fail) {
 		if (deviceName == null || channelName == null)
 			throw new NullPointerException(
 				"Can't request for channel with null part of name");
 
+		if (succ == null)
+			throw new NullPointerException(
+				"Can't pass values to null continuation");
+
+		if (fail == null)
+			fail = new Continuation<Object>() {
+				@Override
+				public void call(Object result) { }
+			};
+
+		final Continuation<Object> fc = fail; // Failure continuation
+
 		WebDownloader.doGet(getSpecsUrl(deviceName, channelName),
-			WebDownloader.convertToDownloadAlertable(
-				new DownloadSuccessAlertable() {
+			new DownloadAlertable() {
 				@Override
 				public void onSuccess(String response) {
 					JSONValue parsedValue = JSONParser.parseStrict(response);
-					if (parsedValue == null) return;
+					if (parsedValue == null) {
+						fc.call(null);
+						return;
+					}
 
 					JSONObject specs = parsedValue.isObject();
-					if (specs == null) return;
+					if (specs == null) {
+						fc.call(null);
+						return;
+					}
 
-					DataPlot plot = buildPlotFromSpecs(specs,
-						deviceName, channelName);
+					try {
+						DataPlot plot = buildPlotFromSpecs(specs,
+							deviceName, channelName);
 
-					// Finally add that plot to the widget
-					widget.addDataPlot(plot);
+						if (plot != null)
+							succ.call(plot);
+						else
+							fc.call(null);
+					} catch (Exception e) {
+						// I know it is usually bad form to catch
+						// Exception, but here it matches the spec
+						fc.call(null);
+					}
 				}
-			}));
+
+				@Override
+				public void onFailure(Request failed) {
+					fc.call(null);
+				}
+			});
 	}
 
 	/**
