@@ -11,7 +11,9 @@ package org.bodytrack.client;
 // Continuation, WebDownloader.DownloadAlertable, and
 // WebDownloader.DownloadSuccessAlertable) that all try to allow CPS
 // to work in Java, since Java doesn't have lambdas or even delegates.
-// I need to cut the number of interfaces down to one or two
+// I need to cut the number of interfaces down to one or two.  Probably
+// one for the success/failure case, one for the success case, and maybe
+// one for the "alert when I'm done" case
 public interface Alertable<T> {
 	/**
 	 * Called whenever a successful action occurs.
