@@ -507,8 +507,7 @@ public final class DataPlotFactory {
 	 * 		for the start time of the grapher
 	 */
 	private static double getInitialStartTime() {
-		JSONObject obj = initializeGrapher();
-		double initMinTime = getNumber(obj, "init_min_time");
+		double initMinTime = getNumber(initializeGrapher(), "init_min_time");
 
 		return initMinTime < MIN_USABLE_VALUE ? (now() - 3600)
 											: (int) initMinTime;
@@ -526,11 +525,9 @@ public final class DataPlotFactory {
 	 * 		initial end time of the grapher
 	 */
 	private static double getInitialEndTime() {
-		JSONObject obj = initializeGrapher();
-		double initMinTime = getNumber(obj, "init_max_time");
+		double initMinTime = getNumber(initializeGrapher(), "init_max_time");
 
-		return initMinTime < MIN_USABLE_VALUE ? (now() - 3600)
-											: (int) initMinTime;
+		return initMinTime < MIN_USABLE_VALUE ? now() : (int) initMinTime;
 	}
 
 	/**
@@ -552,8 +549,7 @@ public final class DataPlotFactory {
 	 * 		the integer user id of the current user
 	 */
 	private static int findUserId() {
-		JSONObject obj = initializeGrapher();
-		double id = getNumber(obj, "user_id");
+		double id = getNumber(initializeGrapher(), "user_id");
 
 		return id < MIN_USABLE_VALUE ? 0 : (int) id;
 	}
@@ -565,8 +561,7 @@ public final class DataPlotFactory {
 	 * 		the supplied min_level, or -20 if no such value exists
 	 */
 	private static int getMinLevel() {
-		JSONObject obj = initializeGrapher();
-		double level = getNumber(obj, "min_level");
+		double level = getNumber(initializeGrapher(), "min_level");
 
 		return level < MIN_USABLE_VALUE ? -20 : (int) level;
 	}
