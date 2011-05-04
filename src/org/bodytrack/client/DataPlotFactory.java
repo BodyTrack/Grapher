@@ -5,6 +5,14 @@ import gwt.g2d.client.graphics.Color;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.bodytrack.client.WebDownloader.DownloadSuccessAlertable;
+
+import com.google.gwt.json.client.JSONNumber;
+import com.google.gwt.json.client.JSONObject;
+import com.google.gwt.json.client.JSONParser;
+import com.google.gwt.json.client.JSONString;
+import com.google.gwt.json.client.JSONValue;
+
 /**
  * A class with methods to create new objects of
  * type {@link org.bodytrack.client.DataPlot DataPlot}.
@@ -18,12 +26,8 @@ import java.util.Map;
  * <tt>DataPlotFactory</tt> for the supplied widget will be returned, if
  * such a factory exists.</p>
  */
-// TODO: Major revamp to allow information for this factory to come in
-// from window.initializeGrapher OR from a view
-// TODO: Looks like the best way to achieve this revamp is to add
-// addDataPlotAsync(), addZeoPlotAsync(), and addPhotoPlotAsync() methods,
-// which pull in data from the channel specs URL and then add the plot
-// asynchronously (so they return void)
+// TODO: Make sure we only allow window.initializeGrapher information
+// whenever the grapher is originally populated
 // TODO: Support externally supplied axes for plots other than the
 // standard DataPlot
 public final class DataPlotFactory {
@@ -47,6 +51,12 @@ public final class DataPlotFactory {
 		ColorUtils.PURPLE,
 		ColorUtils.TEAL,
 		ColorUtils.OLIVE};
+
+	/**
+	 * Anything less than this is intended to be a sentinel value for
+	 * &quot;no data present&quot;.
+	 */
+	private static final double MIN_USABLE_VALUE = -1e300;
 
 	// Used for instance control
 	private static Map<GraphWidget, DataPlotFactory> instances;
@@ -165,15 +175,174 @@ public final class DataPlotFactory {
 		if (deviceName == null || channelName == null)
 			throw new NullPointerException("Cannot build plot with null axis");
 
-		Color color =
-			DATA_PLOT_COLORS[numCreatedPlots % DATA_PLOT_COLORS.length];
-		numCreatedPlots++;
-
 		String baseUrl =
 			DataPlot.buildBaseUrl(userId, deviceName, channelName);
 
 		return new DataPlot(widget, xAxis, yAxis, deviceName, channelName,
-			baseUrl, minLevel, color, true);
+			baseUrl, minLevel, getNextColor(), true);
+	}
+
+	/**
+	 * Returns the current color in {@link #DATA_PLOT_COLORS}, and moves
+	 * one color forward.
+	 *
+	 * @return
+	 * 		some color from {@link #DATA_PLOT_COLORS}
+	 */
+	private Color getNextColor() {
+		Color result =
+			DATA_PLOT_COLORS[numCreatedPlots % DATA_PLOT_COLORS.length];
+		numCreatedPlots++;
+
+		return result;
+	}
+
+	/**
+	 * Asynchronously adds the specified plot to the grapher.
+	 *
+	 * <p>This actually makes a web request to get the channel specs, then
+	 * uses those specs to add the correct type of plot, with the correct
+	 * Y-axis bounds.  Note that, if there is any kind of error at
+	 * all with the request, the channel is not added and is simply
+	 * ignored.</p>
+	 *
+	 * @param deviceName
+	 * 		the name of the device for the channel to add
+	 * @param channelName
+	 * 		the name of the channel on the device
+	 * @throws NullPointerException
+	 * 		if either deviceName or channelName is <tt>null</tt>
+	 */
+	// TODO: Do something to alert the user to a failure
+	public void addDataPlotAsync(final String deviceName,
+			final String channelName) {
+		if (deviceName == null || channelName == null)
+			throw new NullPointerException(
+				"Can't request for channel with null part of name");
+
+		WebDownloader.doGet(getSpecsUrl(deviceName, channelName),
+			WebDownloader.convertToDownloadAlertable(
+				new DownloadSuccessAlertable() {
+				@Override
+				public void onSuccess(String response) {
+					// TODO: Abstract most of this into a method that will
+					// build a new DataPlot of the correct type given the
+					// channel specs, then use that to replace the current
+					// implementation, simply by calling
+					// window.initializeGrapher(), parsing the results, and
+					// pulling out the specs we need
+
+					JSONValue parsedValue = JSONParser.parseStrict(response);
+					if (parsedValue == null) return;
+
+					JSONObject specs = parsedValue.isObject();
+					if (specs == null) return;
+
+					String chartType = "plot";
+					if (specs.containsKey("type")) {
+						JSONValue typeValue = specs.get("type");
+						JSONString typeString = typeValue.isString();
+						if (typeString != null)
+							chartType = typeString.stringValue().toLowerCase();
+					}
+
+					double minVal = getNumber(specs, "min_val");
+					double maxVal = getNumber(specs, "max_val");
+
+					// Handle the case in which there is a missing
+					// or invalid min_val or max_val field
+					if (minVal < MIN_USABLE_VALUE
+							&& maxVal < MIN_USABLE_VALUE) {
+						minVal = -1;
+						maxVal = 1;
+					} else if (minVal < MIN_USABLE_VALUE)
+						minVal = Math.min(maxVal - 2, -1);
+					else if (maxVal < MIN_USABLE_VALUE)
+						maxVal = Math.max(minVal + 2, 1);
+
+					// Now build the axis
+					GraphAxis yAxis;
+					if ("photo".equals(chartType))
+						yAxis = new PhotoGraphAxis(getYAxisWidth());
+					else
+						yAxis = new GraphAxis(minVal, maxVal,
+							Basis.xRightYUp,
+							getYAxisWidth(),
+							false);
+
+					// Now actually build the data plot
+					String baseUrl =
+						DataPlot.buildBaseUrl(userId, deviceName, channelName);
+					DataPlot plot;
+					if ("zeo".equals(chartType))
+						plot = new ZeoDataPlot(widget, getXAxis(), yAxis,
+							deviceName, channelName,
+							baseUrl, minLevel);
+					else if ("photo".equals(chartType))
+						// The cast on yAxis will succeed because we made
+						// yAxis into a PhotoGraphAxis above whenever the
+						// chartType was photo
+						plot = new PhotoDataPlot(widget,
+							getXAxis(), (PhotoGraphAxis) yAxis,
+							deviceName, channelName,
+							baseUrl, userId, minLevel);
+					else
+						plot = new DataPlot(widget, getXAxis(), yAxis,
+							deviceName, channelName,
+							baseUrl, minLevel,
+							getNextColor(),
+							true);
+
+					// Finally add that plot to the widget
+					widget.addDataPlot(plot);
+				}
+			}));
+	}
+
+	/**
+	 * Pulls a number out of the specified object, if possible.
+	 *
+	 * @param obj
+	 * 		the object for which key may or may not be present
+	 * @param key
+	 * 		the key to search for in obj
+	 * @return
+	 * 		the value at obj[key] if possible, or something less
+	 * 		than {@link #MIN_USABLE_VALUE}, if there is some kind
+	 * 		of error or if either parameter is <tt>null</tt>
+	 */
+	private double getNumber(JSONObject obj, String key) {
+		// This method takes advantage of the fact that MIN_USABLE_VALUE
+		// is negative, making the result of multiplying by 1.01 less
+		// than MIN_USABLE_VALUE
+
+		if (obj == null || key == null)
+			return MIN_USABLE_VALUE * 1.01;
+
+		if (obj.containsKey(key)) {
+			JSONValue rawJson = obj.get(key);
+			JSONNumber num = rawJson.isNumber();
+			if (num != null)
+				return num.doubleValue();
+		}
+
+		return MIN_USABLE_VALUE * 1.01;
+	}
+
+	/**
+	 * Returns the URL to use for getting the channel specs.
+	 *
+	 * @param deviceName
+	 * 		the non-<tt>null</tt> name of the device for this channel
+	 * @param channelName
+	 * 		the non-<tt>null</tt> name of the channel on the device
+	 * @return
+	 * 		the URL that can be used to get the channel specs for the
+	 * 		specified channel
+	 */
+	private String getSpecsUrl(String deviceName, String channelName) {
+		return "/users/" + userId + "/channel_infos/"
+			+ deviceName + "." + channelName + "/get.json";
 	}
 
 	/**
@@ -270,8 +439,16 @@ public final class DataPlotFactory {
 		double initialMin = getInitialMin(deviceChanName);
 		double initialMax = getInitialMax(deviceChanName);
 
-		return new GraphAxis(initialMin > -1e300 ? initialMin : -1,
-			initialMax > -1e300 ? initialMax : 1,
+		// Get the correct values for the bounds
+		if (initialMin < MIN_USABLE_VALUE && initialMax < MIN_USABLE_VALUE) {
+			initialMin = -1;
+			initialMax = 1;
+		} else if (initialMin < MIN_USABLE_VALUE)
+			initialMin = Math.min(initialMax - 2, -1);
+		else if (initialMax < MIN_USABLE_VALUE)
+			initialMax = Math.max(initialMin + 2, 1);
+
+		return new GraphAxis(initialMin, initialMax,
 			Basis.xRightYUp,
 			getYAxisWidth(),
 			false);
