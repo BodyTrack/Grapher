@@ -3,6 +3,7 @@ package org.bodytrack.client;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.bodytrack.client.Continuation.EmptyContinuation;
 import org.bodytrack.client.WebDownloader.DownloadAlertable;
 import org.bodytrack.client.WebDownloader.DownloadSuccessAlertable;
 
@@ -116,6 +117,11 @@ public class ViewSwitchWidget extends HorizontalPanel {
 		return currentView;
 	}
 
+	// TODO: Document
+	ChannelManager getChannelManager() {
+		return channels;
+	}
+
 	/**
 	 * Generates the current view as a <tt>SavableView</tt>.
 	 *
@@ -134,15 +140,19 @@ public class ViewSwitchWidget extends HorizontalPanel {
 	 *
 	 * @param viewName
 	 * 		the name of the view to use to replace the current view
+	 * @param succ
+	 * 		the success continuation that is called with a parameter
+	 * 		of <tt>null</tt> after the view is successfully replaced.
+	 * 		If this parameter is <tt>null</tt>, it is ignored
 	 * @throws NullPointerException
 	 * 		if viewName is <tt>null</tt>
 	 */
-	public void navigateToView(String viewName) {
+	public void navigateToView(String viewName, Continuation<Object> succ) {
 		if (viewName == null)
 			throw new NullPointerException("Can't navigate to null view");
 
 		new ViewRestorePopup().replaceCurrentView(viewName,
-			ViewRestorePopup.ViewClickHandler.FULL_VIEW);
+			ViewRestorePopup.ViewClickHandler.FULL_VIEW, succ);
 	}
 
 	/**
@@ -521,14 +531,19 @@ public class ViewSwitchWidget extends HorizontalPanel {
 		 * @param action
 		 * 		the action to take, as defined by the constants in
 		 * 		the {@link ViewClickHandler} class
+		 * @param succ
+		 * 		the success continuation that is called with a parameter
+		 * 		of <tt>null</tt> after the view is successfully replaced.
+		 * 		If this parameter is <tt>null</tt>, it is ignored
 		 * @throws NullPointerException
 		 * 		if viewName is <tt>null</tt>
 		 */
-		public void replaceCurrentView(String viewName, int action) {
+		public void replaceCurrentView(String viewName, int action,
+				Continuation<Object> succ) {
 			if (viewName == null)
 				throw new NullPointerException("Can't navigate to null view");
 
-			new ViewClickHandler(viewName, action).replaceCurrentView();
+			new ViewClickHandler(viewName, action).replaceCurrentView(succ);
 		}
 
 		/**
@@ -624,7 +639,7 @@ public class ViewSwitchWidget extends HorizontalPanel {
 			 */
 			@Override
 			public void onClick(ClickEvent event) {
-				replaceCurrentView();
+				replaceCurrentView(new EmptyContinuation<Object>());
 			}
 
 			/**
@@ -633,14 +648,19 @@ public class ViewSwitchWidget extends HorizontalPanel {
 			 * <p>This method is available publicly so that a caller does
 			 * not have to go though the {@link #onClick(ClickEvent)}
 			 * event in order to replace the current view.</p>
+			 *
+			 * @param succ
+			 * 		the success continuation that is called with a parameter
+			 * 		of <tt>null</tt> after the view is successfully replaced.
+			 * 		If this parameter is <tt>null</tt>, it is ignored
 			 */
-			public void replaceCurrentView() {
+			public void replaceCurrentView(final Continuation<Object> succ) {
 				WebDownloader.doGet(getViewUrl(),
 					WebDownloader.convertToDownloadAlertable(
 						new DownloadSuccessAlertable() {
 							@Override
 							public void onSuccess(String response) {
-								substituteView(response);
+								substituteView(response, succ);
 							}
 						}));
 			}
@@ -664,17 +684,22 @@ public class ViewSwitchWidget extends HorizontalPanel {
 			 * the currentView field of the parent
 			 * {@link ViewSwitchWidget}.</p>
 			 *
+			 * <p>Also, if succ is not equal to <tt>null</tt>, after
+			 * this successfully builds the view it runs
+			 * <code>succ.call(null)</code>, which allows a caller
+			 * to receive some notification of the event.</p>
+			 *
 			 * @param responseText
 			 * 		the text we received from the server, giving the
 			 * 		information from the saved view
+			 * @param succ
+			 * 		the success continuation that is called with a parameter
+			 * 		of <tt>null</tt> after the view is successfully replaced.
+			 * 		If this parameter is <tt>null</tt>, it is ignored
 			 */
-			private void substituteView(String responseText) {
+			private void substituteView(String responseText,
+					Continuation<Object> succ) {
 				SavableView view = SavableView.buildView(responseText);
-
-				// TODO: Replace this whole method with asynchronous work
-				// Need to write an asynchronous version of view.getDataPlots
-				// that takes a success continuation, and run the switch
-				// on this.action inside the success continuation
 
 				ChannelManager newChannels = view.getDataPlots(graphWidget);
 				switch (this.action) {
@@ -691,6 +716,9 @@ public class ViewSwitchWidget extends HorizontalPanel {
 				}
 
 				ViewRestorePopup.this.hide();
+
+				if (succ != null)
+					succ.call(null);
 			}
 
 			/**
@@ -766,6 +794,7 @@ public class ViewSwitchWidget extends HorizontalPanel {
 			 * @param newX
 			 * 		the axis with the bounds to use for currX
 			 */
+			// TODO: Move this to the GraphAxis class
 			private void replaceBounds(GraphAxis currX, GraphAxis newX) {
 				double oldMin = currX.getMin();
 				double oldMax = currX.getMax();
