@@ -73,7 +73,12 @@ public final class PlottablePoint {
 		if (! (obj instanceof PlottablePoint))
 			return false;
 
-		return (long) Math.floor(myDate) ==
-			(long) Math.floor(((PlottablePoint) obj).myDate);
+		// Two dates are equal if their floors are less than 0.5
+		// apart, which is an important distinction whenever we
+		// are dealing with numbers that are outside the range
+		// of values representable in a long
+		return
+			Math.abs(Math.floor(myDate) -
+				Math.floor(((PlottablePoint) obj).myDate)) < 0.5;
 	}
 }
