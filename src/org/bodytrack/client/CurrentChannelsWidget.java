@@ -158,6 +158,30 @@ public class CurrentChannelsWidget extends FlowPanel
 
 			this.name = name;
 			link = new HTML(getLinkString(), true);
+			link.addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					// Toggle axis highlighting whenever the user clicks on
+					// the channel name.  However, we have the constraint
+					// that, after this method is called, either both
+					// axes are highlighted or neither is
+					DataPlot chan =
+						channelMgr.getChannel(ChannelLink.this.name);
+					if (chan == null)
+						return;
+
+					if (chan.getXAxis().isHighlighted()
+							&& chan.getYAxis().isHighlighted()) {
+						chan.getXAxis().unhighlight();
+						chan.getYAxis().unhighlight();
+					} else {
+						chan.getXAxis().highlight(GraphAxis.DARKEN_AXIS_ONLY);
+						chan.getYAxis().highlight(GraphAxis.DARKEN_AXIS_ONLY);
+					}
+
+					chan.getContainer().paint();
+				}
+			});
 			link.addDoubleClickHandler(new DoubleClickHandler() {
 				// On double-click, a color picker pops up that allows
 				// the user to change the color of the channel
