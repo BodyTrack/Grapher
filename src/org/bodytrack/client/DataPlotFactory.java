@@ -2,6 +2,7 @@ package org.bodytrack.client;
 
 import gwt.g2d.client.graphics.Color;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -280,6 +281,22 @@ public final class DataPlotFactory {
 	}
 
 	/**
+	 * Returns the URL to use for getting the channel specs.
+	 *
+	 * @param deviceName
+	 * 		the non-<tt>null</tt> name of the device for this channel
+	 * @param channelName
+	 * 		the non-<tt>null</tt> name of the channel on the device
+	 * @return
+	 * 		the URL that can be used to get the channel specs for the
+	 * 		specified channel
+	 */
+	private String getSpecsUrl(String deviceName, String channelName) {
+		return "/users/" + userId + "/channel_infos/"
+			+ deviceName + "." + channelName + "/get.json";
+	}
+
+	/**
 	 * Builds a new data plot based on specs.
 	 *
 	 * <p>This switches on the type field in specs to determine which
@@ -300,8 +317,6 @@ public final class DataPlotFactory {
 	 * 		if any parameter is <tt>null</tt>
 	 */
 	// TODO: Handle units
-	// TODO: Use this to replace all the native code, and much of the
-	// managed code for adding data plots
 	private DataPlot buildPlotFromSpecs(JSONObject specs, String deviceName,
 			String channelName) {
 		if (specs == null || deviceName == null || channelName == null)
@@ -403,52 +418,6 @@ public final class DataPlotFactory {
 	}
 
 	/**
-	 * Pulls a number out of the specified object, if possible.
-	 *
-	 * @param obj
-	 * 		the object for which key may or may not be present
-	 * @param key
-	 * 		the key to search for in obj
-	 * @return
-	 * 		the value at obj[key] if possible, or something less
-	 * 		than {@link #MIN_USABLE_VALUE}, if there is some kind
-	 * 		of error or if either parameter is <tt>null</tt>
-	 */
-	private double getNumber(JSONObject obj, String key) {
-		// This method takes advantage of the fact that MIN_USABLE_VALUE
-		// is negative, making the result of multiplying by 1.01 less
-		// than MIN_USABLE_VALUE
-
-		if (obj == null || key == null)
-			return MIN_USABLE_VALUE * 1.01;
-
-		if (obj.containsKey(key)) {
-			JSONValue rawJson = obj.get(key);
-			JSONNumber num = rawJson.isNumber();
-			if (num != null)
-				return num.doubleValue();
-		}
-
-		return MIN_USABLE_VALUE * 1.01;
-	}
-
-	/**
-	 * Returns the URL to use for getting the channel specs.
-	 *
-	 * @param deviceName
-	 * 		the non-<tt>null</tt> name of the device for this channel
-	 * @param channelName
-	 * 		the non-<tt>null</tt> name of the channel on the device
-	 * @return
-	 * 		the URL that can be used to get the channel specs for the
-	 * 		specified channel
-	 */
-	private String getSpecsUrl(String deviceName, String channelName) {
-		return "/users/" + userId + "/channel_infos/"
-			+ deviceName + "." + channelName + "/get.json";
-	}
-
-	/**
 	 * Builds a new {@link org.bodytrack.client.ZeoDataPlot ZeoDataPlot}
 	 * with the specified device and channel name.
 	 *
@@ -533,89 +502,61 @@ public final class DataPlotFactory {
 	 * Returns the starting time of this grapher widget, or one hour
 	 * prior to the current time if that cannot be determined.
 	 *
-	 * <p>Uses the init_min_time field in the return value of
-	 * window.initializeGrapher() if possible.</p>
-	 *
 	 * @return
-	 * 		the time, in seconds, which should be used for the
-	 * 		start time of the grapher
+	 * 		the time, in seconds since the epoch, which should be used
+	 * 		for the start time of the grapher
 	 */
-	private static native double getInitialStartTime() /*-{
-		// Equal to the current time, minus one hour
-		var DEFAULT_VALUE = ((new Date()).valueOf() / 1000.0) - 3600.0;
-		var KEY = "init_min_time";
+	private static double getInitialStartTime() {
+		JSONObject obj = initializeGrapher();
+		double initMinTime = getNumber(obj, "init_min_time");
 
-		if (! $wnd.initializeGrapher) {
-			return DEFAULT_VALUE;
-		}
-
-		var data = $wnd.initializeGrapher();
-
-		if (! (data && data[KEY])) {
-			return DEFAULT_VALUE;
-		}
-
-		return data[KEY];
-	}-*/;
+		return initMinTime < MIN_USABLE_VALUE ? (now() - 3600)
+											: (int) initMinTime;
+	}
 
 	/**
 	 * Returns the starting time of this grapher widget, or the
 	 * current time if that cannot be determined.
 	 *
-	 * Uses the init_max_time field in the return value of
-	 * window.initializeGrapher() if possible.
+	 * <p>Uses the init_max_time field in the return value of
+	 * window.initializeGrapher() if possible.</p>
 	 *
 	 * @return
 	 * 		the time, in seconds, which should be used for the
 	 * 		initial end time of the grapher
 	 */
-	private static native double getInitialEndTime() /*-{
-		// Equal to the current time
-		var DEFAULT_VALUE = (new Date()).valueOf() / 1000.0;
-		var KEY = "init_max_time";
+	private static double getInitialEndTime() {
+		JSONObject obj = initializeGrapher();
+		double initMinTime = getNumber(obj, "init_max_time");
 
-		if (! $wnd.initializeGrapher) {
-			return DEFAULT_VALUE;
-		}
+		return initMinTime < MIN_USABLE_VALUE ? (now() - 3600)
+											: (int) initMinTime;
+	}
 
-		var data = $wnd.initializeGrapher();
-
-		if (! (data && data[KEY])) {
-			return DEFAULT_VALUE;
-		}
-
-		return data[KEY];
-	}-*/;
+	/**
+	 * Returns the number of seconds since the epoch.
+	 *
+	 * @return
+	 * 		the number of seconds since the epoch
+	 */
+	private static double now() {
+		Date now = new Date();
+		return now.getTime() / 1000.0;
+	}
 
 	/**
 	 * Returns the user ID of the current user, or 0 if the
 	 * user's ID cannot be determined.
 	 *
-	 * <p>Calls the window.initializeGrapher() function from JavaScript,
-	 * and checks the return value for a user_id key.  If such
-	 * a key is found, returns the value (which is an integer)
-	 * corresponding to that key.  Otherwise, returns 0.</p>
-	 *
 	 * @return
-	 * 		the integer user id of the current user, as determined
-	 * 		from the return value of window.initializeGrapher()
+	 * 		the integer user id of the current user
 	 */
-	private static native int findUserId() /*-{
-		var DEFAULT_VALUE = 0;
-		var KEY = "user_id";
+	private static int findUserId() {
+		JSONObject obj = initializeGrapher();
+		double id = getNumber(obj, "user_id");
 
-		if (! $wnd.initializeGrapher) {
-			return DEFAULT_VALUE;
-		}
-
-		var data = $wnd.initializeGrapher();
-
-		if (! (data && data[KEY])) {
-			return DEFAULT_VALUE;
-		}
-
-		return data[KEY];
-	}-*/;
+		return id < MIN_USABLE_VALUE ? 0 : (int) id;
+	}
 
 	/**
 	 * Returns the supplied min_level variable from window.initializeGrapher.
@@ -623,11 +564,41 @@ public final class DataPlotFactory {
 	 * @return
 	 * 		the supplied min_level, or -20 if no such value exists
 	 */
-	private int getMinLevel() {
+	private static int getMinLevel() {
 		JSONObject obj = initializeGrapher();
 		double level = getNumber(obj, "min_level");
 
 		return level < MIN_USABLE_VALUE ? -20 : (int) level;
+	}
+
+	/**
+	 * Pulls a number out of the specified object, if possible.
+	 *
+	 * @param obj
+	 * 		the object for which key may or may not be present
+	 * @param key
+	 * 		the key to search for in obj
+	 * @return
+	 * 		the value at obj[key] if possible, or something less
+	 * 		than {@link #MIN_USABLE_VALUE}, if there is some kind
+	 * 		of error or if either parameter is <tt>null</tt>
+	 */
+	private static double getNumber(JSONObject obj, String key) {
+		// This method takes advantage of the fact that MIN_USABLE_VALUE
+		// is negative, making the result of multiplying by 1.01 less
+		// than MIN_USABLE_VALUE
+
+		if (obj == null || key == null)
+			return MIN_USABLE_VALUE * 1.01;
+
+		if (obj.containsKey(key)) {
+			JSONValue rawJson = obj.get(key);
+			JSONNumber num = rawJson.isNumber();
+			if (num != null)
+				return num.doubleValue();
+		}
+
+		return MIN_USABLE_VALUE * 1.01;
 	}
 
 	/**
@@ -638,8 +609,12 @@ public final class DataPlotFactory {
 	 * 		a {@link JSONObject} version of the result of calling
 	 * 		window.initializeGrapher
 	 */
-	private JSONObject initializeGrapher() {
-		return new JSONObject(callInitializeGrapher());
+	private static JSONObject initializeGrapher() {
+		JavaScriptObject obj = callInitializeGrapher();
+		if (obj == null)
+			return new JSONObject();
+
+		return new JSONObject(obj);
 	}
 
 	/**
@@ -650,7 +625,10 @@ public final class DataPlotFactory {
 	 * 		the result of calling window.initializeGrapher in
 	 * 		native JavaScript
 	 */
-	private native JavaScriptObject callInitializeGrapher() /*-{
-		return window.initializeGrapher();
+	private static native JavaScriptObject callInitializeGrapher() /*-{
+		if (window.initializeGrapher)
+			return window.initializeGrapher();
+		else
+			return null;
 	}-*/;
 }
