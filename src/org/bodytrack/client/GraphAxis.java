@@ -629,19 +629,41 @@ public class GraphAxis {
 	 * Drags this axis by motion, which is expressed in terms of
 	 * the units for this axis.
 	 *
-	 * <p>This is designed to be used only within this package,
-	 * with a class that knows exactly what needs to happen with this
-	 * axis.  In most cases, callers should use the regular
-	 * {@link #drag(Vector2, Vector2)} method instead.</p>
-	 *
 	 * @param motion
 	 * 		the amount to move this axis in logical units (seconds
 	 * 		for an axis representing time, other values for another
 	 * 		axis), not in screen pixels
 	 */
-	void uncheckedDrag(double motion) {
+	private void uncheckedDrag(double motion) {
 		uncheckedTranslate(motion);
 		clampToRange();
 		rescale();
+	}
+
+	/**
+	 * Replaces the bounds of this axis with the bounds of newAxis.
+	 *
+	 * @param newAxis
+	 * 		the axis with the bounds to use for this axis
+	 * @throws NullPointerException
+	 * 		if newAxis is <tt>null</tt>
+	 */
+	public void replaceBounds(GraphAxis newAxis) {
+		if (newAxis == null)
+			throw new NullPointerException(
+				"Can't change bounds to those of a null axis");
+
+		double oldMin = getMin();
+		double oldMax = getMax();
+		double newMin = newAxis.getMin();
+		double newMax = newAxis.getMax();
+
+		// Zoom in place to the right factor
+		zoom((newMax - newMin) / (oldMax - oldMin),
+			(oldMin + oldMax) / 2);
+
+		// Now translate
+		oldMin = getMin();
+		uncheckedDrag(newMin - oldMin);
 	}
 }

@@ -755,7 +755,7 @@ public class ViewSwitchWidget extends HorizontalPanel {
 						CollectionUtil.getFirst(channels.getXAxes());
 					GraphAxis newX =
 						CollectionUtil.getFirst(newChannels.getXAxes());
-					replaceBounds(currX, newX);
+					currX.replaceBounds(newX);
 				} else {
 					GraphAxis newX = null;
 					// We won't actually use null, since there is at
@@ -768,46 +768,15 @@ public class ViewSwitchWidget extends HorizontalPanel {
 					for (GraphAxis temp: newChannels.getXAxes()) {
 						newX = temp; // Need newX to persist after the loop
 						if (currIndex >= currCount) break;
-						replaceBounds(currAxes.get(currIndex), newX);
+						currAxes.get(currIndex).replaceBounds(newX);
 						currIndex++;
 					}
 
 					// Repeat the last new axis down the remaining
 					// current axes
 					for (; currIndex < currCount; currIndex++)
-						replaceBounds(currAxes.get(currIndex), newX);
+						currAxes.get(currIndex).replaceBounds(newX);
 				}
-			}
-
-			/**
-			 * Replaces the bounds of currX with the bounds of newX.
-			 *
-			 * <p>It is expected, but not checked explicitly, that currX
-			 * and newX are not <tt>null</tt>.  If either is <tt>null</tt>,
-			 * a {@link java.lang.NullPointerException NullPointerException}
-			 * will be thrown.  However, it is not a problem that we don't
-			 * check, since this is an internal method, allowing us to control
-			 * all calls to it.</p>
-			 *
-			 * @param currX
-			 * 		the axis to change
-			 * @param newX
-			 * 		the axis with the bounds to use for currX
-			 */
-			// TODO: Move this to the GraphAxis class
-			private void replaceBounds(GraphAxis currX, GraphAxis newX) {
-				double oldMin = currX.getMin();
-				double oldMax = currX.getMax();
-				double newMin = newX.getMin();
-				double newMax = newX.getMax();
-
-				// Zoom in place to the right factor
-				currX.zoom((newMax - newMin) / (oldMax - oldMin),
-					(oldMin + oldMax) / 2);
-
-				// Now translate
-				oldMin = currX.getMin();
-				currX.uncheckedDrag(newMin - oldMin);
 			}
 
 			/**
