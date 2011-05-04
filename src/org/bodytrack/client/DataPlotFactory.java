@@ -150,7 +150,7 @@ public final class DataPlotFactory {
 	// initial specs only, is meant only for use by the Grapher2 class
 	public DataPlot buildDataPlot(String deviceName, String channelName) {
 		return buildPlotFromSpecs(getInitialSpecs(deviceName, channelName),
-			deviceName, channelName, "plot");
+			"plot", deviceName, channelName);
 	}
 
 	/**
@@ -383,19 +383,22 @@ public final class DataPlotFactory {
 		else if (maxVal < MIN_USABLE_VALUE)
 			maxVal = Math.max(minVal + 2, 1);
 
-		// Now build the axis
+		// Now build the axis, and put together the URL that the plot
+		// should use to get more data
 		GraphAxis yAxis;
-		if ("photo".equals(chartType))
+		String baseUrl;
+		if ("photo".equals(chartType)) {
 			yAxis = new PhotoGraphAxis(getYAxisWidth());
-		else
+			baseUrl = "/photos/" + userId + "/";
+		} else {
 			yAxis = new GraphAxis(minVal, maxVal,
 				Basis.xRightYUp,
 				getYAxisWidth(),
 				false);
+			baseUrl = DataPlot.buildBaseUrl(userId, deviceName, channelName);
+		}
 
 		// Now actually build the data plot
-		String baseUrl =
-			DataPlot.buildBaseUrl(userId, deviceName, channelName);
 		DataPlot plot;
 		if ("zeo".equals(chartType))
 			plot = new ZeoDataPlot(widget, getXAxis(), yAxis,
@@ -465,13 +468,9 @@ public final class DataPlotFactory {
 			throw new NullPointerException(
 				"Cannot build plot with null name");
 
-		// baseUrl should be /photos/:user_id/ for photos
-		String baseUrl = "/photos/" + userId + "/";
-
-		return new PhotoDataPlot(widget, getXAxis(),
-			new PhotoGraphAxis(getYAxisWidth()),
-			deviceName, channelName,
-			baseUrl, userId, minLevel);
+		return (PhotoDataPlot) buildPlotFromSpecs(
+			getInitialSpecs(deviceName, channelName), "photo",
+			deviceName, channelName);
 	}
 
 	/**
@@ -623,8 +622,8 @@ public final class DataPlotFactory {
 	 * 		native JavaScript
 	 */
 	private static native JavaScriptObject callInitializeGrapher() /*-{
-		if (window.initializeGrapher)
-			return window.initializeGrapher();
+		if ($wnd.initializeGrapher)
+			return $wnd.initializeGrapher();
 		else
 			return null;
 	}-*/;
