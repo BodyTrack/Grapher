@@ -66,6 +66,10 @@ public class GraphAxis {
 
 	public GraphAxis(double min, double max, Basis basis, double width,
 			boolean isXAxis) {
+		if (min > max)
+			throw new IllegalArgumentException(
+				"Can't have backwards axis bounds");
+
 		this.min = min;
 		this.max = max;
 		this.basis = basis;
@@ -653,10 +657,29 @@ public class GraphAxis {
 			throw new NullPointerException(
 				"Can't change bounds to those of a null axis");
 
-		double oldMin = getMin();
-		double oldMax = getMax();
 		double newMin = newAxis.getMin();
 		double newMax = newAxis.getMax();
+
+		replaceBounds(newMin, newMax);
+	}
+
+	/**
+	 * Replaces the bounds of this axis with the specified min and max.
+	 *
+	 * @param newMin
+	 * 		the new min value for this axis
+	 * @param newMax
+	 * 		the new max value for this axis
+	 * @throws IllegalArgumentException
+	 * 		if newMax > newMin
+	 */
+	public void replaceBounds(double newMin, double newMax) {
+		if (newMin > newMax)
+			throw new IllegalArgumentException(
+				"Can't have backwards axis bounds");
+
+		double oldMin = getMin();
+		double oldMax = getMax();
 
 		// Zoom in place to the right factor
 		zoom((newMax - newMin) / (oldMax - oldMin),

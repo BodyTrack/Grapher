@@ -2,6 +2,7 @@ package org.bodytrack.client;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.JsArrayString;
@@ -175,14 +176,29 @@ public class Grapher2 implements EntryPoint {
 	 * @param viewSwitcher
 	 * 		the object that keeps track of this grapher's current view
 	 */
-	private void buildFromView(ViewSwitchWidget viewSwitcher) {
-		JSONObject params = DataPlotFactory.initializeGrapher();
+	private void buildFromView(final ViewSwitchWidget viewSwitcher) {
+		final JSONObject params = DataPlotFactory.initializeGrapher();
 		if (params.containsKey("view")) {
 			JSONString nameValue = params.get("view").isString();
 			if (nameValue != null) {
-				viewSwitcher.navigateToView(nameValue.stringValue());
-				// TODO: Set X-axis bounds if init_min_time and
-				// init_max_time are present
+				viewSwitcher.navigateToView(nameValue.stringValue(),
+					new Continuation<Object>() {
+					@Override
+					public void call(Object result) {
+						double startTime = DataPlotFactory.getNumber(params,
+								"init_min_time");
+						double endTime = DataPlotFactory.getNumber(params,
+								"init_max_time");
+						if (startTime < DataPlotFactory.MIN_USABLE_VALUE
+								|| endTime < DataPlotFactory.MIN_USABLE_VALUE)
+							return;
+
+						Set<GraphAxis> xAxes =
+							viewSwitcher.getChannelManager().getXAxes();
+						for (GraphAxis xAxis: xAxes)
+							xAxis.replaceBounds(startTime, endTime);
+					}
+					});
 			}
 		}
 	}
