@@ -212,6 +212,40 @@ public final class DataPlotFactory {
 	}
 
 	/**
+	 * Builds a new {@link org.bodytrack.client.PhotoDataPlot PhotoDataPlot}
+	 * with the specified device and channel names, and axes.
+	 *
+	 * @param deviceName
+	 * 		the name of the device from which this channel came
+	 * @param channelName
+	 * 		the name of this channel on the device
+	 * @param xAxis
+	 * 		the X-axis to use to build the plot
+	 * @param yAxis
+	 * 		the Y-axis to use to build the plot
+	 * @return
+	 * 		a <tt>PhotoDataPlot</tt> with the specified device and channel
+	 * 		name, ready to add to the graph widget used by this
+	 * 		factory
+	 * @throws NullPointerException
+	 * 		if any parameter is <tt>null</tt>
+	 */
+	public PhotoDataPlot buildPhotoPlot(String deviceName, String channelName,
+			GraphAxis xAxis, PhotoGraphAxis yAxis) {
+		if (deviceName == null || channelName == null)
+			throw new NullPointerException("Cannot build plot with null name");
+		if (deviceName == null || channelName == null)
+			throw new NullPointerException("Cannot build plot with null axis");
+
+		String baseUrl =
+			DataPlot.buildBaseUrl(userId, deviceName, channelName);
+
+		return new PhotoDataPlot(widget, xAxis, yAxis,
+			deviceName, channelName,
+			baseUrl, userId, minLevel);
+	}
+
+	/**
 	 * Returns the current color in {@link #DATA_PLOT_COLORS}, and moves
 	 * one color forward.
 	 *
