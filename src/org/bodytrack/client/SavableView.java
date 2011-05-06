@@ -36,16 +36,20 @@ import com.google.gwt.json.client.JSONString;
  * dictionary is channels.  The value for this should be itself a
  * dictionary, with device names as keys.  Each device name points to a
  * nonempty dictionary, with channel names as keys.  Each channel name points
- * to a dictionary, with required keys x_axis, y_axis, and color.  The x_axis
- * key has a nonnegative integer value, which points to the index in x_axes
- * to use for the x-axis on that channel name.  Similarly, the y_axis key
- * is a pointer into the y_axes array.  In both cases, indices start at 0.
- * The color key is some HTML color string that represents the color of
- * the plotted channel.</p>
+ * to a dictionary, with required keys x_axis, y_axis, and color, and optional
+ * key type.  The x_axis key has a nonnegative integer value, which points
+ * to the index in x_axes to use for the x-axis on that channel name.
+ * Similarly, the y_axis key is a pointer into the y_axes array.  In both
+ * cases, indices start at 0.  The color key is some HTML color string that
+ * represents the color of the plotted channel.  See
+ * {@link ColorUtils#buildColor(String)} for a description of supported
+ * color formats.  The type key can have one of three string values at the
+ * moment: plot, zeo, and photo.  If the value is plot (the default if the
+ * type key is missing), the plot is assumed to be a standard data plot.  If
+ * the value is zeo, the plot is assumed to be a Zeo plot.  If the value
+ * is photo, the plot is assumed to be a photo plot.</p>
  */
-// TODO: implement units and label fields for Y-axes, which are not
-// currently used or supported in the DataPlot and ChannelManager classes
-// TODO: firm up and comment current API
+// TODO: Implement and handle units
 // TODO: Comment
 public final class SavableView extends JavaScriptObject {
 	/* JavaScript overlay types always have protected empty constructors */
@@ -77,6 +81,10 @@ public final class SavableView extends JavaScriptObject {
 	}-*/;
 
 	public static SavableView buildView(ChannelManager mgr, String name) {
+		if (mgr == null)
+			throw new NullPointerException(
+				"Can't work with null set of channels");
+
 		List<GraphAxis> xAxes = new ArrayList<GraphAxis>(mgr.getXAxes());
 		List<GraphAxis> yAxes = new ArrayList<GraphAxis>(mgr.getYAxes());
 
@@ -119,6 +127,8 @@ public final class SavableView extends JavaScriptObject {
 				new JSONNumber(yAxes.indexOf(plot.getYAxis())));
 			specificChannelInfo.put("color",
 				new JSONString(plot.getColor().getColorCode()));
+			specificChannelInfo.put("type",
+				new JSONString(plot.getType()));
 
 			// We know this conversion is safe, since we just
 			// created the object in the previous loop
@@ -167,9 +177,12 @@ public final class SavableView extends JavaScriptObject {
 			String deviceName = channel.getFirst();
 			String channelName = channel.getSecond();
 
-			DataPlot plot = factory.buildDataPlot(deviceName, channelName,
+			DataPlot plot = factory.buildPlot(
+				getType(deviceName, channelName),
+				deviceName, channelName,
 				xAxes[getXAxisIndex(deviceName, channelName)],
-				generateYAxis(channel, axisMargin));
+				generateYAxis(getType(deviceName, channelName),
+					channel, axisMargin));
 
 			// Set color of the plot, ensuring compatibility even when
 			// the required color field isn't present
@@ -199,11 +212,15 @@ public final class SavableView extends JavaScriptObject {
 		return xAxes;
 	}
 
-	private GraphAxis generateYAxis(StringPair channel,
+	private GraphAxis generateYAxis(String type, StringPair channel,
 			int axisMargin) {
 		int yAxisIndex = getYAxisIndex(channel.getFirst(),
 			channel.getSecond());
 
+		if (type != null && type.toLowerCase().equals("photo"))
+			return new PhotoGraphAxis(axisMargin * 3);
+
+		// Default unless we need a photo axis
 		return new GraphAxis(
 			getMinValue(yAxisIndex),
 			getMaxValue(yAxisIndex),
@@ -564,5 +581,47 @@ public final class SavableView extends JavaScriptObject {
 				"Cannot find color for channel that does not exist");
 
 		return getColorUnchecked(deviceName, channelName);
+	}
+
+	/**
+	 * Retrieves the type field from the specified channel.
+	 *
+	 * <p>Performs no checks on the key and value.</p>
+	 *
+	 * @param deviceName
+	 * 		the device name for which we want the channel type
+	 * @param channelName
+	 * 		the channel name for which we want the channel type
+	 * @return
+	 * 		the type name for the specified channel
+	 */
+	private native String getTypeUnchecked(String deviceName,
+			String channelName) /*-{
+		// Since this is an optional field, we return null if the field
+		// is not present
+		return this.channels[deviceName][channelName].type || null;
+	}-*/;
+
+	/**
+	 * Returns the plot type for the specified channel.
+	 *
+	 * @param deviceName
+	 * 		the device name for which we want the plot type
+	 * @param channelName
+	 * 		the channel name for which we want the plot type
+	 * @return
+	 * 		the type name for the specified channel, or <tt>null</tt>
+	 * 		if the type name parameter is not present (since the type
+	 * 		name is an optional parameter)
+	 * @throws IllegalArgumentException
+	 * 		if the specified channel is not an element of the
+	 * 		return values of {@link #getChannels()}
+	 */
+	public String getType(String deviceName, String channelName) {
+		if (! hasChannel(deviceName, channelName))
+			throw new IllegalArgumentException(
+				"Cannot find plot type for channel that does not exist");
+
+		return getTypeUnchecked(deviceName, channelName);
 	}
 }
