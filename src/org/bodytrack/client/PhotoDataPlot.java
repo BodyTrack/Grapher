@@ -87,7 +87,7 @@ public class PhotoDataPlot extends DataPlot {
 	public PhotoDataPlot(GraphWidget container, GraphAxis xAxis,
 			PhotoGraphAxis yAxis, String deviceName, String channelName,
 			String url, int userId, int minLevel) {
-		super(container, xAxis, yAxis, channelName, deviceName, url, minLevel,
+		super(container, xAxis, yAxis, deviceName, channelName, url, minLevel,
 			Canvas.DEFAULT_COLOR, false);
 		// Note that we know that our Y-axis is a PhotoGraphAxis,
 		// so we will be able to cast freely later on
