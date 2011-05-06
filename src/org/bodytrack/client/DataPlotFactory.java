@@ -145,6 +145,67 @@ public final class DataPlotFactory {
 	}
 
 	/**
+	 * A dispatcher to build the correct type of plot, based on the
+	 * type parameter.
+	 *
+	 * <p>This calls one of
+	 * {@link #buildDataPlot(String, String, GraphAxis, GraphAxis)
+	 * 	buildDataPlot},
+	 * {@link #buildZeoPlot(String, String, GraphAxis, GraphAxis)
+	 * 	buildZeoPlot}, and
+	 * {@link #buildPhotoPlot(String, String, GraphAxis, PhotoGraphAxis)
+	 * 	buildPhotoPlot}, based on the value of the type parameter.  If
+	 * that parameter is equal (case-insensitive) to &quot;photo&quot;
+	 * or &quot;zeo&quot;, dispatches to building a photo or zeo
+	 * plot, respectively.  Otherwise, even if type is <tt>null</tt>,
+	 * builds a regular data plot.</p>
+	 *
+	 * @param type
+	 * 		the type of view to build
+	 * @param deviceName
+	 * 		the name of the device from which this channel came
+	 * @param channelName
+	 * 		the name of this channel on the device
+	 * @param xAxis
+	 * 		the X-axis to use to build the plot
+	 * @param yAxis
+	 * 		the Y-axis to use to build the plot
+	 * @return
+	 * 		some <tt>DataPlot</tt> (perhaps of a type inheriting from
+	 * 		<tt>DataPlot</tt>) object with the specified device and
+	 * 		channel name, ready to add to the graph widget used by this
+	 * 		factory
+	 * @throws NullPointerException
+	 * 		if deviceName, channelName, xAxis, or yAxis is <tt>null</tt>
+	 * @throws ClassCastException
+	 * 		if type is equal to &quot;photo&quot; but yAxis is not of
+	 * 		type {@link PhotoGraphAxis}
+	 */
+	public DataPlot buildPlot(String type, String deviceName,
+			String channelName, GraphAxis xAxis, GraphAxis yAxis) {
+		if (deviceName == null || channelName == null)
+			throw new NullPointerException("Cannot build plot with null name");
+		if (deviceName == null || channelName == null)
+			throw new NullPointerException("Cannot build plot with null axis");
+
+		// Relies on String.equals handling null correctly, as it does
+		if ("zeo".equalsIgnoreCase(type))
+			return buildZeoPlot(deviceName, channelName, xAxis, yAxis);
+
+		if ("photo".equalsIgnoreCase(type)) {
+			if (! (yAxis instanceof PhotoGraphAxis))
+				throw new ClassCastException(
+					"Require a PhotoGraphAxis to build a photo plot");
+
+			return buildPhotoPlot(deviceName, channelName,
+				xAxis, (PhotoGraphAxis) yAxis);
+		}
+
+		// All other cases
+		return buildDataPlot(deviceName, channelName, xAxis, yAxis);
+	}
+
+	/**
 	 * Builds a new {@link org.bodytrack.client.DataPlot DataPlot}
 	 * with the specified device and channel names, and axes.
 	 *
@@ -175,6 +236,21 @@ public final class DataPlotFactory {
 
 		return new DataPlot(widget, xAxis, yAxis, deviceName, channelName,
 			baseUrl, minLevel, getNextColor(), true);
+	}
+
+	/**
+	 * Returns the current color in {@link #DATA_PLOT_COLORS}, and moves
+	 * one color forward.
+	 *
+	 * @return
+	 * 		some color from {@link #DATA_PLOT_COLORS}
+	 */
+	private Color getNextColor() {
+		Color result =
+			DATA_PLOT_COLORS[numCreatedPlots % DATA_PLOT_COLORS.length];
+		numCreatedPlots++;
+
+		return result;
 	}
 
 	/**
@@ -243,21 +319,6 @@ public final class DataPlotFactory {
 		return new PhotoDataPlot(widget, xAxis, yAxis,
 			deviceName, channelName,
 			baseUrl, userId, minLevel);
-	}
-
-	/**
-	 * Returns the current color in {@link #DATA_PLOT_COLORS}, and moves
-	 * one color forward.
-	 *
-	 * @return
-	 * 		some color from {@link #DATA_PLOT_COLORS}
-	 */
-	private Color getNextColor() {
-		Color result =
-			DATA_PLOT_COLORS[numCreatedPlots % DATA_PLOT_COLORS.length];
-		numCreatedPlots++;
-
-		return result;
 	}
 
 	/**
@@ -467,6 +528,7 @@ public final class DataPlotFactory {
 				false);
 
 		// Now actually build the data plot
+		// TODO: Switch to using buildXXXPlot methods instead
 		String baseUrl =
 			DataPlot.buildBaseUrl(userId, deviceName, channelName);
 		DataPlot plot;
