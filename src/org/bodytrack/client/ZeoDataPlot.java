@@ -72,6 +72,19 @@ public class ZeoDataPlot extends DataPlot {
 	}
 
 	/**
+	 * Returns the type of this plot.
+	 *
+	 * @return
+	 * 		a string representing the type of this plot.  For objects
+	 * 		of runtime type <tt>ZeoDataPlot</tt>, this will always be
+	 * 		equal to the string &quot;zeo&quot;
+	 */
+	@Override
+	public String getType() {
+		return "zeo";
+	}
+
+	/**
 	 * Returns the ordered list of points this DataPlot should draw
 	 * in {@link DataPlot#paintAllDataPoints()}.
 	 *

@@ -105,6 +105,19 @@ public class PhotoDataPlot extends DataPlot {
 	}
 
 	/**
+	 * Returns the type of this plot.
+	 *
+	 * @return
+	 * 		a string representing the type of this plot.  For objects
+	 * 		of runtime type <tt>PhotoDataPlot</tt>, this will always be
+	 * 		equal to the string &quot;photo&quot;
+	 */
+	@Override
+	public String getType() {
+		return "photo";
+	}
+
+	/**
 	 * Returns the points that will form the centers of the images.
 	 *
 	 * <p>This also has the hidden side effect of starting to load

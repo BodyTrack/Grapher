@@ -39,6 +39,10 @@ import com.google.gwt.i18n.client.NumberFormat;
  * determines the points that {@link DataPlot#paintAllDataPoints()}
  * will draw, and the order in which paintAllDataPoints will draw
  * them.</p>
+ *
+ * <p>Note that <strong>any</strong> class that inherits from this class
+ * should override {@link #getType()}, which allows consistent saving
+ * and restoring of views.</p>
  */
 public class DataPlot implements Alertable<GrapherTile> {
 	/**
@@ -271,6 +275,19 @@ public class DataPlot implements Alertable<GrapherTile> {
 			return channelName;
 
 		return deviceName + "." + channelName;
+	}
+
+	/**
+	 * Returns the type of this plot.
+	 *
+	 * @return
+	 * 		a string representing the type of this plot.  For objects
+	 * 		of runtime type <tt>DataPlot</tt>, this will always be
+	 * 		equal to the string &quot;plot&quot;, although subclasses
+	 * 		should override this implementation
+	 */
+	public String getType() {
+		return "plot";
 	}
 
 	/**
