@@ -178,6 +178,40 @@ public final class DataPlotFactory {
 	}
 
 	/**
+	 * Builds a new {@link org.bodytrack.client.ZeoDataPlot ZeoDataPlot}
+	 * with the specified device and channel names, and axes.
+	 *
+	 * @param deviceName
+	 * 		the name of the device from which this channel came
+	 * @param channelName
+	 * 		the name of this channel on the device
+	 * @param xAxis
+	 * 		the X-axis to use to build the plot
+	 * @param yAxis
+	 * 		the Y-axis to use to build the plot
+	 * @return
+	 * 		a <tt>ZeoDataPlot</tt> with the specified device and channel
+	 * 		name, ready to add to the graph widget used by this
+	 * 		factory
+	 * @throws NullPointerException
+	 * 		if any parameter is <tt>null</tt>
+	 */
+	public ZeoDataPlot buildZeoPlot(String deviceName, String channelName,
+			GraphAxis xAxis, GraphAxis yAxis) {
+		if (deviceName == null || channelName == null)
+			throw new NullPointerException("Cannot build plot with null name");
+		if (deviceName == null || channelName == null)
+			throw new NullPointerException("Cannot build plot with null axis");
+
+		String baseUrl =
+			DataPlot.buildBaseUrl(userId, deviceName, channelName);
+
+		return new ZeoDataPlot(widget, xAxis, yAxis,
+				deviceName, channelName,
+				baseUrl, minLevel);
+	}
+
+	/**
 	 * Returns the current color in {@link #DATA_PLOT_COLORS}, and moves
 	 * one color forward.
 	 *
@@ -263,6 +297,7 @@ public final class DataPlotFactory {
 					} catch (Exception e) {
 						// I know it is usually bad form to catch
 						// Exception, but here it matches the spec
+						// because any exception is a failure
 						fc.call(null);
 					}
 				}
@@ -297,6 +332,12 @@ public final class DataPlotFactory {
 	 * kind of plot to return, and on the bounds for the Y-axis on
 	 * that plot.</p>
 	 *
+	 * <p>This should usually not be used outside the
+	 * <tt>DataPlotFactory</tt> class.  That being said, if there is
+	 * a very good reason (such as the initialization code in
+	 * {@link Grapher2}, the visibility on this method is high enough
+	 * to allow that.</p>
+	 *
 	 * @param specs
 	 * 		the channel specs JSON dictionary for the channel
 	 * @param deviceName
@@ -311,7 +352,7 @@ public final class DataPlotFactory {
 	 * 		if any parameter is <tt>null</tt>
 	 */
 	// TODO: Handle units
-	private DataPlot buildPlotFromSpecs(JSONObject specs, String deviceName,
+	DataPlot buildPlotFromSpecs(JSONObject specs, String deviceName,
 			String channelName) {
 		if (specs == null || deviceName == null || channelName == null)
 			throw new NullPointerException("Can't use null to create plot");
@@ -330,6 +371,12 @@ public final class DataPlotFactory {
 	/**
 	 * Returns a plot with axis bounds based on specs, but actual type based
 	 * on the chartType parameter.
+	 *
+	 * <p>This should usually not be used outside the
+	 * <tt>DataPlotFactory</tt> class.  That being said, if there is
+	 * a very good reason (such as the initialization code in
+	 * {@link Grapher2}, the visibility on this method is high enough
+	 * to allow that.</p>
 	 *
 	 * @param specs
 	 * 		the channel specs JSON dictionary for the channel
@@ -375,22 +422,19 @@ public final class DataPlotFactory {
 		else if (maxVal < MIN_USABLE_VALUE)
 			maxVal = Math.max(minVal + 2, 1);
 
-		// Now build the axis, and put together the URL that the plot
-		// should use to get more data
+		// Now build the Y-axis
 		GraphAxis yAxis;
-		String baseUrl;
-		if ("photo".equals(chartType)) {
+		if ("photo".equals(chartType))
 			yAxis = new PhotoGraphAxis(getYAxisWidth());
-			baseUrl = "/photos/" + userId + "/";
-		} else {
+		else
 			yAxis = new GraphAxis(minVal, maxVal,
 				Basis.xRightYUp,
 				getYAxisWidth(),
 				false);
-			baseUrl = DataPlot.buildBaseUrl(userId, deviceName, channelName);
-		}
 
 		// Now actually build the data plot
+		String baseUrl =
+			DataPlot.buildBaseUrl(userId, deviceName, channelName);
 		DataPlot plot;
 		if ("zeo".equals(chartType))
 			plot = new ZeoDataPlot(widget, getXAxis(), yAxis,
