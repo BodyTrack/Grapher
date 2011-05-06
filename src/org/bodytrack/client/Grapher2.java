@@ -8,6 +8,7 @@ import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONString;
+import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
@@ -136,18 +137,149 @@ public class Grapher2 implements EntryPoint {
 		DataPlot plot;
 
 		if ("zeo".equals(chartType)) {
-			plot = factory.buildZeoPlot(deviceName, channelName);
+			plot = buildZeoPlot(factory, deviceName, channelName);
 			temporaryPlots.add(0, plot);
 			return plot;
 		}
 
 		if ("photo".equals(chartType))
-			plot = factory.buildPhotoPlot(deviceName, channelName);
+			plot = buildPhotoPlot(factory, deviceName, channelName);
 		else
-			plot = factory.buildDataPlot(deviceName, channelName);
+			plot = buildDataPlot(factory, deviceName, channelName);
 
 		temporaryPlots.add(plot);
 		return plot;
+	}
+
+	/**
+	 * Builds a new {@link org.bodytrack.client.DataPlot DataPlot}
+	 * with the specified device and channel name.
+	 *
+	 * @param factory
+	 * 		a {@link DataPlotFactory} that can be used to build a new plot
+	 * @param deviceName
+	 * 		the name of the device from which this channel came
+	 * @param channelName
+	 * 		the name of this channel on the device
+	 * @return
+	 * 		a <tt>DataPlot</tt> with the specified device and channel
+	 * 		name, ready to add to the graph widget used by this
+	 * 		factory
+	 * @throws NullPointerException
+	 * 		if any parameter is <tt>null</tt>
+	 */
+	private DataPlot buildDataPlot(DataPlotFactory factory,
+			String deviceName, String channelName) {
+		if (factory == null)
+			throw new NullPointerException(
+				"Can't use null factory to build plot");
+		if (deviceName == null || channelName == null)
+			throw new NullPointerException(
+				"Cannot build plot with null name");
+
+		return factory.buildPlotFromSpecs(
+			getInitialSpecs(deviceName, channelName), "plot",
+			deviceName, channelName);
+	}
+
+	/**
+	 * Builds a new {@link org.bodytrack.client.ZeoDataPlot ZeoDataPlot}
+	 * with the specified device and channel name.
+	 *
+	 * @param factory
+	 * 		a {@link DataPlotFactory} that can be used to build a new plot
+	 * @param deviceName
+	 * 		the name of the device from which this channel came
+	 * @param channelName
+	 * 		the name of this channel on the device
+	 * @return
+	 * 		a <tt>ZeoDataPlot</tt> with the specified device and channel
+	 * 		name, ready to add to the graph widget used by this
+	 * 		factory
+	 * @throws NullPointerException
+	 * 		if any parameter is <tt>null</tt>
+	 */
+	private ZeoDataPlot buildZeoPlot(DataPlotFactory factory,
+			String deviceName, String channelName) {
+		if (factory == null)
+			throw new NullPointerException(
+				"Can't use null factory to build plot");
+		if (deviceName == null || channelName == null)
+			throw new NullPointerException(
+				"Cannot build plot with null name");
+
+		return (ZeoDataPlot) factory.buildPlotFromSpecs(
+			getInitialSpecs(deviceName, channelName), "zeo",
+			deviceName, channelName);
+	}
+
+	/**
+	 * Builds a new {@link org.bodytrack.client.PhotoDataPlot PhotoDataPlot}
+	 * with the specified device and channel name.
+	 *
+	 * @param factory
+	 * 		a {@link DataPlotFactory} that can be used to build a new plot
+	 * @param deviceName
+	 * 		the name of the device from which this channel came
+	 * @param channelName
+	 * 		the name of this channel on the device
+	 * @return
+	 * 		a <tt>PhotoDataPlot</tt> with the specified device and
+	 * 		channel name, ready to add to the graph widget used by
+	 * 		this factory
+	 * @throws NullPointerException
+	 * 		if any parameter is <tt>null</tt>
+	 */
+	private PhotoDataPlot buildPhotoPlot(DataPlotFactory factory,
+			String deviceName, String channelName) {
+		if (factory == null)
+			throw new NullPointerException(
+				"Can't use null factory to build plot");
+		if (deviceName == null || channelName == null)
+			throw new NullPointerException(
+				"Cannot build plot with null name");
+
+		return (PhotoDataPlot) factory.buildPlotFromSpecs(
+			getInitialSpecs(deviceName, channelName), "photo",
+			deviceName, channelName);
+	}
+
+	/**
+	 * Attempts to get the initial specs from the window.initializeGrapher
+	 * function.
+	 *
+	 * @param deviceName
+	 * 		the name of the device for the channel
+	 * @param channelName
+	 * 		the name of the channel on the device
+	 * @return
+	 * 		some set of specs based on the pair (deviceName, channelName)
+	 * 		and coming from the window.initializeGrapher function.  If it
+	 * 		is impossible to meet both those objectives, returns an
+	 * 		empty {@link JSONObject}
+	 */
+	private JSONObject getInitialSpecs(String deviceName, String channelName) {
+		if (deviceName == null || channelName == null)
+			return new JSONObject();
+
+		String channelKey =
+			DataPlot.getDeviceChanName(deviceName, channelName);
+
+		JSONObject initializeGrapher = DataPlotFactory.initializeGrapher();
+		if (initializeGrapher.containsKey("channel_specs")) {
+			JSONValue overallSpecsVal = initializeGrapher.get("channel_specs");
+			JSONObject overallSpecs = overallSpecsVal.isObject();
+
+			if (overallSpecs != null && overallSpecs.containsKey(channelKey)) {
+				JSONValue specsVal = overallSpecs.get(channelKey);
+				JSONObject specs = specsVal.isObject();
+				if (specs != null)
+					return specs;
+				// Otherwise, the default value is returned
+			}
+		}
+
+		return new JSONObject();
 	}
 
 	/**

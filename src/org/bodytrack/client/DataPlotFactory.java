@@ -146,66 +146,6 @@ public final class DataPlotFactory {
 
 	/**
 	 * Builds a new {@link org.bodytrack.client.DataPlot DataPlot}
-	 * with the specified device and channel name.
-	 *
-	 * @param deviceName
-	 * 		the name of the device from which this channel came
-	 * @param channelName
-	 * 		the name of this channel on the device
-	 * @return
-	 * 		a <tt>DataPlot</tt> with the specified device and channel
-	 * 		name, ready to add to the graph widget used by this
-	 * 		factory
-	 * @throws NullPointerException
-	 * 		if deviceName or channelName is <tt>null</tt>
-	 */
-	// TODO: This, like all the other buildXXXPlot methods that use the
-	// initial specs only, is meant only for use by the Grapher2 class
-	public DataPlot buildDataPlot(String deviceName, String channelName) {
-		return buildPlotFromSpecs(getInitialSpecs(deviceName, channelName),
-			"plot", deviceName, channelName);
-	}
-
-	/**
-	 * Attempts to get the initial specs from the window.initializeGrapher
-	 * function.
-	 *
-	 * @param deviceName
-	 * 		the name of the device for the channel
-	 * @param channelName
-	 * 		the name of the channel on the device
-	 * @return
-	 * 		some set of specs based on the pair (deviceName, channelName)
-	 * 		and coming from the window.initializeGrapher function.  If it
-	 * 		is impossible to meet both those objectives, returns an
-	 * 		empty {@link JSONObject}
-	 */
-	private JSONObject getInitialSpecs(String deviceName, String channelName) {
-		if (deviceName == null || channelName == null)
-			return new JSONObject();
-
-		String channelKey =
-			DataPlot.getDeviceChanName(deviceName, channelName);
-
-		JSONObject initializeGrapher = initializeGrapher();
-		if (initializeGrapher.containsKey("channel_specs")) {
-			JSONValue overallSpecsVal = initializeGrapher.get("channel_specs");
-			JSONObject overallSpecs = overallSpecsVal.isObject();
-
-			if (overallSpecs != null && overallSpecs.containsKey(channelKey)) {
-				JSONValue specsVal = overallSpecs.get(channelKey);
-				JSONObject specs = specsVal.isObject();
-				if (specs != null)
-					return specs;
-				// Otherwise, the default value is returned
-			}
-		}
-
-		return new JSONObject();
-	}
-
-	/**
-	 * Builds a new {@link org.bodytrack.client.DataPlot DataPlot}
 	 * with the specified device and channel names, and axes.
 	 *
 	 * @param deviceName
@@ -413,7 +353,7 @@ public final class DataPlotFactory {
 	 * @throws NullPointerException
 	 * 		if any parameter is <tt>null</tt>
 	 */
-	private DataPlot buildPlotFromSpecs(JSONObject specs, String chartType,
+	DataPlot buildPlotFromSpecs(JSONObject specs, String chartType,
 			String deviceName, String channelName) {
 		if (specs == null || chartType == null
 				|| deviceName == null || channelName == null)
@@ -472,57 +412,6 @@ public final class DataPlotFactory {
 				true);
 
 		return plot;
-	}
-
-	/**
-	 * Builds a new {@link org.bodytrack.client.ZeoDataPlot ZeoDataPlot}
-	 * with the specified device and channel name.
-	 *
-	 * @param deviceName
-	 * 		the name of the device from which this channel came
-	 * @param channelName
-	 * 		the name of this channel on the device
-	 * @return
-	 * 		a <tt>ZeoDataPlot</tt> with the specified device and channel
-	 * 		name, ready to add to the graph widget used by this
-	 * 		factory
-	 * @throws NullPointerException
-	 * 		if deviceName or channelName is <tt>null</tt>
-	 */
-	public ZeoDataPlot buildZeoPlot(String deviceName, String channelName) {
-		if (deviceName == null || channelName == null)
-			throw new NullPointerException(
-				"Cannot build plot with null name");
-
-		return (ZeoDataPlot) buildPlotFromSpecs(
-			getInitialSpecs(deviceName, channelName), "zeo",
-			deviceName, channelName);
-	}
-
-	/**
-	 * Builds a new {@link org.bodytrack.client.PhotoDataPlot PhotoDataPlot}
-	 * with the specified device and channel name.
-	 *
-	 * @param deviceName
-	 * 		the name of the device from which this channel came
-	 * @param channelName
-	 * 		the name of this channel on the device
-	 * @return
-	 * 		a <tt>PhotoDataPlot</tt> with the specified device and
-	 * 		channel name, ready to add to the graph widget used by
-	 * 		this factory
-	 * @throws NullPointerException
-	 * 		if deviceName or channelName is <tt>null</tt>
-	 */
-	public PhotoDataPlot buildPhotoPlot(String deviceName,
-			String channelName) {
-		if (deviceName == null || channelName == null)
-			throw new NullPointerException(
-				"Cannot build plot with null name");
-
-		return (PhotoDataPlot) buildPlotFromSpecs(
-			getInitialSpecs(deviceName, channelName), "photo",
-			deviceName, channelName);
 	}
 
 	/**
