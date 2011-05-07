@@ -105,6 +105,23 @@ public class PhotoDataPlot extends DataPlot {
 	}
 
 	/**
+	 * Returns the proper base URL to use when constructing a photo.
+	 *
+	 * <p>Note that this is <strong>different</strong> than the base
+	 * URL for a regular data plot.  This is why this does not just use
+	 * {@link DataPlot#buildBaseUrl(int, String, String)}.</p>
+	 *
+	 * @param userId
+	 * 		the ID of the current user
+	 * @return
+	 * 		the base URL for getting photo information for the
+	 * 		specified user
+	 */
+	public static String buildPhotoBaseUrl(int userId) {
+		return "/photos/" + userId + "/";
+	}
+
+	/**
 	 * Returns the type of this plot.
 	 *
 	 * @return

@@ -313,8 +313,8 @@ public final class DataPlotFactory {
 		if (deviceName == null || channelName == null)
 			throw new NullPointerException("Cannot build plot with null axis");
 
-		String baseUrl =
-			DataPlot.buildBaseUrl(userId, deviceName, channelName);
+		// Can't just use DataPlot.buildBaseUrl
+		String baseUrl = PhotoDataPlot.buildPhotoBaseUrl(userId);
 
 		return new PhotoDataPlot(widget, xAxis, yAxis,
 			deviceName, channelName,
@@ -527,31 +527,8 @@ public final class DataPlotFactory {
 				getYAxisWidth(),
 				false);
 
-		// Now actually build the data plot
-		// TODO: Switch to using buildXXXPlot methods instead
-		String baseUrl =
-			DataPlot.buildBaseUrl(userId, deviceName, channelName);
-		DataPlot plot;
-		if ("zeo".equals(chartType))
-			plot = new ZeoDataPlot(widget, getXAxis(), yAxis,
-				deviceName, channelName,
-				baseUrl, minLevel);
-		else if ("photo".equals(chartType))
-			// The cast on yAxis will succeed because we made
-			// yAxis into a PhotoGraphAxis above whenever the
-			// chartType was photo
-			plot = new PhotoDataPlot(widget,
-				getXAxis(), (PhotoGraphAxis) yAxis,
-				deviceName, channelName,
-				baseUrl, userId, minLevel);
-		else
-			plot = new DataPlot(widget, getXAxis(), yAxis,
-				deviceName, channelName,
-				baseUrl, minLevel,
-				getNextColor(),
-				true);
-
-		return plot;
+		return buildPlot(chartType, deviceName, channelName,
+			getXAxis(), yAxis);
 	}
 
 	/**
