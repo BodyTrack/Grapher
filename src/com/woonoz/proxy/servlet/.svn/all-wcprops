@@ -1,0 +1,89 @@
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/!svn/ver/2/trunk/src/main/java/com/woonoz/proxy/servlet
+END
+InvalidCookieException.java
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/svn/!svn/ver/2/trunk/src/main/java/com/woonoz/proxy/servlet/InvalidCookieException.java
+END
+ServerHeadersHandler.java
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/svn/!svn/ver/2/trunk/src/main/java/com/woonoz/proxy/servlet/ServerHeadersHandler.java
+END
+HttpGetRequestHandler.java
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/svn/!svn/ver/2/trunk/src/main/java/com/woonoz/proxy/servlet/HttpGetRequestHandler.java
+END
+BufferOnCreateInputStream.java
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/svn/!svn/ver/2/trunk/src/main/java/com/woonoz/proxy/servlet/BufferOnCreateInputStream.java
+END
+UrlRewriter.java
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/!svn/ver/2/trunk/src/main/java/com/woonoz/proxy/servlet/UrlRewriter.java
+END
+HttpRequestHandler.java
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svn/!svn/ver/2/trunk/src/main/java/com/woonoz/proxy/servlet/HttpRequestHandler.java
+END
+ProxyServlet.java
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svn/!svn/ver/2/trunk/src/main/java/com/woonoz/proxy/servlet/ProxyServlet.java
+END
+ClientHeadersHandler.java
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/svn/!svn/ver/2/trunk/src/main/java/com/woonoz/proxy/servlet/ClientHeadersHandler.java
+END
+UrlRewriterImpl.java
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svn/!svn/ver/2/trunk/src/main/java/com/woonoz/proxy/servlet/UrlRewriterImpl.java
+END
+HeadersToSubstitute.java
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svn/!svn/ver/2/trunk/src/main/java/com/woonoz/proxy/servlet/HeadersToSubstitute.java
+END
+HttpPostRequestHandler.java
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/svn/!svn/ver/2/trunk/src/main/java/com/woonoz/proxy/servlet/HttpPostRequestHandler.java
+END
+CookieFormatter.java
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svn/!svn/ver/2/trunk/src/main/java/com/woonoz/proxy/servlet/CookieFormatter.java
+END
+AbstractHeadersHandler.java
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/svn/!svn/ver/2/trunk/src/main/java/com/woonoz/proxy/servlet/AbstractHeadersHandler.java
+END
+PostClientHeadersHandler.java
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/svn/!svn/ver/2/trunk/src/main/java/com/woonoz/proxy/servlet/PostClientHeadersHandler.java
+END
