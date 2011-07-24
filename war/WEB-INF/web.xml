@@ -22,6 +22,7 @@
     <url-pattern>/login_status.json</url-pattern>
     <url-pattern>/logout</url-pattern>
     <url-pattern>/tiles/*</url-pattern>
+    <url-pattern>/users/*</url-pattern>
   </servlet-mapping>
 
   <servlet-mapping>

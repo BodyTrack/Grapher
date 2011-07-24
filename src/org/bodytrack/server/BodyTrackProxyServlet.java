@@ -17,7 +17,8 @@ public class BodyTrackProxyServlet extends ProxyServlet {
 	@Override
     public void init() throws ServletException {
             try {
-            	URL url = new URL("http://bodytrack.org/");
+            	//URL url = new URL("http://bodytrack.org/");
+            	URL url = new URL("http://localhost:3000/");
             init(url, 200);
             } catch (IOException e) {
                     throw new ServletException(e);

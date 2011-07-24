@@ -70,7 +70,7 @@ public final class DataPlotFactory {
 
 	private final GraphWidget widget;
 	private final double axisMargin;
-	private final int userId;
+	private int userId;
 	private final int minLevel;
 	private final GraphAxis timeAxis;
 	private int numCreatedPlots;
@@ -611,6 +611,11 @@ public final class DataPlotFactory {
 		double id = getNumber(initializeGrapher(), "user_id");
 
 		return id < MIN_USABLE_VALUE ? 0 : (int) id;
+	}
+
+    // Allow setting of user_id manually, need for BodyTrackWidget
+    void setUserId(int id) {
+	    userId = id;
 	}
 
 	/**
