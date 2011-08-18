@@ -11,9 +11,13 @@ war/WEB-INF/lib/
 .settings/
 .metadata/
 
+# IntelliJ IDEA
+BodyTrackGrapher.iws
+
 # Information exported to the website repo
 war/grapher2/
 
 # Things that the OS or an editor might leave in a directory
 *.swp # vim and some other programs
 *~    # emacs
+.DS_Store
