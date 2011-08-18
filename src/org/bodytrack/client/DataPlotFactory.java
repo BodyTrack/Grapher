@@ -185,7 +185,7 @@ public final class DataPlotFactory {
 			String channelName, GraphAxis xAxis, GraphAxis yAxis) {
 		if (deviceName == null || channelName == null)
 			throw new NullPointerException("Cannot build plot with null name");
-		if (deviceName == null || channelName == null)
+		if (xAxis == null || yAxis == null)
 			throw new NullPointerException("Cannot build plot with null axis");
 
 		// Relies on String.equals handling null correctly, as it does
@@ -228,7 +228,7 @@ public final class DataPlotFactory {
 			GraphAxis xAxis, GraphAxis yAxis) {
 		if (deviceName == null || channelName == null)
 			throw new NullPointerException("Cannot build plot with null name");
-		if (deviceName == null || channelName == null)
+      if (xAxis == null || yAxis == null)
 			throw new NullPointerException("Cannot build plot with null axis");
 
 		String baseUrl =
@@ -276,7 +276,7 @@ public final class DataPlotFactory {
 			GraphAxis xAxis, GraphAxis yAxis) {
 		if (deviceName == null || channelName == null)
 			throw new NullPointerException("Cannot build plot with null name");
-		if (deviceName == null || channelName == null)
+      if (xAxis == null || yAxis == null)
 			throw new NullPointerException("Cannot build plot with null axis");
 
 		String baseUrl =
@@ -310,7 +310,7 @@ public final class DataPlotFactory {
 			GraphAxis xAxis, PhotoGraphAxis yAxis) {
 		if (deviceName == null || channelName == null)
 			throw new NullPointerException("Cannot build plot with null name");
-		if (deviceName == null || channelName == null)
+      if (xAxis == null || yAxis == null)
 			throw new NullPointerException("Cannot build plot with null axis");
 
 		// Can't just use DataPlot.buildBaseUrl
