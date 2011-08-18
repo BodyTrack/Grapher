@@ -723,7 +723,7 @@ public class DataPlot implements Alertable<GrapherTile> {
             // Draw this part of the line
             if (prevX > MIN_DRAWABLE_VALUE
                 && prevY > MIN_DRAWABLE_VALUE) {
-               paintDataPoint(drawing, prevX, prevY, x, y);
+               paintDataPoint(drawing, prevX, prevY, x, y, point);
             }
             else {
                paintEdgePoint(drawing, x, y);
@@ -790,8 +790,9 @@ public class DataPlot implements Alertable<GrapherTile> {
     *
     * <p>This method is designed to be overridden by subclasses.
     * Note that this method has as a precondition that
-    * {@code prevX < x}.  Note that all parameters (except drawing,
+    * {@code prevX < x}.  Note that all parameters (except drawing and rawDataPoint,
     * of course) are assumed to be in terms of pixels.</p>
+    *
     *
     * @param drawing
     * 		the
@@ -812,11 +813,13 @@ public class DataPlot implements Alertable<GrapherTile> {
     * @param y
     * 		the current Y-value, which will be greater than
     * 		MIN_DRAWABLE_VALUE
+    * @param rawDataPoint
+    * 		the raw {@link PlottablePoint}
     *
     * @see #MIN_DRAWABLE_VALUE
     */
    protected void paintDataPoint(final BoundedDrawingBox drawing, final double prevX,
-                                 final double prevY, final double x, final double y) {
+                                 final double prevY, final double x, final double y, final PlottablePoint rawDataPoint) {
       drawing.drawLineSegment(prevX, prevY, x, y);
    }
 

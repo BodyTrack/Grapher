@@ -11,9 +11,9 @@ import java.util.List;
 /**
  * Represents a data plot for Zeo data.
  *
- * Overrides the getDataPoints, paintEdgePoint, and paintDataPoint methods
- * of DataPlot, allowing this class to take advantage of the capabilities
- * of DataPlot without much code.
+ * Overrides the {@link DataPlot#getDataPoints}, {@link DataPlot#paintEdgePoint}, and {@link DataPlot#paintDataPoint}
+ * methods of {@link DataPlot}, allowing this class to take advantage of the capabilities
+ * of {@link DataPlot} without much code.
  *
  * @see DataPlot
  */
@@ -64,8 +64,6 @@ public class ZeoDataPlot extends DataPlot {
             url, minLevel, Canvas.DEFAULT_COLOR, false);
       // Doesn't make sense to publish data values as 1, 2, 3, 4,
       // at least until we have a way to provide more description
-
-      GWT.log("**************ZeoDataPlot.ZeoDataPlot(" + deviceName + "," + channelName + "," + url + "," + minLevel + ")");
    }
 
    /**
@@ -89,8 +87,7 @@ public class ZeoDataPlot extends DataPlot {
     * {@code tile.getDataPoints()}, so that all the points (except the
     * first in each group) represent top right corners of bars.  This
     * is necessary because the
-    * {@link ZeoDataPlot#paintDataPoint(BoundedDrawingBox, double,
-    * double, double, double)}
+    * {@link DataPlot#paintDataPoint(BoundedDrawingBox, double, double, double, double, PlottablePoint)}
     * method uses the top right corner of a bar when drawing a point.
     *
     * @param tile
@@ -144,6 +141,8 @@ public class ZeoDataPlot extends DataPlot {
             transformedPoints.add(
                   new PlottablePoint(time + halfWidth, mean));
          }
+
+         prev = point;
       }
 
       return transformedPoints;
@@ -151,8 +150,7 @@ public class ZeoDataPlot extends DataPlot {
 
    /**
     * Implemented here as a no-op, since we handle the edges properly
-    * in {@link #paintDataPoint(BoundedDrawingBox, double, double,
-    * double, double)}.
+    * in {@link DataPlot#paintDataPoint(BoundedDrawingBox, double, double, double, double, PlottablePoint)}.
     */
    @Override
    protected void paintEdgePoint(final BoundedDrawingBox drawing, final double x,
@@ -176,9 +174,8 @@ public class ZeoDataPlot extends DataPlot {
     * class.
     */
    @Override
-   protected void paintDataPoint(final BoundedDrawingBox drawing,
-                                 final double prevX, final double prevY, final double x, final double y) {
-      drawRectangle(getColor(y), prevX, prevY, x, y);
+   protected void paintDataPoint(final BoundedDrawingBox drawing, final double prevX, final double prevY, final double x, final double y, final PlottablePoint rawDataPoint) {
+      drawRectangle(getColor(rawDataPoint.getValue()), prevX, prevY, x, y);
    }
 
    /**
@@ -199,8 +196,7 @@ public class ZeoDataPlot extends DataPlot {
     * @param y
     * 		the Y-value (in pixels) for the top of the rectangle
     */
-   private void drawRectangle(final Color color, final double prevX, final double prevY,
-                              final double x, final double y) {
+   private void drawRectangle(final Color color, final double prevX, final double prevY, final double x, final double y) {
       if (color == null) {
          return;
       }
@@ -223,13 +219,10 @@ public class ZeoDataPlot extends DataPlot {
       // explicit so the code is clear
       // GWT will optimize away these variables, so there will be
       // no performance issues from these
-      // Also, this allows us to ensure the bounds on the X-axis are
-      // correct
-      final double leftX = Math.max(prevX, getXAxis().getMin());
-      final double rightX = Math.min(x, getXAxis().getMax());
+      final double leftX = prevX;
+      final double rightX = x;
       final double bottomY = minDrawY;
       final double topY = y;
-      GWT.log("******************** ZeoDataPlot.drawRectangle(" + color + "," + prevX + "," + prevY + "," + x + "," + y + ") --> (xmin:" + leftX + ",xmax:" + rightX + ",ymin:" + bottomY + ",ymax:" + topY + ")");
 
       final boolean highlighted = isHighlighted();
 
@@ -238,11 +231,17 @@ public class ZeoDataPlot extends DataPlot {
                              ? HIGHLIGHTED_ALPHA : NORMAL_ALPHA);
       surface.setFillStyle(color);
 
-      renderer.drawRect(leftX, topY,
-                        rightX - leftX, topY - bottomY);
+      // Draw rectangles.  We go clockwise, starting at the top left corner
+      renderer.beginPath();
+      renderer.moveTo(leftX, topY);
+      renderer.drawLineTo(rightX, topY);
+      renderer.drawLineTo(rightX, bottomY);
+      renderer.drawLineTo(leftX, bottomY);
+      renderer.drawLineTo(leftX, topY);
+      renderer.closePath();
+      renderer.fill();
 
       // Draw lines around rectangles
-      // We go clockwise, starting at the top left corner
       surface.setGlobalAlpha(Canvas.DEFAULT_ALPHA);
       surface.setFillStyle(Canvas.DEFAULT_COLOR);
 
@@ -250,11 +249,8 @@ public class ZeoDataPlot extends DataPlot {
       surface.setLineWidth(highlighted
                            ? HIGHLIGHT_STROKE_WIDTH : NORMAL_STROKE_WIDTH);
 
-      renderer.drawLineSegment(leftX, topY, rightX, topY);
-      renderer.drawLineSegment(rightX, topY, rightX, bottomY);
-      renderer.drawLineSegment(rightX, bottomY, leftX, bottomY);
-      renderer.drawLineSegment(leftX, bottomY, leftX, topY);
-
+      renderer.stroke();
+      
       // Clean up after ourselves - it is preferable to put things
       // back the way they were rather than setting the values to
       // defaults

@@ -143,8 +143,7 @@ public class PhotoDataPlot extends DataPlot {
 	 * the set of available images whenever called, which happens
 	 * to be every time the points are needed in
 	 * {@link org.bodytrack.client.DataPlot DataPlot} methods.  The
-	 * methods {@link #paintDataPoint(BoundedDrawingBox, double,
-	 * double, double, double)} and
+	 * methods {@link DataPlot#paintDataPoint(BoundedDrawingBox, double, double, double, double, PlottablePoint)} and
 	 * {@link #highlightIfNear(Vector2, double)} expect this images to
 	 * be filled, which is always the case whenever they use elements
 	 * of images, just by the way the code is written.</p>
@@ -284,7 +283,7 @@ public class PhotoDataPlot extends DataPlot {
 	 * <p>Although we handle edge points and regular points in the same
 	 * way in this class, we still need to draw all the images, so this
 	 * does exactly the same thing that {@link
-	 * #paintDataPoint(BoundedDrawingBox, double, double, double, double)
+	 * DataPlot#paintDataPoint(BoundedDrawingBox, double, double, double, double, PlottablePoint)
 	 * paintDataPoint} does.</p>
 	 *
 	 * @param drawing
@@ -316,20 +315,20 @@ public class PhotoDataPlot extends DataPlot {
 	 * dummy values anyway, and since we don't draw lines between successive
 	 * points.</p>
 	 *
-	 * @param drawing
-	 * 		the bounding box that constrains where photos will draw
-	 * @param prevX
-	 * 		ignored
-	 * @param prevY
-	 * 		ignored
-	 * @param x
-	 * 		the X-value (in pixels) at which we draw the image
-	 * @param y
-	 * 		the Y-value (in pixels) at which we draw the image
-	 */
+    * @param drawing
+    * 		the bounding box that constrains where photos will draw
+    * @param prevX
+    * 		ignored
+    * @param prevY
+* 		ignored
+    * @param x
+* 		the X-value (in pixels) at which we draw the image
+    * @param y
+    * @param rawDataPoint
+    */
 	@Override
 	protected void paintDataPoint(BoundedDrawingBox drawing, double prevX,
-			double prevY, double x, double y) {
+                                 double prevY, double x, double y, PlottablePoint rawDataPoint) {
 		drawAllImagesAtPoint(drawing, x, y);
 	}
 
