@@ -94,11 +94,17 @@ public class BodyTrackWidget extends VerticalPanel {
 	};
 	String[] randyChannels = anneChannels;
 	
+	String[] biobotChannels = {
+            "{\"max_value\":\"20.0\",\"graph_type\":\"Line\",\"updated_at\":\"2011-01-09T09:20:56-05:00\",\"min_value\":\"0.0\",\"data_type\":\"Double\",\"max_graph_value\":20.0,\"id\":64,\"ch_name\":\"calories\",\"dev_nickname\":\"A_Fitbit\",\"user_id\":27,\"min_graph_value\":0,\"created_at\":\"2011-01-05T06:31:51-05:00\"}",
+
+};
+	
 	String fetchChannelsJSON() {
 		String[] channels={};
 		switch (G.user_id) {
 			case 1:  channels = anneChannels; break;
 			case 2:  channels = randyChannels; break;
+			case 27: channels = biobotChannels; break;
 		}
 		return "[" + StringUtil.join(channels, ",") +"]";
 	}
@@ -159,9 +165,9 @@ public class BodyTrackWidget extends VerticalPanel {
 
 		int axisMargin = 10;
 
-		graphWidget = new GraphWidget(Window.getClientWidth(), 
-					         Window.getClientHeight() - 300, 
-					         axisMargin);
+		//graphWidget = new GraphWidget(Window.getClientWidth(), 
+		//			         Window.getClientHeight() - 300, 
+		//			         axisMargin);
 
 		//timeAxis = new TimeGraphAxis(
 			//	1293861600-86400*365,
@@ -171,8 +177,8 @@ public class BodyTrackWidget extends VerticalPanel {
 			//	true);
 
 		timeAxis = new TimeGraphAxis(
-				1297869589.9601395,
-				1297966049.4307988,
+				1310194800.0,
+				 1310972100.0,
 				Basis.xDownYRight,
 				axisMargin * 7,
 				true);
@@ -182,7 +188,7 @@ public class BodyTrackWidget extends VerticalPanel {
 
 		// Need to manually set userId in factory since we don't have
 		// initializeGrapher function
-		factory.setUserId(1);
+		factory.setUserId(27);
 
 		plots = new ArrayList<DataPlot>();
 		ChannelManager mgr = graphWidget.getChannelManager();

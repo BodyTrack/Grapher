@@ -13,6 +13,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
+import org.bodytrack.client.maps.MapDataDisplayWidget;
+
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.event.dom.client.MouseDownHandler;
 import com.google.gwt.event.dom.client.MouseMoveEvent;
@@ -90,12 +92,15 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 
 	private GraphAxis mouseDragAxis;
 	private Vector2 mouseDragLastPos;
+	
+	private MapDataDisplayWidget mw;
 
 	// Once a GraphWidget object is instantiated, this doesn't change
 	private final double mouseWheelZoomRate;
 
-	public GraphWidget(int width, int height, int axisMargin) {
+	public GraphWidget(int width, int height, int axisMargin, MapDataDisplayWidget mw) {
 		super(width, height);
+		this.mw = mw;
 		this.width = width;
 		this.height = height;
 		this.axisMargin = axisMargin;
@@ -451,14 +456,34 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 	 * separated by PAINT_TWICE_DELAY milliseconds.
 	 */
 	public void paintTwice() {
+		
 		paint();
 
 		Timer timer = new Timer() {
 			@Override
 			public void run() {
 				paint();
+				for (DataPlot plot : channelMgr.getDataPlots())
+					mw.clearData(plot);
+				for (DataPlot plot: channelMgr.getDataPlots()){
+					plot.sendDataToMap(mw);
+				}
+				double minTime = 0;
+				double maxTime = 0;
+				for (GraphAxis xAxis : channelMgr.getXAxes()){
+					if (xAxis instanceof TimeGraphAxis){
+						TimeGraphAxis axis = (TimeGraphAxis) xAxis;
+						minTime = axis.getMin();
+						maxTime = axis.getMax();
+						break;
+					}
+				}
+					
+				for (DataPlot plot : channelMgr.getDataPlots())
+					mw.processData(plot,minTime,maxTime);
 			}
 		};
+		
 
 		timer.schedule(PAINT_TWICE_DELAY);
 	}
@@ -492,8 +517,9 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 			yAxis.paint(this);
 
 		// Now draw the data
-		for (DataPlot plot: channelMgr.getDataPlots())
+		for (DataPlot plot: channelMgr.getDataPlots()){
 			plot.paint();
+		}
 
 		this.restore();
 	}

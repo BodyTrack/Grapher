@@ -35,7 +35,7 @@ public final class WebDownloader {
 
 		// Send request to server and catch any errors.
 		RequestBuilder builder =
-			new RequestBuilder(RequestBuilder.GET, url);
+			new RequestBuilder(RequestBuilder.GET, "http://www2.bodytrack.org/" + url);
 
 		try {
 			builder.sendRequest(null, new RequestCallback() {

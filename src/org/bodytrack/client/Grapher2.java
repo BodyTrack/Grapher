@@ -4,11 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.bodytrack.client.maps.MapDataDisplayWidget;
+
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONString;
 import com.google.gwt.json.client.JSONValue;
+import com.google.gwt.maps.client.Maps;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
@@ -21,6 +24,7 @@ public class Grapher2 implements EntryPoint {
 	// Values that don't make sense in standalone mode
 	private VerticalPanel mainLayout;
 	private GraphWidget gw;
+	private MapDataDisplayWidget mw;
 	private List<DataPlot> plots;
 	private DataPlotFactory factory;
 
@@ -28,6 +32,17 @@ public class Grapher2 implements EntryPoint {
 	 * This is the entry point method.
 	 */
 	public void onModuleLoad() {
+		Maps.loadMapsApi("ABQIAAAAdR-Q_sI1Y8dS1vYvWivhNhS2FvTvt_LRg8w_5XmJQW2vHBzashT7iDAP7Rqctm05Xf0mRBNYC31xOw", "2", false, new Runnable() {
+
+			@Override
+			public void run() {
+				onInit();
+			}
+		
+		});
+	}
+	
+	public void onInit(){
 		if (isStandAlone()) {
 			RootPanel.get("graph").add(new BodyTrackWidget());
 		} else {		
@@ -35,9 +50,10 @@ public class Grapher2 implements EntryPoint {
 			// Ensure that everything on the page is the same
 			// width
 			mainLayout.setWidth((int) (getGrapherWidth()) + "px");
-
+			mw = new MapDataDisplayWidget(MapDataDisplayWidget.getDefaultWidth(), MapDataDisplayWidget.getDefaultHeight());
 			gw = new GraphWidget(getGrapherWidth(), getGrapherHeight(),
-				getAxisMargin());
+				getAxisMargin(), mw);
+			
 			factory = DataPlotFactory.getInstance(gw);
 			plots = new ArrayList<DataPlot>();
 
@@ -62,6 +78,7 @@ public class Grapher2 implements EntryPoint {
 			mainLayout.add(viewSwitcher);
 			mainLayout.add(gw);
 			mainLayout.add(currentChans);
+			mainLayout.add(mw);
 			mainLayout.add(allChans);
 			RootPanel.get(getDivName()).add(mainLayout);
 		}

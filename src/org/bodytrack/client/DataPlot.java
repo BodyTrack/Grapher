@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.bodytrack.client.maps.MapDataDisplayWidget;
+
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.NumberFormat;
 
@@ -655,6 +657,43 @@ public class DataPlot implements Alertable<GrapherTile> {
 			}
 
 			pendingData.clear();
+		}
+	}
+	
+	public void sendDataToMap(MapDataDisplayWidget mw){
+		double prevX = - Double.MAX_VALUE;
+		for (GrapherTile tile: getBestResolutionTiles()) {
+			List<PlottablePoint> dataPoints = getDataPoints(tile);
+
+			if (dataPoints == null)
+				continue;
+
+			for (PlottablePoint point: dataPoints) {
+				double x = xAxis.project2D(point.getDate()).getX();
+				double y = yAxis.project2D(point.getValue()).getY();
+	
+				if (x < MIN_DRAWABLE_VALUE || y < MIN_DRAWABLE_VALUE
+						|| Double.isInfinite(x) || Double.isInfinite(y)) {
+					// Don't draw a boundary point
+	
+					// So that we don't draw a boundary point, we (relying
+					// on the fact that MIN_DRAWABLE_VALUE is negative)
+					// set prevY to something smaller than
+					// MIN_DRAWABLE_VALUE, ensuring that paintEdgePoint
+					// will be called on the next loop iteration
+	
+					continue;
+				}
+	
+				// Skip any "reverse" drawing
+				if (prevX > x)
+					continue;
+	
+	
+				prevX = x;
+				
+				mw.addPoint(this,point.getDate(),point.getValue());
+			}
 		}
 	}
 

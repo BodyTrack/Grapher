@@ -19,9 +19,25 @@
   <servlet-mapping>
     <servlet-name>proxyServlet</servlet-name>
     <url-pattern>/login.json</url-pattern>
+  </servlet-mapping>
+  
+  <servlet-mapping>
+    <servlet-name>proxyServlet</servlet-name>
     <url-pattern>/login_status.json</url-pattern>
+  </servlet-mapping>
+  
+  <servlet-mapping>
+    <servlet-name>proxyServlet</servlet-name>
     <url-pattern>/logout</url-pattern>
+  </servlet-mapping>
+  
+  <servlet-mapping>
+   <servlet-name>proxyServlet</servlet-name>
     <url-pattern>/tiles/*</url-pattern>
+  </servlet-mapping>
+  
+  <servlet-mapping>
+   <servlet-name>proxyServlet</servlet-name>
     <url-pattern>/users/*</url-pattern>
   </servlet-mapping>
 
