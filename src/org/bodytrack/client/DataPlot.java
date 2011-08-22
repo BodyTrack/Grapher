@@ -1405,8 +1405,7 @@ public class DataPlot implements Alertable<GrapherTile> {
       final double value = p.getValue();
       final double absValue = Math.abs(value);
 
-      final String timeString =
-            getTimeString((long)(p.getDate() * 1000)) + "   ";
+      final String timeString = getTimeString(p.getDate()) + "   ";
 
       if (absValue == 0.0) // Rare, but possible
       {
@@ -1420,6 +1419,21 @@ public class DataPlot implements Alertable<GrapherTile> {
 
       return timeString
              + NumberFormat.getFormat("###,##0.0##").format(value);
+   }
+
+   /**
+    * Returns a time string representing the specified time.
+    *
+    * <p>A caveat: time should be the number of <em>seconds</em>,
+    * since the epoch.
+    *
+    * @param secondsSinceEpoch
+    * 		the number of seconds since the epoch
+    * @return
+    * 		a string representation of time
+    */
+   protected final String getTimeString(final double secondsSinceEpoch) {
+      return getTimeString((long)(secondsSinceEpoch * 1000));
    }
 
    /**

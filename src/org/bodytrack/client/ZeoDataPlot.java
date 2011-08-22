@@ -61,7 +61,7 @@ public class ZeoDataPlot extends DataPlot {
                       final GraphAxis yAxis, final String deviceName, final String channelName,
                       final String url, final int minLevel) {
       super(container, xAxis, yAxis, deviceName, channelName,
-            url, minLevel, Canvas.DEFAULT_COLOR, false);
+            url, minLevel, Canvas.DEFAULT_COLOR, true);
       // Doesn't make sense to publish data values as 1, 2, 3, 4,
       // at least until we have a way to provide more description
    }
@@ -250,7 +250,7 @@ public class ZeoDataPlot extends DataPlot {
                            ? HIGHLIGHT_STROKE_WIDTH : NORMAL_STROKE_WIDTH);
 
       renderer.stroke();
-      
+
       // Clean up after ourselves - it is preferable to put things
       // back the way they were rather than setting the values to
       // defaults
@@ -268,19 +268,26 @@ public class ZeoDataPlot extends DataPlot {
    private Color getColor(final double value) {
       final int val = (int)Math.round(value);
 
-      switch (val) {
-         case 1:
-            return DEEP_COLOR;
-         case 2:
-            return LIGHT_COLOR;
-         case 3:
-            return REM_COLOR;
-         case 4:
-            return WAKE_COLOR;
-         default:
-            GWT.log("ZeoDataPlot.getColor(): unexpected value: " + val);
+      final ZeoState zeoState = ZeoState.findByValue(val);
+
+      if (zeoState != null) {
+         return zeoState.getColor();
       }
 
+      GWT.log("ZeoDataPlot.getColor(): unexpected value: " + val);
       return null;
+   }
+
+   @Override
+   protected String getDataLabel(final PlottablePoint p) {
+      String label = getTimeString(p.getDate());
+
+      final int val = (int)Math.round(p.getValue());
+      final ZeoState zeoState = ZeoState.findByValue(val);
+      if (zeoState != null) {
+         label += "   " + zeoState.getName();
+      }
+
+      return label;
    }
 }
