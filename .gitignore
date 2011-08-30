@@ -2,8 +2,10 @@
 *.class
 *.js
 
-# GWT specific information
+# Build and GWT-specific information
 war/WEB-INF/classes/
+war/WEB-INF/classes-test/
+war/WEB-INF/deploy/
 war/WEB-INF/lib/
 .gwt/
 
@@ -18,6 +20,6 @@ BodyTrackGrapher.iws
 war/grapher2/
 
 # Things that the OS or an editor might leave in a directory
-*.swp # vim and some other programs
-*~    # emacs
-.DS_Store
+*.swp       # vim and some other programs
+*~          # emacs
+.DS_Store   # Mac OS

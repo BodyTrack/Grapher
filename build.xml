@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<project name="Grapher" default="build" basedir=".">
+   <dirname property="base.directory" file="${ant.file}"/>
+   <property file="build.properties"/>
+
+   <!-- Classpath -->
+   <path id="project.classpath">
+      <pathelement location="${fileupload.jar}"/>
+      <pathelement location="${g2d.jar}"/>
+      <pathelement location="${gwt-dev.jar}"/>
+      <pathelement location="${gwt-user.jar}"/>
+   </path>
+
+   <path id="project-test.classpath">
+      <pathelement location="${java.build-test.dir}"/>
+
+      <!-- other classes within this project -->
+      <pathelement location="${java.build.dir}"/>
+
+      <!-- JUnit jar -->
+      <pathelement location="${junit.jar}"/>
+
+      <!-- third-party jars -->
+      <pathelement location="${fileupload.jar}"/>
+      <pathelement location="${g2d.jar}"/>
+      <pathelement location="${gwt-dev.jar}"/>
+      <pathelement location="${gwt-user.jar}"/>
+   </path>
+
+   <!-- Compiler resources -->
+   <patternset id="compiler.resources">
+      <!-- excluded files -->
+      <exclude name="**/CVS/**"/>
+      <exclude name="**/SCCS/**"/>
+      <exclude name="**/RCS/**"/>
+      <exclude name="**/rcs/**"/>
+      <exclude name="**/.DS_Store/**"/>
+      <exclude name="**/.svn/**"/>
+      <!-- included files -->
+      <include name="**/?*.properties"/>
+      <include name="**/?*.xml"/>
+      <include name="**/?*.htm"/>
+      <include name="**/?*.html"/>
+      <include name="**/?*.dtd"/>
+      <include name="**/?*.tld"/>
+      <include name="**/?*.xsd"/>
+      <include name="**/?*.xsl"/>
+      <include name="**/?*.gif"/>
+      <include name="**/?*.png"/>
+      <include name="**/?*.jpeg"/>
+      <include name="**/?*.jpg"/>
+      <include name="**/?*.dll"/>
+      <include name="**/?*.lib"/>
+      <include name="**/?*.ice"/>
+      <include name="**/?*.pem"/>
+   </patternset>
+
+   <tstamp>
+      <format property="build.timestamp" pattern="yyyy-MM-dd hh:mm:ss a z"/>
+   </tstamp>
+
+   <target name="clean" depends="clean-java, clean-gwt" description="Cleans this project"/>
+
+   <target name="clean-java" description="Cleans the compiled Java code">
+      <delete dir="${java.build.dir}" failonerror="false"/>
+      <delete dir="${java.build-test.dir}" failonerror="false"/>
+   </target>
+
+   <target name="clean-gwt" description="Cleans the compiled GWT code">
+      <delete dir="${gwt.deploy.dir}" failonerror="false"/>
+      <delete dir="${gwt.module.dir}" failonerror="false"/>
+   </target>
+
+   <target name="build" depends="build-java, build-gwt" description="Build all Java code then build the GWT code"
+           unless="build-is-complete">
+      <property name="build-is-complete" value="true"/>
+   </target>
+
+   <target name="build-java" description="Compiles Java source to bytecode" unless="build-java-is-complete">
+      <compile-code-and-copy-resources src.dir="${src.dir}"
+                                       build.dir="${java.build.dir}"
+                                       classpath-ref="project.classpath"/>
+
+      <compile-code-and-copy-resources src.dir="${src-test.dir}"
+                                       build.dir="${java.build-test.dir}"
+                                       classpath-ref="project-test.classpath"/>
+
+      <!-- run tests -->
+      <junit printsummary="yes" haltonfailure="yes" showoutput="yes">
+         <classpath refid="project-test.classpath"/>
+         <batchtest>
+            <fileset dir="${src-test.dir}">
+               <include name="**/*Test.java"/>
+            </fileset>
+         </batchtest>
+      </junit>
+
+      <property name="build-java-is-complete" value="true"/>
+   </target>
+
+   <target name="build-gwt" depends="clean-gwt, build-java" description="GWT compile to JavaScript (production mode)" unless="build-gwt-is-complete">
+      <java failonerror="true" fork="true" classname="com.google.gwt.dev.Compiler">
+         <classpath>
+            <pathelement location="${src.dir}"/>
+            <path refid="project.classpath"/>
+            <pathelement location="${gwt.dir}/validation-api-1.0.0.GA.jar"/>
+            <pathelement location="${gwt.dir}/validation-api-1.0.0.GA-sources.jar"/>
+         </classpath>
+         <!-- add jvmarg -Xss16M or similar if you see a StackOverflowError -->
+         <jvmarg value="-Xmx256M"/>
+         <arg line="-war ${war.dir}"/>
+         <arg line="-deploy ${gwt.deploy.dir}"/>
+         <arg line="-style ${gwt.style}"/>
+         <!-- Additional arguments like -logLevel DEBUG -->
+         <arg line="${gwt.build.args}"/>
+         <arg value="${gwt.module}"/>
+      </java>
+
+      <property name="build-gwt-is-complete" value="true"/>
+   </target>
+
+   <target name="devmode" depends="build-java" description="Run development mode">
+      <java failonerror="true" fork="true" classname="com.google.gwt.dev.DevMode">
+         <classpath>
+            <pathelement location="${src.dir}"/>
+            <path refid="project.classpath"/>
+            <pathelement location="${gwt.dir}/validation-api-1.0.0.GA.jar"/>
+            <pathelement location="${gwt.dir}/validation-api-1.0.0.GA.jar"/>
+         </classpath>
+         <jvmarg value="-Xmx256M"/>
+         <arg line="-startupUrl ${gwt.startup-url}"/>
+         <arg line="-bindAddress ${gwt.devmode.server-address}"/>
+         <arg line="-codeServerPort ${gwt.devmode.code-server-port}"/>
+         <arg line="-port ${gwt.devmode.web-server-port}"/>
+         <!-- Additional arguments like -logLevel DEBUG -->
+         <arg line="${gwt.devmode.args}"/>
+         <arg value="${gwt.module}"/>
+      </java>
+   </target>
+
+   <!-- ============================================================================================================ -->
+   <!-- Macro definitions -->
+   <!-- ============================================================================================================ -->
+
+   <macrodef name="compile-code-and-copy-resources">
+      <attribute name="classpath-ref"/>
+      <attribute name="build.dir"/>
+      <attribute name="src.dir"/>
+      <element name="resources-filterset" optional="true"/>
+      <sequential>
+         <!-- create the build directory -->
+         <mkdir dir="@{build.dir}"/>
+
+         <!-- compile code -->
+         <javac srcdir="@{src.dir}"
+                destdir="@{build.dir}"
+                classpathref="@{classpath-ref}"
+                debug="${java.compiler.debug}"
+                nowarn="${java.compiler.generate.no.warnings}"
+                memorymaximumsize="${java.compiler.max.memory}"
+                source="${java.compiler.source.level}"
+                target="${java.compiler.target.level}"
+                fork="true"
+                debuglevel="lines,vars,source"
+                includeAntRuntime="false">
+            <compilerarg line="${java.compiler.args}"/>
+         </javac>
+
+         <!-- copy resources -->
+         <copy todir="@{build.dir}">
+            <fileset dir="@{src.dir}">
+               <patternset refid="compiler.resources"/>
+            </fileset>
+            <resources-filterset/>
+         </copy>
+
+      </sequential>
+   </macrodef>
+
+</project>

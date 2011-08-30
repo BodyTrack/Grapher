@@ -2,6 +2,28 @@
 <project version="4">
   <component name="AntConfiguration">
     <defaultAnt bundledAnt="true" />
+    <buildFile url="file://$PROJECT_DIR$/build.xml">
+      <additionalClassPath />
+      <antReference projectDefault="true" />
+      <customJdkName value="" />
+      <maximumHeapSize value="128" />
+      <maximumStackSize value="2" />
+      <properties />
+    </buildFile>
+  </component>
+  <component name="ArtifactManager">
+    <artifact name="BodyTrackGrapher:GWT">
+      <output-path>$PROJECT_DIR$/war</output-path>
+      <properties id="ant-preprocessing">
+        <options enabled="true">
+          <file>file://$PROJECT_DIR$/build.xml</file>
+          <target>clean-gwt</target>
+        </options>
+      </properties>
+      <root id="root">
+        <element id="gwt-compiler-output" facet="BodyTrackGrapher/gwt/GWT" />
+      </root>
+    </artifact>
   </component>
   <component name="ArtifactsStructureConfigurable.UI">
     <splitter-proportions>
@@ -563,6 +585,28 @@
       <SplitterProportionsDataImpl />
     </splitter-proportions>
   </component>
+  <component name="NullableNotNullManager">
+    <option name="myDefaultNullable" value="org.jetbrains.annotations.Nullable" />
+    <option name="myDefaultNotNull" value="org.jetbrains.annotations.NotNull" />
+    <option name="myNullables">
+      <value>
+        <list size="3">
+          <item index="0" class="java.lang.String" itemvalue="org.jetbrains.annotations.Nullable" />
+          <item index="1" class="java.lang.String" itemvalue="javax.annotation.Nullable" />
+          <item index="2" class="java.lang.String" itemvalue="edu.umd.cs.findbugs.annotations.Nullable" />
+        </list>
+      </value>
+    </option>
+    <option name="myNotNulls">
+      <value>
+        <list size="3">
+          <item index="0" class="java.lang.String" itemvalue="org.jetbrains.annotations.NotNull" />
+          <item index="1" class="java.lang.String" itemvalue="javax.annotation.Nonnull" />
+          <item index="2" class="java.lang.String" itemvalue="edu.umd.cs.findbugs.annotations.NonNull" />
+        </list>
+      </value>
+    </option>
+  </component>
   <component name="Palette2">
     <group name="Swing">
       <item class="com.intellij.uiDesigner.HSpacer" tooltip-text="Horizontal Spacer" icon="/com/intellij/uiDesigner/icons/hspacer.png" removable="false" auto-create-binding="false" can-attach-label="false">
@@ -690,7 +734,7 @@
         <default-facet-configuration>
           <configuration>
             <setting name="compilerMaxHeapSize" value="128" />
-            <setting name="gwtScriptOutputStyle" value="DETAILED" />
+            <setting name="gwtScriptOutputStyle" value="OBF" />
             <setting name="gwtSdkUrl" value="file://$PROJECT_DIR$/lib/gwt-2.3.0" />
           </configuration>
         </default-facet-configuration>
