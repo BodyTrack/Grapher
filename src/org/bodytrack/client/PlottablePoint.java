@@ -3,8 +3,9 @@ package org.bodytrack.client;
 /**
  * A class holding a date and value, which makes the value easy to graph.
  * 
- * <p>The date is stored as a <tt>double</tt>, and the value is stored as a
- * <tt>double</tt>.  Once created, objects of this class are designed to
+ * <p>The date is stored as a <tt>double</tt>, the value is stored as a
+ * <tt>double</tt>, and the comment is stored as a {@link String}.  Once
+ * created, objects of this class are designed to
  * be immutable, although in JavaScript all objects are mutable, and are
  * subject to change if an attacker can exploit a cross-site scripting
  * vulnerability.</p>
@@ -12,6 +13,7 @@ package org.bodytrack.client;
 public final class PlottablePoint {
 	private double myDate;
 	private double myValue;
+   private String comment;
 	
 	/**
 	 * Saves copies of date and value in this PlottablePoint.
@@ -23,9 +25,25 @@ public final class PlottablePoint {
 	 * 		the value of this PlottablePoint
 	 */
 	public PlottablePoint(double date, double value) {
+      this(date, value, null);
+   }
+
+	/**
+	 * Saves copies of date and value in this PlottablePoint.
+	 *
+	 * @param date
+	 * 		the date for this PlottablePoint, represented as the number
+	 * 		of seconds since 1/1/1970 (the epoch)
+	 * @param value
+	 * 		the value of this PlottablePoint
+	 * @param comment
+	 * 		the comment for this PlottablePoint
+	 */
+	public PlottablePoint(double date, double value, String comment) {
 		myDate = date;
 		myValue = value;
-	}
+      this.comment = comment;
+   }
 
 	/**
 	 * Returns the date for this PlottablePoint.
@@ -47,7 +65,17 @@ public final class PlottablePoint {
 		return myValue;
 	}
 
-	/**
+   /**
+    * Returns the comment for this PlottablePoint.
+    *
+    * @return
+    * 		the comment for this PlottablePoint
+    */
+   public String getComment() {
+      return comment;
+   }
+
+   /**
 	 * Returns a hashcode based on the date of this <tt>PlottablePoint</tt>.
 	 */
 	@Override
