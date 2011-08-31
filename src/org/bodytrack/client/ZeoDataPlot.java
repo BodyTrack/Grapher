@@ -115,9 +115,9 @@ public class ZeoDataPlot extends DataPlot {
 
       for (final PlottablePoint point : points) {
          final double time = point.getDate();
-         final double mean = point.getValue();
+         final double value = point.getValue();
 
-         if (mean < MIN_DRAWABLE_VALUE) {
+         if (value < MIN_DRAWABLE_VALUE) {
             prev = null;
             continue;
          }
@@ -127,14 +127,14 @@ public class ZeoDataPlot extends DataPlot {
             // Add two points - the two edges for the first bar
 
             transformedPoints.add(
-                  new PlottablePoint(time - halfWidth, mean));
+                  new PlottablePoint(time - halfWidth, value));
             transformedPoints.add(
-                  new PlottablePoint(time + halfWidth, mean));
+                  new PlottablePoint(time + halfWidth, value));
          }
          else {
             // Not on the left edge
             transformedPoints.add(
-                  new PlottablePoint(time + halfWidth, mean));
+                  new PlottablePoint(time + halfWidth, value));
          }
 
          prev = point;
