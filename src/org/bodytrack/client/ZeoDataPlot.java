@@ -18,11 +18,6 @@ import java.util.List;
  * @see DataPlot
  */
 public class ZeoDataPlot extends DataPlot {
-   private static final Color WAKE_COLOR = new Color(0xFF, 0x45, 0x00);
-   private static final Color REM_COLOR = new Color(0x90, 0xEE, 0x90);
-   private static final Color LIGHT_COLOR = new Color(0xA9, 0xA9, 0xA9);
-   private static final Color DEEP_COLOR = new Color(0x22, 0x8B, 0x22);
-
    /**
     * The alpha value used when drawing rectangles for Zeo plots.
     */

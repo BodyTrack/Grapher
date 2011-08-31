@@ -10,6 +10,7 @@ import java.util.Map;
  * @author Chris Bartley (bartley@cmu.edu)
  */
 public enum ZeoState {
+   NO_DATA(0, "No Data", new Color(0,0,0)),
    DEEP(1, "Deep", new Color(0x22, 0x8B, 0x22)),
    LIGHT(2, "Light", new Color(0xA9, 0xA9, 0xA9)),
    REM(3, "REM", new Color(0x90, 0xEE, 0x90)),
@@ -65,19 +66,3 @@ public enum ZeoState {
       return sb.toString();
    }
 }
-
-/*
-         case 1:
-            return "Deep";
-         case 2:
-            return "Light";
-         case 3:
-            return "REM";
-         case 4:
-            return "Awake";
-
-   private static final Color DEEP_COLOR = new Color(0x22, 0x8B, 0x22);
-   private static final Color LIGHT_COLOR = new Color(0xA9, 0xA9, 0xA9);
-   private static final Color REM_COLOR = new Color(0x90, 0xEE, 0x90);
-   private static final Color WAKE_COLOR = new Color(0xFF, 0x45, 0x00);
-*/
