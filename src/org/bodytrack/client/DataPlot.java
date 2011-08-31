@@ -28,7 +28,7 @@ import java.util.Set;
  * <p>A class that wishes to inherit this class can override
  * {@link DataPlot#paintAllDataPoints}, but the easiest way to modify
  * functionality it to override {@link DataPlot#paintDataPoint} and
- * {@link DataPlot#paintEdgePoint(BoundedDrawingBox, double, double)}.
+ * {@link DataPlot#paintEdgePoint(BoundedDrawingBox, double, double, PlottablePoint)}.
  * These two functions are responsible for painting a single point on
  * this DataPlot.  This (parent) class will automatically handle
  * highlighting, zooming, and the Ajax calls for pulling extra data
@@ -613,6 +613,9 @@ public class DataPlot implements Alertable<GrapherTile> {
          drawing.beginClippedPath();
          paintHighlightedPoint(drawing, highlightedPoint);
          drawing.strokeClippedPath();
+         if (highlightedPoint.hasComment()) {
+            GWT.log("DataPoint.paint(): (x,y)=(" + highlightedPoint.getDate() + "," + highlightedPoint.getValue() + ") comment=[" + highlightedPoint.getComment() + "]");
+         }
       }
 
       // Clean up after ourselves
@@ -726,7 +729,7 @@ public class DataPlot implements Alertable<GrapherTile> {
                paintDataPoint(drawing, prevX, prevY, x, y, point);
             }
             else {
-               paintEdgePoint(drawing, x, y);
+               paintEdgePoint(drawing, x, y, point);
             }
 
             prevX = x;
@@ -771,18 +774,21 @@ public class DataPlot implements Alertable<GrapherTile> {
     *
     * @param drawing
     * 		the
-    * 		{@link BoundedDrawingBox BoundedDrawingBox}
+    * 		{@link org.bodytrack.client.BoundedDrawingBox BoundedDrawingBox}
     * 		that should constrain the drawing.  Forwarding graphics calls
     * 		through drawing will ensure that everything draws up to the edge
     * 		of the viewing window but no farther
     * @param x
     * 		the X-coordinate of the point to draw
     * @param y
-    * 		the Y-coordinate of the point to draw
+    * @param rawDataPoint
     */
    protected void paintEdgePoint(final BoundedDrawingBox drawing, final double x,
-                                 final double y) {
+                                 final double y, PlottablePoint rawDataPoint) {
       drawing.drawDot(x, y, DOT_RADIUS);
+      if (rawDataPoint.hasComment()) {
+         paintHighlightedPoint(drawing, rawDataPoint);
+      }
    }
 
    /**
@@ -821,6 +827,9 @@ public class DataPlot implements Alertable<GrapherTile> {
    protected void paintDataPoint(final BoundedDrawingBox drawing, final double prevX,
                                  final double prevY, final double x, final double y, final PlottablePoint rawDataPoint) {
       drawing.drawLineSegment(prevX, prevY, x, y);
+      if (rawDataPoint.hasComment()) {
+         paintHighlightedPoint(drawing, rawDataPoint);
+      }
    }
 
    /**
@@ -1455,6 +1464,8 @@ public class DataPlot implements Alertable<GrapherTile> {
 
       // We know that fractionalSecondDigits will always be 0, 1, 2, or 3
       switch (fractionalSecondDigits) {
+         case 0:
+            break;
          case 1:
             formatString += ".S";
             break;

@@ -65,6 +65,14 @@ public final class PlottablePoint {
 		return myValue;
 	}
 
+
+   /**
+    * Returns <code>true</code> if this PlottablePoint has a comment; <code>false</code> otherwise.
+    */
+   public boolean hasComment() {
+      return comment != null;
+   }
+
    /**
     * Returns the comment for this PlottablePoint.
     *

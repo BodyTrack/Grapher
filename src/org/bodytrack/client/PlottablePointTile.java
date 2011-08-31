@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
+import com.google.gwt.core.client.JsArrayMixed;
 import com.google.gwt.core.client.JsArrayNumber;
 import com.google.gwt.core.client.JsArrayString;
 
@@ -98,7 +99,7 @@ public final class PlottablePointTile extends JavaScriptObject {
 	 * 		the data stored in this tile, as a two-dimensional array of
 	 * 		double-precision values
 	 */
-	public native JsArray<JsArrayNumber> getData() /*-{
+	public native JsArray<JsArrayMixed> getData() /*-{
 		return this.data;
 	}-*/;
 
@@ -136,6 +137,7 @@ public final class PlottablePointTile extends JavaScriptObject {
 	public List<PlottablePoint> getDataPoints() {
 		int timeIndex = -1;
 		int meanIndex = -1;
+		int commentIndex = -1;
 
 		JsArrayString fieldNames = getFields();
 
@@ -144,21 +146,24 @@ public final class PlottablePointTile extends JavaScriptObject {
 				timeIndex = i;
 			else if (fieldNames.get(i).equalsIgnoreCase("mean"))
 				meanIndex = i;
+			else if (fieldNames.get(i).equalsIgnoreCase("comment"))
+				commentIndex = i;
 		}
 
 		if (timeIndex < 0 || meanIndex < 0)
 			return null;
 
 		List<PlottablePoint> result = new ArrayList<PlottablePoint>();
-		JsArray<JsArrayNumber> dataPoints = getData();
+		JsArray<JsArrayMixed> dataPoints = getData();
 
 		for (int i = 0; i < dataPoints.length(); i++) {
-			JsArrayNumber dataPoint = dataPoints.get(i);
+			JsArrayMixed dataPoint = dataPoints.get(i);
 
-			double time = dataPoint.get(timeIndex);
-			double mean = dataPoint.get(meanIndex);
+			double time = dataPoint.getNumber(timeIndex);
+			double mean = dataPoint.getNumber(meanIndex);
+         final String comment = commentIndex >= 0 ? dataPoint.getString(commentIndex) : null;
 
-			result.add(new PlottablePoint(time, mean));
+			result.add(new PlottablePoint(time, mean, comment));
 		}
 
 		return result;

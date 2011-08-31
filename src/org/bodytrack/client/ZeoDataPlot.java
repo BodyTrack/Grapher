@@ -149,7 +149,7 @@ public class ZeoDataPlot extends DataPlot {
     */
    @Override
    protected void paintEdgePoint(final BoundedDrawingBox drawing, final double x,
-                                 final double y) {
+                                 final double y, PlottablePoint rawDataPoint) {
    }
 
    /**

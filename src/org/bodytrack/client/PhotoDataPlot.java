@@ -286,16 +286,16 @@ public class PhotoDataPlot extends DataPlot {
 	 * DataPlot#paintDataPoint(BoundedDrawingBox, double, double, double, double, PlottablePoint)
 	 * paintDataPoint} does.</p>
 	 *
-	 * @param drawing
-	 * 		the bounding box that constrains where photos will draw
-	 * @param x
-	 * 		the X-value (in pixels) at which we draw the image
-	 * @param y
-	 * 		the Y-value (in pixels) at which we draw the image
-	 */
+    * @param drawing
+    * 		the bounding box that constrains where photos will draw
+    * @param x
+    * 		the X-value (in pixels) at which we draw the image
+    * @param y
+    * @param rawDataPoint
+    */
 	@Override
 	protected void paintEdgePoint(BoundedDrawingBox drawing, double x,
-			double y) {
+                                 double y, PlottablePoint rawDataPoint) {
 		drawAllImagesAtPoint(drawing, x, y);
 	}
 
