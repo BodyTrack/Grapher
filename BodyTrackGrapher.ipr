@@ -800,7 +800,9 @@
       <JAVADOC>
         <root url="http://gwt-g2d.appspot.com/doc/" />
       </JAVADOC>
-      <SOURCES />
+      <SOURCES>
+        <root url="jar://$PROJECT_DIR$/lib/g2d/gwt-g2d.jar!/" />
+      </SOURCES>
     </library>
     <library name="GWT User">
       <CLASSES>
