@@ -11,10 +11,10 @@ import java.util.Map;
  */
 public enum ZeoState {
    NO_DATA(0, "No Data", new Color(0,0,0)),
-   DEEP(1, "Deep", new Color(0x22, 0x8B, 0x22)),
-   LIGHT(2, "Light", new Color(0xA9, 0xA9, 0xA9)),
-   REM(3, "REM", new Color(0x90, 0xEE, 0x90)),
-   WAKE(4, "Wake", new Color(0xFF, 0x45, 0x00));
+   DEEP(1, "Deep", new Color(0x00, 0x66, 0x00)),
+   LIGHT(2, "Light", new Color(0x99,0x99,0x99)),
+   REM(3, "REM", new Color(0x00, 0xCC, 0x00)),
+   WAKE(4, "Wake", new Color(0xFF, 0x66, 0x33));
 
    private static final Map<Integer, ZeoState> VALUE_TO_STATE_MAP;
 
