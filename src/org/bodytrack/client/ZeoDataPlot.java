@@ -149,7 +149,7 @@ public class ZeoDataPlot extends DataPlot {
     */
    @Override
    protected void paintEdgePoint(final BoundedDrawingBox drawing, final double x,
-                                 final double y, PlottablePoint rawDataPoint) {
+                                 final double y, final PlottablePoint rawDataPoint) {
    }
 
    /**
@@ -170,29 +170,30 @@ public class ZeoDataPlot extends DataPlot {
     */
    @Override
    protected void paintDataPoint(final BoundedDrawingBox drawing, final double prevX, final double prevY, final double x, final double y, final PlottablePoint rawDataPoint) {
-      drawRectangle(getColor(rawDataPoint.getValue()), prevX, prevY, x, y);
+      // get the ZeoState for this value
+      final int val = (int)Math.round(rawDataPoint.getValue());
+      final ZeoState zeoState = ZeoState.findByValue(val);
+
+      drawRectangle(zeoState, prevX, prevY, x, y);
    }
 
    /**
     * Draws a rectangle with the specified corners, stretching down
     * to 0.
     *
-    * @param color
-    * 		the color to use for the interior of the rectangle.  The
-    * 		borders of the rectangle will be drawn in the color already
-    * 		set by the paint method.  If the color is <code>null</code>
+    * @param zeoState
+    * 		the ZeoState for the data point we're rendering.  If the state is <code>null</code>
     * 	   this method does nothing.
     * @param prevX
     * 		the X-value (in pixels) for the left edge of the rectangle
     * @param prevY
-    * 		unused
+ * 		unused
     * @param x
-    * 		the X-value (in pixels) for the right edge of the rectangle
+* 		the X-value (in pixels) for the right edge of the rectangle
     * @param y
-    * 		the Y-value (in pixels) for the top of the rectangle
     */
-   private void drawRectangle(final Color color, final double prevX, final double prevY, final double x, final double y) {
-      if (color == null) {
+   private void drawRectangle(final ZeoState zeoState, final double prevX, final double prevY, final double x, final double y) {
+      if (zeoState == null) {
          return;
       }
 
@@ -224,7 +225,7 @@ public class ZeoDataPlot extends DataPlot {
       // Draw the Zeo plot with the specified color
       surface.setGlobalAlpha(highlighted
                              ? HIGHLIGHTED_ALPHA : NORMAL_ALPHA);
-      surface.setFillStyle(color);
+      surface.setFillStyle(zeoState.getColor());
 
       // Draw rectangles.  We go clockwise, starting at the top left corner
       renderer.beginPath();
@@ -236,41 +237,22 @@ public class ZeoDataPlot extends DataPlot {
       renderer.closePath();
       renderer.fill();
 
-      // Draw lines around rectangles
-      surface.setGlobalAlpha(Canvas.DEFAULT_ALPHA);
-      surface.setFillStyle(Canvas.DEFAULT_COLOR);
+      // Draw lines around rectangles, but only if the data point is the NO_DATA state or we're not zoomed out too far
+      if (ZeoState.NO_DATA.equals(zeoState) || rightX - leftX > 6) {
+         surface.setGlobalAlpha(Canvas.DEFAULT_ALPHA);
+         surface.setFillStyle(Canvas.DEFAULT_COLOR);
 
-      final double oldLineWidth = surface.getLineWidth();
-      surface.setLineWidth(highlighted
-                           ? HIGHLIGHT_STROKE_WIDTH : NORMAL_STROKE_WIDTH);
+         final double oldLineWidth = surface.getLineWidth();
+         surface.setLineWidth(highlighted
+                              ? HIGHLIGHT_STROKE_WIDTH : NORMAL_STROKE_WIDTH);
 
-      renderer.stroke();
+         renderer.stroke();
 
-      // Clean up after ourselves - it is preferable to put things
-      // back the way they were rather than setting the values to
-      // defaults
-      surface.setLineWidth(oldLineWidth);
-   }
-
-   /**
-    * Returns the color to use to draw the specified value for a Zeo plot.
-    *
-    * @param value
-    * 		the value, which is expected to be 0, 1, 2, 3, or 4
-    * @return
-    * 		the color to use to draw the bar for that value (may be null)
-    */
-   private Color getColor(final double value) {
-      final int val = (int)Math.round(value);
-
-      final ZeoState zeoState = ZeoState.findByValue(val);
-
-      if (zeoState != null) {
-         return zeoState.getColor();
+         // Clean up after ourselves - it is preferable to put things
+         // back the way they were rather than setting the values to
+         // defaults
+         surface.setLineWidth(oldLineWidth);
       }
-
-      GWT.log("ZeoDataPlot.getColor(): unexpected value: " + val);
-      return null;
    }
 
    @Override
