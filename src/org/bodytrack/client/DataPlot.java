@@ -3,6 +3,9 @@ package org.bodytrack.client;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.NumberFormat;
+import com.google.gwt.user.client.Element;
+import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.PopupPanel;
 import gwt.g2d.client.graphics.Color;
 import gwt.g2d.client.math.Vector2;
 
@@ -65,6 +68,12 @@ public class DataPlot implements Alertable<GrapherTile> {
    protected static final double MIN_DRAWABLE_VALUE = -1e300;
 
    /**
+    * The preferred width in pixels of a comment popup panel. The comment panel's actual width will be the minimum of
+    * this value, the drawing width, and the preferred width of the comment.
+    */
+   private static final int PREFERRED_MAX_COMMENT_WIDTH = 600;
+
+   /**
     * Whenever the {@link #highlight()} method is called, we don't know
     * which points on the axes should be highlighted, so we use this
     * value to indicate this.  As such, testing with == is OK as a test
@@ -100,6 +109,7 @@ public class DataPlot implements Alertable<GrapherTile> {
    private GraphAxis xAxis;
    private GraphAxis yAxis;
    private final Canvas canvas;
+   private PopupPanel commentPanel;
 
    private final String deviceName;
    private final String channelName;
@@ -608,13 +618,14 @@ public class DataPlot implements Alertable<GrapherTile> {
 
       paintAllDataPoints(drawing);
 
+      hideComment();
       if (highlightedPoint != null
           && highlightedPoint != HIGHLIGHTED_NO_SINGLE_POINT) {    // TODO: should this be an .equals() comparison instead?
          drawing.beginClippedPath();
          paintHighlightedPoint(drawing, highlightedPoint);
          drawing.strokeClippedPath();
          if (highlightedPoint.hasComment()) {
-            GWT.log("DataPoint.paint(): (x,y)=(" + highlightedPoint.getDate() + "," + highlightedPoint.getValue() + ") comment=[" + highlightedPoint.getComment() + "]");
+            paintComment(drawing, highlightedPoint);
          }
       }
 
@@ -774,17 +785,19 @@ public class DataPlot implements Alertable<GrapherTile> {
     *
     * @param drawing
     * 		the
-    * 		{@link org.bodytrack.client.BoundedDrawingBox BoundedDrawingBox}
+    * 		{@link BoundedDrawingBox}
     * 		that should constrain the drawing.  Forwarding graphics calls
     * 		through drawing will ensure that everything draws up to the edge
     * 		of the viewing window but no farther
     * @param x
     * 		the X-coordinate of the point to draw
     * @param y
+    * 		the Y-coordinate of the point to draw
     * @param rawDataPoint
+    * 		the raw {@link PlottablePoint}
     */
    protected void paintEdgePoint(final BoundedDrawingBox drawing, final double x,
-                                 final double y, PlottablePoint rawDataPoint) {
+                                 final double y, final PlottablePoint rawDataPoint) {
       drawing.drawDot(x, y, DOT_RADIUS);
       if (rawDataPoint.hasComment()) {
          paintHighlightedPoint(drawing, rawDataPoint);
@@ -865,6 +878,96 @@ public class DataPlot implements Alertable<GrapherTile> {
       drawing.drawDot(x, y, HIGHLIGHTED_DOT_RADIUS);
       drawing.drawDot(x, y, HIGHLIGHT_STROKE_WIDTH);
       drawing.drawDot(x, y, NORMAL_STROKE_WIDTH);
+   }
+
+   private void paintComment(final BoundedDrawingBox drawing, final PlottablePoint highlightedPoint) {
+      if (highlightedPoint.hasComment()) {
+
+         // compute (x,y) for the highlighted point in pixels, relative to the canvas
+         final int x = (int)xAxis.project2D(highlightedPoint.getDate()).getX();
+         final int y = (int)yAxis.project2D(highlightedPoint.getValue()).getY();
+
+         // create the panel, but display it offscreen so we can measure its preferred width
+         commentPanel = new PopupPanel();
+         commentPanel.add(new Label(highlightedPoint.getComment()));
+         commentPanel.setPopupPosition(-10000, -10000);
+         commentPanel.show();
+         final int preferredCommentPanelWidth = commentPanel.getOffsetWidth();
+         commentPanel.hide();
+
+         // compute the actual panel width by taking the minimum of the comment panel's preferred width, the width of
+         // the drawing region, and the PREFERRED_MAX_COMMENT_WIDTH.
+         final int desiredPanelWidth = (int)Math.min(preferredCommentPanelWidth, Math.min(drawing.getWidth(), PREFERRED_MAX_COMMENT_WIDTH));
+
+         // set the panel to the corrected width
+         final int actualPanelWidth;
+         if (desiredPanelWidth != preferredCommentPanelWidth) {
+            commentPanel.setWidth(String.valueOf(desiredPanelWidth) + "px");
+            commentPanel.show();
+
+            // unfortunately, setting the width doesn't take borders and such into account, so we need read the width again and
+            // then adjust accordingly
+            final int widthPlusExtra = commentPanel.getOffsetWidth();
+            commentPanel.hide();
+
+            commentPanel.setWidth(String.valueOf(desiredPanelWidth - (widthPlusExtra - desiredPanelWidth)) + "px");
+            commentPanel.show();
+
+            actualPanelWidth = commentPanel.getOffsetWidth();
+         } else {
+            actualPanelWidth = preferredCommentPanelWidth;
+         }
+
+         // now, if the actual panel width is less than the comment panel's preferred width, then the height must have
+         // changed so we need to redisplay the panel to determine its new height.
+         commentPanel.show();
+         final int actualPanelHeight = commentPanel.getOffsetHeight();
+
+         // now that we know the actual height and width of the comment panel, we can determine where to place the panel
+         // horizontally and vertically.  The general strategy is to try to center the panel horizontally above the
+         // point (we favor placement above the point so that the mouse pointer doesn't occlude the comment).  For
+         // horizontal placement, if the panel can't be centered with respect to the point, then just shift it left or
+         // right enough so that it fits within the bounds of the drawing region.  For vertical placement, if the panel
+         // can't be placed above the point, then place it below.
+
+         final int actualPanelLeft;
+         final int desiredPanelLeft = x - actualPanelWidth / 2;
+         if (desiredPanelLeft < drawing.getTopLeft().getIntX()) {
+            actualPanelLeft = drawing.getTopLeft().getIntX();
+         } else if ((desiredPanelLeft + actualPanelWidth) > drawing.getBottomRight().getIntX()) {
+            actualPanelLeft = drawing.getBottomRight().getIntX() - actualPanelWidth;
+         } else {
+            actualPanelLeft = desiredPanelLeft;
+         }
+
+         final int actualPanelTop;
+         final int desiredPanelTop = (int)(y - actualPanelHeight - HIGHLIGHTED_DOT_RADIUS);
+         if (desiredPanelTop < drawing.getTopLeft().getIntY()) {
+            // place the panel below the point since there's not enough room to place it above
+            actualPanelTop = (int)(y + HIGHLIGHTED_DOT_RADIUS);
+         } else {
+            actualPanelTop = desiredPanelTop;
+         }
+
+         // get the top-left coords of the canvas so we can offset the panel position
+         final Element nativeCanvasElement = drawing.getCanvas().getNativeCanvasElement();
+         final int canvasLeft = nativeCanvasElement.getAbsoluteLeft();
+         final int canvasTop = nativeCanvasElement.getAbsoluteTop();
+
+         // set the panel's position--these are in absolute page coordinates, so we need to offset it by the canvas's
+         // absolute position and the drawing region's position with respect to the canvas.
+         commentPanel.setPopupPosition(actualPanelLeft + canvasLeft, actualPanelTop + canvasTop);
+
+         // show the panel
+         commentPanel.show();
+      }
+   }
+
+   private void hideComment() {
+      if (commentPanel != null) {
+         commentPanel.hide();
+         commentPanel = null;
+      }
    }
 
    /**

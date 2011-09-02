@@ -85,30 +85,36 @@ public final class BoundedDrawingBox {
 	}
 
 	/**
-	 * Returns a {@link gwt.g2d.Vector2 Vector2} representing the
-	 * top left corner of the region this encloses.
+	 * Returns a {@link Vector2} representing the top left corner of the region this encloses.
 	 *
 	 * @return
 	 * 		a <tt>Vector2</tt> with components <tt>(minX, minY)</tt>,
-	 * 		as taken from the construction of this
-	 * 		<tt>BoundedDrawingBox</tt>
+	 * 		as taken from the construction of this <tt>BoundedDrawingBox</tt>
 	 */
 	public Vector2 getTopLeft() {
 		return new Vector2(xMin, yMin);
 	}
 
 	/**
-	 * Returns a {@link gwt.g2d.Vector2 Vector2} representing the
-	 * bottom right corner of the region this encloses.
+	 * Returns a {@link Vector2} representing the bottom right corner of the region this encloses.
 	 *
 	 * @return
 	 * 		a <tt>Vector2</tt> with components <tt>(maxX, maxY)</tt>,
-	 * 		as taken from the construction of this
-	 * 		<tt>BoundedDrawingBox</tt>
+	 * 		as taken from the construction of this <tt>BoundedDrawingBox</tt>
 	 */
 	public Vector2 getBottomRight() {
 		return new Vector2(xMax, yMax);
 	}
+
+   /** Returns the width of the <code>BoundedDrawingBox</code>. */
+   public double getWidth() {
+      return xMax - xMin;
+   }
+
+   /** Returns the height of the <code>BoundedDrawingBox</code>. */
+   public double getHeight() {
+      return yMax - yMin;
+   }
 
 	/**
 	 * Draws a circle with the specified values and radius,
