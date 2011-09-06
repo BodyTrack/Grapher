@@ -3,6 +3,7 @@ package org.bodytrack.client;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.google.gwt.core.client.GWT;
 import org.bodytrack.client.Continuation.EmptyContinuation;
 import org.bodytrack.client.WebDownloader.DownloadAlertable;
 import org.bodytrack.client.WebDownloader.DownloadSuccessAlertable;
@@ -501,13 +502,12 @@ public class ViewSwitchWidget extends HorizontalPanel {
 		/**
 		 * Creates a new <tt>ViewRestorePopup</tt> object but does not show it.
 		 */
-		public ViewRestorePopup() {
+		private ViewRestorePopup() {
 			super(true, true);
 
 			viewNames = new ArrayList<String>();
 			viewNamesControl = new Grid(10, 3);
-			content = new ScrollPanel();
-			// TODO: Set a max height on content
+			content = new ScrollPanel();  // content is sized in showViewNames()
 
 			setWidget(content);
 			addStyleName(POPUP_CLASS_NAME);
@@ -546,46 +546,65 @@ public class ViewSwitchWidget extends HorizontalPanel {
 			new ViewClickHandler(viewName, action).replaceCurrentView(succ);
 		}
 
-		/**
-		 * Fills and shows the viewNamesControl widget.
-		 *
-		 * <p>Uses the viewNames private variable to get the list of
-		 * current views, and then adds all those names to
-		 * viewNamesControl.  There is one exception, however: the current
-		 * view name does not show up in the list of possible views.</p>
-		 */
-		private void showViewNames() {
-			int numViews = viewNames.size();
-			if (numViews == 0)
-				return;
+      /**
+       * Fills and shows the viewNamesControl widget.
+       *
+       * <p>Uses the viewNames private variable to get the list of
+       * current views, and then adds all those names to
+       * viewNamesControl.</p>
+       */
+      private void showViewNames() {
+         final int numViews = viewNames.size();
+         if (numViews <= 0) {
+            return;
+         }
 
-			for (int row = 0; row < numViews; row++) {
-				String name = viewNames.get(row);
+         viewNamesControl.resizeRows(numViews); // need to resize here since the grid defaults to
 
-				Anchor nameAnchor = new Anchor(name);
-				nameAnchor.addClickHandler(new ViewClickHandler(name,
-					ViewClickHandler.FULL_VIEW));
-				if (name.equals(currentView))
-					nameAnchor.addStyleName(CURRENT_VIEW_CLASS);
+         for (int row = 0; row < numViews; row++) {
+            final String name = viewNames.get(row);
 
-				Anchor channelsAnchor = new Anchor("Channels Only");
-				channelsAnchor.addClickHandler(new ViewClickHandler(name,
-					ViewClickHandler.CHANNELS_ONLY));
+            final Anchor nameAnchor = new Anchor(name);
+            nameAnchor.addClickHandler(new ViewClickHandler(name, ViewClickHandler.FULL_VIEW));
+            if (name.equals(currentView)) {
+               nameAnchor.addStyleName(CURRENT_VIEW_CLASS);
+            }
 
-				Anchor timeAnchor = new Anchor("Time Only");
-				timeAnchor.addClickHandler(new ViewClickHandler(name,
-					ViewClickHandler.TIME_ONLY));
+            final Anchor channelsAnchor = new Anchor("Channels Only");
+            channelsAnchor.addClickHandler(new ViewClickHandler(name, ViewClickHandler.CHANNELS_ONLY));
 
-				viewNamesControl.setWidget(row, 0, nameAnchor);
-				viewNamesControl.setWidget(row, 1, channelsAnchor);
-				viewNamesControl.setWidget(row, 2, timeAnchor);
-			}
+            final Anchor timeAnchor = new Anchor("Time Only");
+            timeAnchor.addClickHandler(new ViewClickHandler(name, ViewClickHandler.TIME_ONLY));
 
-			viewNamesControl.resizeRows(numViews);
-			content.add(viewNamesControl);
-		}
+            viewNamesControl.setWidget(row, 0, nameAnchor);
+            viewNamesControl.setWidget(row, 1, channelsAnchor);
+            viewNamesControl.setWidget(row, 2, timeAnchor);
+         }
 
-		/**
+         content.add(viewNamesControl);
+
+         // If there are more than 10 views, then set the size of the content area so that the content scrolls.  This
+         // is slightly tricky in that, in addition to setting the height, we also need to adjust the width to account
+         // for the scroll bar so that the content doesn't wrap strangely.  To set the width, we need to know the
+         // current width and then add to it to make room for the scroll bar.
+         final String newWidthStr;
+         final String newHeightStr;
+         if (numViews > 10) {
+            final int currentWidth = content.getElement().getOffsetWidth();
+            final int currentHeight = content.getElement().getOffsetHeight();
+            final int pixelsPerRow = currentHeight / numViews;
+            final int newWidth = currentWidth + 30;   // 30 pixels should be plenty for the vertical scrollbar
+            newWidthStr = String.valueOf(newWidth) + "px";
+            newHeightStr = String.valueOf(pixelsPerRow * 10) + "px";
+         }
+         else {
+            newWidthStr = "";
+            newHeightStr = "";
+         }
+         content.setSize(newWidthStr, newHeightStr);
+      }
+
+      /**
 		 * Handles clicks on the anchor with text equal to the view name.
 		 *
 		 * <p>Objects of this class are immutable.  Then again, they
