@@ -1,6 +1,5 @@
 package org.bodytrack.client;
 
-import com.google.gwt.core.client.GWT;
 import gwt.g2d.client.graphics.Color;
 import gwt.g2d.client.graphics.DirectShapeRenderer;
 import gwt.g2d.client.graphics.Surface;
@@ -187,10 +186,11 @@ public class ZeoDataPlot extends DataPlot {
     * @param prevX
     * 		the X-value (in pixels) for the left edge of the rectangle
     * @param prevY
- * 		unused
+    * 		unused
     * @param x
-* 		the X-value (in pixels) for the right edge of the rectangle
+    * 		the X-value (in pixels) for the right edge of the rectangle
     * @param y
+    * 		the Y-value (in pixels) for the top edge of the rectangle
     */
    private void drawRectangle(final ZeoState zeoState, final double prevX, final double prevY, final double x, final double y) {
       if (zeoState == null) {
