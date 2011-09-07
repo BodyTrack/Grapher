@@ -99,24 +99,20 @@
    </target>
 
    <target name="build-gwt" depends="clean-gwt, build-java" description="GWT compile to JavaScript (production mode)" unless="build-gwt-is-complete">
-      <java failonerror="true" fork="true" classname="com.google.gwt.dev.Compiler">
-         <classpath>
-            <pathelement location="${src.dir}"/>
-            <path refid="project.classpath"/>
-            <pathelement location="${gwt.dir}/validation-api-1.0.0.GA.jar"/>
-            <pathelement location="${gwt.dir}/validation-api-1.0.0.GA-sources.jar"/>
-         </classpath>
-         <!-- add jvmarg -Xss16M or similar if you see a StackOverflowError -->
-         <jvmarg value="-Xmx256M"/>
-         <arg line="-war ${war.dir}"/>
-         <arg line="-deploy ${gwt.deploy.dir}"/>
-         <arg line="-style ${gwt.style}"/>
-         <!-- Additional arguments like -logLevel DEBUG -->
-         <arg line="${gwt.build.args}"/>
-         <arg value="${gwt.module}"/>
-      </java>
+      <compile-gwt gwt-module-name="${gwt.module}"/>
 
       <property name="build-gwt-is-complete" value="true"/>
+   </target>
+
+   <target name="build-gwt-fast" depends="clean-gwt, build-java" description="Fast GWT compile to JavaScript, only for development--supports only default locale and WebKit/Firefox browsers" unless="build-gwt-fast-is-complete">
+      <compile-gwt gwt-module-name="org.bodytrack.Grapher2Fast">
+         <extra-compiler-arguments>
+            <arg line="-optimize 0"/>
+            <arg line="-draftCompile"/>
+         </extra-compiler-arguments>
+      </compile-gwt>
+
+      <property name="build-gwt-fast-is-complete" value="true"/>
    </target>
 
    <target name="devmode" depends="build-java" description="Run development mode">
@@ -174,6 +170,30 @@
             <resources-filterset/>
          </copy>
 
+      </sequential>
+   </macrodef>
+
+   <macrodef name="compile-gwt">
+      <attribute name="gwt-module-name"/>
+      <element name="extra-compiler-arguments" optional="true"/>
+      <sequential>
+         <java failonerror="true" fork="true" classname="com.google.gwt.dev.Compiler">
+            <classpath>
+               <pathelement location="${src.dir}"/>
+               <path refid="project.classpath"/>
+               <pathelement location="${gwt.dir}/validation-api-1.0.0.GA.jar"/>
+               <pathelement location="${gwt.dir}/validation-api-1.0.0.GA-sources.jar"/>
+            </classpath>
+            <!-- add jvmarg -Xss16M or similar if you see a StackOverflowError -->
+            <jvmarg value="-Xmx256M"/>
+            <extra-compiler-arguments/>
+            <arg line="-war ${war.dir}"/>
+            <arg line="-deploy ${gwt.deploy.dir}"/>
+            <arg line="-style ${gwt.style}"/>
+            <!-- Additional arguments like -logLevel DEBUG -->
+            <arg line="${gwt.build.args}"/>
+            <arg value="@{gwt-module-name}"/>
+         </java>
       </sequential>
    </macrodef>
 

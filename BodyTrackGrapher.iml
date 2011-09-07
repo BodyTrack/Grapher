@@ -3,10 +3,13 @@
   <component name="FacetManager">
     <facet type="gwt" name="GWT">
       <configuration>
-        <setting name="compilerMaxHeapSize" value="128" />
+        <setting name="compilerMaxHeapSize" value="256" />
         <setting name="gwtScriptOutputStyle" value="OBF" />
         <setting name="gwtSdkUrl" value="file://$MODULE_DIR$/lib/gwt-2.3.0" />
         <setting name="webFacet" value="Web" />
+        <packaging>
+          <module name="org.bodytrack.Grapher2Fast" enabled="false" />
+        </packaging>
       </configuration>
     </facet>
     <facet type="web" name="Web">
