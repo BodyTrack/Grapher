@@ -117,4 +117,15 @@ public final class PlottablePoint {
 			Math.abs(Math.floor(myDate) -
 				Math.floor(((PlottablePoint) obj).myDate)) < 0.5;
 	}
+
+   @Override
+   public String toString() {
+      final StringBuilder sb = new StringBuilder();
+      sb.append("PlottablePoint");
+      sb.append("{date=").append(myDate);
+      sb.append(", value=").append(myValue);
+      sb.append(", comment='").append(comment).append('\'');
+      sb.append('}');
+      return sb.toString();
+   }
 }
