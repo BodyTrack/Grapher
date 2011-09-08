@@ -184,8 +184,7 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 			// "Apple Computer Inc.", and Firefox 3.5, at least,
 			// appears to have no navigator.vendor
 
-			isSafari =
-				$wnd.navigator.vendor.indexOf("Apple Computer") >= 0;
+			isSafari = $wnd.navigator.vendor.indexOf("Apple Computer") >= 0;
 		}
 
 		return isSafari && !!$wnd.navigator.platform.match(/.*mac/i);
@@ -436,7 +435,7 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 		for (GraphAxis axis: axes) {
 			axis.layout(offset, len);
 
-			offset = offset.add(basis.y.scale(len));
+			offset = offset.add(basis.y.scale(len + axisMargin));
 		}
 	}
 
