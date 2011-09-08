@@ -954,8 +954,8 @@ public class DataPlot implements Alertable<GrapherTile> {
          final int canvasLeft = nativeCanvasElement.getAbsoluteLeft();
          final int canvasTop = nativeCanvasElement.getAbsoluteTop();
 
-         // set the panel's position--these are in absolute page coordinates, so we need to offset it by the canvas's
-         // absolute position and the drawing region's position with respect to the canvas.
+         // set the panel's position--these are in absolute page coordinates, 
+         // so we need to offset it by the canvas's absolute position.
          commentPanel.setPopupPosition(actualPanelLeft + canvasLeft, actualPanelTop + canvasTop);
 
          // show the panel
