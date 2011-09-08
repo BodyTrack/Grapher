@@ -220,54 +220,44 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 		GraphAxis axis = findAxis(pos);
 		double zoomFactor = Math.pow(mouseWheelZoomRate, event.getDeltaY());
 
-		// We can be zooming exactly one of: an axis, one or
-		// more data plots, and the whole viewing window
-		if (mouseDragAxis != null || axis != null) {
+		Set<DataPlot> highlightedPlots = new HashSet<DataPlot>();
+		for (DataPlot plot: channelMgr.getDataPlots())
+			if (plot.isHighlighted())
+				highlightedPlots.add(plot);
+
+		// We can be zooming exactly one of: one or more data plots, an axis,
+		// and the whole viewing window
+		if (highlightedPlots.size() > 0) {
+			// We are mousing over at least one data plot, so we zoom
+			// the associated Y-axes
+
+			Set<GraphAxis> highlightedYAxes = new HashSet<GraphAxis>();
+			for (DataPlot plot: highlightedPlots)
+				highlightedYAxes.add(plot.getYAxis());
+			for (GraphAxis yAxis: highlightedYAxes)
+				yAxis.zoom(zoomFactor, yAxis.unproject(pos));
+		} else if (mouseDragAxis != null || axis != null) {
 			// Single axis
 
 			// Zoom the correct single axis
 			if (axis == null)
 				axis = mouseDragAxis;
 
-			double zoomAbout = axis.unproject(pos);
-
-			if (channelMgr.getXAxes().contains(axis)) {
-				// Enforce minimum zoom: if any axis allows zooming,
-				// the user is able to zoom on the X-axes
-				boolean canZoomIn = false;
-
-				for (DataPlot plot: channelMgr.getXAxisMap().get(axis))
-					canZoomIn = canZoomIn || plot.shouldZoomIn();
-
-				if (zoomFactor >= 1 || canZoomIn) {
-					axis.zoom(zoomFactor, zoomAbout);
-				}
-			} else {
-				// Y-axis zooming is easy
-				axis.zoom(zoomFactor, zoomAbout);
-			}
+			axis.zoom(zoomFactor, axis.unproject(pos));
 		} else {
 			// The mouse is over the viewing window
-			Set<DataPlot> highlightedPlots = new HashSet<DataPlot>();
+
+			// Enforce minimum zoom: if any axis allows zooming,
+			// the user is able to zoom on the X-axes
+			boolean canZoomIn = false;
+
 			for (DataPlot plot: channelMgr.getDataPlots())
-				if (plot.isHighlighted())
-					highlightedPlots.add(plot);
+				canZoomIn = canZoomIn || plot.shouldZoomIn();
 
-			if (highlightedPlots.size() > 0) {
-				// We are dragging at least one data plot, so we zoom
-				// the associated Y-axes
-
-				Set<GraphAxis> highlightedYAxes = new HashSet<GraphAxis>();
-				for (DataPlot plot: highlightedPlots)
-					highlightedYAxes.add(plot.getYAxis());
-				for (GraphAxis yAxis: highlightedYAxes)
-					yAxis.zoom(zoomFactor, yAxis.unproject(pos));
-			} else {
-				// We are not highlighting any plots, so we
-				// zoom all Y-axes
-
-				for (GraphAxis yAxis: channelMgr.getYAxes())
-					yAxis.zoom(zoomFactor, yAxis.unproject(pos));
+			if (zoomFactor >= 1 || canZoomIn) {
+				for (GraphAxis xAxis: channelMgr.getXAxes()) {
+					xAxis.zoom(zoomFactor, xAxis.unproject(pos));
+				}
 			}
 		}
 
