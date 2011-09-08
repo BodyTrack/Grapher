@@ -54,10 +54,7 @@ public class ZeoDataPlot extends DataPlot {
    public ZeoDataPlot(final GraphWidget container, final GraphAxis xAxis,
                       final GraphAxis yAxis, final String deviceName, final String channelName,
                       final String url, final int minLevel) {
-      super(container, xAxis, yAxis, deviceName, channelName,
-            url, minLevel, Canvas.DEFAULT_COLOR, true);
-      // Doesn't make sense to publish data values as 1, 2, 3, 4,
-      // at least until we have a way to provide more description
+      super(container, xAxis, yAxis, deviceName, channelName, url, minLevel, Canvas.DEFAULT_COLOR, true);
    }
 
    /**
