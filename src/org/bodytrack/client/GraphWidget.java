@@ -419,30 +419,24 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 	}
 
 	private int calculateAxesWidth(Set<GraphAxis> axes) {
-		if (axes.size() == 0)
-			return 0;
-
-		int ret = -axisMargin;
-		// Don't want to add the margin an extra time for the first
-		// axis, so we subtract once initially, and we know that, by
-		// the return statement, ret will be positive because we
-		// checked whether axes contains any elements
+		double maxWidth = 0;
 
 		for (GraphAxis axis: axes)
-			ret += axis.getWidth() + axisMargin;
+			maxWidth = Math.max(axis.getWidth() + axisMargin, maxWidth);
 
-		return ret;
+		return (int)(Math.ceil(maxWidth));
 	}
 
 	private void layoutAxes(Set<GraphAxis> axes, double length,
 			Vector2 begin, Basis basis) {
 		Vector2 offset = begin;
 
-		for (GraphAxis axis: axes) {
-			axis.layout(offset, length);
+		double len = length / axes.size();
 
-			offset = offset.add(
-					basis.x.scale(axisMargin + axis.getWidth()));
+		for (GraphAxis axis: axes) {
+			axis.layout(offset, len);
+
+			offset = offset.add(basis.y.scale(len));
 		}
 	}
 
