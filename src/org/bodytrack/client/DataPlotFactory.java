@@ -541,7 +541,7 @@ public final class DataPlotFactory {
 	private GraphAxis getXAxis() {
 		ChannelManager channels = widget.getChannelManager();
 		if (channels != null && channels.getXAxes().size() > 0)
-			return CollectionUtil.getFirst(channels.getXAxes());
+			return channels.getXAxes().get(0);
 
 		return timeAxis;
 	}

@@ -2,7 +2,6 @@ package org.bodytrack.client;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.JsArrayString;
@@ -325,9 +324,7 @@ public class Grapher2 implements EntryPoint {
 								|| endTime < DataPlotFactory.MIN_USABLE_VALUE)
 							return;
 
-						Set<GraphAxis> xAxes =
-							viewSwitcher.getChannelManager().getXAxes();
-						for (GraphAxis xAxis: xAxes)
+						for (GraphAxis xAxis: viewSwitcher.getChannelManager().getXAxes())
 							xAxis.replaceBounds(startTime, endTime);
 					}
 					});

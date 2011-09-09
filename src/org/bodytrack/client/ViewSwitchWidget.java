@@ -3,7 +3,6 @@ package org.bodytrack.client;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.google.gwt.core.client.GWT;
 import org.bodytrack.client.Continuation.EmptyContinuation;
 import org.bodytrack.client.WebDownloader.DownloadAlertable;
 import org.bodytrack.client.WebDownloader.DownloadSuccessAlertable;
@@ -770,10 +769,8 @@ public class ViewSwitchWidget extends HorizontalPanel {
 				if (currCount == 1) {
 					// In either case, we use the first new axis as the
 					// new set of bounds for currX
-					GraphAxis currX =
-						CollectionUtil.getFirst(channels.getXAxes());
-					GraphAxis newX =
-						CollectionUtil.getFirst(newChannels.getXAxes());
+					GraphAxis currX = channels.getXAxes().get(0);
+					GraphAxis newX = newChannels.getXAxes().get(0);
 					currX.replaceBounds(newX);
 				} else {
 					GraphAxis newX = null;
@@ -816,7 +813,7 @@ public class ViewSwitchWidget extends HorizontalPanel {
 					return;
 				}
 
-				GraphAxis xAxis = CollectionUtil.getFirst(channels.getXAxes());
+				GraphAxis xAxis = channels.getXAxes().get(0);
 				channels.clear();
 
 				for (DataPlot newPlot: newChannels.getDataPlots()) {

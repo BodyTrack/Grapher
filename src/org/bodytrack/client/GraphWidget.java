@@ -255,9 +255,8 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 				canZoomIn = canZoomIn || plot.shouldZoomIn();
 
 			if (zoomFactor >= 1 || canZoomIn) {
-				for (GraphAxis xAxis: channelMgr.getXAxes()) {
+				for (GraphAxis xAxis: channelMgr.getXAxes())
 					xAxis.zoom(zoomFactor, xAxis.unproject(pos));
-				}
 			}
 		}
 
@@ -311,9 +310,6 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 				// loop across all axes
 				for (GraphAxis xAxis: channelMgr.getXAxes())
 					xAxis.drag(mouseDragLastPos, pos);
-
-				for (GraphAxis yAxis: channelMgr.getYAxes())
-					yAxis.drag(mouseDragLastPos, pos);
 			}
 
 			mouseDragLastPos = pos;
@@ -407,7 +403,7 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 			Basis.xRightYUp);
 	}
 
-	private int calculateAxesWidth(Set<GraphAxis> axes) {
+	private int calculateAxesWidth(Iterable<GraphAxis> axes) {
 		double maxWidth = 0;
 
 		for (GraphAxis axis: axes)
@@ -416,7 +412,7 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 		return (int)(Math.ceil(maxWidth));
 	}
 
-	private void layoutAxes(Set<GraphAxis> axes, double length,
+	private void layoutAxes(List<GraphAxis> axes, double length,
 			Vector2 begin, Basis basis) {
 		Vector2 offset = begin;
 

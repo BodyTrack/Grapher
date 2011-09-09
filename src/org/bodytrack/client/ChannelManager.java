@@ -30,11 +30,15 @@ public class ChannelManager {
 	 */
 	private final Map<GraphAxis, List<DataPlot>> xAxisMap;
 	private Map<GraphAxis, List<DataPlot>> unmodXAxisMap;
-	private Set<GraphAxis> unmodXAxes;
+
+	private List<GraphAxis> xAxes;
+	private List<GraphAxis> unmodXAxes;
 
 	private final Map<GraphAxis, List<DataPlot>> yAxisMap;
 	private Map<GraphAxis, List<DataPlot>> unmodYAxisMap;
-	private Set<GraphAxis> unmodYAxes;
+
+	private List<GraphAxis> yAxes;
+	private List<GraphAxis> unmodYAxes;
 
 	// There is some redundancy provided by this variable, but it
 	// does increase efficiency when dealing with channel names
@@ -51,25 +55,19 @@ public class ChannelManager {
 	public ChannelManager() {
 		dataPlots = new ArrayList<DataPlot>();
 		xAxisMap = new HashMap<GraphAxis, List<DataPlot>>();
+		xAxes = new ArrayList<GraphAxis>();
 		yAxisMap = new HashMap<GraphAxis, List<DataPlot>>();
+		yAxes = new ArrayList<GraphAxis>();
 		channelMap = new HashMap<StringPair, DataPlot>();
 		listeners = new ArrayList<ChannelChangedListener>();
 
-		refreshUnmodifiableCaches();
-	}
-
-	/**
-	 * Drops and then recalculates the caches of unmodifiable copies
-	 * of the private variables.
-	 */
-	private void refreshUnmodifiableCaches() {
+		// Set up the unmodifiable objects that are exposed to the world
 		unmodDataPlots = Collections.unmodifiableList(dataPlots);
 
 		unmodXAxisMap = Collections.unmodifiableMap(xAxisMap);
-		unmodXAxes = Collections.unmodifiableSet(xAxisMap.keySet());
-
+		unmodXAxes = Collections.unmodifiableList(xAxes);
 		unmodYAxisMap = Collections.unmodifiableMap(yAxisMap);
-		unmodYAxes = Collections.unmodifiableSet(yAxisMap.keySet());
+		unmodYAxes = Collections.unmodifiableList(yAxes);
 
 		unmodChannelMap = Collections.unmodifiableMap(channelMap);
 		unmodChannels = Collections.unmodifiableSet(channelMap.keySet());
@@ -78,10 +76,10 @@ public class ChannelManager {
 	/**
 	 * Returns an unmodifiable view of the list of
 	 * {@link org.bodytrack.client.DataPlot DataPlot} objects
-	 * held by this <tt>ChannelManager</tt>.
+	 * held by this {@link ChannelManager}.
 	 *
 	 * @return
-	 * 		an unmodifiable view of the list of <tt>DataPlot</tt>
+	 * 		an unmodifiable view of the list of {@link DataPlot}
 	 * 		objects this holds
 	 */
 	public List<DataPlot> getDataPlots() {
@@ -148,20 +146,20 @@ public class ChannelManager {
 	 * 		an unmodifiable view of the set of X-axes on
 	 * 		<tt>DataPlot</tt> objects this holds
 	 */
-	public Set<GraphAxis> getXAxes() {
+	public List<GraphAxis> getXAxes() {
 		return unmodXAxes;
 	}
 
 	/**
 	 * Returns an unmodifiable view of the set of Y-axes held by
 	 * any {@link org.bodytrack.client.DataPlot DataPlot} object
-	 * held by this <tt>ChannelManager</tt>.
+	 * held by this {@link ChannelManager}.
 	 *
 	 * @return
-	 * 		an unmodifiable view of the set of Y-axes on
-	 * 		<tt>DataPlot</tt> objects this holds
+	 * 		an unmodifiable view of the set of Y-axes on {@link DataPlot}
+	 * 		objects this holds
 	 */
-	public Set<GraphAxis> getYAxes() {
+	public List<GraphAxis> getYAxes() {
 		return unmodYAxes;
 	}
 
@@ -267,6 +265,7 @@ public class ChannelManager {
 			List<DataPlot> axisList = new ArrayList<DataPlot>();
 			axisList.add(plot);
 			xAxisMap.put(plot.getXAxis(), axisList);
+			xAxes.add(plot.getXAxis());
 		} else
 			xAxisMap.get(plot.getXAxis()).add(plot);
 
@@ -274,6 +273,7 @@ public class ChannelManager {
 			List<DataPlot> axisList = new ArrayList<DataPlot>();
 			axisList.add(plot);
 			yAxisMap.put(plot.getYAxis(), axisList);
+			yAxes.add(plot.getYAxis());
 		} else
 			yAxisMap.get(plot.getYAxis()).add(plot);
 
@@ -282,9 +282,6 @@ public class ChannelManager {
 		// Notify our event listeners to the occurrence of an event
 		for (ChannelChangedListener l: listeners)
 			l.channelAdded(plot.getDeviceName(), plot.getChannelName());
-
-		// Very important to refresh the cache after any mutation
-		refreshUnmodifiableCaches();
 	}
 
 	/**
@@ -313,13 +310,17 @@ public class ChannelManager {
 
 		if (xAxisMap.get(xAxis).size() > 1)
 			xAxisMap.get(xAxis).remove(plot);
-		else
+		else {
 			xAxisMap.remove(xAxis);
+			xAxes.remove(xAxis);
+		}
 
 		if (yAxisMap.get(yAxis).size() > 1)
 			yAxisMap.get(yAxis).remove(plot);
-		else
+		else {
 			yAxisMap.remove(yAxis);
+			yAxes.remove(yAxis);
+		}
 
 		channelMap.remove(new StringPair(
 				plot.getDeviceName(), plot.getChannelName()));
@@ -327,9 +328,6 @@ public class ChannelManager {
 		// Notify our event listeners to the occurrence of an event
 		for (ChannelChangedListener l: listeners)
 			l.channelRemoved(plot.getDeviceName(), plot.getChannelName());
-
-		// Very important to refresh the cache after any mutation
-		refreshUnmodifiableCaches();
 	}
 
 	/**
