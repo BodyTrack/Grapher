@@ -90,6 +90,7 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 
 	private GraphAxis mouseDragAxis;
 	private Vector2 mouseDragLastPos;
+	private GraphAxis mouseDragOwningYAxis;
 
 	// Once a GraphWidget object is instantiated, this doesn't change
 	private final double mouseWheelZoomRate;
@@ -268,12 +269,14 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 
 		mouseDragAxis = findAxis(pos);
 		mouseDragLastPos = pos;
+		mouseDragOwningYAxis = findOwningYAxis(pos);
 
 		paint();
 	}
 
 	private void handleMouseMoveEvent(MouseMoveEvent event) {
 		Vector2 pos = new Vector2(event.getX(), event.getY());
+		GraphAxis owningYAxis = findOwningYAxis(pos);
 
 		// We can be dragging exactly one of: an axis, one or
 		// more data plots, the whole viewing window, and nothing
@@ -284,6 +287,18 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 		} else if (mouseDragLastPos != null) {
 			// We are either dragging either one or more data plots,
 			// or the whole viewing window
+
+			if (mouseDragOwningYAxis != null && mouseDragOwningYAxis != owningYAxis) {
+				List<GraphAxis> yAxes = channelMgr.getYAxes();
+				int oldIndex = yAxes.indexOf(mouseDragOwningYAxis);
+				int newIndex = yAxes.indexOf(owningYAxis);
+				if (oldIndex >= 0 && newIndex >= 0 && oldIndex != newIndex) {
+					channelMgr.moveYAxis(oldIndex, newIndex);
+					paint();
+					mouseDragOwningYAxis = owningYAxis;
+					return;
+				}
+			}
 
 			Set<DataPlot> highlightedPlots = new HashSet<DataPlot>();
 			for (DataPlot plot: channelMgr.getDataPlots())
@@ -364,6 +379,7 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 	private void handleMouseUpEvent(MouseUpEvent event) {
 		mouseDragAxis = null;
 		mouseDragLastPos = null;
+		mouseDragOwningYAxis = null;
 
 		paint();
 	}
@@ -371,6 +387,7 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 	private void handleMouseOutEvent(MouseOutEvent event) {
 		mouseDragAxis = null;
 		mouseDragLastPos = null;
+		mouseDragOwningYAxis = null;
 
 		// Ensure that all data plots are unhighlighted, as are
 		// all axes
@@ -423,6 +440,26 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 
 			offset = offset.add(basis.y.scale(len + axisMargin));
 		}
+	}
+
+	/**
+	 * Finds the Y-axis that &quot;owns&quot; the portion of the widget
+	 * where pos is.  Returns <tt>null</tt> if no Y-axis owns that portion
+	 * of the widget.
+	 *
+	 * @param pos
+	 * 		the position to check
+	 * @return
+	 * 		the owning Y-axis, or null if no such Y-axis exists
+	 */
+	private GraphAxis findOwningYAxis(Vector2 pos) {
+		for (GraphAxis yAxis: channelMgr.getYAxes()) {
+			double value = yAxis.unproject(pos);
+			if (value > yAxis.getMin() && value < yAxis.getMax())
+				return yAxis;
+		}
+
+		return null;
 	}
 
 	/**
