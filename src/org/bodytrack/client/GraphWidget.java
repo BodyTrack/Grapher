@@ -276,7 +276,6 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 
 	private void handleMouseMoveEvent(MouseMoveEvent event) {
 		Vector2 pos = new Vector2(event.getX(), event.getY());
-		GraphAxis owningYAxis = findOwningYAxis(pos);
 
 		// We can be dragging exactly one of: an axis, one or
 		// more data plots, the whole viewing window, and nothing
@@ -287,18 +286,6 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 		} else if (mouseDragLastPos != null) {
 			// We are either dragging either one or more data plots,
 			// or the whole viewing window
-
-			if (mouseDragOwningYAxis != null && mouseDragOwningYAxis != owningYAxis) {
-				List<GraphAxis> yAxes = channelMgr.getYAxes();
-				int oldIndex = yAxes.indexOf(mouseDragOwningYAxis);
-				int newIndex = yAxes.indexOf(owningYAxis);
-				if (oldIndex >= 0 && newIndex >= 0 && oldIndex != newIndex) {
-					channelMgr.moveYAxis(oldIndex, newIndex);
-					paint();
-					mouseDragOwningYAxis = owningYAxis;
-					return;
-				}
-			}
 
 			Set<DataPlot> highlightedPlots = new HashSet<DataPlot>();
 			for (DataPlot plot: channelMgr.getDataPlots())
@@ -377,6 +364,20 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 	}
 
 	private void handleMouseUpEvent(MouseUpEvent event) {
+		Vector2 pos = new Vector2(event.getX(), event.getY());
+		GraphAxis owningYAxis = findOwningYAxis(pos);
+
+		if (mouseDragOwningYAxis != null && mouseDragOwningYAxis != owningYAxis) {
+			List<GraphAxis> yAxes = channelMgr.getYAxes();
+			int oldIndex = yAxes.indexOf(mouseDragOwningYAxis);
+			int newIndex = yAxes.indexOf(owningYAxis);
+			if (oldIndex >= 0 && newIndex >= 0 && oldIndex != newIndex) {
+				channelMgr.moveYAxis(oldIndex, newIndex);
+				paint();
+				mouseDragOwningYAxis = owningYAxis;
+			}
+		}
+
 		mouseDragAxis = null;
 		mouseDragLastPos = null;
 		mouseDragOwningYAxis = null;
