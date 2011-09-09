@@ -123,6 +123,16 @@ public class ViewSwitchWidget extends HorizontalPanel {
 	}
 
 	/**
+	 * Returns the {@link GraphWidget} object associated with this ViewSwitchWidget.
+	 *
+	 * @return
+	 * 		the {@link GraphWidget} object associated with this object
+	 */
+	public GraphWidget getGraphWidget() {
+		return graphWidget;
+	}
+
+	/**
 	 * Generates the current view as a <tt>SavableView</tt>.
 	 *
 	 * @return

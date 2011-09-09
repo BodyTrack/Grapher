@@ -6,12 +6,12 @@ package org.bodytrack.client;
  * to the rest of the page, regardless of how GWT compiles this widget.
  *
  * <p>This class deals with the public API between the GWT application
- * and the rest of the webpage.  This is through the window.getCurrentView
- * function, which returns the current view.</p>
+ * and the rest of the webpage.  This is through the window.grapher variable,
+ * which contains several functions that the rest of the page can use.</p>
  *
  * <p>There are performance reasons to use a function rather than a global
  * variable to allow the webpage to access grapher information.  Calling
- * the window.getCurrentView function from external JavaScript
+ * the window.grapher.getCurrentView function from external JavaScript
  * is expensive, but the overall cost isn't too bad as long as the function
  * is called infrequently.  On the other hand, updating a global variable
  * on handled events like scrolling is much more expensive, again as long as
@@ -22,13 +22,33 @@ package org.bodytrack.client;
  */
 public final class InfoPublisher {
 	/**
-	 * Initializes the window.getCurrentView function.
+	 * Initializes the window.grapher variable.
 	 */
-	private static native void initialize(ViewSwitchWidget widget) /*-{
-		$wnd.getCurrentView = function() {
+	private static native void initialize(ViewSwitchWidget viewSwitcher) /*-{
+		// In Java-like syntax:
+		// graphWidget = viewSwitcher.getGraphWidget();
+		var graphWidget = viewSwitcher.@org.bodytrack.client.ViewSwitchWidget::getGraphWidget()();
+
+		$wnd.grapher = {};
+
+		$wnd.grapher.getCurrentView = function() {
 			// In Java-like syntax:
-			// return widget.getCurrentSavableView();
-			return widget.@org.bodytrack.client.ViewSwitchWidget::getCurrentSavableView()();
+			// return viewSwitcher.getCurrentSavableView();
+			return viewSwitcher.@org.bodytrack.client.ViewSwitchWidget::getCurrentSavableView()();
+		};
+
+		$wnd.grapher.addChannel = function(deviceName, channelName) {
+			// In Java-like syntax:
+			// graphWidget.addDataPlotAsync(deviceName, channelName);
+			graphWidget.@org.bodytrack.client.GraphWidget::addDataPlotAsync(Ljava/lang/String;Ljava/lang/String;)(deviceName, channelName);
+			return true;
+		};
+
+		$wnd.grapher.removeChannel = function(deviceName, channelName) {
+			// In Java-like syntax:
+			// graphWidget.removeDataPlot(deviceName, channelName);
+			graphWidget.@org.bodytrack.client.GraphWidget::removeDataPlot(Ljava/lang/String;Ljava/lang/String;)(deviceName, channelName);
+			return true;
 		};
 	}-*/;
 
@@ -48,7 +68,7 @@ public final class InfoPublisher {
 	public static void setWidget(ViewSwitchWidget widget) {
 		if (widget == null)
 			throw new NullPointerException("Cannot use null widget to "
-				+ "initialize the window.getCurrentView function");
+				+ "initialize the window.grapher variable");
 		initialize(widget);
 	}
 }
