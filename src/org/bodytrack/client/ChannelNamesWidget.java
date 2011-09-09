@@ -393,18 +393,10 @@ public class ChannelNamesWidget extends FlowPanel
 			if (event.getValue()) {
 				// User just checked a button, so we add the correct new
 				// channel to the grapher widget
-				channelGenerator.buildDataPlotAsync(deviceName, channelName,
-					new Continuation<DataPlot>() {
-						@Override
-						public void call(DataPlot result) {
-							channelGenerator.getWidget().addDataPlot(result);
-						}
-					},
-					null // Ignore failures
-					);
+				channelGenerator.getWidget().addDataPlotAsync(deviceName, channelName);
 			} else {
 				// User just unchecked a button
-				visible.removeChannel(deviceName, channelName);
+				channelGenerator.getWidget().removeDataPlot(deviceName, channelName);
 			}
 		}
 	}

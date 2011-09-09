@@ -589,6 +589,40 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 	}
 
 	/**
+	 * Adds the specified channel to this widget, if it isn't already present.
+	 *
+	 * @param deviceName
+	 * 		the device name for the channel to add
+	 * @param channelName
+	 * 		the name for the channel to add on the device
+	 */
+	public void addDataPlotAsync(String deviceName, String channelName) {
+		final DataPlotFactory factory = DataPlotFactory.getInstance(this);
+		factory.buildDataPlotAsync(deviceName, channelName,
+			new Continuation<DataPlot>() {
+				@Override
+				public void call(DataPlot result) {
+					// Equivalent to GraphWidget.this.addDataPlot(result)
+					factory.getWidget().addDataPlot(result);
+				}
+			},
+			null); // Ignore failures
+	}
+
+	/**
+	 * Removes the specified channel from this widget, if it is present.  If it isn't
+	 * present, does nothing.
+	 *
+	 * @param deviceName
+	 * 		the device name for the channel to remove
+	 * @param channelName
+	 * 		the name for the channel to remove on the device
+	 */
+	public void removeDataPlot(String deviceName, String channelName) {
+		channelMgr.removeChannel(deviceName, channelName);
+	}
+
+	/**
 	 * Adds plot to the list of data plots to be drawn.
 	 * 
 	 * Note that a plot can only be added once to this internal list.
