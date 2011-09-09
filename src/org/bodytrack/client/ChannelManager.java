@@ -347,6 +347,80 @@ public class ChannelManager {
 	}
 
 	/**
+	 * Moves the specified X-axis to a new index in the return value of
+	 * {@link #getXAxes()}.
+	 *
+	 * <p>Does <strong>not</strong> notify the event listeners attached to this
+	 * object.</p>
+	 *
+	 * @param oldIndex
+	 * 		the index of the X-axis to move, as determined by {@link #getXAxes()}
+	 * @param newIndex
+	 * 		the index that the X-axis should occupy after the move, again
+	 * 		as determined by {@link #getXAxes()}
+	 * @throws IndexOutOfBoundsException
+	 * 		if either oldIndex or newIndex is negative or is greater than or
+	 * 		equal to {@code getXAxes().size()}
+	 */
+	public void moveXAxis(int oldIndex, int newIndex) {
+		int length = xAxes.size();
+
+		if (oldIndex < 0)
+			throw new IndexOutOfBoundsException("Negative oldIndex value");
+		if (newIndex < 0)
+			throw new IndexOutOfBoundsException("Negative newIndex value");
+		if (oldIndex >= length)
+			throw new IndexOutOfBoundsException("Too large oldIndex value");
+		if (newIndex >= length)
+			throw new IndexOutOfBoundsException("Too large newIndex value");
+
+		if (oldIndex == newIndex)
+			return;
+
+		// Actually perform the move
+		GraphAxis xAxis = xAxes.get(oldIndex);
+		xAxes.remove(oldIndex);
+		xAxes.add(newIndex, xAxis);
+	}
+
+	/**
+	 * Moves the specified Y-axis to a new index in the return value of
+	 * {@link #getYAxes()}.
+	 *
+	 * <p>Does <strong>not</strong> notify the event listeners attached to this
+	 * object.</p>
+	 *
+	 * @param oldIndex
+	 * 		the index of the Y-axis to move, as determined by {@link #getYAxes()}
+	 * @param newIndex
+	 * 		the index that the Y-axis should occupy after the move, again
+	 * 		as determined by {@link #getYAxes()}
+	 * @throws IndexOutOfBoundsException
+	 * 		if either oldIndex or newIndex is negative or is greater than or
+	 * 		equal to {@code getYAxes().size()}
+	 */
+	public void moveYAxis(int oldIndex, int newIndex) {
+		int length = yAxes.size();
+
+		if (oldIndex < 0)
+			throw new IndexOutOfBoundsException("Negative oldIndex value");
+		if (newIndex < 0)
+			throw new IndexOutOfBoundsException("Negative newIndex value");
+		if (oldIndex >= length)
+			throw new IndexOutOfBoundsException("Too large oldIndex value");
+		if (newIndex >= length)
+			throw new IndexOutOfBoundsException("Too large newIndex value");
+
+		if (oldIndex == newIndex)
+			return;
+
+		// Actually perform the move
+		GraphAxis yAxis = yAxes.get(oldIndex);
+		yAxes.remove(oldIndex);
+		yAxes.add(newIndex, yAxis);
+	}
+
+	/**
 	 * Adds a listener to the list of listeners to receive event
 	 * notifications whenever a channel is added, removed, etc.
 	 *
