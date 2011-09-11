@@ -50,6 +50,15 @@ public final class InfoPublisher {
 			graphWidget.@org.bodytrack.client.GraphWidget::removeDataPlot(Ljava/lang/String;Ljava/lang/String;)(deviceName, channelName);
 			return true;
 		};
+		
+		$wnd.grapher.addChannelWithBounds = function(deviceName, channelName, minValue, maxValue) {
+			graphWidget.@org.bodytrack.client.GraphWidget::addDataPlotAsync(Ljava/lang/String;Ljava/lang/String;DD)(deviceName, channelName, minValue, maxValue);
+			return true;
+		}
+		
+		$wnd.grapher.hasChannel = function(deviceName, channelName){
+			return graphWidget.@org.bodytrack.client.GraphWidget::hasDataPlot(Ljava/lang/String;Ljava/lang/String;)(deviceName, channelName);
+		}
 	}-*/;
 
 	/**

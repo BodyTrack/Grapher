@@ -1,0 +1,103 @@
+<head>
+<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script> 
+<script type="text/javascript">
+var iframe;
+var zoom = 4;
+var center = new google.maps.LatLng(40,-95);
+var map;
+function onLoad() {
+	iframe = document.getElementById("graphDisplay");
+	map = new google.maps.Map(document.getElementById('map_canvas'), {
+		center: center,
+		zoom: zoom,
+		mapTypeId: google.maps.MapTypeId.HYBRID,
+		scaleControl: true,
+		streetViewControl: false,
+		panControl: true,
+		draggable: true
+	});
+	var layer = new google.maps.FusionTablesLayer(1278639, {clickable: true,
+						map: map,
+						suppressInfoWindows: true
+						});
+	google.maps.event.addListener(layer, 'click', function(ev){window.setTimeout(function(){onClick(ev)},50)});
+	document.getElementById('map_canvas').addEventListener('click', getShiftState, true);
+}
+var shiftDown = false;
+var rowArray = new Array();
+
+function getShiftState(e){
+	shiftDown = e.shiftKey;
+}
+
+function onClick(e){
+	/*if (!shiftDown)
+		rowArray = new Array();
+	for (var i = 0; i < rowArray.length; i++){
+		if (rowArray[i].formattedName.value == e.row.formattedName.value){
+			rowArray.splice(i,1);
+			updateIFrame();
+			return;
+		}
+	}
+	rowArray[rowArray.length] = e.row;
+	updateIFrame();*/
+	var channelsInfo = JSON.parse(e.row.ChannelData.value);
+	var siteName = e.row.formattedName.value;
+	for (var i = 0; i < channelsInfo.length; i++){
+		if (iframe.contentWindow.grapher.hasChannel(siteName,channelsInfo[i][0]))
+			iframe.contentWindow.grapher.removeChannel(siteName,channelsInfo[i][0]);
+		else
+			iframe.contentWindow.grapher.addChannelWithBounds(siteName,channelsInfo[i][0],channelsInfo[i][1],channelsInfo[i][2]);
+	}
+}
+
+function updateIFrame(){
+	/*if (rowArray.length == 0){
+		iframe.src = "about:blank";
+		return;
+	}
+	var ts = Math.round((new Date()).getTime() / 1000);
+	var startTime = ts;
+	var channelNames = "";
+	var channelSpecs = "";
+	var totalRows = 0;
+	var baseIndex = 0;
+	for (var i = 0; i < rowArray.length; i++){
+		totalRows += JSON.parse(rowArray[i].ChannelData.value).length;
+	}
+	for (var j = 0; j < rowArray.length; j++){
+		var curTime = rowArray[rowArray.length - 1 - j].startTime.value;
+		var channelsInfo = JSON.parse(rowArray[rowArray.length - 1 - j].ChannelData.value);
+		var siteName = rowArray[rowArray.length - 1 - j].formattedName.value;
+		if (startTime > curTime)
+			startTime = curTime;
+		for (var i = 0; i < channelsInfo.length; i++){
+			if (i != 0 || j != 0){
+				channelNames += ",";
+				channelSpecs += ",";
+			}
+			channelNames += siteName + "." + channelsInfo[i][0];
+			channelSpecs += "\"" + siteName + "." + channelsInfo[i][0] + "\":{\"min_value\":";
+			var min = channelsInfo[i][1];
+			var max = channelsInfo[i][2];
+			var spread = max - min;
+			min -= spread * 0.05;
+			max += spread * 0.05;
+			spread = max - min;
+			min -= spread * (i + baseIndex);
+			max += spread * (totalRows - 1 - i - baseIndex);
+			channelSpecs += min;
+			channelSpecs += ",\"max_value\":" + max + "}";
+		}
+		baseIndex += channelsInfo.length;
+	}
+	iframe.src = "http://127.0.0.1:8888/Grapher2.html?init_min_time=" + startTime + "&init_max_time=" + ts + "&channel_names=[" + channelNames + "]&channel_specs={" + channelSpecs + "}";*/
+}
+</script>
+</head>
+
+<body style="height:100%; margin:0;" onload="onLoad();">
+<div id="map_canvas" style="position:absolute; left:0; bottom:0; height:50%; width:100%; bored:none;"></div>
+<iframe id="graphDisplay" src="http://127.0.0.1:8888/Grapher2.html" style="position:absolute; right:0; top:0; height:50%; width:100%; border:none"></iframe>
+</body>

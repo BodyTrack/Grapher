@@ -608,6 +608,81 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 			},
 			null); // Ignore failures
 	}
+	
+	/**
+	 * Adds a specified channel to the widget and adjusts its y-bounds
+	 * @param deviceName
+	 * 		the device name for the channel to add
+	 * @param channelName
+	 * 		the name for the channel to add on the device
+	 * @param minY
+	 * 		the lower bound of the y-axis
+	 * @param maxY
+	 * 		the upper bound of the y-axis
+	 */
+	
+	public void addDataPlotAsync(String deviceName, String channelName, final double minY, final double maxY) {
+		final DataPlotFactory factory = DataPlotFactory.getInstance(this);
+		factory.buildDataPlotAsync(deviceName, channelName,
+			new Continuation<DataPlot>() {
+				@Override
+				public void call(DataPlot result) {
+					// Equivalent to GraphWidget.this.addDataPlot(result)
+					factory.getWidget().addDataPlot(result);
+					result.getYAxis().replaceBounds(minY,maxY);
+				}
+			},
+			null); // Ignore failures
+	}
+	
+	/**
+	 * Adjusts the y-axis bounds of a specified channel
+	 * @param deviceName
+	 * 		the device name for the channel
+	 * @param channelName
+	 * 		the name for the channel from the device
+	 * @param minValue
+	 * 		the new minimum value y axis
+	 * @param maxValue
+	 * 		the new maximum value of the y axis
+	 * @return
+	 * 		returns true if the channel was successfuly changed, otherwise false.
+	 */
+	public boolean setDataPlotYBounds(String deviceName, String channelName, double minValue, double maxValue){
+		List<DataPlot> plots = channelMgr.getDataPlots();
+		for (DataPlot plot : plots){
+			if (plot.getDeviceName().equals(deviceName) && plot.getChannelName().equals(channelName)){
+				try{
+					plot.getYAxis().replaceBounds(minValue,maxValue);
+					return true;
+				}
+				catch (Exception e){
+					return false;
+				}
+			}
+		}
+		return false;
+	}
+	
+	/**
+	 * Checks if the graph widget has the specified channel
+	 * @param deviceName
+	 * 		the device name of the channel
+	 * @param channelName
+	 * 		the name of the channel
+	 * @return
+	 * 		whether the channel exists
+	 */
+	
+	public boolean hasDataPlot(String deviceName, String channelName){
+		List<DataPlot> plots = channelMgr.getDataPlots();
+		for (DataPlot plot : plots){
+			if (plot.getDeviceName().equals(deviceName) && plot.getChannelName().equals(channelName)){
+				return true;
+			}
+		}
+		return false;
+	}
 
 	/**
 	 * Removes the specified channel from this widget, if it is present.  If it isn't
