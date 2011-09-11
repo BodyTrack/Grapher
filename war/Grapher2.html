@@ -22,13 +22,14 @@
 <script type="text/javascript"> 
 function initializeGrapher() {
   return {"user_id": 24,
+  	"graph_only": true,
   
-    "channel_names": ["A_Fitbit.calories"],
-    "channel_specs": {"A_Fitbit.calories":{"min_val":0,"max_val":20}},
+    "channel_names": [],
+    "channel_specs": {},
   
   
-    "init_min_time": 1310194800.0,
-    "init_max_time": 1310972100.0, 
+    "init_min_time": 1251763200.0,
+    "init_max_time": (new Date()).getTime() / 1000, 
   
     "min_level": -20,
     "widget_width": 800, "widget_height": 400, "axis_margin": 10,

@@ -84,7 +84,7 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 	private int nextValueMessageId;
 	private final List<DisplayMessage> valueMessages;
 
-	private final int width, height;
+	private int width, height;
 	private final int axisMargin;
 	private final int graphMargin = 5;
 
@@ -153,6 +153,13 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 		mouseWheelZoomRate = shouldZoomMac()
 			? MOUSE_WHEEL_ZOOM_RATE_MAC
 			: MOUSE_WHEEL_ZOOM_RATE_PC;
+	}
+	
+	public void setSize(int width, int height){
+		super.setSize(width, height);
+		this.width = width;
+		this.height = height;
+		paint();
 	}
 
 	/**

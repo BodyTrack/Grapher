@@ -5,9 +5,13 @@ import java.util.List;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.JsArrayString;
+import com.google.gwt.event.logical.shared.ResizeEvent;
+import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONString;
 import com.google.gwt.json.client.JSONValue;
+import com.google.gwt.user.client.Timer;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
@@ -30,12 +34,18 @@ public class Grapher2 implements EntryPoint {
 		if (isStandAlone()) {
 			RootPanel.get("graph").add(new BodyTrackWidget());
 		} else {		
+			boolean graphOnly = graphOnlyMode();
+			
+			int graphWidth = getGrapherWidth();
+			int graphHeight = getGrapherHeight();
+			
+			
 			mainLayout = new VerticalPanel();
 			// Ensure that everything on the page is the same
 			// width
-			mainLayout.setWidth((int) (getGrapherWidth()) + "px");
+			mainLayout.setWidth((int) (graphWidth) + "px");
 
-			gw = new GraphWidget(getGrapherWidth(), getGrapherHeight(),
+			gw = new GraphWidget(graphWidth, graphHeight,
 				getAxisMargin());
 			factory = DataPlotFactory.getInstance(gw);
 			plots = new ArrayList<DataPlot>();
@@ -45,7 +55,9 @@ public class Grapher2 implements EntryPoint {
 				factory.getUserId(), mgr);
 			CurrentChannelsWidget currentChans =
 				new CurrentChannelsWidget(mgr);
-			ChannelNamesWidget allChans = new ChannelNamesWidget(mgr, factory);
+			ChannelNamesWidget allChans = null;
+			if (!graphOnly)
+				allChans = new ChannelNamesWidget(mgr, factory);
 
 			// Now that we have a ViewSwitchWidget, we want to make
 			// InfoPublisher work for everyone
@@ -57,12 +69,38 @@ public class Grapher2 implements EntryPoint {
 				addChannelsToGraphWidget();
 
 			gw.paint();
+			
+			if (!graphOnly){
+				mainLayout.add(viewSwitcher);
+				mainLayout.add(gw);
+				mainLayout.add(currentChans);
+				mainLayout.add(allChans);
+				RootPanel.get(getDivName()).add(mainLayout);
+			}
+			else{
+				RootPanel.get(getDivName()).add(gw);
+				Window.addResizeHandler(new ResizeHandler(){
 
-			mainLayout.add(viewSwitcher);
-			mainLayout.add(gw);
-			mainLayout.add(currentChans);
-			mainLayout.add(allChans);
-			RootPanel.get(getDivName()).add(mainLayout);
+					@Override
+					public void onResize(ResizeEvent event) {
+						gw.setSize(event.getWidth(), Math.max(0, event.getHeight() - 4));
+					}
+					
+				});
+				new Timer(){
+
+					@Override
+					public void run() {
+						if (Window.getClientHeight() > 4 && Window.getClientWidth() != 0){
+							gw.setSize(Window.getClientWidth(), Math.max(0,Window.getClientHeight() - 4));
+						}
+						else{
+							this.schedule(100);
+						}
+					}
+					
+				}.schedule(100);
+			}
 		}
 	}
 
@@ -434,6 +472,24 @@ public class Grapher2 implements EntryPoint {
 
 		return data[KEY];
 	}-*/;
+	
+	
+	private native boolean graphOnlyMode() /*-{
+		var DEFAULT_VALUE = false;
+		var KEY = "graph_only"
+		
+		if (! $wnd.initializeGrapher) {
+			return DEFAULT_VALUE;
+		}
+
+		var data = $wnd.initializeGrapher();
+
+		if (! (data && data[KEY])) {
+			return DEFAULT_VALUE;
+		}
+
+		return data[KEY];
+	}-*/;
 
 	/**
 	 * Returns the height the grapher should be, or 400 if that parameter
@@ -457,6 +513,7 @@ public class Grapher2 implements EntryPoint {
 		}
 
 		var data = $wnd.initializeGrapher();
+
 
 		if (! (data && data[KEY])) {
 			return DEFAULT_VALUE;
