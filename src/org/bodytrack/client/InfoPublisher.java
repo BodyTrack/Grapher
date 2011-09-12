@@ -1,5 +1,9 @@
 package org.bodytrack.client;
 
+import java.util.ArrayList;
+
+import com.google.gwt.core.client.JavaScriptObject;
+
 /**
  * Publishes information to the page outside of the Grapher widget.  This
  * information is available outside of GWT and offers a consistent interface
@@ -20,11 +24,27 @@ package org.bodytrack.client;
  * have to change the implementation to a global variable that updates on
  * any change in the grapher.</p>
  */
-public final class InfoPublisher {
+public final class InfoPublisher implements ChannelChangedListener {
+	
+	private static InfoPublisher instance = null;
+	private int uidCounter = 0;
+	
+	private ArrayList<Integer> registeredUids = new ArrayList<Integer>();
+	private ArrayList<JavaScriptObject> listenerFunctions = new ArrayList<JavaScriptObject>();
+	
+	private InfoPublisher(){
+	}
+	
+	public static InfoPublisher getInstance(){
+		if (instance == null)
+			instance = new InfoPublisher();
+		return instance;
+	}
+	
 	/**
 	 * Initializes the window.grapher variable.
 	 */
-	private static native void initialize(ViewSwitchWidget viewSwitcher) /*-{
+	private static native void initialize(ViewSwitchWidget viewSwitcher, InfoPublisher instance) /*-{
 		// In Java-like syntax:
 		// graphWidget = viewSwitcher.getGraphWidget();
 		var graphWidget = viewSwitcher.@org.bodytrack.client.ViewSwitchWidget::getGraphWidget()();
@@ -59,6 +79,14 @@ public final class InfoPublisher {
 		$wnd.grapher.hasChannel = function(deviceName, channelName){
 			return graphWidget.@org.bodytrack.client.GraphWidget::hasDataPlot(Ljava/lang/String;Ljava/lang/String;)(deviceName, channelName);
 		}
+		
+		$wnd.grapher.addChannelChangeListener = function(listenerFunction){
+			return instance.@org.bodytrack.client.InfoPublisher::addJavaScriptListener(Lcom/google/gwt/core/client/JavaScriptObject;)(listenerFunction);
+		}
+		
+		$wnd.grapher.removeChannelChangeListner = function(listenerId){
+			instance.@org.bodytrack.client.InfoPublisher::removeJavaScriptListener(I)(listenerId);
+		}
 	}-*/;
 
 	/**
@@ -78,6 +106,40 @@ public final class InfoPublisher {
 		if (widget == null)
 			throw new NullPointerException("Cannot use null widget to "
 				+ "initialize the window.grapher variable");
-		initialize(widget);
+		widget.getGraphWidget().getChannelManager().addChannelListener(getInstance());
+		initialize(widget, getInstance());
+	}
+	
+	public int addJavaScriptListener(JavaScriptObject listener){
+		int id = uidCounter++;
+		registeredUids.add(id);
+		listenerFunctions.add(listener);
+		return id;
+	}
+	
+	public void removeJavaScriptListener(int id){
+		int index = registeredUids.get(id);
+		if (index != -1){
+			registeredUids.remove(index);
+			listenerFunctions.remove(index);
+		}
+	}
+	
+	private native void notifyChannelChanged(JavaScriptObject listenerFunction, String deviceName, String channelName, boolean added)/*-{
+		listenerFunction(deviceName,channelName,added);
+	}-*/;
+
+	@Override
+	public void channelAdded(String deviceName, String channelName) {
+		for (JavaScriptObject function : listenerFunctions){
+			notifyChannelChanged(function,deviceName,channelName,true);
+		}
+	}
+
+	@Override
+	public void channelRemoved(String deviceName, String channelName) {
+		for (JavaScriptObject function : listenerFunctions){
+			notifyChannelChanged(function,deviceName,channelName,false);
+		}
 	}
 }

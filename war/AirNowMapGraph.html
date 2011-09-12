@@ -22,7 +22,24 @@ function onLoad() {
 						});
 	google.maps.event.addListener(layer, 'click', function(ev){window.setTimeout(function(){onClick(ev)},50)});
 	document.getElementById('map_canvas').addEventListener('click', getShiftState, true);
+	registerListener();
+	
 }
+
+function registerListener(){
+	window.setTimeout(function(){
+		if (iframe.contentWindow.grapher && iframe.contentWindow.grapher.addChannelChangeListener){
+			var id = iframe.contentWindow.grapher.addChannelChangeListener(function(deviceName,channelName,added){
+				alert(deviceName + "." + channelName + " = " + added);
+			});
+			alert(id);
+		}
+		else{
+			registerListener();
+		}
+	},100);	
+}
+
 var shiftDown = false;
 var rowArray = new Array();
 
@@ -97,7 +114,7 @@ function updateIFrame(){
 </script>
 </head>
 
-<body style="height:100%; margin:0;" onload="onLoad();">
+<body style="height:100%; margin:0;">
 <div id="map_canvas" style="position:absolute; left:0; bottom:0; height:50%; width:100%; bored:none;"></div>
-<iframe id="graphDisplay" src="http://127.0.0.1:8888/Grapher2.html" style="position:absolute; right:0; top:0; height:50%; width:100%; border:none"></iframe>
+<iframe onload="onLoad();" id="graphDisplay" src="http://127.0.0.1:8888/Grapher2.html" style="position:absolute; right:0; top:0; height:50%; width:100%; border:none"></iframe>
 </body>
