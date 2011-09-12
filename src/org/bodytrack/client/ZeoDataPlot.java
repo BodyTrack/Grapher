@@ -4,9 +4,6 @@ import gwt.g2d.client.graphics.Color;
 import gwt.g2d.client.graphics.DirectShapeRenderer;
 import gwt.g2d.client.graphics.Surface;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Represents a data plot for Zeo data.
  *
@@ -71,81 +68,14 @@ public class ZeoDataPlot extends DataPlot {
    }
 
    /**
-    * Returns the ordered list of points this DataPlot should draw
-    * in {@link DataPlot#paintAllDataPoints}.
-    *
-    * This method processes all the points returned by
-    * {@code tile.getDataPoints()}, so that all the points (except the
-    * first in each group) represent top right corners of bars.  This
-    * is necessary because the
-    * {@link DataPlot#paintDataPoint(BoundedDrawingBox, double, double, double, double, PlottablePoint)}
-    * method uses the top right corner of a bar when drawing a point.
-    *
-    * @param tile
-    * 		the {@link GrapherTile GrapherTile}
-    * 		from which to pull the data points
-    * @return
-    * 		a list of
-    * 		{@link PlottablePoint PlottablePoint}
-    * 		objects to be drawn by paintAllDataPoints, which may be
-    * 		empty (this will be the case if no sample width is available
-    * 		for tile)
-    */
-   @Override
-   protected List<PlottablePoint> getDataPoints(final GrapherTile tile) {
-      final List<PlottablePoint> points = tile.getDataPoints();
-
-      final List<PlottablePoint> transformedPoints =
-            new ArrayList<PlottablePoint>();
-
-      final double width = tile.getPlottableTile().getSampleWidth();
-      if (width <= 0) {
-         return new ArrayList<PlottablePoint>();
-      }
-
-      // An optimizing compiler should do this anyway, but we want
-      // to make sure we are safe
-      final double halfWidth = width / 2.0;
-
-      PlottablePoint prev = null;
-
-      for (final PlottablePoint point : points) {
-         final double time = point.getDate();
-         final double value = point.getValue();
-
-         if (value < MIN_DRAWABLE_VALUE) {
-            prev = null;
-            continue;
-         }
-
-         if (prev == null) {
-            // Left edge
-            // Add two points - the two edges for the first bar
-
-            transformedPoints.add(
-                  new PlottablePoint(time - halfWidth, value));
-            transformedPoints.add(
-                  new PlottablePoint(time + halfWidth, value));
-         }
-         else {
-            // Not on the left edge
-            transformedPoints.add(
-                  new PlottablePoint(time + halfWidth, value));
-         }
-
-         prev = point;
-      }
-
-      return transformedPoints;
-   }
-
-   /**
     * Implemented here as a no-op, since we handle the edges properly
     * in {@link DataPlot#paintDataPoint(BoundedDrawingBox, double, double, double, double, PlottablePoint)}.
     */
    @Override
-   protected void paintEdgePoint(final BoundedDrawingBox drawing, final double x,
-                                 final double y, final PlottablePoint rawDataPoint) {
+   protected void paintEdgePoint(final BoundedDrawingBox drawing,
+                                 final double x,
+                                 final double y,
+                                 final PlottablePoint rawDataPoint) {
    }
 
    /**
@@ -165,12 +95,20 @@ public class ZeoDataPlot extends DataPlot {
     * class.
     */
    @Override
-   protected void paintDataPoint(final BoundedDrawingBox drawing, final double prevX, final double prevY, final double x, final double y, final PlottablePoint rawDataPoint) {
+   protected void paintDataPoint(final BoundedDrawingBox drawing,
+                                 final double prevX,
+                                 final double prevY,
+                                 final double x,
+                                 final double y,
+                                 final PlottablePoint rawDataPoint) {
       // get the ZeoState for this value
       final int val = (int)Math.round(rawDataPoint.getValue());
       final ZeoState zeoState = ZeoState.findByValue(val);
 
-      drawRectangle(zeoState, prevX, prevY, x, y);
+      // Only draw the rectangle if the previous point has the same value
+      if (Double.compare(prevY, y) == 0) {
+         drawRectangle(zeoState, prevX, prevY, x, y);
+      }
    }
 
    /**
