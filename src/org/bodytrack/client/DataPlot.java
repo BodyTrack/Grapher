@@ -31,7 +31,7 @@ import java.util.Set;
  * <p>A class that wishes to inherit this class can override
  * {@link DataPlot#paintAllDataPoints}, but the easiest way to modify
  * functionality it to override {@link DataPlot#paintDataPoint} and
- * {@link DataPlot#paintEdgePoint(BoundedDrawingBox, double, double, PlottablePoint)}.
+ * {@link DataPlot#paintEdgePoint(BoundedDrawingBox, GrapherTile, double, double, PlottablePoint)}.
  * These two functions are responsible for painting a single point on
  * this DataPlot.  This (parent) class will automatically handle
  * highlighting, zooming, and the Ajax calls for pulling extra data
@@ -737,10 +737,10 @@ public class DataPlot implements Alertable<GrapherTile> {
             // Draw this part of the line
             if (prevX > MIN_DRAWABLE_VALUE
                 && prevY > MIN_DRAWABLE_VALUE) {
-               paintDataPoint(drawing, prevX, prevY, x, y, point);
+               paintDataPoint(drawing, tile, prevX, prevY, x, y, point);
             }
             else {
-               paintEdgePoint(drawing, x, y, point);
+               paintEdgePoint(drawing, tile, x, y, point);
             }
 
             prevX = x;
@@ -775,20 +775,16 @@ public class DataPlot implements Alertable<GrapherTile> {
    /**
     * Paints a left edge point for a segment of the plot.
     *
-    * <p>This method is designed to be overridden by subclasses.
-    * Note that this is only called for the left edge of a plot
-    * segment.  This particular implementation draws a small dot,
-    * although a subclass implementation does not have to do the
-    * same.  Note that all parameters (except drawing, of course)
-    * are assumed to be in terms of pixels, not logical values
-    * on the axes.</p>
+    * <p>This method is designed to be overridden by subclasses. Note that this is only called for the left edge of a
+    * plot segment.  This particular implementation draws a small dot, although a subclass implementation does not have
+    * to do the same.  Note that all x and y values are assumed to be in terms of pixels, not logical values on the
+    * axes.</p>
     *
     * @param drawing
-    * 		the
-    * 		{@link BoundedDrawingBox}
-    * 		that should constrain the drawing.  Forwarding graphics calls
-    * 		through drawing will ensure that everything draws up to the edge
-    * 		of the viewing window but no farther
+    * 		the {@link BoundedDrawingBox} that should constrain the drawing.  Forwarding graphics calls through
+    * 		drawing will ensure that everything draws up to the edge of the viewing window but no farther
+    * @param tile
+    *       the tile from which the data point to be drawn was obtained
     * @param x
     * 		the X-coordinate of the point to draw
     * @param y
@@ -796,9 +792,13 @@ public class DataPlot implements Alertable<GrapherTile> {
     * @param rawDataPoint
     * 		the raw {@link PlottablePoint}
     */
-   protected void paintEdgePoint(final BoundedDrawingBox drawing, final double x,
-                                 final double y, final PlottablePoint rawDataPoint) {
+   protected void paintEdgePoint(final BoundedDrawingBox drawing,
+                                 final GrapherTile tile,
+                                 final double x,
+                                 final double y,
+                                 final PlottablePoint rawDataPoint) {
       drawing.drawDot(x, y, DOT_RADIUS);
+      
       if (rawDataPoint.hasComment()) {
          paintHighlightedPoint(drawing, rawDataPoint);
       }
@@ -807,39 +807,36 @@ public class DataPlot implements Alertable<GrapherTile> {
    /**
     * Draws a single data point on the graph.
     *
-    * <p>This method is designed to be overridden by subclasses.
-    * Note that this method has as a precondition that
-    * {@code prevX < x}.  Note that all parameters (except drawing and rawDataPoint,
-    * of course) are assumed to be in terms of pixels.</p>
-    *
+    * <p>This method is designed to be overridden by subclasses. Note that this method has as a precondition that
+    * {@code prevX < x}.  Note that all x and y values are assumed to be in terms of pixels.</p>
     *
     * @param drawing
-    * 		the
-    * 		{@link BoundedDrawingBox BoundedDrawingBox}
-    * 		that should constrain the drawing.  Forwarding graphics calls
-    * 		through drawing will ensure that everything draws up to the edge
-    * 		of the viewing window but no farther
+    * 		the {@link BoundedDrawingBox} that should constrain the drawing.  Forwarding graphics calls
+    * 		through drawing will ensure that everything draws up to the edge of the viewing window but no farther
+    * @param tile
+    *       the tile from which the data point to be drawn was obtained
     * @param prevX
-    * 		the previous X-value, which will be greater than
-    * 		MIN_DRAWABLE_VALUE
+    * 		the previous X-value, which will be greater than MIN_DRAWABLE_VALUE
     * @param prevY
-    * 		the previous Y-value, which will be greater than
-    * 		MIN_DRAWABLE_VALUE
+    * 		the previous Y-value, which will be greater than MIN_DRAWABLE_VALUE
     * @param x
-    * 		the current X-value, which will be greater than
-    * 		MIN_DRAWABLE_VALUE, and greater than or equal to
-    * 		prevX
+    * 		the current X-value, which will be greater than MIN_DRAWABLE_VALUE, and greater than or equal to prevX
     * @param y
-    * 		the current Y-value, which will be greater than
-    * 		MIN_DRAWABLE_VALUE
+    * 		the current Y-value, which will be greater than MIN_DRAWABLE_VALUE
     * @param rawDataPoint
     * 		the raw {@link PlottablePoint}
     *
     * @see #MIN_DRAWABLE_VALUE
     */
-   protected void paintDataPoint(final BoundedDrawingBox drawing, final double prevX,
-                                 final double prevY, final double x, final double y, final PlottablePoint rawDataPoint) {
+   protected void paintDataPoint(final BoundedDrawingBox drawing,
+                                 final GrapherTile tile,
+                                 final double prevX,
+                                 final double prevY,
+                                 final double x,
+                                 final double y,
+                                 final PlottablePoint rawDataPoint) {
       drawing.drawLineSegment(prevX, prevY, x, y);
+      
       if (rawDataPoint.hasComment()) {
          paintHighlightedPoint(drawing, rawDataPoint);
       }
