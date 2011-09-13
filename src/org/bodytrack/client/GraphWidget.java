@@ -228,10 +228,7 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 		GraphAxis axis = findAxis(pos);
 		double zoomFactor = Math.pow(mouseWheelZoomRate, event.getDeltaY());
 
-		Set<DataPlot> highlightedPlots = new HashSet<DataPlot>();
-		for (DataPlot plot: channelMgr.getDataPlots())
-			if (plot.isHighlighted())
-				highlightedPlots.add(plot);
+		Set<DataPlot> highlightedPlots = getHighlightedPlots();
 
 		// We can be zooming exactly one of: one or more data plots, an axis,
 		// and the whole viewing window
@@ -344,6 +341,23 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 	}
 
 	/**
+	 * Finds the set of highlighted {@link DataPlot} objects.
+	 *
+	 * @return
+	 * 		the set of highlighted {@link DataPlot} objects on this widget
+	 */
+	private Set<DataPlot> getHighlightedPlots() {
+		Set<DataPlot> highlightedPlots = new HashSet<DataPlot>();
+
+		for (DataPlot plot: channelMgr.getDataPlots()) {
+			if (plot.isHighlighted())
+				highlightedPlots.add(plot);
+		}
+
+		return highlightedPlots;
+	}
+
+	/**
 	 * Highlights each axis in axes.keySet() if and only if there exists
 	 * some DataPlot in axes.get(axis) that is highlighted.
 	 *
@@ -374,14 +388,18 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 		Vector2 pos = new Vector2(event.getX(), event.getY());
 		GraphAxis owningYAxis = findOwningYAxis(pos);
 
-		if (mouseDragOwningYAxis != null && mouseDragOwningYAxis != owningYAxis) {
-			List<GraphAxis> yAxes = channelMgr.getYAxes();
-			int oldIndex = yAxes.indexOf(mouseDragOwningYAxis);
-			int newIndex = yAxes.indexOf(owningYAxis);
-			if (oldIndex >= 0 && newIndex >= 0 && oldIndex != newIndex) {
-				channelMgr.moveYAxis(oldIndex, newIndex);
-				paint();
-				mouseDragOwningYAxis = owningYAxis;
+		// Only allow moving a plot if the user is dragging neither
+		// an axis nor a plot i.e. the user is dragging white space
+		if (mouseDragAxis == null && getHighlightedPlots().size() == 0) {
+			if (mouseDragOwningYAxis != null && mouseDragOwningYAxis != owningYAxis) {
+				List<GraphAxis> yAxes = channelMgr.getYAxes();
+				int oldIndex = yAxes.indexOf(mouseDragOwningYAxis);
+				int newIndex = yAxes.indexOf(owningYAxis);
+				if (oldIndex >= 0 && newIndex >= 0 && oldIndex != newIndex) {
+					channelMgr.moveYAxis(oldIndex, newIndex);
+					paint();
+					mouseDragOwningYAxis = owningYAxis;
+				}
 			}
 		}
 
