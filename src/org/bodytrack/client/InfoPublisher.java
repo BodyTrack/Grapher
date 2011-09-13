@@ -1,6 +1,7 @@
 package org.bodytrack.client;
 
-import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.google.gwt.core.client.JavaScriptObject;
 
@@ -25,22 +26,22 @@ import com.google.gwt.core.client.JavaScriptObject;
  * any change in the grapher.</p>
  */
 public final class InfoPublisher implements ChannelChangedListener {
-	
+
 	private static InfoPublisher instance = null;
 	private int uidCounter = 0;
-	
-	private ArrayList<Integer> registeredUids = new ArrayList<Integer>();
-	private ArrayList<JavaScriptObject> listenerFunctions = new ArrayList<JavaScriptObject>();
-	
-	private InfoPublisher(){
+	private Map<Integer, JavaScriptObject> listenerFunctions;
+
+	private InfoPublisher() {
+		listenerFunctions = new HashMap<Integer, JavaScriptObject>();
 	}
-	
-	public static InfoPublisher getInstance(){
+
+	public static InfoPublisher getInstance() {
 		if (instance == null)
 			instance = new InfoPublisher();
+
 		return instance;
 	}
-	
+
 	/**
 	 * Initializes the window.grapher variable.
 	 */
@@ -70,21 +71,21 @@ public final class InfoPublisher implements ChannelChangedListener {
 			graphWidget.@org.bodytrack.client.GraphWidget::removeDataPlot(Ljava/lang/String;Ljava/lang/String;)(deviceName, channelName);
 			return true;
 		};
-		
+
 		$wnd.grapher.addChannelWithBounds = function(deviceName, channelName, minValue, maxValue) {
 			graphWidget.@org.bodytrack.client.GraphWidget::addDataPlotAsync(Ljava/lang/String;Ljava/lang/String;DD)(deviceName, channelName, minValue, maxValue);
 			return true;
 		}
-		
-		$wnd.grapher.hasChannel = function(deviceName, channelName){
+
+		$wnd.grapher.hasChannel = function(deviceName, channelName) {
 			return graphWidget.@org.bodytrack.client.GraphWidget::hasDataPlot(Ljava/lang/String;Ljava/lang/String;)(deviceName, channelName);
 		}
-		
-		$wnd.grapher.addChannelChangeListener = function(listenerFunction){
+
+		$wnd.grapher.addChannelChangeListener = function(listenerFunction) {
 			return instance.@org.bodytrack.client.InfoPublisher::addJavaScriptListener(Lcom/google/gwt/core/client/JavaScriptObject;)(listenerFunction);
 		}
-		
-		$wnd.grapher.removeChannelChangeListner = function(listenerId){
+
+		$wnd.grapher.removeChannelChangeListener = function(listenerId) {
 			instance.@org.bodytrack.client.InfoPublisher::removeJavaScriptListener(I)(listenerId);
 		}
 	}-*/;
@@ -109,37 +110,31 @@ public final class InfoPublisher implements ChannelChangedListener {
 		widget.getGraphWidget().getChannelManager().addChannelListener(getInstance());
 		initialize(widget, getInstance());
 	}
-	
-	public int addJavaScriptListener(JavaScriptObject listener){
-		int id = uidCounter++;
-		registeredUids.add(id);
-		listenerFunctions.add(listener);
+
+	public int addJavaScriptListener(JavaScriptObject listener) {
+		int id = uidCounter;
+		listenerFunctions.put(id, listener);
+		uidCounter++;
 		return id;
 	}
-	
-	public void removeJavaScriptListener(int id){
-		int index = registeredUids.get(id);
-		if (index != -1){
-			registeredUids.remove(index);
-			listenerFunctions.remove(index);
-		}
+
+	public void removeJavaScriptListener(int id) {
+		listenerFunctions.remove(id);
 	}
-	
-	private native void notifyChannelChanged(JavaScriptObject listenerFunction, String deviceName, String channelName, boolean added)/*-{
+
+	private native void notifyChannelChanged(JavaScriptObject listenerFunction, String deviceName, String channelName, boolean added) /*-{
 		listenerFunction(deviceName,channelName,added);
 	}-*/;
 
 	@Override
 	public void channelAdded(String deviceName, String channelName) {
-		for (JavaScriptObject function : listenerFunctions){
+		for (JavaScriptObject function : listenerFunctions.values())
 			notifyChannelChanged(function,deviceName,channelName,true);
-		}
 	}
 
 	@Override
 	public void channelRemoved(String deviceName, String channelName) {
-		for (JavaScriptObject function : listenerFunctions){
+		for (JavaScriptObject function : listenerFunctions.values())
 			notifyChannelChanged(function,deviceName,channelName,false);
-		}
 	}
 }
