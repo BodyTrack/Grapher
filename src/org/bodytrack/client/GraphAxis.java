@@ -180,8 +180,13 @@ public class GraphAxis {
 			canvas.getSurface().setStrokeStyle(NORMAL_COLOR);
 
 		canvas.getRenderer().beginPath();
-		canvas.getRenderer().drawLineSegment(
-				project2D(this.min), project2D(this.max));
+		if (isXAxis) {
+			canvas.getRenderer().drawLineSegment(project2D(this.min), project2D(this.max));
+		} else {
+			canvas.getRenderer().drawLineSegment(
+				project2D(this.min).add(basis.x.scale(width)),
+				project2D(this.max).add(basis.x.scale(width)));
+		}
 
 		double majorTickSize = computeTickSize(majorTickMinSpacingPixels);
 		renderTicks(0, majorTickSize, null, canvas,
@@ -233,24 +238,12 @@ public class GraphAxis {
 
 		if (isXAxis) {
 			double time = point.getDate();
-
-			if (time >= min && time <= max) {
-				// top of the line to draw
-				Vector2 top = project2D(time);
-				renderer.drawLineSegment(top,
-					new Vector2(top.getX(),
-						top.getY() + HIGHLIGHTED_POINT_LINE_LENGTH));
-			}
+			if (time >= min && time <= max)
+				renderTick(renderer, time, HIGHLIGHTED_POINT_LINE_LENGTH);
 		} else {
 			double value = point.getValue();
-			if (value >= min && value <= max) {
-				// left edge of the line to draw
-				Vector2 left = project2D(value);
-				double size = Math.min(HIGHLIGHTED_POINT_LINE_LENGTH,
-					getWidth());
-				renderer.drawLineSegment(left,
-					new Vector2(left.getX() + size, left.getY()));
-			}
+			if (value >= min && value <= max)
+				renderTick(renderer, value, HIGHLIGHTED_POINT_LINE_LENGTH);
 		}
 
 		renderer.stroke();
@@ -552,21 +545,30 @@ public class GraphAxis {
 
 	protected void renderTick(DirectShapeRenderer renderer, double tick,
 			double tickWidthPixels) {
-		renderer.drawLineSegment(project2D(tick),
-				project2D(tick).add(this.basis.x.scale(tickWidthPixels)));
+		if (isXAxis) {
+			renderer.drawLineSegment(project2D(tick),
+				project2D(tick).add(basis.x.scale(tickWidthPixels)));
+		} else {
+			Vector2 farEdge = project2D(tick).add(basis.x.scale(width));
+			renderer.drawLineSegment(farEdge.subtract(this.basis.x.scale(tickWidthPixels)),
+				farEdge);
+		}
 	}
 
 	protected void renderTickLabel(Surface surface, double tick,
 			double labelOffsetPixels, LabelFormatter formatter) {
-		renderTickLabel(surface, tick, labelOffsetPixels,
-				formatter.format(tick));
-	}
+		String label = formatter.format(tick);
 
-	protected void renderTickLabel(Surface surface, double y,
-			double labelOffsetPixels, String label) {
-		// .setFont("italic 30px sans-serif")
-		surface.fillText(label,
-				project2D(y).add(this.basis.x.scale(labelOffsetPixels)));
+		if (isXAxis) {
+			surface.fillText(label,
+				project2D(tick).add(this.basis.x.scale(labelOffsetPixels)));
+		} else {
+			double textWidth = surface.measureText(label);
+			Vector2 rightEdge = project2D(tick).add(basis.x.scale(width));
+			Vector2 leftEdge =
+				rightEdge.subtract(basis.x.scale(labelOffsetPixels + textWidth));
+			surface.fillText(label, leftEdge);
+		}
 	}
 
 	public double computeTickSize(double minPixels) {
