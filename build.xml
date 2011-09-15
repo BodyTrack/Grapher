@@ -109,6 +109,7 @@
          <extra-compiler-arguments>
             <arg line="-optimize 0"/>
             <arg line="-draftCompile"/>
+            <arg line="-localWorkers 4"/>
          </extra-compiler-arguments>
       </compile-gwt>
 
