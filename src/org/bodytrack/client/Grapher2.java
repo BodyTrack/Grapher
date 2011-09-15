@@ -142,6 +142,12 @@ public class Grapher2 implements EntryPoint {
 			return plot;
 		}
 
+		if ("dot".equals(chartType)) {
+			plot = buildDotPlot(factory, deviceName, channelName);
+			temporaryPlots.add(0, plot);
+			return plot;
+		}
+
 		if ("photo".equals(chartType))
 			plot = buildPhotoPlot(factory, deviceName, channelName);
 		else
@@ -210,6 +216,37 @@ public class Grapher2 implements EntryPoint {
 
 		return (ZeoDataPlot) factory.buildPlotFromSpecs(
 			getInitialSpecs(deviceName, channelName), "zeo",
+			deviceName, channelName);
+	}
+
+	/**
+	 * Builds a new {@link DotDataPlot}
+	 * with the specified device and channel name.
+	 *
+	 * @param factory
+	 * 		a {@link DataPlotFactory} that can be used to build a new plot
+	 * @param deviceName
+	 * 		the name of the device from which this channel came
+	 * @param channelName
+	 * 		the name of this channel on the device
+	 * @return
+	 * 		a <tt>DotDataPlot</tt> with the specified device and channel
+	 * 		name, ready to add to the graph widget used by this
+	 * 		factory
+	 * @throws NullPointerException
+	 * 		if any parameter is <tt>null</tt>
+	 */
+	private DotDataPlot buildDotPlot(DataPlotFactory factory,
+			String deviceName, String channelName) {
+		if (factory == null)
+			throw new NullPointerException(
+				"Can't use null factory to build plot");
+		if (deviceName == null || channelName == null)
+			throw new NullPointerException(
+				"Cannot build plot with null name");
+
+		return (DotDataPlot) factory.buildPlotFromSpecs(
+			getInitialSpecs(deviceName, channelName), "dot",
 			deviceName, channelName);
 	}
 

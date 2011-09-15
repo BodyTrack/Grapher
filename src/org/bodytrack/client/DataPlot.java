@@ -92,7 +92,7 @@ public class DataPlot implements Alertable<GrapherTile> {
    /**
     * The radius to use when drawing a highlighted dot on the grapher.
     */
-   private static final double HIGHLIGHTED_DOT_RADIUS = 4;
+   protected static final double HIGHLIGHTED_DOT_RADIUS = 4;
 
    /**
     * We never re-request a URL with MAX_REQUESTS_PER_URL or more failures
