@@ -226,6 +226,19 @@ public final class Canvas {
 	}
 
 	/**
+	 * Is exactly equivalent to a call to getSurface().setFillStyle(color)
+	 *
+	 * @param color
+	 * 		the color that will be used to fill future drawing on the
+	 * 		surface
+	 * @return
+	 * 		the Surface used for the setFillStyle call
+	 */
+	public Surface setFillStyle(Color color) {
+		return surface.setFillStyle(color);
+	}
+
+	/**
 	 * Is exactly equivalent to a call to getSurface().save()
 	 *
 	 * @return
@@ -260,12 +273,32 @@ public final class Canvas {
 	}
 
 	/**
-	 * Is exactly equivalent to a call to getRenderer().stroke().
+	 * Is exactly equivalent to a call to getRenderer().closePath()
+	 *
+	 * @return
+	 * 		the DirectShapeRenderer used for the closePath call
+	 */
+	public DirectShapeRenderer closePath() {
+		return renderer.closePath();
+	}
+
+	/**
+	 * Is exactly equivalent to a call to getRenderer().stroke()
 	 *
 	 * @return
 	 * 		the DirectShapeRenderer used for the stroke call
 	 */
 	public DirectShapeRenderer stroke() {
 		return renderer.stroke();
+	}
+
+	/**
+	 * Is exactly equivalent to a call to getRenderer().fill()
+	 *
+	 * @return
+	 * 		the DirectShapeRenderer used for the fill call
+	 */
+	public DirectShapeRenderer fill() {
+		return renderer.fill();
 	}
 }
