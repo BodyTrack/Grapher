@@ -1,5 +1,5 @@
 <head>
-<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script> 
+<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.3/jquery.js"></script>
 <script src="https://raw.github.com/jamespadolsey/jQuery-Plugins/master/cross-domain-ajax/jquery.xdomainajax.js"></script>
 <script type="text/javascript">
@@ -55,7 +55,6 @@ function onLoad() {
 						});
 	google.maps.event.addListener(layer, 'click', onClick);
 	registerListener();
-	
 }
 
 function registerListener(){
@@ -66,7 +65,7 @@ function registerListener(){
 		else{
 			registerListener();
 		}
-	},100);	
+	},100);
 }
 
 var markerImages = new Array();
@@ -178,9 +177,8 @@ function loadLocationAndDisplayMarker(deviceName){
 								iframe.contentWindow.grapher.removeChannel(deviceName, channelscopy[i]);
 							}
 						}
-						
 			});
-		}	
+		}
 	});
 }
 
