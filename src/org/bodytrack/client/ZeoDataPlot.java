@@ -18,12 +18,14 @@ public class ZeoDataPlot extends DataPlot {
    /**
     * The alpha value used when drawing rectangles for Zeo plots.
     */
-   private static final double NORMAL_ALPHA = 0.4;
+   //private static final double NORMAL_ALPHA = 0.4;
+   private static final double NORMAL_ALPHA = 1.0;
 
    /**
     * The alpha used when drawing rectangles for highlighted Zeo plots.
     */
-   private static final double HIGHLIGHTED_ALPHA = 0.5;
+   //private static final double HIGHLIGHTED_ALPHA = 0.5;
+   private static final double HIGHLIGHTED_ALPHA = 1.0;
 
    /**
     * Initializes this ZeoDataPlot with the specified parameters.
@@ -182,15 +184,11 @@ public class ZeoDataPlot extends DataPlot {
          surface.setLineWidth(oldLineWidth);
       }
       else {
-         // Draw the rectangle.  We go clockwise, starting at the top left corner
-         renderer.beginPath();
-         renderer.moveTo(leftX, topY);
-         renderer.drawLineTo(rightX, topY);
-         renderer.drawLineTo(rightX, bottomY);
-         renderer.drawLineTo(leftX, bottomY);
-         renderer.drawLineTo(leftX, topY);
-         renderer.closePath();
-         renderer.fill();
+         // Fill rectangle, without outline
+         // Round to nearest pixels and offset by half a pixel, so that we're always completely filling pixels
+         // Otherwise antialiasing will cause us to paint partial pixels, which will make the graph fade on the edges of the rectangles
+         surface.fillRectangle(Math.round(leftX)+.5, Math.round(topY)+.5,
+                               Math.round(rightX)-Math.round(leftX), Math.round(bottomY)-Math.round(topY));
       }
 
       // Draw lines around rectangles, but only if the width in pixels is large enough and it's not the NO_DATA state
@@ -201,7 +199,11 @@ public class ZeoDataPlot extends DataPlot {
 
          final double oldLineWidth = surface.getLineWidth();
          surface.setLineWidth(highlighted ? HIGHLIGHT_STROKE_WIDTH : NORMAL_STROKE_WIDTH);
-         renderer.stroke();
+         // Stroke the outside of the rectangle
+         // Round to nearest pixels so we draw the line in such a way that it completely fills pixels.  Otherwise a 1-pixel line
+         // turns into a 2-pixel grey blurry line.
+         surface.strokeRectangle(Math.round(leftX), Math.round(topY),
+                                 Math.round(rightX)-Math.round(leftX), Math.round(bottomY)-Math.round(topY));
          surface.setLineWidth(oldLineWidth);
       }
    }
