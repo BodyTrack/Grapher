@@ -78,64 +78,34 @@ public class ChannelNameLabeler {
 		Vector2 topRight = begin.add(Vector2.UNIT_X.scale(width));
 		Vector2 botRight = topRight.add(Vector2.UNIT_Y.scale(height));
 
-		/* TODO: Remove this comment, which contains at least two ideas that
-		 * didn't quite work
-		canvas.beginPath()
-			.moveTo(begin)
-			.drawLineTo(begin.add(Vector2.UNIT_X.scale(width - cornerSize)))
-			.drawArc(topRight.add(new Vector2(-cornerSize, cornerSize)),
-				cornerSize,
-				0.0,
-				- Math.PI / 2.0,
-				true)
-			.moveTo(topRight.add(Vector2.UNIT_Y.scale(cornerSize)))
-			*
-			.drawArcTo(begin.add(Vector2.UNIT_X.scale(width - cornerSize)),
-				topRight.add(Vector2.UNIT_Y.scale(cornerSize)),
-				cornerSize)
-			*
-			.drawLineTo(topRight.add(Vector2.UNIT_Y.scale(height - cornerSize)))
-			.drawArc(botRight.subtract(new Vector2(cornerSize, cornerSize)),
-				cornerSize,
-				Math.PI / 2.0,
-				0.0,
-				true)
-			.moveTo(botRight.subtract(Vector2.UNIT_X.scale(cornerSize)))
-			*
-			.drawArcTo(topRight.add(Vector2.UNIT_Y.scale(height - cornerSize)),
-				botRight.subtract(Vector2.UNIT_X.scale(cornerSize)),
-				cornerSize)
-			*
-			.drawLineTo(begin.getX(), begin.getY() + height)
-			.closePath();
-		*/
-		canvas.beginPath()
-			.moveTo(begin)
-			.drawLineTo(topRight.subtract(Vector2.UNIT_X.scale(cornerSize)))
-			.drawLineTo(botRight.subtract(Vector2.UNIT_X.scale(cornerSize)))
-			.drawLineTo(begin.add(Vector2.UNIT_Y.scale(height)))
-			.closePath()
-			.fill();
 		canvas.getRenderer()
+			.beginPath() // Draw the main rectangle
+			.drawRect(begin, width - cornerSize, height)
+			.closePath()
+			.fill()
+			.beginPath() // Draw the rectangle between the arcs
 			.drawRect(topRight.add(new Vector2(-cornerSize, cornerSize)),
 				cornerSize,
 				height - (2 * cornerSize))
-			.fill();
-		canvas.beginPath()
+			.closePath()
+			.fill()
+			.beginPath() // Draw the top-right arc
 			.moveTo(topRight.subtract(Vector2.UNIT_X.scale(cornerSize)))
 			.drawArc(topRight.add(new Vector2(-cornerSize, cornerSize)),
 				cornerSize,
 				0.0,
 				- Math.PI / 2.0,
 				true)
-			.fill();
-		canvas.beginPath()
+			.closePath()
+			.fill()
+			.beginPath() // Draw the bottom-right arc
 			.moveTo(topRight.add(Vector2.UNIT_Y.scale(height - cornerSize)))
 			.drawArc(botRight.subtract(new Vector2(cornerSize, cornerSize)),
 				cornerSize,
 				Math.PI / 2.0,
 				0.0,
 				true)
+			.closePath()
 			.fill();
 	}
 
