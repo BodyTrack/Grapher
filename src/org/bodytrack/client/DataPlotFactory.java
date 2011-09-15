@@ -195,6 +195,9 @@ public final class DataPlotFactory {
 		if ("dot".equalsIgnoreCase(type))
 			return buildDotPlot(deviceName, channelName, xAxis, yAxis);
 
+		if ("lollipop".equalsIgnoreCase(type))
+			return buildLollipopPlot(deviceName, channelName, xAxis, yAxis);
+
 		if ("photo".equalsIgnoreCase(type)) {
 			if (! (yAxis instanceof PhotoGraphAxis))
 				throw new ClassCastException(
@@ -323,6 +326,41 @@ public final class DataPlotFactory {
       final String baseUrl = DataPlot.buildBaseUrl(userId, deviceName, channelName);
 
       return new DotDataPlot(widget, xAxis, yAxis, deviceName, channelName, baseUrl, minLevel, getNextColor(), true);
+   }
+
+	/**
+	 * Builds a new {@link LollipopDataPlot}
+	 * with the specified device and channel names, and axes.
+	 *
+	 * @param deviceName
+	 * 		the name of the device from which this channel came
+	 * @param channelName
+	 * 		the name of this channel on the device
+	 * @param xAxis
+	 * 		the X-axis to use to build the plot
+	 * @param yAxis
+	 * 		the Y-axis to use to build the plot
+	 * @return
+	 * 		a <tt>LollipopDataPlot</tt> with the specified device and channel
+	 * 		name, ready to add to the graph widget used by this
+	 * 		factory
+	 * @throws NullPointerException
+	 * 		if any parameter is <tt>null</tt>
+	 */
+   public LollipopDataPlot buildLollipopPlot(final String deviceName,
+                                   final String channelName,
+                                   final GraphAxis xAxis,
+                                   final GraphAxis yAxis) {
+      if (deviceName == null || channelName == null) {
+         throw new NullPointerException("Cannot build plot with null name");
+      }
+      if (xAxis == null || yAxis == null) {
+         throw new NullPointerException("Cannot build plot with null axis");
+      }
+
+      final String baseUrl = DataPlot.buildBaseUrl(userId, deviceName, channelName);
+
+      return new LollipopDataPlot(widget, xAxis, yAxis, deviceName, channelName, baseUrl, minLevel, getNextColor(), true);
    }
 
    /**
