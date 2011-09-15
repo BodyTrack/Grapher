@@ -66,7 +66,11 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 	private static final double TEXT_HEIGHT = 12;
 	private static final double TEXT_LINE_WIDTH = 0.75;
 
+	private static final int NAME_LABELER_WIDTH = 50;
+
 	private final ChannelManager channelMgr;
+
+	private final ChannelNameLabeler nameLabeler;
 
 	// For the loading message API, which shows one message at a time
 	// on the bottom left, without regard to width
@@ -103,6 +107,9 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 
 		channelMgr = new ChannelManager();
 		channelMgr.addChannelListener(this);
+
+		// TODO: Possibly allow width updating
+		nameLabeler = new ChannelNameLabeler(channelMgr, NAME_LABELER_WIDTH);
 
 		nextLoadingMessageId = INITIAL_MESSAGE_ID;
 		loadingMessages = new ArrayList<DisplayMessage>();
@@ -433,14 +440,15 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 	private void layout() {
 		int xAxesWidth = calculateAxesWidth(channelMgr.getXAxes());
 		int yAxesWidth = calculateAxesWidth(channelMgr.getYAxes());
-		int graphWidth = width - graphMargin - yAxesWidth;
+		int graphWidth = width - graphMargin - yAxesWidth
+			- (int)(nameLabeler.getWidth());
 		int graphHeight = height - graphMargin - xAxesWidth;
 		Vector2 xAxesBegin = new Vector2(graphMargin,
 			graphHeight + graphMargin);
 		layoutAxes(channelMgr.getXAxes(), graphWidth, xAxesBegin,
 			Basis.xDownYRight);
 
-		Vector2 yAxesBegin = new Vector2(graphWidth+graphMargin,
+		Vector2 yAxesBegin = new Vector2(graphWidth + graphMargin,
 			graphHeight + graphMargin);
 		layoutAxes(channelMgr.getYAxes(), graphHeight, yAxesBegin,
 			Basis.xRightYUp);
@@ -532,6 +540,9 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 
 		for (GraphAxis yAxis: channelMgr.getYAxes())
 			yAxis.paint(this);
+
+		// Draw the labels
+		nameLabeler.paint(Canvas.buildCanvas(this));
 
 		// Now draw the data
 		for (DataPlot plot: channelMgr.getDataPlots())
