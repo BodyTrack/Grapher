@@ -576,17 +576,17 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 		// Change settings
 		setTextAlign(TextAlign.LEFT);
 		setLineWidth(TEXT_LINE_WIDTH);
-		setStrokeStyle(msg.getColor());
+		setFillStyle(msg.getColor());
 
 		// Actually write the text
 		double bottom = height - LOADING_MSG_Y_MARGIN;
 		double textTop = bottom - TEXT_HEIGHT;
-		strokeText(msg.getText(), LOADING_MSG_X_MARGIN, textTop);
+		fillText(msg.getText(), LOADING_MSG_X_MARGIN, textTop);
 
 		// Restore old settings
 		setTextAlign(oldTextAlign);
 		setLineWidth(oldLineWidth);
-		setStrokeStyle(Canvas.DEFAULT_COLOR);
+		setFillStyle(Canvas.DEFAULT_COLOR);
 	}
 
 	/**
@@ -614,13 +614,13 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 			// Right edge X-value with right text alignment
 
 		for (DisplayMessage msg: messages) {
-			setStrokeStyle(msg.getColor());
+			setFillStyle(msg.getColor());
 
 			double textTop = bottom - TEXT_HEIGHT;
 			String text = msg.getText();
 
 			// Find left edge, given that we know right edge
-			strokeText(text, x, textTop);
+			fillText(text, x, textTop);
 
 			// Move upwards for next loop iteration
 			bottom = textTop - VALUE_MSG_GAP;
@@ -630,7 +630,7 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 		// Restore old settings
 		setTextAlign(oldTextAlign);
 		setLineWidth(oldLineWidth);
-		setStrokeStyle(Canvas.DEFAULT_COLOR);
+		setFillStyle(Canvas.DEFAULT_COLOR);
 	}
 
 	/**
