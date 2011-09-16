@@ -66,7 +66,6 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 	private static final double VALUE_MSG_Y_MARGIN = 3;
 	private static final double VALUE_MSG_GAP = 2;
 	private static final double TEXT_HEIGHT = 12;
-	private static final double TEXT_LINE_WIDTH = 0.75;
 
 	private static final int NAME_LABELER_WIDTH = 100;
 
@@ -574,11 +573,9 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 		/* Removed for the EPA Apps for the Environment competition
 		// Save old data to be restored later
 		TextAlign oldTextAlign = getTextAlign();
-		double oldLineWidth = getLineWidth();
 
 		// Change settings
 		setTextAlign(TextAlign.LEFT);
-		setLineWidth(TEXT_LINE_WIDTH);
 		setFillStyle(msg.getColor());
 
 		// Actually write the text
@@ -588,7 +585,6 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 
 		// Restore old settings
 		setTextAlign(oldTextAlign);
-		setLineWidth(oldLineWidth);
 		setFillStyle(Canvas.DEFAULT_COLOR);
 		 */
 	}
@@ -606,11 +602,9 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 	private void showValueMessages(List<DisplayMessage> messages) {
 		// Save old data to be restored later
 		TextAlign oldTextAlign = getTextAlign();
-		double oldLineWidth = getLineWidth();
 
 		// Change settings
 		setTextAlign(TextAlign.RIGHT);
-		setLineWidth(TEXT_LINE_WIDTH);
 
 		// Actually write the text
 		double bottom = height - VALUE_MSG_Y_MARGIN;
@@ -633,7 +627,6 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 
 		// Restore old settings
 		setTextAlign(oldTextAlign);
-		setLineWidth(oldLineWidth);
 		setFillStyle(Canvas.DEFAULT_COLOR);
 	}
 
