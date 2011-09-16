@@ -20,11 +20,13 @@ public class ChannelNameLabeler {
 	private static final Color CHANNEL_NAME_BACKGROUND_COLOR = KnownColor.GRAY;
 	private static final Color TEXT_COLOR = KnownColor.WHITE;
 
-	private static final double DEVICE_NAME_RIGHT_MARGIN = 3;
 	private static final double CHANNEL_NAME_PROPORTION = 0.3;
 	private static final double CHANNEL_NAME_MIN_WIDTH = 10;
-	public static final double DEVICE_NAME_CORNER_SIZE = 8;
-	public static final double CHANNEL_NAME_CORNER_SIZE = 5;
+	private static final double DEVICE_NAME_CORNER_SIZE = 8;
+	private static final double CHANNEL_NAME_CORNER_SIZE = 5;
+
+	private static final double BUBBLE_WIDTH = 15;
+	private static final double BUBBLE_DIAMETER = 10;
 
 	private final ChannelManager channelMgr;
 	private final double labelerWidth;
@@ -88,7 +90,7 @@ public class ChannelNameLabeler {
 		canvas.setFillStyle(DEVICE_NAME_BACKGROUND_COLOR);
 		paintLabelBackground(canvas,
 			begin.add(Vector2.UNIT_X.scale(beginAxis.getWidth())),
-			labelerWidth - DEVICE_NAME_RIGHT_MARGIN,
+			labelerWidth,
 			height,
 			DEVICE_NAME_CORNER_SIZE);
 
@@ -97,12 +99,13 @@ public class ChannelNameLabeler {
 			labelerWidth * CHANNEL_NAME_PROPORTION);
 		Vector2 labelStartingPoint = begin
 			.add(end.subtract(begin).scale(0.5)) // Vertically in the middle
-			.add(Vector2.UNIT_X.scale(
+			.add(Vector2.UNIT_X.scale( // Horizontally in the middle
 				beginAxis.getWidth() + channelNameWidth
 					+ (labelerWidth - channelNameWidth) / 2.0));
+		double availableWidth = labelerWidth - channelNameWidth - BUBBLE_WIDTH;
+		label = makeValidLabel(canvas, label, availableWidth);
 		canvas.setFillStyle(TEXT_COLOR);
-		canvas.getSurface().fillText(label, labelStartingPoint,
-			labelerWidth - channelNameWidth);
+		canvas.getSurface().fillText(label, labelStartingPoint, availableWidth);
 	}
 
 	private List<IntStringPair> getDeviceBreaks() {
@@ -151,6 +154,7 @@ public class ChannelNameLabeler {
 			double textX =
 				begin.getX() + yAxis.getWidth() + channelNameWidth / 2.0;
 			double textY = begin.add(end.subtract(begin).scale(0.5)).getY();
+			label = makeValidLabel(canvas, label, height);
 			canvas.setFillStyle(TEXT_COLOR);
 			canvas.getSurface()
 				.rotateCcw(Math.PI / 2.0)
@@ -167,6 +171,22 @@ public class ChannelNameLabeler {
 		if (matchingPlots != null && matchingPlots.size() > 0)
 			return matchingPlots.get(0).getChannelName();
 		return null;
+	}
+
+	private String makeValidLabel(Canvas canvas, String label,
+			double availableWidth) {
+		if (canvas.measureText(label) <= availableWidth)
+			return label;
+
+		int idx = label.length() - 1;
+		StringBuilder sb = new StringBuilder(label);
+		sb.append("...");
+		while (canvas.measureText(sb.toString()) > availableWidth) {
+			sb.deleteCharAt(idx);
+			idx--;
+		}
+
+		return sb.toString();
 	}
 
 	/**
