@@ -58,8 +58,10 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 
 	private static final int INITIAL_MESSAGE_ID = 1;
 	private static final Color LOADING_MSG_COLOR = Canvas.DARK_GRAY;
+	/* Removed for the EPA Apps for the Environment competition
 	private static final double LOADING_MSG_X_MARGIN = 5;
 	private static final double LOADING_MSG_Y_MARGIN = 3;
+	 */
 	private static final double VALUE_MSG_X_MARGIN = 5;
 	private static final double VALUE_MSG_Y_MARGIN = 3;
 	private static final double VALUE_MSG_GAP = 2;
@@ -569,6 +571,7 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 	 * 		<tt>null</tt>
 	 */
 	private void showLoadingMessage(DisplayMessage msg) {
+		/* Removed for the EPA Apps for the Environment competition
 		// Save old data to be restored later
 		TextAlign oldTextAlign = getTextAlign();
 		double oldLineWidth = getLineWidth();
@@ -587,6 +590,7 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 		setTextAlign(oldTextAlign);
 		setLineWidth(oldLineWidth);
 		setFillStyle(Canvas.DEFAULT_COLOR);
+		 */
 	}
 
 	/**
