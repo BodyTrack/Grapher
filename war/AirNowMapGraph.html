@@ -28,8 +28,12 @@ if (!Array.prototype.indexOf)
 }
 
 var iframe;
+var splashScreen;
 var loaderArea;
+var geocoder;
 var zoom = 4;
+var splashSpeed = 0;
+var splashPos = 1;
 var center = new google.maps.LatLng(40,-95);
 var map;
 
@@ -39,6 +43,9 @@ function onLoad() {
 		markerImages.push(new google.maps.MarkerImage("http://maps.google.com/mapfiles/marker" + (String.fromCharCode(baseValue + i)) + ".png"));
 	}
 	iframe = document.getElementById("graphDisplay");
+	iframe.contentWindow.jsapiGetLocation = jsapiGetLocation;
+	splashScreen = document.getElementById("splashScreen");
+ 	geocoder = new google.maps.Geocoder();
 	loaderArea = document.getElementById("loaderArea");
 	map = new google.maps.Map(document.getElementById('map_canvas'), {
 		center: center,
@@ -55,6 +62,47 @@ function onLoad() {
 						});
 	google.maps.event.addListener(layer, 'click', onClick);
 	registerListener();
+	scrollSplash();
+}
+
+function jsapiGetLocation(deviceName, callback){
+	$.get("https://www.google.com/fusiontables/api/query?sql=SELECT%20Latitude%2C%20Longitude%20FROM%201278639%20WHERE%20formattedName%3D'" + deviceName + "'%20LIMIT%201",function(res){
+		var text = res.responseText;
+		var t = $(text);
+		text = t[5].innerText;
+		text = text.substring(19);
+		var numbers = JSON.parse("[" + text + "]");
+		var lat = numbers[0];
+		var lon = numbers[1];
+		geocoder.geocode({'latLng': new google.maps.LatLng(lat,lon)}, function(results, status) {
+			var locationFound = null;
+			if (status == google.maps.GeocoderStatus.OK) {
+				for (var i = 0; i < results.length && !locationFound; i++){
+					for (var j = 0; j < results[i].types.length && !locationFound; j++){
+						if (results[i].types[j] == "locality")
+							locationFound = results[i].formatted_address;
+					}
+				}
+			} else {
+			}
+			callback(locationFound);
+		});
+
+	});
+}
+
+function scrollSplash(){
+	window.setTimeout(function(){
+		if (splashSpeed > 0 && splashPos < 1){
+			splashPos += splashSpeed;
+			splashScreen.style.opacity = splashPos;
+		}
+		else if (splashSpeed < 0 && splashPos > 0){
+			splashPos += splashSpeed;
+			splashScreen.style.opacity = splashPos;
+		}
+		scrollSplash();
+	},50);
 }
 
 function registerListener(){
@@ -128,6 +176,9 @@ function onChannelAddedOrRemoved(deviceName,channelName,added){
 				loadLocationAndDisplayMarker(deviceName);
 			}
 		}
+		if (siteData.length == 1){
+			splashSpeed = -0.1;
+		}
 	}
 	else{
 		var sData = getSiteData(deviceName);
@@ -140,6 +191,9 @@ function onChannelAddedOrRemoved(deviceName,channelName,added){
 					deleteSiteData(deviceName);
 				}
 			}
+		}
+		if (siteData.length == 0){
+			splashSpeed = 0.1;
 		}
 	}
 }
@@ -190,17 +244,6 @@ function getShiftState(e){
 }
 
 function onClick(e){
-	/*if (!shiftDown)
-		rowArray = new Array();
-	for (var i = 0; i < rowArray.length; i++){
-		if (rowArray[i].formattedName.value == e.row.formattedName.value){
-			rowArray.splice(i,1);
-			updateIFrame();
-			return;
-		}
-	}
-	rowArray[rowArray.length] = e.row;
-	updateIFrame();*/
 	var channelsInfo = JSON.parse(e.row.ChannelData.value);
 	var siteName = e.row.formattedName.value;
 	for (var i = 0; i < channelsInfo.length; i++){
@@ -210,53 +253,19 @@ function onClick(e){
 			iframe.contentWindow.grapher.addChannelWithBounds(siteName,channelsInfo[i][0],channelsInfo[i][1],channelsInfo[i][2]);
 	}
 }
-
-function updateIFrame(){
-	/*if (rowArray.length == 0){
-		iframe.src = "about:blank";
-		return;
-	}
-	var ts = Math.round((new Date()).getTime() / 1000);
-	var startTime = ts;
-	var channelNames = "";
-	var channelSpecs = "";
-	var totalRows = 0;
-	var baseIndex = 0;
-	for (var i = 0; i < rowArray.length; i++){
-		totalRows += JSON.parse(rowArray[i].ChannelData.value).length;
-	}
-	for (var j = 0; j < rowArray.length; j++){
-		var curTime = rowArray[rowArray.length - 1 - j].startTime.value;
-		var channelsInfo = JSON.parse(rowArray[rowArray.length - 1 - j].ChannelData.value);
-		var siteName = rowArray[rowArray.length - 1 - j].formattedName.value;
-		if (startTime > curTime)
-			startTime = curTime;
-		for (var i = 0; i < channelsInfo.length; i++){
-			if (i != 0 || j != 0){
-				channelNames += ",";
-				channelSpecs += ",";
-			}
-			channelNames += siteName + "." + channelsInfo[i][0];
-			channelSpecs += "\"" + siteName + "." + channelsInfo[i][0] + "\":{\"min_value\":";
-			var min = channelsInfo[i][1];
-			var max = channelsInfo[i][2];
-			var spread = max - min;
-			min -= spread * 0.05;
-			max += spread * 0.05;
-			spread = max - min;
-			min -= spread * (i + baseIndex);
-			max += spread * (totalRows - 1 - i - baseIndex);
-			channelSpecs += min;
-			channelSpecs += ",\"max_value\":" + max + "}";
-		}
-		baseIndex += channelsInfo.length;
-	}
-	iframe.src = "http://127.0.0.1:8888/Grapher2.html?init_min_time=" + startTime + "&init_max_time=" + ts + "&channel_names=[" + channelNames + "]&channel_specs={" + channelSpecs + "}";*/
-}
 </script>
 </head>
 
 <body style="height:100%; margin:0;" onload="onLoad();">
 <div id="map_canvas" style="position:absolute; left:0; bottom:0; height:50%; width:100%; bored:none;"></div>
-<iframe id="graphDisplay" src="Grapher2.html" style="position:absolute; right:0; top:0; height:50%; width:100%; border:none"></iframe>
+<div style="position:absolute; position:absolute; left:0; top:0; height:50%; width:100%; border:none;">
+<div style="height:15%">Header goes here!</div>
+<iframe id="graphDisplay" src="Grapher2.html" style="position: absolute;
+left: 0;
+top: 15%;
+height: 85%;
+width: 100%;
+border: none;"></iframe>
+</div>
+<iframe id="splashScreen" src="SplashScreen.html" style="position:absolute; left:0; top:0; height:50%; width:100%; border:none; background:white;"></iframe>
 </body>
