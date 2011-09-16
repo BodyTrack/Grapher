@@ -137,4 +137,15 @@ public final class InfoPublisher implements ChannelChangedListener {
 		for (JavaScriptObject function : listenerFunctions.values())
 			notifyChannelChanged(function,deviceName,channelName,false);
 	}
+
+	public static native String getBubbleLetter(String deviceName) /*-{
+		if (!!$wnd.jsapi && !!$wnd.jsapi.getBubbleMapping) {
+			var bubbleMapping = $wnd.jsapi.getBubbleMapping();
+			if (deviceName in bubbleMapping) {
+				return bubbleMapping[deviceName];
+			}
+		}
+
+		return null;
+	}-*/;
 }
