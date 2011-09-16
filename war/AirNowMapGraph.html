@@ -118,12 +118,18 @@ function jsapiGetBubbleMapping(){
 function scrollSplash(){
 	window.setTimeout(function(){
 		if (splashSpeed > 0 && splashPos < 1){
+			if (splashPos <= 0){
+				splashScreen.style.display = "block";
+			}
 			splashPos += splashSpeed;
 			splashScreen.style.opacity = splashPos;
 		}
 		else if (splashSpeed < 0 && splashPos > 0){
 			splashPos += splashSpeed;
 			splashScreen.style.opacity = splashPos;
+			if (splashPos <= 0){
+				splashScreen.style.display = "none";
+			}
 		}
 		scrollSplash();
 	},50);
@@ -282,14 +288,14 @@ function onClick(e){
 
 <body style="height:100%; margin:0;" onload="onLoad();">
 <div id="map_canvas" style="position:absolute; left:0; bottom:0; height:50%; width:100%; bored:none;"></div>
-<div style="position:absolute; position:absolute; left:0; top:0; height:50%; width:100%; border:none;">
-<div style="height:15%">Header goes here!</div>
+<div style="height: 34px; background-color: #B3B3B3; font-family: Cambria,Georgia,&quot;Times New Roman&quot;,serif; font-size: 27px; padding-left: 13px; color: #1A1A1A;">Air Quality Data Explorer</div>
+<div style="position:absolute; position:absolute; left:0; top:34px; bottom:50%; width:100%; border:none;">
 <iframe id="graphDisplay" src="Grapher2.html" style="position: absolute;
 left: 0;
-top: 15%;
-height: 85%;
+top: 0;
+height: 100%;
 width: 100%;
 border: none;"></iframe>
 </div>
-<iframe id="splashScreen" src="SplashScreen.html" style="position:absolute; left:0; top:0; height:50%; width:100%; border:none; background:white;"></iframe>
+<iframe id="splashScreen" src="SplashScreen.html" style="position:absolute; left:0; top:0; height:50%; width:100%; border:none; background:white;display:block;"></iframe>
 </body>
