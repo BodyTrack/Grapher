@@ -1,7 +1,9 @@
 package org.bodytrack.client;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import gwt.g2d.client.graphics.Color;
 import gwt.g2d.client.graphics.KnownColor;
@@ -41,29 +43,31 @@ public class ChannelNameLabeler {
 	}
 
 	private void paintDeviceLabels(Canvas canvas) {
-		List<Integer> breaks = getDeviceBreaks();
+		List<IntStringPair> breaks = getDeviceBreaks();
 
 		for (int i = 0; i < breaks.size() - 1; i++) {
-			int beginIndex = breaks.get(i);
-			int endIndex = breaks.get(i + 1) - 1;
-			paintDeviceLabel(canvas, beginIndex, endIndex);
+			int beginIndex = breaks.get(i).getNumber();
+			int endIndex = breaks.get(i + 1).getNumber() - 1;
+			paintDeviceLabel(canvas, beginIndex, endIndex,
+				breaks.get(i).getString());
 		}
 
 		if (breaks.size() > 0) {
 			// In this case, we know channelMgr.getYAxes() is nonempty
-			int beginIndex = breaks.get(breaks.size() - 1);
+			IntStringPair beginPair = breaks.get(breaks.size() - 1);
+			int beginIndex = beginPair.getNumber();
 			int endIndex = channelMgr.getYAxes().size() - 1;
-			paintDeviceLabel(canvas, beginIndex, endIndex);
+			paintDeviceLabel(canvas, beginIndex, endIndex,
+				beginPair.getString());
 		}
 	}
 
 	private void paintDeviceLabel(Canvas canvas, int axisIndex1,
-			int axisIndex2) {
+			int axisIndex2, String label) {
 		int smallerAxisIndex = Math.min(axisIndex1, axisIndex2);
 		int largerAxisIndex = Math.max(axisIndex1, axisIndex2);
 		GraphAxis beginAxis = channelMgr.getYAxes().get(largerAxisIndex);
 		GraphAxis endAxis = channelMgr.getYAxes().get(smallerAxisIndex);
-		String label = getDeviceName(beginAxis);
 
 		Vector2 begin = beginAxis.getMaxPoint();
 		Vector2 end = endAxis.getMinPoint();
@@ -80,8 +84,8 @@ public class ChannelNameLabeler {
 		// TODO: canvas.getSurface().strokeText(...)
 	}
 
-	private List<Integer> getDeviceBreaks() {
-		List<Integer> breaks = new ArrayList<Integer>();
+	private List<IntStringPair> getDeviceBreaks() {
+		List<IntStringPair> breaks = new ArrayList<IntStringPair>();
 		List<GraphAxis> yAxes = channelMgr.getYAxes();
 
 		String prevDeviceName = null;
@@ -90,7 +94,7 @@ public class ChannelNameLabeler {
 			GraphAxis yAxis = yAxes.get(i);
 			String deviceName = getDeviceName(yAxis);
 			if (deviceName == null || !deviceName.equals(prevDeviceName)) {
-				breaks.add(i);
+				breaks.add(new IntStringPair(i, deviceName));
 				prevDeviceName = deviceName;
 			}
 		}
@@ -108,18 +112,19 @@ public class ChannelNameLabeler {
 	private void paintChannelLabels(Canvas canvas) {
 		// Loop through the axes from top to bottom
 		for (GraphAxis yAxis: channelMgr.getYAxes()) {
-			Vector2 channelBegin = yAxis.getMaxPoint();
-			Vector2 channelEnd = yAxis.getMinPoint();
-			double channelHeight = channelEnd.subtract(channelBegin).getY();
+			Vector2 begin = yAxis.getMaxPoint();
+			Vector2 end = yAxis.getMinPoint();
+			double height = end.subtract(begin).getY();
+			String label = getChannelName(yAxis);
 
 			// Paint the channel label
 			canvas.setFillStyle(CHANNEL_NAME_BACKGROUND_COLOR);
 			double channelNameWidth = Math.max(CHANNEL_NAME_MIN_WIDTH,
 				CHANNEL_NAME_PROPORTION * labelerWidth);
 			paintLabelBackground(canvas,
-				channelBegin.add(Vector2.UNIT_X.scale(yAxis.getWidth())),
+				begin.add(Vector2.UNIT_X.scale(yAxis.getWidth())),
 				channelNameWidth,
-				channelHeight,
+				height,
 				CHANNEL_NAME_CORNER_SIZE);
 			canvas.setFillStyle(TEXT_COLOR);
 			// TODO: canvas.getSurface().strokeText(...)
@@ -200,7 +205,35 @@ public class ChannelNameLabeler {
 	 * 		will draw the fewest possible number of device labels
 	 */
 	public boolean areAxesInCompactOrder() {
-		// TODO: IMPLEMENT
-		return false;
+		List<IntStringPair> breaks = getDeviceBreaks();
+
+		Set<String> labels = new HashSet<String>();
+		for (IntStringPair pair: breaks)
+			labels.add(pair.getString());
+
+		// The axes are in compact order if each label would appear
+		// exactly once
+		return labels.size() == breaks.size();
+	}
+
+	/**
+	 * An immutable (int, string) tuple type.
+	 */
+	private static class IntStringPair {
+		private int n;
+		private String str;
+
+		public IntStringPair(int n, String str) {
+			this.n = n;
+			this.str = str;
+		}
+
+		public int getNumber() {
+			return n;
+		}
+
+		public String getString() {
+			return str;
+		}
 	}
 }
