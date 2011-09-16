@@ -58,6 +58,13 @@ public final class InfoPublisher implements ChannelChangedListener {
 			return viewSwitcher.@org.bodytrack.client.ViewSwitchWidget::getCurrentSavableView()();
 		};
 
+		$wnd.grapher.repaint = function() {
+			// In Java-like syntax:
+			// graphWidget.paint();
+			graphWidget.@org.bodytrack.client.GraphWidget::paint()();
+			return true;
+		};
+
 		$wnd.grapher.addChannel = function(deviceName, channelName) {
 			// In Java-like syntax:
 			// graphWidget.addDataPlotAsync(deviceName, channelName);
