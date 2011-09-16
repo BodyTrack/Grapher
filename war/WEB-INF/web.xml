@@ -15,15 +15,6 @@
     <servlet-name>proxyServlet</servlet-name>
     <servlet-class>org.bodytrack.server.BodyTrackProxyServlet</servlet-class>
   </servlet>
-  
-  <servlet-mapping>
-    <servlet-name>proxyServlet</servlet-name>
-    <url-pattern>/login.json</url-pattern>
-    <url-pattern>/login_status.json</url-pattern>
-    <url-pattern>/logout</url-pattern>
-    <url-pattern>/tiles/*</url-pattern>
-    <url-pattern>/users/*</url-pattern>
-  </servlet-mapping>
 
   <servlet-mapping>
     <servlet-name>greetServlet</servlet-name>

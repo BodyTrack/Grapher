@@ -110,7 +110,7 @@ public class ChannelNameLabeler {
 		canvas.setFillStyle(TEXT_COLOR);
 		canvas.getSurface().fillText(label, labelStartingPoint, availableWidth);
 
-		canvas.setFillStyle(BUBBLE_TEXT_COLOR);
+		
 		paintBubble(canvas,
 			begin.getX() + beginAxis.getWidth()
 				+ labelerWidth - (BUBBLE_AREA_WIDTH / 2.0),
@@ -132,7 +132,7 @@ public class ChannelNameLabeler {
 			.beginPath()
 			.drawCircle(x, y, BUBBLE_RADIUS)
 			.fill();
-
+		canvas.setFillStyle(BUBBLE_TEXT_COLOR);
 		// Text
 		if (label != null && label.length() > 0)
 			canvas.getSurface().fillText(label.substring(0, 1), x, y);
