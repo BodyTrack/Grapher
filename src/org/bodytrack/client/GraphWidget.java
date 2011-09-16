@@ -467,7 +467,8 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 			Vector2 begin, Basis basis) {
 		Vector2 offset = begin;
 
-		double len = length / axes.size();
+		double totalMargin = (axes.size() - 1) * axisMargin;
+		double len = (length - totalMargin) / axes.size();
 
 		for (GraphAxis axis: axes) {
 			axis.layout(offset, len);
