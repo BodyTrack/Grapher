@@ -261,6 +261,14 @@ public class GraphAxis {
 		return max;
 	}
 
+	public Vector2 getMinPoint() {
+		return project2D(getMin());
+	}
+
+	public Vector2 getMaxPoint() {
+		return project2D(getMax());
+	}
+
 	static abstract class LabelFormatter {
 		abstract String format(double value);
 	}
