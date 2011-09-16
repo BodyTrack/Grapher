@@ -94,10 +94,11 @@ function jsapiGetLocation(deviceName, callback){
 }
 
 function jsapiGetBubbleMapping(){
-	var data = new Array();
+	var data = {};
 	for (var i = 0; i < siteData.length; i++){
 		var temp = new Array();
-		temp[0] = siteData[i][0];
+		var siteName = siteData[i][0];
+		var charName = "A";
 		var marker = siteData[i][2];
 		if (marker != null){
 			var index = 0;
@@ -107,12 +108,9 @@ function jsapiGetBubbleMapping(){
 					break;
 				}
 			}
-			temp[1] = String.fromCharCode("A".charCodeAt(0) + index);
+			charName = String.fromCharCode("A".charCodeAt(0) + index);
 		}
-		else{
-			temp[1] = "A";
-		}
-		data.push(temp);
+		data[siteName] = charName;
 	}
 	return data;
 }
