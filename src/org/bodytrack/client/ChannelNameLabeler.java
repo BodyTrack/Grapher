@@ -1,13 +1,13 @@
 package org.bodytrack.client;
 
+import gwt.g2d.client.graphics.Color;
+import gwt.g2d.client.graphics.KnownColor;
+import gwt.g2d.client.math.Vector2;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import gwt.g2d.client.graphics.Color;
-import gwt.g2d.client.graphics.KnownColor;
-import gwt.g2d.client.math.Vector2;
 
 /**
  * Draws sections to the right of the Y-axes in order to show the names
@@ -73,15 +73,21 @@ public class ChannelNameLabeler {
 		Vector2 end = endAxis.getMinPoint();
 		double height = end.subtract(begin).getY();
 
-		// Need to paint the device label
 		canvas.setFillStyle(DEVICE_NAME_BACKGROUND_COLOR);
 		paintLabelBackground(canvas,
 			begin.add(Vector2.UNIT_X.scale(beginAxis.getWidth())),
 			labelerWidth - DEVICE_NAME_RIGHT_MARGIN,
 			height,
 			DEVICE_NAME_CORNER_SIZE);
-		canvas.setFillStyle(TEXT_COLOR);
-		// TODO: canvas.getSurface().strokeText(...)
+
+		// Now paint the label itself
+		double channelNameWidth = Math.max(CHANNEL_NAME_MIN_WIDTH,
+			labelerWidth * CHANNEL_NAME_PROPORTION);
+		Vector2 labelStartingPoint = begin
+			.add(end.subtract(begin).scale(0.5)) // Vertically in the middle
+			.add(Vector2.UNIT_X.scale(beginAxis.getWidth() + channelNameWidth));
+		canvas.setStrokeStyle(TEXT_COLOR);
+		canvas.getSurface().strokeText(label, labelStartingPoint);
 	}
 
 	private List<IntStringPair> getDeviceBreaks() {
@@ -126,7 +132,7 @@ public class ChannelNameLabeler {
 				channelNameWidth,
 				height,
 				CHANNEL_NAME_CORNER_SIZE);
-			canvas.setFillStyle(TEXT_COLOR);
+			canvas.setStrokeStyle(TEXT_COLOR);
 			// TODO: canvas.getSurface().strokeText(...)
 		}
 	}

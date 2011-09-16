@@ -66,7 +66,7 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 	private static final double TEXT_HEIGHT = 12;
 	private static final double TEXT_LINE_WIDTH = 0.75;
 
-	private static final int NAME_LABELER_WIDTH = 50;
+	private static final int NAME_LABELER_WIDTH = 100;
 
 	private final ChannelManager channelMgr;
 
