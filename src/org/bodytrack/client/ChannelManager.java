@@ -17,7 +17,7 @@ import java.util.Set;
  */
 public class ChannelManager {
 	private final List<DataPlot> dataPlots;
-	private List<DataPlot> unmodDataPlots;
+	private final List<DataPlot> unmodDataPlots;
 
 	/*
 	 * xAxisMap and yAxisMap provide the reverse mapping from
@@ -29,22 +29,22 @@ public class ChannelManager {
 	 * has at least one plot in dataPlots referencing it.
 	 */
 	private final Map<GraphAxis, List<DataPlot>> xAxisMap;
-	private Map<GraphAxis, List<DataPlot>> unmodXAxisMap;
+	private final Map<GraphAxis, List<DataPlot>> unmodXAxisMap;
 
-	private List<GraphAxis> xAxes;
-	private List<GraphAxis> unmodXAxes;
+	private final List<GraphAxis> xAxes;
+	private final List<GraphAxis> unmodXAxes;
 
 	private final Map<GraphAxis, List<DataPlot>> yAxisMap;
-	private Map<GraphAxis, List<DataPlot>> unmodYAxisMap;
+	private final Map<GraphAxis, List<DataPlot>> unmodYAxisMap;
 
-	private List<GraphAxis> yAxes;
-	private List<GraphAxis> unmodYAxes;
+	private final List<GraphAxis> yAxes;
+	private final List<GraphAxis> unmodYAxes;
 
 	// There is some redundancy provided by this variable, but it
 	// does increase efficiency when dealing with channel names
 	private final Map<StringPair, DataPlot> channelMap;
-	private Map<StringPair, DataPlot> unmodChannelMap;
-	private Set<StringPair> unmodChannels;
+	private final Map<StringPair, DataPlot> unmodChannelMap;
+	private final Set<StringPair> unmodChannels;
 
 	private final List<ChannelChangedListener> listeners;
 
