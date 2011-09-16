@@ -1,5 +1,8 @@
 package org.bodytrack.client;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import gwt.g2d.client.graphics.Color;
 import gwt.g2d.client.graphics.KnownColor;
 import gwt.g2d.client.math.Vector2;
@@ -12,6 +15,7 @@ public class ChannelNameLabeler {
 	private static final Color DEVICE_NAME_BACKGROUND_COLOR =
 		KnownColor.LIGHT_GREY;
 	private static final Color CHANNEL_NAME_BACKGROUND_COLOR = KnownColor.GRAY;
+	private static final Color TEXT_COLOR = KnownColor.WHITE;
 
 	private static final double DEVICE_NAME_RIGHT_MARGIN = 3;
 	private static final double CHANNEL_NAME_PROPORTION = 0.3;
@@ -32,29 +36,101 @@ public class ChannelNameLabeler {
 	}
 
 	public void paint(Canvas canvas) {
-		for (GraphAxis yAxis: channelMgr.getYAxes()) {
-			Vector2 begin = yAxis.project2D(yAxis.getMax())
-				.add(Vector2.UNIT_X.scale(yAxis.getWidth()));
-			Vector2 end = yAxis.project2D(yAxis.getMin())
-				.add(Vector2.UNIT_X.scale(yAxis.getWidth()));
-			double height = end.subtract(begin).getY();
+		paintDeviceLabels(canvas);
+		paintChannelLabels(canvas);
+	}
 
-			// Paint the device label
-			// TODO: Combine neighboring device labels into one device label
-			canvas.setFillStyle(DEVICE_NAME_BACKGROUND_COLOR);
-			paintLabelBackground(canvas,
-				begin,
-				labelerWidth - DEVICE_NAME_RIGHT_MARGIN,
-				height,
-				DEVICE_NAME_CORNER_SIZE);
+	private void paintDeviceLabels(Canvas canvas) {
+		List<Integer> breaks = getDeviceBreaks();
+
+		for (int i = 0; i < breaks.size() - 1; i++) {
+			int beginIndex = breaks.get(i);
+			int endIndex = breaks.get(i + 1) - 1;
+			paintDeviceLabel(canvas, beginIndex, endIndex);
+		}
+
+		if (breaks.size() > 0) {
+			// In this case, we know channelMgr.getYAxes() is nonempty
+			int beginIndex = breaks.get(breaks.size() - 1);
+			int endIndex = channelMgr.getYAxes().size() - 1;
+			paintDeviceLabel(canvas, beginIndex, endIndex);
+		}
+	}
+
+	private void paintDeviceLabel(Canvas canvas, int axisIndex1,
+			int axisIndex2) {
+		int smallerAxisIndex = Math.min(axisIndex1, axisIndex2);
+		int largerAxisIndex = Math.max(axisIndex1, axisIndex2);
+		GraphAxis beginAxis = channelMgr.getYAxes().get(largerAxisIndex);
+		GraphAxis endAxis = channelMgr.getYAxes().get(smallerAxisIndex);
+		String label = getDeviceName(beginAxis);
+
+		Vector2 begin = beginAxis.getMaxPoint();
+		Vector2 end = endAxis.getMinPoint();
+		double height = end.subtract(begin).getY();
+
+		// Need to paint the device label
+		canvas.setFillStyle(DEVICE_NAME_BACKGROUND_COLOR);
+		paintLabelBackground(canvas,
+			begin.add(Vector2.UNIT_X.scale(beginAxis.getWidth())),
+			labelerWidth - DEVICE_NAME_RIGHT_MARGIN,
+			height,
+			DEVICE_NAME_CORNER_SIZE);
+		canvas.setFillStyle(TEXT_COLOR);
+		// TODO: canvas.getSurface().strokeText(...)
+	}
+
+	private List<Integer> getDeviceBreaks() {
+		List<Integer> breaks = new ArrayList<Integer>();
+		List<GraphAxis> yAxes = channelMgr.getYAxes();
+
+		String prevDeviceName = null;
+
+		for (int i = 0; i < yAxes.size(); i++) {
+			GraphAxis yAxis = yAxes.get(i);
+			String deviceName = getDeviceName(yAxis);
+			if (deviceName == null || !deviceName.equals(prevDeviceName)) {
+				breaks.add(i);
+				prevDeviceName = deviceName;
+			}
+		}
+
+		return breaks;
+	}
+
+	private String getDeviceName(GraphAxis yAxis) {
+		List<DataPlot> matchingPlots = channelMgr.getYAxisMap().get(yAxis);
+		if (matchingPlots != null && matchingPlots.size() > 0)
+			return matchingPlots.get(0).getDeviceName();
+		return null;
+	}
+
+	private void paintChannelLabels(Canvas canvas) {
+		// Loop through the axes from top to bottom
+		for (GraphAxis yAxis: channelMgr.getYAxes()) {
+			Vector2 channelBegin = yAxis.getMaxPoint();
+			Vector2 channelEnd = yAxis.getMinPoint();
+			double channelHeight = channelEnd.subtract(channelBegin).getY();
 
 			// Paint the channel label
 			canvas.setFillStyle(CHANNEL_NAME_BACKGROUND_COLOR);
 			double channelNameWidth = Math.max(CHANNEL_NAME_MIN_WIDTH,
 				CHANNEL_NAME_PROPORTION * labelerWidth);
-			paintLabelBackground(canvas, begin, channelNameWidth, height,
+			paintLabelBackground(canvas,
+				channelBegin.add(Vector2.UNIT_X.scale(yAxis.getWidth())),
+				channelNameWidth,
+				channelHeight,
 				CHANNEL_NAME_CORNER_SIZE);
+			canvas.setFillStyle(TEXT_COLOR);
+			// TODO: canvas.getSurface().strokeText(...)
 		}
+	}
+
+	private String getChannelName(GraphAxis yAxis) {
+		List<DataPlot> matchingPlots = channelMgr.getYAxisMap().get(yAxis);
+		if (matchingPlots != null && matchingPlots.size() > 0)
+			return matchingPlots.get(0).getChannelName();
+		return null;
 	}
 
 	/**
