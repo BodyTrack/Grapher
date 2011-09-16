@@ -36,11 +36,8 @@ public class LollipopDataPlot extends DotDataPlot {
 
       surface.setFillStyle(getColor());
 
-      // The Y-value in units on the Y-axis corresponding to the lowest point to draw on the plot
-      final double minDrawUnits = Math.max(0.0, yAxis.getMin());
-
       // The Y-value in pixels corresponding to the lowest point to draw on the rectangle
-      final double minDrawY = yAxis.project2D(minDrawUnits).getY();
+      final double minDrawY = yAxis.project2D(0).getY();
 
       // Draw a line
       final double oldLineWidth = surface.getLineWidth();
