@@ -43,7 +43,9 @@ function onLoad() {
 		markerImages.push(new google.maps.MarkerImage("http://maps.google.com/mapfiles/marker" + (String.fromCharCode(baseValue + i)) + ".png"));
 	}
 	iframe = document.getElementById("graphDisplay");
-	iframe.contentWindow.jsapiGetLocation = jsapiGetLocation;
+	iframe.contentWindow.jsapi = {};
+	iframe.contentWindow.jsapi.getLocation = jsapiGetLocation;
+	iframe.contentWindow.jsapi.getBubbleMapping = jsapiGetBubbleMapping;
 	splashScreen = document.getElementById("splashScreen");
  	geocoder = new google.maps.Geocoder();
 	loaderArea = document.getElementById("loaderArea");
@@ -89,6 +91,30 @@ function jsapiGetLocation(deviceName, callback){
 		});
 
 	});
+}
+
+function jsapiGetBubbleMapping(){
+	var data = new Array();
+	for (var i = 0; i < siteData.length; i++){
+		var temp = new Array();
+		temp[0] = siteData[i][0];
+		var marker = siteData[i][2];
+		if (marker != null){
+			var index = 0;
+			for (var j = 0; j < markerImages.length; j++){
+				if (markerImages[j] == marker.getIcon()){
+					index = j;
+					break;
+				}
+			}
+			temp[1] = String.fromCharCode("A".charCodeAt(0) + index);
+		}
+		else{
+			temp[1] = "A";
+		}
+		data.push(temp);
+	}
+	return data;
 }
 
 function scrollSplash(){
