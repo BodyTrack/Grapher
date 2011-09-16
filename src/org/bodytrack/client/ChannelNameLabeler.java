@@ -2,6 +2,7 @@ package org.bodytrack.client;
 
 import gwt.g2d.client.graphics.Color;
 import gwt.g2d.client.graphics.KnownColor;
+import gwt.g2d.client.graphics.TextAlign;
 import gwt.g2d.client.math.Vector2;
 
 import java.util.ArrayList;
@@ -85,9 +86,13 @@ public class ChannelNameLabeler {
 			labelerWidth * CHANNEL_NAME_PROPORTION);
 		Vector2 labelStartingPoint = begin
 			.add(end.subtract(begin).scale(0.5)) // Vertically in the middle
-			.add(Vector2.UNIT_X.scale(beginAxis.getWidth() + channelNameWidth));
-		canvas.setStrokeStyle(TEXT_COLOR);
-		canvas.getSurface().strokeText(label, labelStartingPoint);
+			.add(Vector2.UNIT_X.scale(
+				beginAxis.getWidth() + channelNameWidth
+					+ (labelerWidth - channelNameWidth) / 2.0));
+		canvas.getSurface().setTextAlign(TextAlign.CENTER);
+		canvas.setFillStyle(TEXT_COLOR);
+		canvas.getSurface().fillText(label, labelStartingPoint,
+			labelerWidth - channelNameWidth);
 	}
 
 	private List<IntStringPair> getDeviceBreaks() {
@@ -123,7 +128,6 @@ public class ChannelNameLabeler {
 			double height = end.subtract(begin).getY();
 			String label = getChannelName(yAxis);
 
-			// Paint the channel label
 			canvas.setFillStyle(CHANNEL_NAME_BACKGROUND_COLOR);
 			double channelNameWidth = Math.max(CHANNEL_NAME_MIN_WIDTH,
 				CHANNEL_NAME_PROPORTION * labelerWidth);
@@ -132,8 +136,22 @@ public class ChannelNameLabeler {
 				channelNameWidth,
 				height,
 				CHANNEL_NAME_CORNER_SIZE);
-			canvas.setStrokeStyle(TEXT_COLOR);
-			// TODO: canvas.getSurface().strokeText(...)
+
+			// Now paint the label itself
+			double textWidth = canvas.measureText(label);
+			double textX =
+				begin.getX() + yAxis.getWidth() + channelNameWidth / 2.0;
+			double textY = begin.add(end.subtract(begin).scale(0.5)).getY()
+				+ textWidth / 2.0;
+			canvas.setFillStyle(TEXT_COLOR);
+			canvas.getSurface().save();
+			canvas.getSurface()
+				.rotateCcw(Math.PI / 2.0)
+				.fillText(label,
+					- textY, // The inversion is because of the rotation,
+					textX,   // which changes both X and Y coordinates
+					height);
+			canvas.getSurface().restore();
 		}
 	}
 

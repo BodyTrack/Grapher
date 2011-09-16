@@ -258,6 +258,19 @@ public final class Canvas {
 		return surface.restore();
 	}
 
+	/**
+	 * Is exactly equivalent to a call to getSurface().measureText().
+	 *
+	 * @param text
+	 * 		some non-{@literal null} string to measure
+	 * @return
+	 * 		the number of pixels that text would take up if it were drawn
+	 * 		on this canvas
+	 */
+	public double measureText(String text) {
+		return surface.measureText(text);
+	}
+
 	// --------------------------------------------------------------
 	// Copies of DirectShapeRenderer methods
 	// --------------------------------------------------------------
