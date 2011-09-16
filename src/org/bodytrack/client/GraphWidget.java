@@ -67,7 +67,7 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 	private static final double VALUE_MSG_GAP = 2;
 	private static final double TEXT_HEIGHT = 12;
 
-	private static final int NAME_LABELER_WIDTH = 100;
+	private static final int NAME_LABELER_WIDTH = 150;
 
 	private final ChannelManager channelMgr;
 
@@ -294,11 +294,15 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 
 		// We can be dragging exactly one of: an axis, one or
 		// more data plots, the whole viewing window, and nothing
+		// Mass comment-out for the EPA Apps for the Environment
+		/*
 		if (mouseDragAxis != null) {
 			// We are dragging an axis
 			mouseDragAxis.drag(mouseDragLastPos, pos);
 			mouseDragLastPos = pos;
-		} else if (mouseDragLastPos != null) {
+		} else */
+		if (mouseDragLastPos != null) {
+			/*
 			// We are either dragging either one or more data plots,
 			// or the whole viewing window
 
@@ -328,6 +332,10 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 				for (GraphAxis xAxis: channelMgr.getXAxes())
 					xAxis.drag(mouseDragLastPos, pos);
 			}
+			*/
+
+			for (GraphAxis xAxis: channelMgr.getXAxes())
+				xAxis.drag(mouseDragLastPos, pos);
 
 			mouseDragLastPos = pos;
 		} else {
@@ -399,23 +407,19 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 		Vector2 pos = new Vector2(event.getX(), event.getY());
 		GraphAxis owningYAxis = findOwningYAxis(pos);
 
-		// Only allow moving a plot if the user is dragging neither
-		// an axis nor a plot i.e. the user is dragging white space
-		if (mouseDragAxis == null && getHighlightedPlots().size() == 0) {
-			if (mouseDragOwningYAxis != null && mouseDragOwningYAxis != owningYAxis) {
-				List<GraphAxis> yAxes = channelMgr.getYAxes();
-				int oldIndex = yAxes.indexOf(mouseDragOwningYAxis);
-				int newIndex = yAxes.indexOf(owningYAxis);
-				if (oldIndex >= 0 && newIndex >= 0 && oldIndex != newIndex) {
-					channelMgr.moveYAxis(oldIndex, newIndex);
-					if (!nameLabeler.areAxesInCompactOrder()) {
-						// Undo the move if it would violate the compact
-						// order invariant
-						channelMgr.moveYAxis(newIndex, oldIndex);
-					}
-					paint();
-					mouseDragOwningYAxis = owningYAxis;
+		if (mouseDragOwningYAxis != null && mouseDragOwningYAxis != owningYAxis) {
+			List<GraphAxis> yAxes = channelMgr.getYAxes();
+			int oldIndex = yAxes.indexOf(mouseDragOwningYAxis);
+			int newIndex = yAxes.indexOf(owningYAxis);
+			if (oldIndex >= 0 && newIndex >= 0 && oldIndex != newIndex) {
+				channelMgr.moveYAxis(oldIndex, newIndex);
+				if (!nameLabeler.areAxesInCompactOrder()) {
+					// Undo the move if it would violate the compact
+					// order invariant
+					channelMgr.moveYAxis(newIndex, oldIndex);
 				}
+				paint();
+				mouseDragOwningYAxis = owningYAxis;
 			}
 		}
 

@@ -15,10 +15,11 @@ import java.util.Set;
  * of channels.
  */
 public class ChannelNameLabeler {
-	private static final Color DEVICE_NAME_BACKGROUND_COLOR = KnownColor.LIGHT_GREY;
-	private static final Color CHANNEL_NAME_BACKGROUND_COLOR = KnownColor.GRAY;
+	private static final Color DEVICE_NAME_BACKGROUND_COLOR = new Color(0xB3, 0xB3, 0xB3);
+	private static final Color CHANNEL_NAME_BACKGROUND_COLOR = new Color(0x80, 0x80, 0x80);
 	private static final Color TEXT_COLOR = KnownColor.WHITE;
 	private static final Color BUBBLE_COLOR = new Color(0xE8, 0x76, 0x6A);
+	private static final Color BUBBLE_TEXT_COLOR = KnownColor.BLACK;
 
 	private static final double CHANNEL_NAME_PROPORTION = 0.3;
 	private static final double CHANNEL_NAME_MIN_WIDTH = 10;
@@ -109,6 +110,7 @@ public class ChannelNameLabeler {
 		canvas.setFillStyle(TEXT_COLOR);
 		canvas.getSurface().fillText(label, labelStartingPoint, availableWidth);
 
+		canvas.setFillStyle(BUBBLE_TEXT_COLOR);
 		paintBubble(canvas,
 			begin.getX() + beginAxis.getWidth()
 				+ labelerWidth - (BUBBLE_AREA_WIDTH / 2.0),
