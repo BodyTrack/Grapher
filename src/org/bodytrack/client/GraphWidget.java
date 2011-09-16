@@ -70,6 +70,9 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 
 	private final ChannelManager channelMgr;
 
+	// Draws the right-side name labels
+	// We maintain the invariant that nameLabeler.areAxesInCompactOrder() always
+	// returns true
 	private final ChannelNameLabeler nameLabeler;
 
 	// For the loading message API, which shows one message at a time
@@ -404,6 +407,11 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 				int newIndex = yAxes.indexOf(owningYAxis);
 				if (oldIndex >= 0 && newIndex >= 0 && oldIndex != newIndex) {
 					channelMgr.moveYAxis(oldIndex, newIndex);
+					if (!nameLabeler.areAxesInCompactOrder()) {
+						// Undo the move if it would violate the compact
+						// order invariant
+						channelMgr.moveYAxis(newIndex, oldIndex);
+					}
 					paint();
 					mouseDragOwningYAxis = owningYAxis;
 				}
