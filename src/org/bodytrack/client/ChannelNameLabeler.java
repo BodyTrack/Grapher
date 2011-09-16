@@ -15,18 +15,19 @@ import java.util.Set;
  * of channels.
  */
 public class ChannelNameLabeler {
-	private static final Color DEVICE_NAME_BACKGROUND_COLOR =
-		KnownColor.LIGHT_GREY;
+	private static final Color DEVICE_NAME_BACKGROUND_COLOR = KnownColor.LIGHT_GREY;
 	private static final Color CHANNEL_NAME_BACKGROUND_COLOR = KnownColor.GRAY;
 	private static final Color TEXT_COLOR = KnownColor.WHITE;
+	private static final Color BUBBLE_COLOR = new Color(0xE8, 0x76, 0x6A);
 
 	private static final double CHANNEL_NAME_PROPORTION = 0.3;
 	private static final double CHANNEL_NAME_MIN_WIDTH = 10;
 	private static final double DEVICE_NAME_CORNER_SIZE = 8;
 	private static final double CHANNEL_NAME_CORNER_SIZE = 5;
 
-	private static final double BUBBLE_WIDTH = 15;
+	private static final double BUBBLE_AREA_WIDTH = 18;
 	private static final double BUBBLE_DIAMETER = 10;
+	private static final double BUBBLE_RADIUS = BUBBLE_DIAMETER / 2;
 
 	private final ChannelManager channelMgr;
 	private final double labelerWidth;
@@ -46,6 +47,7 @@ public class ChannelNameLabeler {
 
 		// Change settings
 		canvas.getSurface().setTextAlign(TextAlign.CENTER);
+		canvas.getSurface().setFont(Canvas.DEFAULT_FONT);
 
 		// Actually do the work
 		paintDeviceLabels(canvas);
@@ -77,7 +79,7 @@ public class ChannelNameLabeler {
 	}
 
 	private void paintDeviceLabel(Canvas canvas, int axisIndex1,
-			int axisIndex2, String label) {
+			int axisIndex2, String deviceName) {
 		int smallerAxisIndex = Math.min(axisIndex1, axisIndex2);
 		int largerAxisIndex = Math.max(axisIndex1, axisIndex2);
 		GraphAxis beginAxis = channelMgr.getYAxes().get(largerAxisIndex);
@@ -102,10 +104,36 @@ public class ChannelNameLabeler {
 			.add(Vector2.UNIT_X.scale( // Horizontally in the middle
 				beginAxis.getWidth() + channelNameWidth
 					+ (labelerWidth - channelNameWidth) / 2.0));
-		double availableWidth = labelerWidth - channelNameWidth - BUBBLE_WIDTH;
-		label = makeValidLabel(canvas, label, availableWidth);
+		double availableWidth = labelerWidth - channelNameWidth - BUBBLE_AREA_WIDTH;
+		String label = makeValidLabel(canvas, deviceName, availableWidth);
 		canvas.setFillStyle(TEXT_COLOR);
 		canvas.getSurface().fillText(label, labelStartingPoint, availableWidth);
+
+		paintBubble(canvas,
+			begin.getX() + beginAxis.getWidth()
+				+ labelerWidth - (BUBBLE_AREA_WIDTH / 2.0),
+			labelStartingPoint.getY(),
+			InfoPublisher.getBubbleLetter(deviceName));
+	}
+
+	private void paintBubble(Canvas canvas, double x, double y, String label) {
+		// Outside of bubble
+		canvas.setStrokeStyle(Canvas.DEFAULT_COLOR);
+		canvas.getRenderer()
+			.beginPath()
+			.drawCircle(x, y, BUBBLE_RADIUS)
+			.stroke();
+
+		// Inside of bubble
+		canvas.setFillStyle(BUBBLE_COLOR);
+		canvas.getRenderer()
+			.beginPath()
+			.drawCircle(x, y, BUBBLE_RADIUS)
+			.fill();
+
+		// Text
+		if (label != null && label.length() > 0)
+			canvas.getSurface().fillText(label.substring(0, 1), x, y);
 	}
 
 	private List<IntStringPair> getDeviceBreaks() {

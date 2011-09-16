@@ -528,6 +528,7 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 		this.clear();
 		this.save();
 		this.translate(.5, .5);
+		setFont(Canvas.DEFAULT_FONT);
 
 		// Draw any Loading... messages that might be requested
 		if (loadingMessages.size() > 0) {
@@ -576,6 +577,7 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 
 		// Change settings
 		setTextAlign(TextAlign.LEFT);
+		setFont(Canvas.DEFAULT_FONT);
 		setFillStyle(msg.getColor());
 
 		// Actually write the text
@@ -605,6 +607,7 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 
 		// Change settings
 		setTextAlign(TextAlign.RIGHT);
+		setFont(Canvas.DEFAULT_FONT);
 
 		// Actually write the text
 		double bottom = height - VALUE_MSG_Y_MARGIN;
