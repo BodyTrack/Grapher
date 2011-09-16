@@ -39,8 +39,19 @@ public class ChannelNameLabeler {
 	}
 
 	public void paint(Canvas canvas) {
+		// Save old data to be restored later
+		TextAlign oldTextAlign = canvas.getSurface().getTextAlign();
+
+		// Change settings
+		canvas.getSurface().setTextAlign(TextAlign.CENTER);
+
+		// Actually do the work
 		paintDeviceLabels(canvas);
 		paintChannelLabels(canvas);
+
+		// Restore old settings
+		canvas.getSurface().setTextAlign(oldTextAlign);
+		canvas.setFillStyle(Canvas.DEFAULT_COLOR);
 	}
 
 	private void paintDeviceLabels(Canvas canvas) {
@@ -89,7 +100,6 @@ public class ChannelNameLabeler {
 			.add(Vector2.UNIT_X.scale(
 				beginAxis.getWidth() + channelNameWidth
 					+ (labelerWidth - channelNameWidth) / 2.0));
-		canvas.getSurface().setTextAlign(TextAlign.CENTER);
 		canvas.setFillStyle(TEXT_COLOR);
 		canvas.getSurface().fillText(label, labelStartingPoint,
 			labelerWidth - channelNameWidth);
@@ -138,20 +148,17 @@ public class ChannelNameLabeler {
 				CHANNEL_NAME_CORNER_SIZE);
 
 			// Now paint the label itself
-			double textWidth = canvas.measureText(label);
 			double textX =
 				begin.getX() + yAxis.getWidth() + channelNameWidth / 2.0;
-			double textY = begin.add(end.subtract(begin).scale(0.5)).getY()
-				+ textWidth / 2.0;
+			double textY = begin.add(end.subtract(begin).scale(0.5)).getY();
 			canvas.setFillStyle(TEXT_COLOR);
-			canvas.getSurface().save();
 			canvas.getSurface()
 				.rotateCcw(Math.PI / 2.0)
 				.fillText(label,
 					- textY, // The inversion is because of the rotation,
 					textX,   // which changes both X and Y coordinates
-					height);
-			canvas.getSurface().restore();
+					height)
+				.rotate(Math.PI / 2.0);
 		}
 	}
 
