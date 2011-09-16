@@ -99,7 +99,11 @@
    </target>
 
    <target name="build-gwt" depends="clean-gwt, build-java" description="GWT compile to JavaScript (production mode)" unless="build-gwt-is-complete">
-      <compile-gwt gwt-module-name="${gwt.module}"/>
+      <compile-gwt gwt-module-name="${gwt.module}">
+         <extra-compiler-arguments>
+            <arg line="-localWorkers ${gwt.localWorkers}"/>
+         </extra-compiler-arguments>
+      </compile-gwt>
 
       <property name="build-gwt-is-complete" value="true"/>
    </target>
@@ -109,7 +113,7 @@
          <extra-compiler-arguments>
             <arg line="-optimize 0"/>
             <arg line="-draftCompile"/>
-            <arg line="-localWorkers 4"/>
+            <arg line="-localWorkers ${gwt.localWorkers}"/>
          </extra-compiler-arguments>
       </compile-gwt>
 
@@ -178,6 +182,7 @@
       <attribute name="gwt-module-name"/>
       <element name="extra-compiler-arguments" optional="true"/>
       <sequential>
+         <echo level="info" message="Using ${gwt.localWorkers} local worker(s) for GWT permutation compilation"/>
          <java failonerror="true" fork="true" classname="com.google.gwt.dev.Compiler">
             <classpath>
                <pathelement location="${src.dir}"/>
