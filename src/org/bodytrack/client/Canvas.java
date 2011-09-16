@@ -72,7 +72,7 @@ public final class Canvas {
 	 * The default font setting, which classes should set as the font when
 	 * wishing to clean up after themselves.
 	 */
-	public static final String DEFAULT_FONT = "9.5px Arial,Verdana,sans-serif";
+	public static final String DEFAULT_FONT = "10.2px Arial,Verdana,sans-serif";
 
 	private final Surface surface;
 	private final DirectShapeRenderer renderer;
