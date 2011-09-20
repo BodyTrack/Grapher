@@ -42,10 +42,6 @@ import java.util.Set;
  * determines the points that {@link DataPlot#paintAllDataPoints}
  * will draw, and the order in which paintAllDataPoints will draw
  * them.</p>
- *
- * <p>Note that <strong>any</strong> class that inherits from this class
- * should override {@link #getType()}, which allows consistent saving
- * and restoring of views.</p>
  */
 public class DataPlot implements Alertable<GrapherTile> {
    /**
@@ -108,11 +104,9 @@ public class DataPlot implements Alertable<GrapherTile> {
    private final GraphWidget container;
    private GraphAxis xAxis;
    private GraphAxis yAxis;
+   private final Channel channel;
    private final Canvas canvas;
    private PopupPanel commentPanel;
-
-   private final String deviceName;
-   private final String channelName;
 
    private final int minLevel;
    private Color color;
@@ -168,10 +162,8 @@ public class DataPlot implements Alertable<GrapherTile> {
     * @param yAxis
     * 		the Y-axis along which this data set will be aligned when
     * 		drawn
-    * @param deviceName
-    * 		the name of the device from which this channel came
-    * @param channelName
-    * 		the name of the channel on the device specified by deviceName
+    * @param channel
+    * 		the channel
     * @param url
     * 		the beginning of the URL for fetching this data with Ajax
     * 		calls
@@ -188,21 +180,22 @@ public class DataPlot implements Alertable<GrapherTile> {
     * 		if container, xAxis, yAxis, deviceName, channelName, url,
     * 		or color is <tt>null</tt>
     */
-   public DataPlot(final GraphWidget container, final GraphAxis xAxis, final GraphAxis yAxis,
-                   final String deviceName, final String channelName, final String url, final int minLevel,
-                   final Color color, final boolean publishValueOnHighlight) {
-      if (container == null || xAxis == null || yAxis == null
-          || deviceName == null || channelName == null
-          || url == null || color == null) {
-         throw new NullPointerException("Cannot have a null container, "
-                                        + "axis, device or channel name, url, or color");
+   public DataPlot(final GraphWidget container,
+                   final GraphAxis xAxis,
+                   final GraphAxis yAxis,
+                   final Channel channel,
+                   final String url,
+                   final int minLevel,
+                   final Color color,
+                   final boolean publishValueOnHighlight) {
+      if (container == null || xAxis == null || yAxis == null || channel == null || url == null || color == null) {
+         throw new NullPointerException("Cannot have a null container, axis, channel, url, or color");
       }
 
       this.container = container;
       this.xAxis = xAxis;
       this.yAxis = yAxis;
-      this.deviceName = deviceName;
-      this.channelName = channelName;
+      this.channel = channel;
       baseUrl = url;
       shouldZoomIn = true;
       this.minLevel = minLevel;
@@ -231,32 +224,29 @@ public class DataPlot implements Alertable<GrapherTile> {
    }
 
    /**
-    * Puts together the base URL for a channel, based on the URL
-    * specification for tiles.
+    * Puts together the base URL for a channel, based on the URL specification for tiles.
     *
     * @param userId
     * 		the ID of the current user
-    * @param deviceName
-    * 		the device for the channel we want to pull tiles from
-    * @param channelName
-    * 		the channel name for the channel we want to pull tiles from
+    * @param channel
+    * 		the channel we want to pull tiles from
     * @return
     * 		a base URL that is suitable for passing to one of the
     * 		constructors for <tt>DataPlot</tt> or one of its subclasses
     * @throws NullPointerException
     * 		if deviceName or channelName is <tt>null</tt>
     */
-   public static String buildBaseUrl(final int userId, final String deviceName, final String channelName) {
-      if (deviceName == null || channelName == null) {
+   public static String buildBaseUrl(final int userId, final Channel channel) {
+      if (channel == null) {
          throw new NullPointerException(
                "Null part of base URL not allowed");
       }
 
-      if ("".equals(deviceName)) {
-         return "/tiles/" + userId + "/" + channelName + "/";
+      if ("".equals(channel.getDeviceName())) {
+         return "/tiles/" + userId + "/" + channel.getChannelName() + "/";
       }
 
-      return "/tiles/" + userId + "/" + deviceName + "." + channelName + "/";
+      return "/tiles/" + userId + "/" + channel.getDeviceName() + "." + channel.getChannelName() + "/";
    }
 
    /**
@@ -286,16 +276,17 @@ public class DataPlot implements Alertable<GrapherTile> {
    }
 
    /**
-    * Returns the type of this plot.
+    * Returns the {@link ChartType} of this plot.  The {@link ChartType} is obtained from the {@link Channel}.
     *
-    * @return
-    * 		a string representing the type of this plot.  For objects
-    * 		of runtime type <tt>DataPlot</tt>, this will always be
-    * 		equal to the string &quot;plot&quot;, although subclasses
-    * 		should override this implementation
+    * @see Channel#getChartType()
     */
-   public String getType() {
-      return "plot";
+   public final ChartType getChartType() {
+      return channel.getChartType();
+   }
+
+   /** Returns the {@link Channel} for this plot. */
+    public final Channel getChannel() {
+      return channel;
    }
 
    /**
@@ -304,8 +295,8 @@ public class DataPlot implements Alertable<GrapherTile> {
     * @return
     * 		the device name passed to the constructor
     */
-   public String getDeviceName() {
-      return deviceName;
+   public final String getDeviceName() {
+      return channel.getDeviceName();
    }
 
    /**
@@ -314,8 +305,8 @@ public class DataPlot implements Alertable<GrapherTile> {
     * @return
     * 		the channel name passed to the constructor
     */
-   public String getChannelName() {
-      return channelName;
+   public final String getChannelName() {
+      return channel.getChannelName();
    }
 
    /**

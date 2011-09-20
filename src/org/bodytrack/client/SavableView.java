@@ -128,7 +128,7 @@ public final class SavableView extends JavaScriptObject {
 			specificChannelInfo.put("color",
 				new JSONString(plot.getColor().getColorCode()));
 			specificChannelInfo.put("type",
-				new JSONString(plot.getType()));
+				new JSONString(plot.getChartType().getName()));
 
 			// We know this conversion is safe, since we just
 			// created the object in the previous loop
@@ -150,56 +150,54 @@ public final class SavableView extends JavaScriptObject {
 		return buildView(result.toString());
 	}
 
-	/**
-	 * Converts this object into a
-	 * {@link org.bodytrack.client.ChannelManager ChannelManager}.
-	 *
-	 * @param widget
-	 * 		the widget on which the new plots should be drawn
-	 * @return
-	 * 		a new <tt>ChannelManager</tt> that has plots for the
-	 * 		information contained in this <tt>SavableView</tt>, and
-	 * 		is attached to widget
-	 * @throws NullPointerException
-	 * 		if widget is <tt>null</tt>
-	 */
-	public ChannelManager getDataPlots(GraphWidget widget) {
-		if (widget == null)
-			throw new NullPointerException("Cannot draw on null widget");
+   /**
+    * Converts this object into a {@link ChannelManager}.
+    *
+    * @param widget
+    * 		the widget on which the new plots should be drawn
+    * @return
+    * 		a new <tt>ChannelManager</tt> that has plots for the
+    * 		information contained in this <tt>SavableView</tt>, and
+    * 		is attached to widget
+    * @throws NullPointerException
+    * 		if widget is <tt>null</tt>
+    */
+   public ChannelManager getDataPlots(GraphWidget widget) {
+      if (widget == null) {
+         throw new NullPointerException("Cannot draw on null widget");
+      }
 
-		int axisMargin = Grapher2.getAxisMargin();
-		DataPlotFactory factory = DataPlotFactory.getInstance(widget);
-		ChannelManager result = new ChannelManager();
+      final int axisMargin = Grapher2.getAxisMargin();
+      final DataPlotFactory factory = DataPlotFactory.getInstance(widget);
+      final ChannelManager result = new ChannelManager();
 
-		GraphAxis[] xAxes = generateXAxes(axisMargin);
+      final GraphAxis[] xAxes = generateXAxes(axisMargin);
 
-		for (StringPair channel: getChannels()) {
-			String deviceName = channel.getFirst();
-			String channelName = channel.getSecond();
+      for (final Channel channel : getChannels()) {
+         final String deviceName = channel.getDeviceName();
+         final String channelName = channel.getChannelName();
 
-			DataPlot plot = factory.buildPlot(
-				getType(deviceName, channelName),
-				deviceName, channelName,
-				xAxes[getXAxisIndex(deviceName, channelName)],
-				generateYAxis(getType(deviceName, channelName),
-					channel, axisMargin));
+         final DataPlot plot = factory.buildPlot(channel,
+                                                 xAxes[getXAxisIndex(channel)],
+                                                 generateYAxis(channel, axisMargin));
 
-			// Set color of the plot, ensuring compatibility even when
-			// the required color field isn't present
-			String colorName = getColor(deviceName, channelName);
-			if (colorName != null) {
-				Color properColor = ColorUtils.buildColor(colorName);
-				if (properColor != null)
-					plot.setColor(properColor);
-			}
+         // Set color of the plot, ensuring compatibility even when
+         // the required color field isn't present
+         final String colorName = getColor(channel);
+         if (colorName != null) {
+            final Color properColor = ColorUtils.buildColor(colorName);
+            if (properColor != null) {
+               plot.setColor(properColor);
+            }
+         }
 
-			result.addChannel(plot);
-		}
+         result.addChannel(plot);
+      }
 
-		return result;
-	}
+      return result;
+   }
 
-	private GraphAxis[] generateXAxes(int axisMargin) {
+   private GraphAxis[] generateXAxes(int axisMargin) {
 		GraphAxis[] xAxes = new GraphAxis[countXAxes()];
 
 		for (int i = 0; i < xAxes.length; i++)
@@ -212,22 +210,21 @@ public final class SavableView extends JavaScriptObject {
 		return xAxes;
 	}
 
-	private GraphAxis generateYAxis(String type, StringPair channel,
-			int axisMargin) {
-		int yAxisIndex = getYAxisIndex(channel.getFirst(),
-			channel.getSecond());
+	private GraphAxis generateYAxis(final Channel channel, final int axisMargin) {
+      final int yAxisIndex = getYAxisIndex(channel);
 
-		if (type != null && type.toLowerCase().equals("photo"))
-			return new PhotoGraphAxis(axisMargin * 3);
+      if (ChartType.PHOTO.equals(channel.getChartType())) {
+         return new PhotoGraphAxis(axisMargin * 3);
+      }
 
-		// Default unless we need a photo axis
-		return new GraphAxis(
-			getMinValue(yAxisIndex),
-			getMaxValue(yAxisIndex),
-			Basis.xRightYUp,
-			axisMargin * 3,
-			false);
-	}
+      // Default unless we need a photo axis
+      return new GraphAxis(
+            getMinValue(yAxisIndex),
+            getMaxValue(yAxisIndex),
+            Basis.xRightYUp,
+            axisMargin * 3,
+            false);
+   }
 
 	/**
 	 * Returns the name for this view.
@@ -424,26 +421,27 @@ public final class SavableView extends JavaScriptObject {
 	}-*/;
 
 	/**
-	 * Generates a list of channels stored in this view.
+	 * Generates a {@link List} of {@link Channel channels} stored in this view.
 	 *
 	 * @return
-	 * 		a list of the channels stored in this view
+	 * 		a {@link List} of the {@link Channel channels} stored in this view
 	 */
-	public List<StringPair> getChannels() {
-		List<StringPair> channels = new ArrayList<StringPair>();
+	public List<Channel> getChannels() {
+		final List<Channel> channels = new ArrayList<Channel>();
 
-		JsArray<JsArrayString> channelNames = getChannelNames();
+		final JsArray<JsArrayString> channelNames = getChannelNames();
 
 		for (int i = 0; i < channelNames.length(); i++) {
-			JsArrayString rawChannel = channelNames.get(i);
+			final JsArrayString rawChannel = channelNames.get(i);
 			// Silently ignore errors.  Not ideal, but probably the best
 			// for the user in the face of such a rare event
 			if (rawChannel.length() != 2)
 				continue;
 
-			String device = rawChannel.get(0);
-			String channel = rawChannel.get(1);
-			channels.add(new StringPair(device, channel));
+			final String device = rawChannel.get(0);
+			final String channel = rawChannel.get(1);
+         final String type = getType(device, channel);
+			channels.add(new Channel(device, channel, type));
 		}
 
 		return channels;
@@ -499,12 +497,12 @@ public final class SavableView extends JavaScriptObject {
 	 * 		if the specified channel is not an element of the
 	 * 		return values of {@link #getChannels()}
 	 */
-	public int getXAxisIndex(String deviceName, String channelName) {
-		if (! hasChannel(deviceName, channelName))
+	public int getXAxisIndex(final Channel channel) {
+      if (! hasChannel(channel.getDeviceName(), channel.getChannelName()))
 			throw new IllegalArgumentException(
 				"Cannot find index for channel that does not exist");
 
-		return getXAxisIndexUnchecked(deviceName, channelName);
+		return getXAxisIndexUnchecked(channel.getDeviceName(), channel.getChannelName());
 	}
 
 	/**
@@ -537,12 +535,12 @@ public final class SavableView extends JavaScriptObject {
 	 * 		if the specified channel is not an element of the
 	 * 		return values of {@link #getChannels()}
 	 */
-	public int getYAxisIndex(String deviceName, String channelName) {
-		if (! hasChannel(deviceName, channelName))
+	public int getYAxisIndex(final Channel channel) {
+		if (! hasChannel(channel.getDeviceName(), channel.getChannelName()))
 			throw new IllegalArgumentException(
 				"Cannot find index for channel that does not exist");
 
-		return getYAxisIndexUnchecked(deviceName, channelName);
+		return getYAxisIndexUnchecked(channel.getDeviceName(), channel.getChannelName());
 	}
 
 	/**
@@ -565,22 +563,20 @@ public final class SavableView extends JavaScriptObject {
 	/**
 	 * Returns the color string for the specified channel.
 	 *
-	 * @param deviceName
-	 * 		the device name for which we want the color string
-	 * @param channelName
-	 * 		the channel name for which we want the color string
+	 * @param channel
+	 * 		the channel for which we want the color string
 	 * @return
 	 * 		the color string for the specified channel
 	 * @throws IllegalArgumentException
 	 * 		if the specified channel is not an element of the
 	 * 		return values of {@link #getChannels()}
 	 */
-	public String getColor(String deviceName, String channelName) {
-		if (! hasChannel(deviceName, channelName))
+	public String getColor(final Channel channel) {
+		if (! hasChannel(channel.getDeviceName(), channel.getChannelName()))
 			throw new IllegalArgumentException(
 				"Cannot find color for channel that does not exist");
 
-		return getColorUnchecked(deviceName, channelName);
+		return getColorUnchecked(channel.getDeviceName(), channel.getChannelName());
 	}
 
 	/**

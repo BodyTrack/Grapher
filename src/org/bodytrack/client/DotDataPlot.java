@@ -16,10 +16,15 @@ public class DotDataPlot extends DataPlot {
 
    private static final int DOT_RADIUS = 3;
 
-   public DotDataPlot(final GraphWidget container, final GraphAxis xAxis, final GraphAxis yAxis,
-                   final String deviceName, final String channelName, final String url, final int minLevel,
-                   final Color color, final boolean publishValueOnHighlight) {
-      super(container, xAxis, yAxis, deviceName, channelName, url, minLevel, color, publishValueOnHighlight);
+   public DotDataPlot(final GraphWidget container,
+                      final GraphAxis xAxis,
+                      final GraphAxis yAxis,
+                      final Channel channel,
+                      final String url,
+                      final int minLevel,
+                      final Color color,
+                      final boolean publishValueOnHighlight) {
+      super(container, xAxis, yAxis, channel, url, minLevel, color, publishValueOnHighlight);
    }
 
    @Override
@@ -42,18 +47,5 @@ public class DotDataPlot extends DataPlot {
                                  final double y,
                                  final PlottablePoint rawDataPoint) {
       paintEdgePoint(drawing, tile, x, y, rawDataPoint);
-   }
-
-   /**
-    * Returns the type of this plot.
-    *
-    * @return
-    * 		a string representing the type of this plot.  For objects
-    * 		of runtime type <tt>DataPlot</tt>, this will always be
-    * 		equal to the string &quot;plot&quot;, although subclasses
-    * 		should override this implementation
-    */
-   public String getType() {
-      return "dot";
    }
 }

@@ -1,6 +1,5 @@
 package org.bodytrack.client;
 
-import com.google.gwt.core.client.GWT;
 import gwt.g2d.client.graphics.Color;
 import gwt.g2d.client.graphics.DirectShapeRenderer;
 import gwt.g2d.client.graphics.Surface;
@@ -51,23 +50,13 @@ public class ZeoDataPlot extends DataPlot {
     * 		the minimum level to which this will zoom
     * @see DataPlot#DataPlot(GraphWidget, GraphAxis, GraphAxis, String, String, String, int, Color, boolean)
     */
-   public ZeoDataPlot(final GraphWidget container, final GraphAxis xAxis,
-                      final GraphAxis yAxis, final String deviceName, final String channelName,
-                      final String url, final int minLevel) {
-      super(container, xAxis, yAxis, deviceName, channelName, url, minLevel, Canvas.DEFAULT_COLOR, true);
-   }
-
-   /**
-    * Returns the type of this plot.
-    *
-    * @return
-    * 		a string representing the type of this plot.  For objects
-    * 		of runtime type <tt>ZeoDataPlot</tt>, this will always be
-    * 		equal to the string &quot;zeo&quot;
-    */
-   @Override
-   public String getType() {
-      return "zeo";
+   public ZeoDataPlot(final GraphWidget container,
+                      final GraphAxis xAxis,
+                      final GraphAxis yAxis,
+                      final Channel channel,
+                      final String url,
+                      final int minLevel) {
+      super(container, xAxis, yAxis, channel, url, minLevel, Canvas.DEFAULT_COLOR, true);
    }
 
    /**

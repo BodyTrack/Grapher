@@ -14,10 +14,15 @@ import gwt.g2d.client.graphics.Surface;
  */
 public class LollipopDataPlot extends DotDataPlot {
 
-   public LollipopDataPlot(final GraphWidget container, final GraphAxis xAxis, final GraphAxis yAxis,
-                           final String deviceName, final String channelName, final String url, final int minLevel,
-                           final Color color, final boolean publishValueOnHighlight) {
-      super(container, xAxis, yAxis, deviceName, channelName, url, minLevel, color, publishValueOnHighlight);
+   public LollipopDataPlot(final GraphWidget container,
+                      final GraphAxis xAxis,
+                      final GraphAxis yAxis,
+                      final Channel channel,
+                      final String url,
+                      final int minLevel,
+                      final Color color,
+                      final boolean publishValueOnHighlight) {
+      super(container, xAxis, yAxis, channel, url, minLevel, color, publishValueOnHighlight);
    }
 
    @Override
@@ -50,18 +55,5 @@ public class LollipopDataPlot extends DotDataPlot {
 
       renderer.stroke();
       surface.setLineWidth(oldLineWidth);
-   }
-
-   /**
-    * Returns the type of this plot.
-    *
-    * @return
-    * 		a string representing the type of this plot.  For objects
-    * 		of runtime type <tt>DataPlot</tt>, this will always be
-    * 		equal to the string &quot;plot&quot;, although subclasses
-    * 		should override this implementation
-    */
-   public String getType() {
-      return "lollipop";
    }
 }

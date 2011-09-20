@@ -10,8 +10,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * A class to show photos on a
- * {@link org.bodytrack.client.GraphWidget GraphWidget}.
+ * A class to show photos on a {@link GraphWidget}.
  */
 public class PhotoDataPlot extends DataPlot {
 	/**
@@ -81,14 +80,15 @@ public class PhotoDataPlot extends DataPlot {
 	 * 		the minimum level to which the user will be allowed to zoom
 	 * @throws NullPointerException
 	 * 		if any parameter is <tt>null</tt>
-	 * @see DataPlot#DataPlot(GraphWidget, GraphAxis, GraphAxis, String,
-	 * 		int, gwt.g2d.client.graphics.Color)
 	 */
-	public PhotoDataPlot(GraphWidget container, GraphAxis xAxis,
-			PhotoGraphAxis yAxis, String deviceName, String channelName,
-			String url, int userId, int minLevel) {
-		super(container, xAxis, yAxis, deviceName, channelName, url, minLevel,
-			Canvas.DEFAULT_COLOR, false);
+	public PhotoDataPlot(final GraphWidget container,
+                        final GraphAxis xAxis,
+                        final PhotoGraphAxis yAxis,
+                        final Channel channel,
+                        final String url,
+                        final int userId,
+                        final int minLevel) {
+		super(container, xAxis, yAxis, channel, url, minLevel, Canvas.DEFAULT_COLOR, false);
 		// Note that we know that our Y-axis is a PhotoGraphAxis,
 		// so we will be able to cast freely later on
 
@@ -119,19 +119,6 @@ public class PhotoDataPlot extends DataPlot {
 	 */
 	public static String buildPhotoBaseUrl(int userId) {
 		return "/photos/" + userId + "/";
-	}
-
-	/**
-	 * Returns the type of this plot.
-	 *
-	 * @return
-	 * 		a string representing the type of this plot.  For objects
-	 * 		of runtime type <tt>PhotoDataPlot</tt>, this will always be
-	 * 		equal to the string &quot;photo&quot;
-	 */
-	@Override
-	public String getType() {
-		return "photo";
 	}
 
 	/**

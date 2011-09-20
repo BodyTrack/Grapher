@@ -3,6 +3,7 @@ package org.bodytrack.client;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.google.gwt.json.client.JSONObject;
 import gwt.g2d.client.graphics.Color;
 
 import com.google.gwt.core.client.GWT;
@@ -143,9 +144,15 @@ public class BodyTrackWidget extends VerticalPanel {
 					axisMargin * 3,
 					false);
 
-			graphWidget.addDataPlot(new DataPlot(graphWidget, timeAxis,
-				yAxis, channel.dev_nickname(), channel.ch_name(),
-				channel.tileUrl(), minLevel, DATA_PLOT_COLORS[i], true));
+         final DataPlot plot = new DataPlot(graphWidget,
+                                            timeAxis,
+                                            yAxis,
+                                            new Channel(channel.dev_nickname(), channel.ch_name(), (JSONObject)null),
+                                            channel.tileUrl(),
+                                            minLevel,
+                                            DATA_PLOT_COLORS[i],
+                                            true);
+         graphWidget.addDataPlot(plot);
 		}
 	}
 
