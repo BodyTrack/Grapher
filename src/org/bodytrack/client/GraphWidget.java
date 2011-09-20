@@ -84,7 +84,8 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 	private int nextValueMessageId;
 	private final List<DisplayMessage> valueMessages;
 
-	private final int width, height;
+	private int width;
+	private int height;
 	private final int axisMargin;
 	private final int graphMargin = 5;
 
@@ -94,7 +95,7 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 	// Once a GraphWidget object is instantiated, this doesn't change
 	private final double mouseWheelZoomRate;
 
-	public GraphWidget(int width, int height, int axisMargin) {
+	public GraphWidget(final int width, final int height, final int axisMargin) {
 		super(width, height);
 		this.width = width;
 		this.height = height;
@@ -446,7 +447,23 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 		}
 	}
 
-	/**
+   @Override
+   public void setSize(final int width, final int height) {
+      super.setSize(width, height);
+      this.width = width;
+      this.height = height;
+      paint();
+   }
+
+   public int getHeight() {
+      return height;
+   }
+
+   public int getWidth() {
+      return width;
+   }
+
+   /**
 	 * Actually paints this widget twice, with the two paint operations
 	 * separated by PAINT_TWICE_DELAY milliseconds.
 	 */

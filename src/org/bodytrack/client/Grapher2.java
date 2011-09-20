@@ -2,9 +2,13 @@ package org.bodytrack.client;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.JsArrayString;
+import com.google.gwt.event.logical.shared.ResizeEvent;
+import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONString;
 import com.google.gwt.json.client.JSONValue;
+import com.google.gwt.user.client.Timer;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
@@ -61,6 +65,27 @@ public class Grapher2 implements EntryPoint {
          mainLayout.add(currentChans);
          mainLayout.add(allChans);
          RootPanel.get(getDivName()).add(mainLayout);
+
+         // resize the grapher when the browser window is resized
+         Window.addResizeHandler(new ResizeHandler() {
+            @Override
+            public void onResize(final ResizeEvent event) {
+               gw.setSize(event.getWidth(), gw.getHeight());
+            }
+         });
+
+         // gets the initial width of the window
+         new Timer() {
+            @Override
+            public void run() {
+               if (Window.getClientHeight() > 4 && Window.getClientWidth() != 0) {
+                  gw.setSize(Window.getClientWidth(), gw.getHeight());
+               }
+               else {
+                  this.schedule(100);
+               }
+            }
+         }.schedule(100);
       }
    }
 
