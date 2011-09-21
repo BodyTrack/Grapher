@@ -236,8 +236,9 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 
 	private void handleMouseWheelEvent(MouseWheelEvent event) {
 		Vector2 pos = new Vector2(event.getX(), event.getY());
-		GraphAxis axis = findAxis(pos);
 		double zoomFactor = Math.pow(mouseWheelZoomRate, event.getDeltaY());
+		/* Removed for EPA Apps for the Enviroment
+		GraphAxis axis = findAxis(pos);
 
 		Set<DataPlot> highlightedPlots = getHighlightedPlots();
 
@@ -262,6 +263,7 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 			axis.zoom(zoomFactor, axis.unproject(pos));
 		} else {
 			// The mouse is over the viewing window
+			 */
 
 			// Enforce minimum zoom: if any axis allows zooming,
 			// the user is able to zoom on the X-axes
@@ -274,7 +276,7 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 				for (GraphAxis xAxis: channelMgr.getXAxes())
 					xAxis.zoom(zoomFactor, xAxis.unproject(pos));
 			}
-		}
+		/*} */
 
 		paint();
 	}
