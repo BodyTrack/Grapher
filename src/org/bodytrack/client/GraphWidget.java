@@ -6,11 +6,9 @@ import gwt.g2d.client.graphics.TextAlign;
 import gwt.g2d.client.math.Vector2;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
 
 import com.google.gwt.event.dom.client.MouseDownEvent;
@@ -96,7 +94,9 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 	private final int axisMargin;
 	private final int graphMargin = 5;
 
+	/* Removed for EPA Apps for the Environment
 	private GraphAxis mouseDragAxis;
+	*/
 	private Vector2 mouseDragLastPos;
 	private GraphAxis mouseDragOwningYAxis;
 
@@ -209,7 +209,7 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 		return isSafari && !!$wnd.navigator.platform.match(/.*mac/i);
 	}-*/;
 
-	/**
+	/* REMOVED FOR EPA APPS FOR THE ENVIRONMENT
 	 * Returns the axis over which pos sits, or <tt>null</tt> if no such
 	 * axis exists.
 	 *
@@ -220,6 +220,7 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 	 * 		the axis over which pos is, or <tt>null</tt> if pos is not
 	 * 		on top of a vector
 	 */
+	/*
 	private GraphAxis findAxis(Vector2 pos) {
 		for (GraphAxis axis: channelMgr.getXAxes()) {
 			if (axis.contains(pos))
@@ -233,6 +234,7 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 
 		return null;
 	}
+	*/
 
 	private void handleMouseWheelEvent(MouseWheelEvent event) {
 		Vector2 pos = new Vector2(event.getX(), event.getY());
@@ -284,7 +286,9 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 	private void handleMouseDownEvent(MouseDownEvent event) {
 		Vector2 pos = new Vector2(event.getX(), event.getY());
 
+		/* EPA Apps for the Environment
 		mouseDragAxis = findAxis(pos);
+		*/
 		mouseDragLastPos = pos;
 		mouseDragOwningYAxis = findOwningYAxis(pos);
 
@@ -361,12 +365,13 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 		paint();
 	}
 
-	/**
+	/* REMOVED FOR EPA APPS FOR THE ENVIRONMENT
 	 * Finds the set of highlighted {@link DataPlot} objects.
 	 *
 	 * @return
 	 * 		the set of highlighted {@link DataPlot} objects on this widget
 	 */
+	/*
 	private Set<DataPlot> getHighlightedPlots() {
 		Set<DataPlot> highlightedPlots = new HashSet<DataPlot>();
 
@@ -377,6 +382,7 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 
 		return highlightedPlots;
 	}
+	*/
 
 	/**
 	 * Highlights each axis in axes.keySet() if and only if there exists
@@ -425,7 +431,9 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 			}
 		}
 
+		/* EPA Apps for the Environment
 		mouseDragAxis = null;
+		*/
 		mouseDragLastPos = null;
 		mouseDragOwningYAxis = null;
 
@@ -433,7 +441,9 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 	}
 
 	private void handleMouseOutEvent(MouseOutEvent event) {
+		/* EPA Apps for the Environment
 		mouseDragAxis = null;
+		*/
 		mouseDragLastPos = null;
 		mouseDragOwningYAxis = null;
 
