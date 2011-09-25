@@ -269,14 +269,22 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 
 			// Enforce minimum zoom: if any axis allows zooming,
 			// the user is able to zoom on the X-axes
+			// TODO: This is a little too strict of a minimum zoom
+			// enforcement, since if an X-axis on the left has reached
+			// minimum zoom and an X-axis on the right hasn't, this
+			// still won't let the user zoom in to the X-axis on
+			// the right
 			boolean canZoomIn = false;
 
 			for (DataPlot plot: channelMgr.getDataPlots())
 				canZoomIn = canZoomIn || plot.shouldZoomIn();
 
 			if (zoomFactor >= 1 || canZoomIn) {
-				for (GraphAxis xAxis: channelMgr.getXAxes())
-					xAxis.zoom(zoomFactor, xAxis.unproject(pos));
+				for (GraphAxis xAxis: channelMgr.getXAxes()) {
+					double xValue = xAxis.unproject(pos);
+					if (xValue >= xAxis.getMin() && xValue <= xAxis.getMax())
+						xAxis.zoom(zoomFactor, xValue);
+				}
 			}
 		/*} */
 
