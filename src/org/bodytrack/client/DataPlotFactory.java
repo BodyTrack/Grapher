@@ -404,6 +404,18 @@ public final class DataPlotFactory {
 			});
 	}
 
+	// Only for EPA Apps for the Environment
+	// This is really a gross hack that hardcodes the unit names
+	private static String getUnit(String deviceName, String channelName) {
+		if (channelName.equals("Ozone"))
+			return "PPB";
+
+		if (channelName.equals("PM2_5_mass"))
+			return "µg/(m^3)";
+
+		return null;
+	}
+
 	/**
 	 * Returns the URL to use for getting the channel specs.
 	 *
@@ -525,7 +537,8 @@ public final class DataPlotFactory {
 			yAxis = new GraphAxis(minVal, maxVal,
 				Basis.xRightYUp,
 				getYAxisWidth(),
-				false);
+				false,
+				getUnit(deviceName, channelName));
 
 		return buildPlot(chartType, deviceName, channelName,
 			getXAxis(), yAxis);
