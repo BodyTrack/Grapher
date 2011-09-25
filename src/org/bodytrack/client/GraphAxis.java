@@ -44,6 +44,7 @@ public class GraphAxis {
 	private BBox bounds;
 
 	private final boolean isXAxis;
+	private final String unit;
 
 	// For determining whether to highlight this GraphAxis
 	private PlottablePoint highlightedPoint; // null if this isn't highlighted
@@ -66,6 +67,11 @@ public class GraphAxis {
 
 	public GraphAxis(double min, double max, Basis basis, double width,
 			boolean isXAxis) {
+		this(min, max, basis, width, isXAxis, null);
+	}
+
+	public GraphAxis(double min, double max, Basis basis, double width,
+			boolean isXAxis, String unit) {
 		if (min > max)
 			throw new IllegalArgumentException(
 				"Can't have backwards axis bounds");
@@ -75,6 +81,7 @@ public class GraphAxis {
 		this.basis = basis;
 		this.width = width;
 		this.isXAxis = isXAxis;
+		this.unit = unit;
 
 		highlightedPoint = null;
 	}
@@ -269,16 +276,19 @@ public class GraphAxis {
 		return project2D(getMax());
 	}
 
-	static abstract class LabelFormatter {
+	abstract class LabelFormatter {
 		abstract String format(double value);
 	}
 
-	static class DefaultLabelFormatter extends LabelFormatter {
+	private class DefaultLabelFormatter extends LabelFormatter {
 		String format(double value) {
 			String label = NumberFormat.getDecimalFormat().format(value);
 
 			if (label.equals("-0"))
 				label="0";
+
+			if (unit != null)
+				label += " " + unit;
 
 			return label;
 		}
