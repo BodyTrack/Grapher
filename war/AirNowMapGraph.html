@@ -4,6 +4,124 @@
 <script src="https://raw.github.com/jamespadolsey/jQuery-Plugins/master/cross-domain-ajax/jquery.xdomainajax.js"></script>
 <script type="text/javascript">
 
+var BrowserDetect = {
+	init: function () {
+		this.browser = this.searchString(this.dataBrowser) || "An unknown browser";
+		this.version = this.searchVersion(navigator.userAgent)
+			|| this.searchVersion(navigator.appVersion)
+			|| "an unknown version";
+		this.OS = this.searchString(this.dataOS) || "an unknown OS";
+	},
+	searchString: function (data) {
+		for (var i=0;i<data.length;i++)	{
+			var dataString = data[i].string;
+			var dataProp = data[i].prop;
+			this.versionSearchString = data[i].versionSearch || data[i].identity;
+			if (dataString) {
+				if (dataString.indexOf(data[i].subString) != -1)
+					return data[i].identity;
+			}
+			else if (dataProp)
+				return data[i].identity;
+		}
+	},
+	searchVersion: function (dataString) {
+		var index = dataString.indexOf(this.versionSearchString);
+		if (index == -1) return;
+		return parseFloat(dataString.substring(index+this.versionSearchString.length+1));
+	},
+	dataBrowser: [
+		{
+			string: navigator.userAgent,
+			subString: "Chrome",
+			identity: "Chrome"
+		},
+		{ 	string: navigator.userAgent,
+			subString: "OmniWeb",
+			versionSearch: "OmniWeb/",
+			identity: "OmniWeb"
+		},
+		{
+			string: navigator.vendor,
+			subString: "Apple",
+			identity: "Safari",
+			versionSearch: "Version"
+		},
+		{
+			prop: window.opera,
+			identity: "Opera",
+			versionSearch: "Version"
+		},
+		{
+			string: navigator.vendor,
+			subString: "iCab",
+			identity: "iCab"
+		},
+		{
+			string: navigator.vendor,
+			subString: "KDE",
+			identity: "Konqueror"
+		},
+		{
+			string: navigator.userAgent,
+			subString: "Firefox",
+			identity: "Firefox"
+		},
+		{
+			string: navigator.vendor,
+			subString: "Camino",
+			identity: "Camino"
+		},
+		{		// for newer Netscapes (6+)
+			string: navigator.userAgent,
+			subString: "Netscape",
+			identity: "Netscape"
+		},
+		{
+			string: navigator.userAgent,
+			subString: "MSIE",
+			identity: "Explorer",
+			versionSearch: "MSIE"
+		},
+		{
+			string: navigator.userAgent,
+			subString: "Gecko",
+			identity: "Mozilla",
+			versionSearch: "rv"
+		},
+		{ 		// for older Netscapes (4-)
+			string: navigator.userAgent,
+			subString: "Mozilla",
+			identity: "Netscape",
+			versionSearch: "Mozilla"
+		}
+	],
+	dataOS : [
+		{
+			string: navigator.platform,
+			subString: "Win",
+			identity: "Windows"
+		},
+		{
+			string: navigator.platform,
+			subString: "Mac",
+			identity: "Mac"
+		},
+		{
+			   string: navigator.userAgent,
+			   subString: "iPhone",
+			   identity: "iPhone/iPod"
+	    },
+		{
+			string: navigator.platform,
+			subString: "Linux",
+			identity: "Linux"
+		}
+	]
+
+};
+BrowserDetect.init();
+
 if (!Array.prototype.indexOf)
 {
   Array.prototype.indexOf = function(elt /*, from*/)
@@ -29,19 +147,25 @@ if (!Array.prototype.indexOf)
 
 var iframe;
 var splashScreen;
+var aqiDisplay;
 var loaderArea;
 var geocoder;
 var zoom = 4;
 var splashSpeed = 0;
 var splashPos = 1;
+var aqiSpeed = 0;
+var aqiPos = 0;
 var center = new google.maps.LatLng(40,-95);
 var map;
 
 function onLoad() {
+	if (BrowserDetect.browser != "Chrome" && BrowserDetect.browser != "Firefox" && BrowserDetect.browser != "Safari")
+		alert("WARNING: Your browser will not properly work with this webpage. Please load this page on Chrome, Firefox, or Safari.");
 	var baseValue = "A".charCodeAt(0);
 	for (var i = 0; i < 26; i++){
 		markerImages.push(new google.maps.MarkerImage("http://maps.google.com/mapfiles/marker" + (String.fromCharCode(baseValue + i)) + ".png"));
 	}
+	aqiDisplay = document.getElementById("aqiDisplay");
 	iframe = document.getElementById("graphDisplay");
 	iframe.contentWindow.jsapi = {};
 	iframe.contentWindow.jsapi.getLocation = jsapiGetLocation;
@@ -71,7 +195,7 @@ function jsapiGetLocation(deviceName, callback){
 	$.get("https://www.google.com/fusiontables/api/query?sql=SELECT%20Latitude%2C%20Longitude%20FROM%201278639%20WHERE%20formattedName%3D'" + deviceName + "'%20LIMIT%201",function(res){
 		var text = res.responseText;
 		var t = $(text);
-		text = t[5].innerText;
+		text = t[5].innerHTML;
 		text = text.substring(19);
 		var numbers = JSON.parse("[" + text + "]");
 		var lat = numbers[0];
@@ -129,6 +253,21 @@ function scrollSplash(){
 			splashScreen.style.opacity = splashPos;
 			if (splashPos <= 0){
 				splashScreen.style.display = "none";
+			}
+		}
+		
+		if (aqiSpeed > 0 && aqiPos < 1){
+			if (aqiPos <= 0){
+				aqiDisplay.style.display = "block";
+			}
+			aqiPos += aqiSpeed;
+			aqiDisplay.style.opacity = aqiPos;
+		}
+		else if (aqiSpeed < 0 && aqiPos > 0){
+			aqiPos += aqiSpeed;
+			aqiDisplay.style.opacity = aqiPos;
+			if (aqiPos <= 0){
+				aqiDisplay.style.display = "none";
 			}
 		}
 		scrollSplash();
@@ -224,6 +363,7 @@ function onChannelAddedOrRemoved(deviceName,channelName,added){
 		}
 		if (siteData.length == 0){
 			splashSpeed = 0.1;
+			closeaqidisplay();
 		}
 	}
 }
@@ -232,7 +372,7 @@ function loadLocationAndDisplayMarker(deviceName){
 	$.get("https://www.google.com/fusiontables/api/query?sql=SELECT%20Latitude%2C%20Longitude%20FROM%201278639%20WHERE%20formattedName%3D'" + deviceName + "'%20LIMIT%201",function(res){
 		var text = res.responseText;
 		var t = $(text);
-		text = t[5].innerText;
+		text = t[5].innerHTML;
 		text = text.substring(19);
 		var numbers = JSON.parse("[" + text + "]");
 		var lat = numbers[0];
@@ -283,19 +423,124 @@ function onClick(e){
 			iframe.contentWindow.grapher.addChannelWithBounds(siteName,channelsInfo[i][0],channelsInfo[i][1],channelsInfo[i][2]);
 	}
 }
+
+function openaqidisplay(){
+	aqiSpeed = 0.1;
+}
+
+function closeaqidisplay(){
+	aqiSpeed = -0.1;
+}
+
 </script>
 </head>
 
 <body style="height:100%; margin:0;" onload="onLoad();">
 <div id="map_canvas" style="position:absolute; left:0; bottom:0; height:50%; width:100%; bored:none;"></div>
 <div style="height: 34px; background-color: #B3B3B3; font-family: Cambria,Georgia,&quot;Times New Roman&quot;,serif; font-size: 27px; padding-left: 13px; color: #1A1A1A;">Air Quality Data Explorer</div>
-<div style="position:absolute; position:absolute; left:0; top:34px; bottom:50%; width:100%; border:none;">
+<div style="
+    position: absolute;
+    top: 34px;
+    left: 0;
+    bottom: 50%;
+    width: 100%;
+"><div style=" position:absolute; left:0; top: 0; bottom: 52px; width:100%; border:none;">
+
 <iframe id="graphDisplay" src="Grapher2.html" style="position: absolute;
 left: 0;
 top: 0;
 height: 100%;
 width: 100%;
 border: none;"></iframe>
+
+</div><table width="100%" style="
+    position: absolute;
+    bottom: 0;
+"><tbody><tr><td align="center">
+<div>
+<span style="background-color:#00E400">&nbsp;&nbsp;&nbsp;&nbsp;</span> Good &nbsp;
+<span style="background-color:#FFFF00">&nbsp;&nbsp;&nbsp;&nbsp;</span> Moderate &nbsp;
+<span style="background-color:#FF7E00">&nbsp;&nbsp;&nbsp;&nbsp;</span> Unhealthy for Sensitive Groups &nbsp;
+<span style="background-color:#FF0000">&nbsp;&nbsp;&nbsp;&nbsp;</span> Unhealthy &nbsp;
+<span style="background-color:#99004C">&nbsp;&nbsp;&nbsp;&nbsp;</span> Very Unhealthy &nbsp;
+<span style="background-color:#7E0023">&nbsp;&nbsp;&nbsp;&nbsp;</span> Hazardous
+</div>
+<div style="height:2px"></div>
+<div>
+<b>Mousewheel</b> zooms graph &nbsp;&nbsp;&nbsp;
+<b>Dragging</b> graph changes time &nbsp;&nbsp;&nbsp;
+<b>Click</b> dots adds/removes stations &nbsp;&nbsp;&nbsp;
+<b>Click</b> <a href="about:blank" onclick="openaqidisplay(); return false;">here</a> for more air quality information
+</div>
+</td></tr><tr><td><table>
+
+</table></td></tr></tbody></table>
+<div id="aqiDisplay" onclick="closeaqidisplay(); return false;" style="
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 0.5em white solid;
+    opacity: 0;
+    display:none;
+"><table width="100%" border="0" cellspacing="1" cellpadding="4">
+   <tbody><tr bgcolor="#003366"> 		
+	<th width="185">
+    	<div align="center"><font face="arial" color="#FFFFFF">Levels of Health Concern</font></div> 
+    </th> 
+    <th width="174"> <div align="center"><font color="#FFFFFF">Ozone (ppb)</font></div> </th>
+    <th width="197"> <div align="center"><font color="#FFFFFF">PM2.5 (µg/m<sup>3</sup>)</font></div> </th>
+    <th width="174"> <div align="center"><font color="#FFFFFF">Air Quality Index</font></div> </th>
+   </tr>
+   <tr>
+    <td width="185" valign="center" bgcolor="#00E400"><a name="0.1_good"></a>Good</td> 
+    <td valign="center" bgcolor="#CCFFCC" align="center">0 - 59</td>
+    <td valign="center" bgcolor="#CCFFCC" align="center">0.0 - 15.4</td>
+    <td valign="center" bgcolor="#CCFFCC" align="center">0 - 50</td>
+   </tr>
+   <tr>
+    <td width="185" valign="center" bgcolor="#FFFF00"><a name="0.1_mod"></a>Moderate</td> 
+    <td valign="center" bgcolor="#FFFF99" align="center">60 - 75</td>
+    <td valign="center" bgcolor="#FFFF99" align="center">15.5 - 35.4</td>
+    <td valign="center" bgcolor="#FFFF99" align="center">51 - 100</td>
+   </tr> 
+   <tr> 
+	<td width="185" valign="center" bgcolor="#FF7E00"><a name="0.1_sens"></a>Unhealthy for <br> 
+     Sensitive Groups</td> 
+    <td valign="center" bgcolor="#FFCC99" align="center">76 - 95</td>
+    <td valign="center" bgcolor="#FFCC99" align="center">35.5 - 55.4</td>
+    <td valign="center" bgcolor="#FFCC99" align="center">101 - 150</td>
+   </tr>
+   <tr> 
+	<td width="185" valign="center" bgcolor="#FF0000"><font color="#FFFFFF"><a name="0.1_unh"></a>Unhealthy</font></td> 
+    <td valign="center" bgcolor="#FF9999" align="center">96 - 115</td>
+    <td valign="center" bgcolor="#FF9999" align="center">55.5 - 140.4</td>
+    <td valign="center" bgcolor="#FF9999" align="center">151 - 200</td>
+   </tr>
+   <tr> 
+	<td width="185" valign="center" bgcolor="#99004C"><font color="#FFFFFF"><a name="0.1_very"></a>Very Unhealthy</font></td> 
+    <td valign="center" bgcolor="#CC99FF" align="center">116 - 374</td>
+    <td valign="center" bgcolor="#CC99FF" align="center">140.5 - 210.4</td>
+    <td valign="center" bgcolor="#CC99FF" align="center">201 - 300</td>
+   </tr>
+   <tr> 
+	<td width="185" bgcolor="#7E0023" valign="center"><font color="#FFFFFF"><a name="0.1_haz"></a>Hazardous</font></td> 
+    <td valign="center" bgcolor="#aa4444" align="center">301+</td>
+    <td valign="center" bgcolor="#aa4444" align="center">210.5+</td>
+    <td valign="center" bgcolor="#aa4444" align="center">300+</td>
+   </tr> 
+ </tbody></table><br>
+ 
+<em style="
+"><font size="-1">Adapted from <a href="http://dnr.wi.gov/air/aq/health/aqibasics.htm" target="_blank">http://dnr.wi.gov/air/aq/<wbr>health/aqibasics.htm</a><div style="
+    display: inline;
+    right: 1em;
+    text-align: right;
+    position: absolute;
+"><a href="about:blank" onclick="closeaqidisplay(); return false;">Click to close</a></div></font></em></div>
+
 </div>
 <iframe id="splashScreen" src="SplashScreen.html" style="position:absolute; left:0; top:0; height:50%; width:100%; border:none; background:white;display:block;"></iframe>
 </body>

@@ -21,6 +21,16 @@
     <url-pattern>/grapher2/greet</url-pattern>
   </servlet-mapping>
   
+  <servlet-mapping>
+  	<servlet-name>proxyServlet</servlet-name>
+  	<url-pattern>/users/*</url-pattern>
+  </servlet-mapping>
+  
+   <servlet-mapping>
+  	<servlet-name>proxyServlet</servlet-name>
+  	<url-pattern>/tiles/*</url-pattern>
+  </servlet-mapping>
+  
   <!-- Default page to serve -->
   <welcome-file-list>
     <welcome-file>Grapher2.html</welcome-file>
