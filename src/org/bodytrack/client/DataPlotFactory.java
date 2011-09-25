@@ -411,7 +411,7 @@ public final class DataPlotFactory {
 			return "PPB";
 
 		if (channelName.equals("PM2_5_mass"))
-			return "µg/(m^3)";
+			return "µg/m³";
 
 		return null;
 	}
