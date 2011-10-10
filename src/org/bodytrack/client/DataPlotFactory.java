@@ -82,7 +82,8 @@ public final class DataPlotFactory {
 		axisMargin = Grapher2.getAxisMargin();
 		userId = findUserId();
 		minLevel = getMinLevel();
-		timeAxis = new TimeGraphAxis(
+		// TODO: non-null div for this axis
+		timeAxis = new TimeGraphAxis(null,
 				getInitialStartTime(),
 				getInitialEndTime(),
 				Basis.xDownYRight,
@@ -501,11 +502,11 @@ public final class DataPlotFactory {
 
       // Now build the Y-axis
       final GraphAxis yAxis;
+      // TODO: Non-null div for the axes
       if (ChartType.PHOTO.equals(channel.getChartType())) {
-         yAxis = new PhotoGraphAxis(getYAxisWidth());
-      }
-      else {
-         yAxis = new GraphAxis(minVal, maxVal, Basis.xRightYUp, getYAxisWidth(), false);
+         yAxis = new PhotoGraphAxis(null, getYAxisWidth());
+      } else {
+         yAxis = new GraphAxis(null, minVal, maxVal, Basis.xRightYUp, getYAxisWidth(), false);
       }
 
       return buildPlot(channel, getXAxis(), yAxis);

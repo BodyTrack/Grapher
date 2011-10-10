@@ -15,8 +15,15 @@ public class Basis {
 		this.y = y;
 	}
 
+	/**
+	 * The basis used by Y-axes.
+	 */
 	public static final Basis xRightYUp =
 		new Basis(new Vector2(1, 0), new Vector2(0, -1));
+
+	/**
+	 * The basis used by X-axes.
+	 */
 	public static final Basis xDownYRight =
 		new Basis(new Vector2(0, 1), new Vector2(1, 0));
 

@@ -503,10 +503,10 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 
 		// Draw the axes
 		for (GraphAxis xAxis: channelMgr.getXAxes())
-			xAxis.paint(this);
+			xAxis.paint();
 
 		for (GraphAxis yAxis: channelMgr.getYAxes())
-			yAxis.paint(this);
+			yAxis.paint();
 
 		// Now draw the data
 		for (DataPlot plot: channelMgr.getDataPlots())

@@ -11,6 +11,7 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 import com.google.gwt.i18n.client.NumberFormat;
+import com.google.gwt.user.client.ui.RootPanel;
 
 public class GraphAxis {
 	/**
@@ -36,6 +37,7 @@ public class GraphAxis {
 	protected boolean hasMaxRange = false;
 	protected double maxRange = 1e+100;
 
+	private final Canvas drawingCanvas;
 	protected Basis basis;
 	private Vector2 begin;
 	private double width;
@@ -57,18 +59,21 @@ public class GraphAxis {
 	final static int JUSTIFY_MED = 1;
 	final static int JUSTIFY_MAX = 2;
 
-	// Same as the other constructor, but attempts to guess whether this
-	// is an X-axis by examining basis.
-	public GraphAxis(double min, double max, Basis basis, double width) {
-		this(min, max, basis, width,
-			Basis.xDownYRight.equals(basis));
-	}
-
-	public GraphAxis(double min, double max, Basis basis, double width,
-			boolean isXAxis) {
+	public GraphAxis(String divName, double min, double max, Basis basis,
+			double width, boolean isXAxis) {
+		if (basis == null)
+			throw new NullPointerException("Null basis");
 		if (min > max)
-			throw new IllegalArgumentException(
-				"Can't have backwards axis bounds");
+			throw new IllegalArgumentException("Axis min is greater than max");
+
+		if (divName != null) {
+			RootPanel div = RootPanel.get(divName);
+			Surface drawingSurface = new Surface(div.getOffsetWidth(),
+				div.getOffsetHeight());
+			div.add(drawingSurface);
+			drawingCanvas = Canvas.buildCanvas(drawingSurface);
+		} else
+			drawingCanvas = null;
 
 		this.min = min;
 		this.max = max;
@@ -170,34 +175,35 @@ public class GraphAxis {
 		return highlightedPoint;
 	}
 
-	public void paint(Surface surface) {
-		Canvas canvas = Canvas.buildCanvas(surface);
+	public void paint() {
+		if (drawingCanvas == null)
+			return;
 
 		// Pick the color to use, based on highlighting status
 		if (isHighlighted())
-			canvas.getSurface().setStrokeStyle(HIGHLIGHTED_COLOR);
+			drawingCanvas.getSurface().setStrokeStyle(HIGHLIGHTED_COLOR);
 		else
-			canvas.getSurface().setStrokeStyle(NORMAL_COLOR);
+			drawingCanvas.getSurface().setStrokeStyle(NORMAL_COLOR);
 
-		canvas.getRenderer().beginPath();
-		canvas.getRenderer().drawLineSegment(
+		drawingCanvas.getRenderer().beginPath();
+		drawingCanvas.getRenderer().drawLineSegment(
 				project2D(this.min), project2D(this.max));
 
 		double majorTickSize = computeTickSize(majorTickMinSpacingPixels);
-		renderTicks(0, majorTickSize, null, canvas,
+		renderTicks(0, majorTickSize, null, drawingCanvas,
 				majorTickWidthPixels, new DefaultLabelFormatter());
 		//renderTickLabels(surface, majorTickSize, majorTickWidthPixels+3);
 
 		double minorTickSize = computeTickSize(minorTickMinSpacingPixels);
-		renderTicks(0, minorTickSize, null, canvas,
+		renderTicks(0, minorTickSize, null, drawingCanvas,
 				minorTickWidthPixels, null);
 
-		canvas.getRenderer().stroke();
+		drawingCanvas.getRenderer().stroke();
 
-		renderHighlight(canvas, highlightedPoint);
+		renderHighlight(drawingCanvas, highlightedPoint);
 
 		// Clean up after ourselves
-		canvas.getSurface().setStrokeStyle(Canvas.DEFAULT_COLOR);
+		drawingCanvas.getSurface().setStrokeStyle(Canvas.DEFAULT_COLOR);
 	}
 
 	/**
@@ -596,6 +602,10 @@ public class GraphAxis {
 
 	public double getWidth() {
 		return width;
+	}
+
+	public Canvas getDrawingCanvas() {
+		return drawingCanvas;
 	}
 
 	public boolean contains(Vector2 pos) {

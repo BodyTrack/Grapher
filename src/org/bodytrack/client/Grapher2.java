@@ -47,10 +47,6 @@ public class Grapher2 implements EntryPoint {
          final CurrentChannelsWidget currentChans = new CurrentChannelsWidget(mgr);
          final ChannelNamesWidget allChans = new ChannelNamesWidget(mgr, factory);
 
-         // Now that we have a ViewSwitchWidget, we want to make
-         // InfoPublisher work for everyone
-         InfoPublisher.setWidget(viewSwitcher);
-
          if (shouldBuildFromView()) {
             buildFromView(viewSwitcher);
          }

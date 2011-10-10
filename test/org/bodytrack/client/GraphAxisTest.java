@@ -7,10 +7,11 @@ import org.junit.Test;
 public class GraphAxisTest extends TestCase {
    @Test
    public void test_ticks() {
-      final GraphAxis g = new GraphAxis(
+      final GraphAxis g = new GraphAxis(null,
             0, 1, // min, max
             Basis.xDownYRight,
-            5 // width
+            5, // width
+            true
       );
 
       g.layout(new Vector2(0), 100);

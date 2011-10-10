@@ -1,6 +1,5 @@
 package org.bodytrack.client;
 
-import gwt.g2d.client.graphics.Surface;
 
 /**
  * A vertical axis for photos.
@@ -38,8 +37,9 @@ public class PhotoGraphAxis extends GraphAxis {
 	 */
 	public static final double PHOTO_HEIGHT = 0.35;
 
-	public PhotoGraphAxis(double width) {
-		super(INITIAL_MIN, INITIAL_MAX, VERTICAL_AXIS_BASIS, width, false);
+	public PhotoGraphAxis(String divName, double width) {
+		super(divName, INITIAL_MIN, INITIAL_MAX, VERTICAL_AXIS_BASIS,
+			width, false);
 	}
 
 	/**
@@ -90,8 +90,8 @@ public class PhotoGraphAxis extends GraphAxis {
 	 * 		which we should draw the axis
 	 */
 	@Override
-	public void paint(Surface surface) {
-		Canvas canvas = Canvas.buildCanvas(surface);
+	public void paint() {
+		Canvas canvas = getDrawingCanvas();
 
 		// Pick the color to use, based on highlighting status
 		if (isHighlighted())

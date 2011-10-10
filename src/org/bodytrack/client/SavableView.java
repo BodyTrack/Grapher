@@ -50,7 +50,6 @@ import com.google.gwt.json.client.JSONString;
  * is photo, the plot is assumed to be a photo plot.</p>
  */
 // TODO: Implement and handle units
-// TODO: Comment
 public final class SavableView extends JavaScriptObject {
 	/* JavaScript overlay types always have protected empty constructors */
 	protected SavableView() {}
@@ -171,15 +170,14 @@ public final class SavableView extends JavaScriptObject {
       final DataPlotFactory factory = DataPlotFactory.getInstance(widget);
       final ChannelManager result = new ChannelManager();
 
-      final GraphAxis[] xAxes = generateXAxes(axisMargin);
+      // TODO: Put this in an actual div
+      final GraphAxis[] xAxes = generateXAxes(null, axisMargin);
 
       for (final Channel channel : getChannels()) {
-         final String deviceName = channel.getDeviceName();
-         final String channelName = channel.getChannelName();
-
+         // TODO: Put this in an actual div
          final DataPlot plot = factory.buildPlot(channel,
-                                                 xAxes[getXAxisIndex(channel)],
-                                                 generateYAxis(channel, axisMargin));
+             xAxes[getXAxisIndex(channel)],
+             generateYAxis(null, channel, axisMargin));
 
          // Set color of the plot, ensuring compatibility even when
          // the required color field isn't present
@@ -197,28 +195,30 @@ public final class SavableView extends JavaScriptObject {
       return result;
    }
 
-   private GraphAxis[] generateXAxes(int axisMargin) {
+   private GraphAxis[] generateXAxes(String divName, int axisMargin) {
 		GraphAxis[] xAxes = new GraphAxis[countXAxes()];
 
-		for (int i = 0; i < xAxes.length; i++)
-			xAxes[i] = new TimeGraphAxis(getMinTime(i),
-					getMaxTime(i),
-					Basis.xDownYRight,
-					axisMargin * 7,
-					true);
+		for (int i = 0; i < xAxes.length; i++) {
+			xAxes[i] = new TimeGraphAxis(divName,
+				getMinTime(i),
+				getMaxTime(i),
+				Basis.xDownYRight,
+				axisMargin * 7,
+				true);
+		}
 
 		return xAxes;
 	}
 
-	private GraphAxis generateYAxis(final Channel channel, final int axisMargin) {
+	private GraphAxis generateYAxis(final String divName,
+			final Channel channel, final int axisMargin) {
       final int yAxisIndex = getYAxisIndex(channel);
 
-      if (ChartType.PHOTO.equals(channel.getChartType())) {
-         return new PhotoGraphAxis(axisMargin * 3);
-      }
+      if (ChartType.PHOTO.equals(channel.getChartType()))
+         return new PhotoGraphAxis(divName, axisMargin * 3);
 
       // Default unless we need a photo axis
-      return new GraphAxis(
+      return new GraphAxis(divName,
             getMinValue(yAxisIndex),
             getMaxValue(yAxisIndex),
             Basis.xRightYUp,

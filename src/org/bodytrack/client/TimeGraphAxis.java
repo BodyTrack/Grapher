@@ -1,28 +1,15 @@
 package org.bodytrack.client;
 
 import java.util.Date;
+
 import com.google.gwt.i18n.client.NumberFormat;
-import gwt.g2d.client.graphics.Surface;
 
 @SuppressWarnings("deprecation")
 public class TimeGraphAxis extends GraphAxis {
 
-	/**
-	 * Attempts to guess whether this is an X-axis or a Y-axis.
-	 *
-	 * @param min
-	 * @param max
-	 * @param basis
-	 * @param width
-	 */
-	public TimeGraphAxis(double min, double max, Basis basis,
-			double width) {
-		this(min, max, basis, width, Basis.xDownYRight.equals(basis));
-	}
-
-	public TimeGraphAxis(double min, double max, Basis basis,
+	public TimeGraphAxis(String divName, double min, double max, Basis basis,
 			double width, boolean isXAxis) {
-		super(min, max, basis, width, isXAxis);
+		super(divName, min, max, basis, width, isXAxis);
 		minRange = -2147483640;
 		maxRange = 2147483640;
 		hasMinRange = hasMaxRange = true;
@@ -308,8 +295,8 @@ public class TimeGraphAxis extends GraphAxis {
 	}
 
 	@Override
-	public void paint(Surface surface) {
-		Canvas canvas = Canvas.buildCanvas(surface);
+	public void paint() {
+		Canvas canvas = getDrawingCanvas();
 
 		// Pick the color to use, based on highlighting status
 		if (isHighlighted())

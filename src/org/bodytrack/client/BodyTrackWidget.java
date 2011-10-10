@@ -138,7 +138,8 @@ public class BodyTrackWidget extends VerticalPanel {
 			min = center - .5 * span;
 			max = center + .5 * span;
 
-			GraphAxis yAxis = new GraphAxis(
+			// TODO: Don't leave this in a null div
+			GraphAxis yAxis = new GraphAxis(null,
 					min, max,
 					Basis.xRightYUp,
 					axisMargin * 3,
@@ -177,7 +178,8 @@ public class BodyTrackWidget extends VerticalPanel {
 			//	axisMargin * 7,
 			//	true);
 
-		timeAxis = new TimeGraphAxis(
+		// TODO: Don't leave this in a null div
+		timeAxis = new TimeGraphAxis(null,
 				1297869589.9601395,
 				1297966049.4307988,
 				Basis.xDownYRight,
@@ -198,10 +200,6 @@ public class BodyTrackWidget extends VerticalPanel {
 		CurrentChannelsWidget currentChans =
 		    new CurrentChannelsWidget(mgr);
 		ChannelNamesWidget allChans = new ChannelNamesWidget(mgr, factory);
-
-		// Now that we have a ViewSwitchWidget, we want to make
-		// InfoPublisher work for everyone
-		InfoPublisher.setWidget(viewSwitcher);
 		
 		mainLayout.add(viewSwitcher);
 		mainLayout.add(graphWidget);
