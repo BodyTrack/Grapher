@@ -297,6 +297,8 @@ public class TimeGraphAxis extends GraphAxis {
 	@Override
 	public void paint() {
 		Canvas canvas = getDrawingCanvas();
+		if (canvas == null)
+			return;
 
 		// Pick the color to use, based on highlighting status
 		if (isHighlighted())
