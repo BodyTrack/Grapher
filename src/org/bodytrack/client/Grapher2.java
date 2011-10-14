@@ -30,6 +30,8 @@ public class Grapher2 implements EntryPoint {
     * This is the entry point method.
     */
    public void onModuleLoad() {
+	  InfoPublisher.setUpWrappers();
+
       if (isStandAlone()) {
          RootPanel.get("graph").add(new BodyTrackWidget());
       }
