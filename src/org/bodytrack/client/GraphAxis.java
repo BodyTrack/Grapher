@@ -274,6 +274,10 @@ public class GraphAxis {
 		return max;
 	}
 
+	public boolean isXAxis() {
+		return isXAxis;
+	}
+
 	static abstract class LabelFormatter {
 		abstract String format(double value);
 	}

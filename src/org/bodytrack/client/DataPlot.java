@@ -180,6 +180,8 @@ public class DataPlot implements Alertable<GrapherTile> {
     * @throws NullPointerException
     * 		if container, xAxis, yAxis, deviceName, channelName, url,
     * 		or color is <tt>null</tt>
+    * @throws IllegalArgumentException
+    * 		if xAxis is really a Y-axis, or if yAxis is really a Y-axis
     */
    public DataPlot(final GraphWidget container,
                    final GraphAxis xAxis,
@@ -189,8 +191,16 @@ public class DataPlot implements Alertable<GrapherTile> {
                    final int minLevel,
                    final Color color,
                    final boolean publishValueOnHighlight) {
-      if (container == null || xAxis == null || yAxis == null || channel == null || url == null || color == null) {
-         throw new NullPointerException("Cannot have a null container, axis, channel, url, or color");
+      if (container == null || xAxis == null || yAxis == null
+          || channel == null || url == null || color == null) {
+         throw new NullPointerException("Cannot have a null container, axis, "
+                                      + "channel, url, or color");
+      }
+      if (!xAxis.isXAxis()) {
+         throw new IllegalArgumentException("X-axis must be horizontal");
+      }
+      if (yAxis.isXAxis()) {
+         throw new IllegalArgumentException("Y-axis must be vertical");
       }
 
       this.container = container;
@@ -1086,10 +1096,15 @@ public class DataPlot implements Alertable<GrapherTile> {
     * 		the new X-axis to use
     * @throws NullPointerException
     * 		if axis is <tt>null</tt>
+    * @throws IllegalArgumentException
+    * 		if axis is not an X-axis
     */
    void setXAxis(final GraphAxis axis) {
       if (axis == null) {
          throw new NullPointerException("Cannot use null X-axis");
+      }
+      if (!axis.isXAxis()) {
+         throw new IllegalArgumentException("X-axis must be horizontal");
       }
       xAxis = axis;
    }
@@ -1114,10 +1129,15 @@ public class DataPlot implements Alertable<GrapherTile> {
     * 		the new Y-axis to use
     * @throws NullPointerException
     * 		if axis is <tt>null</tt>
+    * @throws IllegalArgumentException
+    * 		if axis is not a Y-axis
     */
    void setYAxis(final GraphAxis axis) {
       if (axis == null) {
          throw new NullPointerException("Cannot use null Y-axis");
+      }
+      if (axis.isXAxis()) {
+          throw new IllegalArgumentException("Y-axis must be vertical");
       }
       yAxis = axis;
    }
