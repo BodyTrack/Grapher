@@ -64,8 +64,9 @@ public class DataPlot implements Alertable<GrapherTile> {
    protected static final double MIN_DRAWABLE_VALUE = -1e300;
 
    /**
-    * The preferred width in pixels of a comment popup panel. The comment panel's actual width will be the minimum of
-    * this value, the drawing width, and the preferred width of the comment.
+    * The preferred width in pixels of a comment popup panel. The comment
+    * panel's actual width will be the minimum of this value, the drawing
+    * width, and the preferred width of the comment.
     */
    private static final int PREFERRED_MAX_COMMENT_WIDTH = 600;
 
@@ -611,7 +612,8 @@ public class DataPlot implements Alertable<GrapherTile> {
 
       hideComment();
       if (highlightedPoint != null
-          && highlightedPoint != HIGHLIGHTED_NO_SINGLE_POINT) {    // TODO: should this be an .equals() comparison instead?
+          && highlightedPoint != HIGHLIGHTED_NO_SINGLE_POINT) {
+         // TODO: should this be an .equals() comparison instead?
          drawing.beginClippedPath();
          paintHighlightedPoint(drawing, highlightedPoint);
          drawing.strokeClippedPath();
@@ -766,14 +768,18 @@ public class DataPlot implements Alertable<GrapherTile> {
    /**
     * Paints a left edge point for a segment of the plot.
     *
-    * <p>This method is designed to be overridden by subclasses. Note that this is only called for the left edge of a
-    * plot segment.  This particular implementation draws a small dot, although a subclass implementation does not have
-    * to do the same.  Note that all x and y values are assumed to be in terms of pixels, not logical values on the
+    * <p>This method is designed to be overridden by subclasses. Note that
+    * this is only called for the left edge of a plot segment.  This
+    * particular implementation draws a small dot, although a subclass
+    * implementation does not have to do the same.  Note that all x and y
+    * values are assumed to be in terms of pixels, not logical values on the
     * axes.</p>
     *
     * @param drawing
-    * 		the {@link BoundedDrawingBox} that should constrain the drawing.  Forwarding graphics calls through
-    * 		drawing will ensure that everything draws up to the edge of the viewing window but no farther
+    * 		the {@link BoundedDrawingBox} that should constrain the drawing.
+    * 		Forwarding graphics calls through drawing will ensure that
+    * 		everything draws up to the edge of the viewing window but no
+    * 		farther
     * @param tile
     *       the tile from which the data point to be drawn was obtained
     * @param x
@@ -798,12 +804,15 @@ public class DataPlot implements Alertable<GrapherTile> {
    /**
     * Draws a single data point on the graph.
     *
-    * <p>This method is designed to be overridden by subclasses. Note that this method has as a precondition that
-    * {@code prevX < x}.  Note that all x and y values are assumed to be in terms of pixels.</p>
+    * <p>This method is designed to be overridden by subclasses. Note
+    * that this method has as a precondition that {@code prevX < x}.
+    * Note that all x and y values are assumed to be in terms of pixels.</p>
     *
     * @param drawing
-    * 		the {@link BoundedDrawingBox} that should constrain the drawing.  Forwarding graphics calls
-    * 		through drawing will ensure that everything draws up to the edge of the viewing window but no farther
+    * 		the {@link BoundedDrawingBox} that should constrain the drawing.
+    * 		Forwarding graphics calls through drawing will ensure that
+    * 		everything draws up to the edge of the viewing window but no
+    * 		farther
     * @param tile
     *       the tile from which the data point to be drawn was obtained
     * @param prevX
@@ -811,7 +820,8 @@ public class DataPlot implements Alertable<GrapherTile> {
     * @param prevY
     * 		the previous Y-value, which will be greater than MIN_DRAWABLE_VALUE
     * @param x
-    * 		the current X-value, which will be greater than MIN_DRAWABLE_VALUE, and greater than or equal to prevX
+    * 		the current X-value, which will be greater than MIN_DRAWABLE_VALUE,
+    * 		and greater than or equal to prevX
     * @param y
     * 		the current Y-value, which will be greater than MIN_DRAWABLE_VALUE
     * @param rawDataPoint
@@ -868,7 +878,8 @@ public class DataPlot implements Alertable<GrapherTile> {
       drawing.drawDot(x, y, NORMAL_STROKE_WIDTH);
    }
 
-   private void paintComment(final BoundedDrawingBox drawing, final PlottablePoint highlightedPoint) {
+   private void paintComment(final BoundedDrawingBox drawing,
+                             final PlottablePoint highlightedPoint) {
       if (highlightedPoint.hasComment()) {
 
          // compute (x,y) for the highlighted point in pixels, relative to the canvas
@@ -883,9 +894,13 @@ public class DataPlot implements Alertable<GrapherTile> {
          final int preferredCommentPanelWidth = commentPanel.getOffsetWidth();
          commentPanel.hide();
 
-         // compute the actual panel width by taking the minimum of the comment panel's preferred width, the width of
-         // the drawing region, and the PREFERRED_MAX_COMMENT_WIDTH.
-         final int desiredPanelWidth = (int)Math.min(preferredCommentPanelWidth, Math.min(drawing.getWidth(), PREFERRED_MAX_COMMENT_WIDTH));
+         // compute the actual panel width by taking the minimum of the comment
+         // panel's preferred width, the width of the drawing region, and the
+         // PREFERRED_MAX_COMMENT_WIDTH.
+         final int desiredPanelWidth =
+            (int)Math.min(preferredCommentPanelWidth,
+                          Math.min(drawing.getWidth(),
+                                   PREFERRED_MAX_COMMENT_WIDTH));
 
          // set the panel to the corrected width
          final int actualPanelWidth;
@@ -893,12 +908,15 @@ public class DataPlot implements Alertable<GrapherTile> {
             commentPanel.setWidth(String.valueOf(desiredPanelWidth) + "px");
             commentPanel.show();
 
-            // unfortunately, setting the width doesn't take borders and such into account, so we need read the width again and
-            // then adjust accordingly
+            // unfortunately, setting the width doesn't take borders and such
+            // into account, so we need read the width again and then adjust
+            // accordingly
             final int widthPlusExtra = commentPanel.getOffsetWidth();
             commentPanel.hide();
 
-            commentPanel.setWidth(String.valueOf(desiredPanelWidth - (widthPlusExtra - desiredPanelWidth)) + "px");
+            commentPanel.setWidth(
+               String.valueOf(desiredPanelWidth - (widthPlusExtra - desiredPanelWidth))
+               + "px");
             commentPanel.show();
 
             actualPanelWidth = commentPanel.getOffsetWidth();
@@ -906,17 +924,22 @@ public class DataPlot implements Alertable<GrapherTile> {
             actualPanelWidth = preferredCommentPanelWidth;
          }
 
-         // now, if the actual panel width is less than the comment panel's preferred width, then the height must have
-         // changed so we need to redisplay the panel to determine its new height.
+         // now, if the actual panel width is less than the comment panel's
+         // preferred width, then the height must have changed so we need to
+         // redisplay the panel to determine its new height.
          commentPanel.show();
          final int actualPanelHeight = commentPanel.getOffsetHeight();
 
-         // now that we know the actual height and width of the comment panel, we can determine where to place the panel
-         // horizontally and vertically.  The general strategy is to try to center the panel horizontally above the
-         // point (we favor placement above the point so that the mouse pointer doesn't occlude the comment).  For
-         // horizontal placement, if the panel can't be centered with respect to the point, then just shift it left or
-         // right enough so that it fits within the bounds of the drawing region.  For vertical placement, if the panel
-         // can't be placed above the point, then place it below.
+         // Now that we know the actual height and width of the comment panel,
+         // we can determine where to place the panel horizontally and
+         // vertically.  The general strategy is to try to center the panel
+         // horizontally above the point (we favor placement above the point
+         // so that the mouse pointer doesn't occlude the comment).  For
+         // horizontal placement, if the panel can't be centered with respect
+         // to the point, then just shift it left or right enough so that it
+         // fits within the bounds of the drawing region.  For vertical
+         // placement, if the panel can't be placed above the point, then
+         // place it below.
 
          final int actualPanelLeft;
          final int desiredPanelLeft = x - actualPanelWidth / 2;
@@ -1244,11 +1267,16 @@ public class DataPlot implements Alertable<GrapherTile> {
             getBestResolutionTileAt(maxTime, correctLevel);
 
       final PlottablePoint closest = getClosestPoint(bestTileMinTime,
-                                                     minTime, maxTime, minValue, maxValue, centerTime,
+                                                     minTime,
+                                                     maxTime,
+                                                     minValue,
+                                                     maxValue,
+                                                     centerTime,
                                                      centerValue);
 
       // pos is right on the border between two tiles
-      if (bestTileMinTime != bestTileMaxTime) {                      // TODO: should this be an .equals() comparison instead?
+      if (bestTileMinTime != bestTileMaxTime) {
+         // TODO: should this be an .equals() comparison instead?
          // This is unlikely but possible, especially if threshold
          // is large
 
@@ -1257,10 +1285,10 @@ public class DataPlot implements Alertable<GrapherTile> {
                maxValue, centerTime, centerValue);
 
          final double distClosestSq = getDistanceSquared(closest,
-                                                         centerTime, centerValue);
+                                                         centerTime,
+                                                         centerValue);
          final double distClosestMaxTimeSq =
-               getDistanceSquared(closestMaxTime, centerTime,
-                                  centerValue);
+               getDistanceSquared(closestMaxTime, centerTime, centerValue);
 
          if (distClosestMaxTimeSq < distClosestSq) {
             return closestMaxTime;
@@ -1300,8 +1328,12 @@ public class DataPlot implements Alertable<GrapherTile> {
     * 		such point, returns <tt>null</tt>
     */
    private PlottablePoint getClosestPoint(final GrapherTile tile,
-                                          final double minTime, final double maxTime, final double minValue,
-                                          final double maxValue, final double centerTime, final double centerValue) {
+                                          final double minTime,
+                                          final double maxTime,
+                                          final double minValue,
+                                          final double maxValue,
+                                          final double centerTime,
+                                          final double centerValue) {
       if (tile == null) {
          return null;
       }
@@ -1339,7 +1371,8 @@ public class DataPlot implements Alertable<GrapherTile> {
 
             // Compute the square of the distance to pos
             final double distanceSq = getDistanceSquared(point,
-                                                         centerTime, centerValue);
+                                                         centerTime,
+                                                         centerValue);
 
             if (distanceSq < shortestDistanceSq) {
                closest = point;
@@ -1365,7 +1398,8 @@ public class DataPlot implements Alertable<GrapherTile> {
     * 		{@link Double#MAX_VALUE} if point is <tt>null</tt>
     */
    private double getDistanceSquared(final PlottablePoint point,
-                                     final double time, final double value) {
+                                     final double time,
+                                     final double value) {
       if (point == null) {
          return Double.MAX_VALUE;
       }
@@ -1468,7 +1502,8 @@ public class DataPlot implements Alertable<GrapherTile> {
       }
 
       if (highlightedPoint == null
-          || highlightedPoint == HIGHLIGHTED_NO_SINGLE_POINT) {    // TODO: should this be an .equals() comparison instead?
+          || highlightedPoint == HIGHLIGHTED_NO_SINGLE_POINT) {
+         // TODO: should this be an .equals() comparison instead?
          // We can call this without problems because we know
          // that container will ignore any invalid message IDs
          container.removeValueMessage(publishedValueId);
@@ -1567,7 +1602,8 @@ public class DataPlot implements Alertable<GrapherTile> {
             formatString += ".SSS";
             break;
          default:
-            GWT.log("DataPlot.getTimeString(): Unexpected number of fractionalSecondDigits: " + fractionalSecondDigits);
+            GWT.log("DataPlot.getTimeString(): Unexpected number of "
+                  + "fractionalSecondDigits: " + fractionalSecondDigits);
       }
 
       final DateTimeFormat format = DateTimeFormat.getFormat(formatString);
