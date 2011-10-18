@@ -1,28 +1,28 @@
 package org.bodytrack.client;
 
+import com.google.gwt.core.client.JavaScriptObject;
+
 import gwt.g2d.client.graphics.Color;
 import gwt.g2d.client.graphics.DirectShapeRenderer;
 import gwt.g2d.client.graphics.Surface;
 
 /**
  * <p>
- * <code>LollipopDataPlot</code> renders data points as "lollipops", which are dots with a line from the min y value to
- * the data point.
+ * <code>LollipopDataPlot</code> renders data points as "lollipops", which
+ * are dots with a line from the min y value to the data point.
  * </p>
  *
  * @author Chris Bartley (bartley@cmu.edu)
  */
 public class LollipopDataPlot extends DotDataPlot {
 
-   public LollipopDataPlot(final GraphWidget container,
-                      final GraphAxis xAxis,
-                      final GraphAxis yAxis,
+   public LollipopDataPlot(final JavaScriptObject container,
+                      final JavaScriptObject xAxis,
+                      final JavaScriptObject yAxis,
                       final Channel channel,
-                      final String url,
                       final int minLevel,
-                      final Color color,
-                      final boolean publishValueOnHighlight) {
-      super(container, xAxis, yAxis, channel, url, minLevel, color, publishValueOnHighlight);
+                      final Color color) {
+      super(container, xAxis, yAxis, channel, minLevel, color);
    }
 
    @Override
@@ -34,7 +34,7 @@ public class LollipopDataPlot extends DotDataPlot {
 
       super.paintEdgePoint(drawing, tile, x, y, rawDataPoint);
 
-      final Canvas canvas = getCanvas();
+      final Canvas canvas = drawing.getCanvas();
       final Surface surface = canvas.getSurface();
       final DirectShapeRenderer renderer = canvas.getRenderer();
       final GraphAxis yAxis = getYAxis();

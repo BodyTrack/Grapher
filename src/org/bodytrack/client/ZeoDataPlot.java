@@ -1,5 +1,7 @@
 package org.bodytrack.client;
 
+import com.google.gwt.core.client.JavaScriptObject;
+
 import gwt.g2d.client.graphics.Color;
 import gwt.g2d.client.graphics.DirectShapeRenderer;
 import gwt.g2d.client.graphics.Surface;
@@ -7,9 +9,11 @@ import gwt.g2d.client.graphics.Surface;
 /**
  * Represents a data plot for Zeo data.
  *
- * Overrides the {@link DataPlot#getDataPoints}, {@link DataPlot#paintEdgePoint}, and {@link DataPlot#paintDataPoint}
- * methods of {@link DataPlot}, allowing this class to take advantage of the capabilities
- * of {@link DataPlot} without much code.
+ * Overrides the {@link DataPlot#getDataPoints},
+ * {@link DataPlot#paintEdgePoint}, and
+ * {@link DataPlot#paintDataPoint} methods of {@link DataPlot}, allowing
+ * this class to take advantage of the capabilities of {@link DataPlot}
+ * without much code.
  *
  * @see DataPlot
  */
@@ -29,40 +33,34 @@ public class ZeoDataPlot extends DataPlot {
    /**
     * Initializes this ZeoDataPlot with the specified parameters.
     *
-    * @param container
-    * 		the {@link GraphWidget GraphWidget} on
-    * 		which this ZeoDataPlot will draw itself and its axes
-    * @param xAxis
-    * 		the X-axis along which this data set will be aligned when
-    * 		drawn.  Usually this is a
-    * 		{@link TimeGraphAxis TimeGraphAxis}
-    * @param yAxis
-    * 		the Y-axis along which this data set will be aligned when
-    * 		drawn
+    * @param datasource
+    * 		a native JavaScript function which can be used to retrieve tiles
+    * @param nativeXAxis
+    * 		the X-axis along which this data set will be aligned when drawn
+    * @param nativeYAxis
+    * 		the Y-axis along which this data set will be aligned when drawn
     * @param deviceName
     * 		the name of the device from which this channel came
     * @param channelName
     * 		the name of the channel on the device specified by deviceName
-    * @param url
-    * 		the beginning of the URL for fetching this data with Ajax
-    * 		calls
     * @param minLevel
     * 		the minimum level to which this will zoom
-    * @see DataPlot#DataPlot(GraphWidget, GraphAxis, GraphAxis, String, String, String, int, Color, boolean)
+    * @see DataPlot#DataPlot(JavaScriptObject, JavaScriptObject, JavaScriptObject, Channel, int, Color)
     */
-   public ZeoDataPlot(final GraphWidget container,
-                      final GraphAxis xAxis,
-                      final GraphAxis yAxis,
+   public ZeoDataPlot(final JavaScriptObject datasource,
+                      final JavaScriptObject nativeXAxis,
+                      final JavaScriptObject nativeYAxis,
                       final Channel channel,
-                      final String url,
                       final int minLevel) {
-      super(container, xAxis, yAxis, channel, url, minLevel, Canvas.DEFAULT_COLOR, true);
+      super(datasource, nativeXAxis, nativeYAxis, channel, minLevel,
+         Canvas.DEFAULT_COLOR);
    }
 
    /**
     * Paints the specified data point as a translucent rectangle.
     *
-    * This is the most important way in which this class modifies the behavior from its parent {@link DataPlot} class.
+    * This is the most important way in which this class modifies the behavior from
+    * its parent {@link DataPlot} class.
     */
    @Override
    protected void paintEdgePoint(final BoundedDrawingBox drawing,
@@ -82,7 +80,7 @@ public class ZeoDataPlot extends DataPlot {
       final double rightX = getXAxis().project2D(rawDataPoint.getDate() + sampleHalfWidth).getX();
 
       // draw the rectangle
-      drawRectangle(zeoState, leftX, rightX, y);
+      drawRectangle(drawing.getCanvas(), zeoState, leftX, rightX, y);
    }
 
    /**
@@ -107,7 +105,6 @@ public class ZeoDataPlot extends DataPlot {
                                  final double x,
                                  final double y,
                                  final PlottablePoint rawDataPoint) {
-
       paintEdgePoint(drawing, tile, x, y, rawDataPoint);
    }
 
@@ -116,8 +113,8 @@ public class ZeoDataPlot extends DataPlot {
     * to 0.
     *
     * @param zeoState
-    * 		the ZeoState for the data point we're rendering.  If the state is <code>null</code>
-    * 	   this method does nothing.
+    * 		the ZeoState for the data point we're rendering.  If the state
+    * 		is <code>null</code> this method does nothing
     * @param x
     * 		the X-value (in pixels) for the right edge of the rectangle
     * @param y
@@ -125,14 +122,14 @@ public class ZeoDataPlot extends DataPlot {
     * @param rectHalfWidth
     * 		the half-width (in pixels) of the rectangle to be drawn
     */
-   private void drawRectangle(final ZeoState zeoState, final double leftX, final double rightX, final double y) {
+   private void drawRectangle(final Canvas canvas, final ZeoState zeoState,
+         final double leftX, final double rightX, final double y) {
       if (zeoState == null) {
          return;
       }
 
       final GraphAxis yAxis = getYAxis();
 
-      final Canvas canvas = getCanvas();
       final Surface surface = canvas.getSurface();
       final DirectShapeRenderer renderer = canvas.getRenderer();
 

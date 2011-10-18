@@ -1,11 +1,5 @@
 package org.bodytrack.client;
 
-import com.google.gwt.core.client.GWT;
-import com.google.gwt.i18n.client.DateTimeFormat;
-import com.google.gwt.i18n.client.NumberFormat;
-import com.google.gwt.user.client.Element;
-import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.PopupPanel;
 import gwt.g2d.client.graphics.Color;
 import gwt.g2d.client.math.Vector2;
 
@@ -16,6 +10,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.i18n.client.NumberFormat;
+import com.google.gwt.user.client.Element;
+import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.PopupPanel;
 
 /**
  * Represents a single set of data, along with references to its
@@ -102,11 +104,10 @@ public class DataPlot implements Alertable<GrapherTile> {
     */
    private static final double LN_2 = Math.log(2);
 
-   private final GraphWidget container;
-   private GraphAxis xAxis;
-   private GraphAxis yAxis;
+   private final JavaScriptObject datasource;
+   private JavaScriptObject xAxis;
+   private JavaScriptObject yAxis;
    private final Channel channel;
-   private final Canvas canvas;
    private PopupPanel commentPanel;
 
    private final int minLevel;
@@ -115,13 +116,13 @@ public class DataPlot implements Alertable<GrapherTile> {
    private boolean shouldZoomIn;
 
    // Values related to getting new values from the server
-   private final String baseUrl;
    private final List<GrapherTile> currentData;
    private final Set<TileDescription> pendingDescriptions;
    private final Map<String, Integer> pendingUrls;
    private final List<GrapherTile> pendingData;
 
-   private final Map<String, List<Integer>> loadingUrls;
+   // TODO: Bring this back
+   // private final Map<String, List<Integer>> loadingUrls;
 
    // Determining whether or not we should retrieve more data from
    // the server
@@ -136,9 +137,11 @@ public class DataPlot implements Alertable<GrapherTile> {
    // If publishValueOnHighlight is true, we will show our data value
    // as a decimal whenever this axis is highlighted, using the
    // data value publishing API in GraphWidget.
+   /* TODO: Bring back value publishing?
    private final boolean publishValueOnHighlight;
 
    private int publishedValueId;
+   */
 
    /**
     * Main constructor for the DataPlot object.
@@ -153,68 +156,53 @@ public class DataPlot implements Alertable<GrapherTile> {
     * an untrusted connection could allow
     * unauthorized access to all of a user's data.</p>
     *
-    * @param container
-    * 		the {@link GraphWidget GraphWidget} on
-    * 		which this DataPlot will draw itself and its axes
-    * @param xAxis
-    * 		the X-axis along which this data set will be aligned when
-    * 		drawn.  Usually this is a
-    * 		{@link TimeGraphAxis TimeGraphAxis}
-    * @param yAxis
-    * 		the Y-axis along which this data set will be aligned when
-    * 		drawn
+    * @param datasource
+    * 		a native JavaScript function which can be used to retrieve tiles
+    * @param nativeXAxis
+    * 		the X-axis along which this data set will be aligned when drawn
+    * @param nativeYAxis
+    * 		the Y-axis along which this data set will be aligned when drawn
     * @param channel
     * 		the channel
-    * @param url
-    * 		the beginning of the URL for fetching this data with Ajax
-    * 		calls
     * @param minLevel
     * 		the minimum level to which the user will be allowed to zoom
     * @param color
     * 		the color in which to draw these data points (note that
     * 		this does not affect the color of the axes)
-    * @param publishValueOnHighlight
-    * 		<tt>true</tt> to signify that, whenever a point is highlighted
-    * 		on this <tt>DataPlot</tt>, the value should show up in the
-    * 		corner of container
     * @throws NullPointerException
     * 		if container, xAxis, yAxis, deviceName, channelName, url,
     * 		or color is <tt>null</tt>
     * @throws IllegalArgumentException
     * 		if xAxis is really a Y-axis, or if yAxis is really a Y-axis
     */
-   public DataPlot(final GraphWidget container,
-                   final GraphAxis xAxis,
-                   final GraphAxis yAxis,
+   public DataPlot(final JavaScriptObject datasource,
+                   final JavaScriptObject nativeXAxis,
+                   final JavaScriptObject nativeYAxis,
                    final Channel channel,
-                   final String url,
                    final int minLevel,
-                   final Color color,
-                   final boolean publishValueOnHighlight) {
-      if (container == null || xAxis == null || yAxis == null
-          || channel == null || url == null || color == null) {
-         throw new NullPointerException("Cannot have a null container, axis, "
-                                      + "channel, url, or color");
+                   final Color color) {
+      if (datasource == null || nativeXAxis == null
+          || nativeYAxis == null || channel == null || color == null) {
+         throw new NullPointerException(
+            "Cannot have a null datasource, axis, channel, or color");
       }
-      if (!xAxis.isXAxis()) {
+
+      this.xAxis = nativeXAxis;
+      this.yAxis = nativeYAxis;
+      if (!getXAxis().isXAxis()) {
          throw new IllegalArgumentException("X-axis must be horizontal");
       }
-      if (yAxis.isXAxis()) {
+      if (getYAxis().isXAxis()) {
          throw new IllegalArgumentException("Y-axis must be vertical");
       }
 
-      this.container = container;
-      this.xAxis = xAxis;
-      this.yAxis = yAxis;
+      this.datasource = datasource;
       this.channel = channel;
-      baseUrl = url;
       shouldZoomIn = true;
       this.minLevel = minLevel;
 
       this.color = color;
-      this.publishValueOnHighlight = publishValueOnHighlight;
-
-      canvas = Canvas.buildCanvas(this.container);
+      // this.publishValueOnHighlight = publishValueOnHighlight;
 
       // The data will be pulled in with the checkForFetch call
       pendingData = new ArrayList<GrapherTile>();
@@ -222,42 +210,16 @@ public class DataPlot implements Alertable<GrapherTile> {
       pendingUrls = new HashMap<String, Integer>();
       currentData = new ArrayList<GrapherTile>();
 
-      loadingUrls = new HashMap<String, List<Integer>>();
+      // loadingUrls = new HashMap<String, List<Integer>>();
 
       currentLevel = Integer.MIN_VALUE;
       currentMinOffset = Integer.MAX_VALUE;
       currentMaxOffset = Integer.MIN_VALUE;
 
       highlightedPoint = null;
-      publishedValueId = 0;
+      // publishedValueId = 0;
 
       shouldZoomIn = checkForFetch();
-   }
-
-   /**
-    * Puts together the base URL for a channel, based on the URL specification for tiles.
-    *
-    * @param userId
-    * 		the ID of the current user
-    * @param channel
-    * 		the channel we want to pull tiles from
-    * @return
-    * 		a base URL that is suitable for passing to one of the
-    * 		constructors for <tt>DataPlot</tt> or one of its subclasses
-    * @throws NullPointerException
-    * 		if deviceName or channelName is <tt>null</tt>
-    */
-   public static String buildBaseUrl(final int userId, final Channel channel) {
-      if (channel == null) {
-         throw new NullPointerException(
-               "Null part of base URL not allowed");
-      }
-
-      if ("".equals(channel.getDeviceName())) {
-         return "/tiles/" + userId + "/" + channel.getChannelName() + "/";
-      }
-
-      return "/tiles/" + userId + "/" + channel.getDeviceName() + "." + channel.getChannelName() + "/";
    }
 
    /**
@@ -357,37 +319,8 @@ public class DataPlot implements Alertable<GrapherTile> {
       }
 
       color = newColor;
-      container.paintTwice();
-   }
-
-   /**
-    * Gives subclasses a reference to the
-    * {@link Canvas Canvas} object on which they
-    * can draw.
-    *
-    * @return
-    * 		the <tt>Canvas</tt> on which this <tt>DataPlot</tt> draws
-    */
-   protected Canvas getCanvas() {
-      return canvas;
-   }
-
-   /**
-    * Gives subclasses a reference to the
-    * {@link GraphWidget GraphWidget} object that
-    * they can use for the <tt>GraphWidget</tt> API.
-    *
-    * <p>Do <em>not</em> use this method's return value for direct
-    * drawing - this is why the {@link #getCanvas()} method was created.
-    * Instead, this method's return value should be used for other
-    * calls that are specific to the <tt>GraphWidget</tt> class.</p>
-    *
-    * @return
-    * 		the <tt>GraphWidget</tt> on which this <tt>DataPlot</tt>
-    * 		draws
-    */
-   protected GraphWidget getContainer() {
-      return container;
+      // TODO: Implement
+      // container.paintTwice();
    }
 
    /**
@@ -444,35 +377,15 @@ public class DataPlot implements Alertable<GrapherTile> {
          return;
       }
 
-      final String url = getTileUrl(level, offset);
-      GrapherTile.retrieveTile(url, level, offset, pendingData, this);
+      final String tileKey = level + "." + offset;
+      GrapherTile.retrieveTile(datasource, level, offset, pendingData, this);
 
       // Tell the user we are looking for information
-      addLoadingText(level, offset, url);
+      addLoadingText(level, offset, tileKey);
 
       // Make sure we don't fetch this again unnecessarily
       pendingDescriptions.add(desc);
-      pendingUrls.put(url, 0);
-   }
-
-   /**
-    * A method to generate the correct URL for a given tile.
-    *
-    * <p>This method is designed so that subclasses can override
-    * it and change the default behavior of tile fetching with
-    * little effort.  For instance, a photo data plot can modify the
-    * &quot;tags&quot; and &quot;nsfw&quot; parameters in the request
-    * to the server.</p>
-    *
-    * @param level
-    * 		the level at which the tile should come
-    * @param offset
-    * 		the offset of the tile
-    * @return
-    * 		the URL to use to get the tile
-    */
-   protected String getTileUrl(final int level, final int offset) {
-      return baseUrl + level + "." + offset + ".json";
+      pendingUrls.put(tileKey, 0);
    }
 
    /**
@@ -491,15 +404,18 @@ public class DataPlot implements Alertable<GrapherTile> {
     * 		the URL of the tile that is loading
     */
    private void addLoadingText(final int level, final int offset, final String url) {
+      /* TODO: IMPLEMENT
       final String msg = "Loading " + url;
 
       // Actually add the message
       final int id = container.addLoadingMessage(msg);
 
-      final List<Integer> ids = loadingUrls.containsKey(url) ?
-                                loadingUrls.remove(url) : new ArrayList<Integer>();
+      final List<Integer> ids = loadingUrls.containsKey(url)
+                                ? loadingUrls.remove(url)
+                                : new ArrayList<Integer>();
       ids.add(id);
       loadingUrls.put(url, ids);
+      */
    }
 
    /**
@@ -516,6 +432,7 @@ public class DataPlot implements Alertable<GrapherTile> {
     * 		the URL of the tile that is finished loading
     */
    private void removeLoadingText(final String url) {
+      /* TODO: IMPLEMENT
       if (loadingUrls.containsKey(url)) {
          // Always maintain the invariant that each value in
          // loadingUrls has at least one element.  Since this
@@ -535,6 +452,7 @@ public class DataPlot implements Alertable<GrapherTile> {
          container.removeLoadingMessage(id);
       }
       // Don't do anything if we don't have an ID with this URL
+      */
    }
 
    /**
@@ -545,18 +463,19 @@ public class DataPlot implements Alertable<GrapherTile> {
     */
    @Override
    public void onSuccess(final GrapherTile tile) {
-      final String url = tile.getUrl();
+      final String tileKey = tile.getLevel() + "." + tile.getOffset();
 
-      if (pendingUrls.containsKey(url)) {
-         pendingUrls.remove(url);
+      if (pendingUrls.containsKey(tileKey)) {
+         pendingUrls.remove(tileKey);
       }
 
-      removeLoadingText(url);
+      removeLoadingText(tileKey);
 
       // It is important to call container.paintTwice() rather than
       // simply paint() here, since the loading text does
       // not update unless container.paint() is called at least once
-      container.paintTwice();
+      // TODO: Bring this back
+      // container.paintTwice();
    }
 
    /**
@@ -570,33 +489,32 @@ public class DataPlot implements Alertable<GrapherTile> {
     */
    @Override
    public void onFailure(final GrapherTile tile) {
-      final String url = tile.getUrl();
+	  final String tileKey = tile.getLevel() + "." + tile.getOffset();
       final int level = tile.getLevel();
       final int offset = tile.getOffset();
 
-      if (pendingUrls.containsKey(url)) {
-         final int oldValue = pendingUrls.get(url);
+      if (pendingUrls.containsKey(tileKey)) {
+         final int oldValue = pendingUrls.get(tileKey);
          if (oldValue > MAX_REQUESTS_PER_URL) {
-            // TODO: Log or alert user whenever we can't get
-            // a piece of data
-            // Perhaps use InfoPublisher API
-            removeLoadingText(url);
+            // TODO: Log or alert user whenever we can't get data
+            removeLoadingText(tileKey);
 
             return;
          }
 
-         pendingUrls.remove(url);
-         pendingUrls.put(url, oldValue + 1);
+         pendingUrls.remove(tileKey);
+         pendingUrls.put(tileKey, oldValue + 1);
       }
       else {
-         pendingUrls.put(url, 1);
+         pendingUrls.put(tileKey, 1);
       }
 
-      GrapherTile.retrieveTile(url, level, offset, pendingData, this);
+      GrapherTile.retrieveTile(datasource, level, offset, pendingData, this);
 
       // See the documentation in onSuccess() to see why
       // container.paintTwice() is important
-      container.paintTwice();
+      // TODO: Bring this back
+      // container.paintTwice();
    }
 
    /**
@@ -608,15 +526,16 @@ public class DataPlot implements Alertable<GrapherTile> {
     * override this method.  Instead, it is recommended that a subclass
     * override the {@link #paintAllDataPoints} method.</p>
     */
-   public void paint() {
+   public void paint(Canvas canvas) {
       checkForNewData();
 
       // Draw data points
       canvas.getSurface().setStrokeStyle(color);
       canvas.getSurface().setLineWidth(isHighlighted()
-                                       ? HIGHLIGHT_STROKE_WIDTH : NORMAL_STROKE_WIDTH);
+                                       ? HIGHLIGHT_STROKE_WIDTH
+                                       : NORMAL_STROKE_WIDTH);
 
-      final BoundedDrawingBox drawing = getDrawingBounds();
+      final BoundedDrawingBox drawing = getDrawingBounds(canvas);
 
       paintAllDataPoints(drawing);
 
@@ -648,17 +567,17 @@ public class DataPlot implements Alertable<GrapherTile> {
     * 		a <tt>BoundedDrawingBox</tt> that will only allow drawing
     * 		within the axes
     */
-   private BoundedDrawingBox getDrawingBounds() {
-      final double minX = xAxis.project2D(xAxis.getMin()).getX();
-      final double maxX = xAxis.project2D(xAxis.getMax()).getX();
+   private BoundedDrawingBox getDrawingBounds(Canvas canvas) {
+      final double minX = getXAxis().project2D(getXAxis().getMin()).getX();
+      final double maxX = getXAxis().project2D(getXAxis().getMax()).getX();
 
       // Although minY and maxY appear to be switched, this is actually
       // the correct way to define these variables, since we draw the
       // Y-axis from bottom to top but pixel values increase from top
       // to bottom.  Thus, the max Y-value is associated with the min
       // axis value, and vice versa.
-      final double minY = yAxis.project2D(yAxis.getMax()).getY();
-      final double maxY = yAxis.project2D(yAxis.getMin()).getY();
+      final double minY = getYAxis().project2D(getYAxis().getMax()).getY();
+      final double maxY = getYAxis().project2D(getYAxis().getMin()).getY();
 
       return new BoundedDrawingBox(canvas, minX, minY, maxX, maxY);
    }
@@ -715,8 +634,8 @@ public class DataPlot implements Alertable<GrapherTile> {
          }
 
          for (final PlottablePoint point : dataPoints) {
-            final double x = xAxis.project2D(point.getDate()).getX();
-            final double y = yAxis.project2D(point.getValue()).getY();
+            final double x = getXAxis().project2D(point.getDate()).getX();
+            final double y = getYAxis().project2D(point.getValue()).getY();
 
             if (x < MIN_DRAWABLE_VALUE || y < MIN_DRAWABLE_VALUE
                 || Double.isInfinite(x) || Double.isInfinite(y)) {
@@ -878,8 +797,8 @@ public class DataPlot implements Alertable<GrapherTile> {
     */
    protected void paintHighlightedPoint(final BoundedDrawingBox drawing,
                                         final PlottablePoint point) {
-      final double x = xAxis.project2D(point.getDate()).getX();
-      final double y = yAxis.project2D(point.getValue()).getY();
+      final double x = getXAxis().project2D(point.getDate()).getX();
+      final double y = getYAxis().project2D(point.getValue()).getY();
 
       // Draw three concentric circles to look like one filled-in circle
       // The real radius is the first one used: HIGHLIGHTED_DOT_RADIUS
@@ -893,8 +812,8 @@ public class DataPlot implements Alertable<GrapherTile> {
       if (highlightedPoint.hasComment()) {
 
          // compute (x,y) for the highlighted point in pixels, relative to the canvas
-         final int x = (int)xAxis.project2D(highlightedPoint.getDate()).getX();
-         final int y = (int)yAxis.project2D(highlightedPoint.getValue()).getY();
+         final int x = (int)getXAxis().project2D(highlightedPoint.getDate()).getX();
+         final int y = (int)getYAxis().project2D(highlightedPoint.getValue()).getY();
 
          // create the panel, but display it offscreen so we can measure its preferred width
          commentPanel = new PopupPanel();
@@ -1003,8 +922,8 @@ public class DataPlot implements Alertable<GrapherTile> {
 
       // When minTime and maxTime are used in calculations, they are
       // used to make the calculations scale-independent
-      final double minTime = xAxis.getMin();
-      final double maxTime = xAxis.getMax();
+      final double minTime = getXAxis().getMin();
+      final double maxTime = getXAxis().getMax();
 
       double maxCoveredTime = minTime;
 
@@ -1082,8 +1001,12 @@ public class DataPlot implements Alertable<GrapherTile> {
     * @return
     * 		the X-axis for this DataPlot
     */
-   public GraphAxis getXAxis() {
-      return xAxis;
+   public native GraphAxis getXAxis() /*-{
+      return xAxis.__backingAxis;
+   }-*/;
+
+   public JavaScriptObject getNativeXAxis() {
+	   return xAxis;
    }
 
    /**
@@ -1096,15 +1019,10 @@ public class DataPlot implements Alertable<GrapherTile> {
     * 		the new X-axis to use
     * @throws NullPointerException
     * 		if axis is <tt>null</tt>
-    * @throws IllegalArgumentException
-    * 		if axis is not an X-axis
     */
-   void setXAxis(final GraphAxis axis) {
+   void setXAxis(final JavaScriptObject axis) {
       if (axis == null) {
          throw new NullPointerException("Cannot use null X-axis");
-      }
-      if (!axis.isXAxis()) {
-         throw new IllegalArgumentException("X-axis must be horizontal");
       }
       xAxis = axis;
    }
@@ -1115,8 +1033,12 @@ public class DataPlot implements Alertable<GrapherTile> {
     * @return
     * 		the Y-axis for this DataPlot
     */
-   public GraphAxis getYAxis() {
-      return yAxis;
+   public native GraphAxis getYAxis() /*-{
+      return yAxis.__backingAxis;
+   }-*/;
+
+   public JavaScriptObject getNativeYAxis() {
+	   return yAxis;
    }
 
    /**
@@ -1127,17 +1049,10 @@ public class DataPlot implements Alertable<GrapherTile> {
     *
     * @param axis
     * 		the new Y-axis to use
-    * @throws NullPointerException
-    * 		if axis is <tt>null</tt>
-    * @throws IllegalArgumentException
-    * 		if axis is not a Y-axis
     */
-   void setYAxis(final GraphAxis axis) {
+   void setYAxis(final JavaScriptObject axis) {
       if (axis == null) {
          throw new NullPointerException("Cannot use null Y-axis");
-      }
-      if (axis.isXAxis()) {
-          throw new IllegalArgumentException("Y-axis must be vertical");
       }
       yAxis = axis;
    }
@@ -1149,7 +1064,7 @@ public class DataPlot implements Alertable<GrapherTile> {
     * 		the level at which xAxis is operating
     */
    private int computeCurrentLevel() {
-      final double xAxisWidth = xAxis.getMax() - xAxis.getMin();
+      final double xAxisWidth = getXAxis().getMax() - getXAxis().getMin();
       final double dataPointWidth = xAxisWidth / GrapherTile.TILE_WIDTH;
 
       return log2(dataPointWidth);
@@ -1185,7 +1100,7 @@ public class DataPlot implements Alertable<GrapherTile> {
     * 		and the private variable xAxis
     */
    private int computeMinOffset(final int level) {
-      final double min = xAxis.getMin();
+      final double min = getXAxis().getMin();
 
       final double tileWidth = getTileWidth(level);
 
@@ -1207,7 +1122,7 @@ public class DataPlot implements Alertable<GrapherTile> {
     * 		and the private variable xAxis
     */
    private int computeMaxOffset(final int level) {
-      final double max = xAxis.getMax();
+      final double max = getXAxis().getMax();
 
       final double tileWidth = getTileWidth(level);
 
@@ -1263,18 +1178,20 @@ public class DataPlot implements Alertable<GrapherTile> {
       final Vector2 bottomRight = new Vector2(x + threshold, y + threshold);
 
       // Now convert that square into a square of times and values
-      final double minTime = xAxis.unproject(topLeft);
-      final double maxTime = xAxis.unproject(bottomRight);
-      final double minValue = yAxis.unproject(bottomRight);
-      final double maxValue = yAxis.unproject(topLeft);
+      final double minTime = getXAxis().unproject(topLeft);
+      final double maxTime = getXAxis().unproject(bottomRight);
+      final double minValue = getYAxis().unproject(bottomRight);
+      final double maxValue = getYAxis().unproject(topLeft);
 
-      final double centerTime = xAxis.unproject(pos);
-      final double centerValue = xAxis.unproject(pos);
+      final double centerTime = getXAxis().unproject(pos);
+      final double centerValue = getXAxis().unproject(pos);
 
       // Don't even bother trying to highlight if the mouse is out of
       // bounds
-      if (maxTime < xAxis.getMin() || minTime > xAxis.getMax()
-          || maxValue < yAxis.getMin() || minValue > yAxis.getMax()) {
+      if (maxTime < getXAxis().getMin()
+          || minTime > getXAxis().getMax()
+          || maxValue < getYAxis().getMin()
+          || minValue > getYAxis().getMax()) {
          return null;
       }
 
@@ -1370,10 +1287,10 @@ public class DataPlot implements Alertable<GrapherTile> {
          final double val = point.getValue();
 
          // Only check for proximity to points we can see
-         if (time < xAxis.getMin() || time > xAxis.getMax()) {
+         if (time < getXAxis().getMin() || time > getXAxis().getMax()) {
             continue;
          }
-         if (val < yAxis.getMin() || val > yAxis.getMax()) {
+         if (val < getYAxis().getMin() || val > getYAxis().getMax()) {
             continue;
          }
 
@@ -1517,6 +1434,8 @@ public class DataPlot implements Alertable<GrapherTile> {
     * value returned by {@link #getDataLabel(PlottablePoint)}.</p>
     */
    private void possiblyDisplayHighlightedValue() {
+      // TODO: IMPLEMENT
+      /*
       if (!publishValueOnHighlight) {
          return;
       }
@@ -1528,12 +1447,11 @@ public class DataPlot implements Alertable<GrapherTile> {
          // that container will ignore any invalid message IDs
          container.removeValueMessage(publishedValueId);
          publishedValueId = 0;
-      }
-      else if (publishedValueId == 0) // Don't add message twice
-      {
+      } else if (publishedValueId == 0) { // Don't add message twice
          publishedValueId = container.addValueMessage(
                getDataLabel(highlightedPoint), color);
       }
+      */
    }
 
    /**

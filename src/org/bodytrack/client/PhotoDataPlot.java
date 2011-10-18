@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.gwt.core.client.JavaScriptObject;
+
 /**
  * A class to show photos on a {@link GraphWidget}.
  */
@@ -43,7 +45,8 @@ public class PhotoDataPlot extends DataPlot {
 	private final Map<PlottablePoint, Set<PhotoGetter>> images;
 
 	private final PhotoAlertable loadListener;
-	private final Map<PhotoGetter, Integer> loadingText;
+	// TODO: Add this back in?
+	// private final Map<PhotoGetter, Integer> loadingText;
 
 	private Set<PhotoGetter> highlightedImages;
 
@@ -59,21 +62,17 @@ public class PhotoDataPlot extends DataPlot {
 	/**
 	 * Initializes a new PhotoDataPlot.
 	 *
-	 * @param container
-	 * 		the container on which we draw images for the user
-	 * @param xAxis
-	 * 		the X-axis that will determine the position of images
-	 * 		on container
-	 * @param yAxis
-	 * 		the Y-axis that will determine the position of images
-	 * 		on container
+    * @param datasource
+    * 		a native JavaScript function which can be used to retrieve
+    * 		information about photos, NOT the photos themselves
+    * @param nativeXAxis
+    * 		the X-axis along which this data set will be aligned when drawn
+    * @param nativeYAxis
+    * 		the Y-axis along which this data set will be aligned when drawn
 	 * @param deviceName
 	 * 		the name of the device from which this channel came
 	 * @param channelName
 	 * 		the name of the channel on the device specified by deviceName
-	 * @param url
-	 * 		the base URL for retrieving JSON descriptions of images,
-	 * 		<em>NOT</em> for getting the images themselves
 	 * @param userId
 	 * 		the user ID of the current user
 	 * @param minLevel
@@ -81,44 +80,25 @@ public class PhotoDataPlot extends DataPlot {
 	 * @throws NullPointerException
 	 * 		if any parameter is <tt>null</tt>
 	 */
-	public PhotoDataPlot(final GraphWidget container,
-                        final GraphAxis xAxis,
-                        final PhotoGraphAxis yAxis,
+	public PhotoDataPlot(final JavaScriptObject datasource,
+                        final JavaScriptObject nativeXAxis,
+                        final JavaScriptObject nativeYAxis,
                         final Channel channel,
-                        final String url,
                         final int userId,
                         final int minLevel) {
-		super(container, xAxis, yAxis, channel, url, minLevel, Canvas.DEFAULT_COLOR, false);
-		// Note that we know that our Y-axis is a PhotoGraphAxis,
-		// so we will be able to cast freely later on
+		super(datasource, nativeXAxis, nativeYAxis, channel, minLevel,
+			Canvas.DEFAULT_COLOR);
 
 		this.userId = userId;
 
 		images = new HashMap<PlottablePoint, Set<PhotoGetter>>();
 		loadListener = new PhotoAlertable();
-		loadingText = new HashMap<PhotoGetter, Integer>();
+		// loadingText = new HashMap<PhotoGetter, Integer>();
 		highlightedImages = new HashSet<PhotoGetter>();
 
 		overlap = new HashMap<PhotoGetter, Set<PhotoGetter>>();
 		previousHeight = 1e-10;
 		previousWidth = 1e-10;
-	}
-
-	/**
-	 * Returns the proper base URL to use when constructing a photo.
-	 *
-	 * <p>Note that this is <strong>different</strong> than the base
-	 * URL for a regular data plot.  This is why this does not just use
-	 * {@link DataPlot#buildBaseUrl(int, String, String)}.</p>
-	 *
-	 * @param userId
-	 * 		the ID of the current user
-	 * @return
-	 * 		the base URL for getting photo information for the
-	 * 		specified user
-	 */
-	public static String buildPhotoBaseUrl(int userId) {
-		return "/photos/" + userId + "/";
 	}
 
 	/**
@@ -201,8 +181,9 @@ public class PhotoDataPlot extends DataPlot {
 		PhotoGetter photo = PhotoGetter.buildPhotoGetter(userId,
 			photoId, time, loadListener);
 
-		loadingText.put(photo,
-			getContainer().addLoadingMessage(photo.getUrl()));
+		// TODO: Put loading text back on?
+		// loadingText.put(photo,
+		// 	getContainer().addLoadingMessage(photo.getUrl()));
 
 		addOverlaps(photo, getPhotoHeight());
 
@@ -253,6 +234,8 @@ public class PhotoDataPlot extends DataPlot {
 	 * 		begin with for this particular image
 	 */
 	private boolean removePhotoLoadingText(PhotoGetter photo) {
+		// TODO: Add this back in?
+		/*
 		boolean contains = loadingText.containsKey(photo);
 
 		if (contains) {
@@ -262,6 +245,8 @@ public class PhotoDataPlot extends DataPlot {
 		}
 
 		return contains;
+		*/
+		return true;
 	}
 
    /**
@@ -540,7 +525,7 @@ public class PhotoDataPlot extends DataPlot {
 			double width, double height, PhotoGetter photo) {
 		// Now draw the image itself, not allowing it to overflow onto
 		// the axes
-		photo.drawImageBounded(getCanvas().getNativeCanvasElement(),
+		photo.drawImageBounded(drawing.getCanvas().getNativeCanvasElement(),
 			x, y, width, height, drawing);
 
 		// Note that the borders are drawn after the image is, so the image
@@ -691,7 +676,8 @@ public class PhotoDataPlot extends DataPlot {
 		public void onSuccess(PhotoGetter photo) {
 			removePhotoLoadingText(photo);
 
-			getContainer().paint();
+			// TODO: Add this back in?
+			// getContainer().paint();
 		}
 
 		/**
@@ -713,7 +699,8 @@ public class PhotoDataPlot extends DataPlot {
 
 			removePhotoLoadingText(photo);
 
-			getContainer().paint();
+			// TODO: Add this back in?
+			// getContainer().paint();
 		}
 	}
 }

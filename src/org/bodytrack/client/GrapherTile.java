@@ -3,12 +3,9 @@ package org.bodytrack.client;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.bodytrack.client.WebDownloader.DownloadAlertable;
-
 import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.core.client.JsArray;
-import com.google.gwt.http.client.Request;
-import com.google.gwt.json.client.JSONParser;
+import com.google.gwt.json.client.JSONArray;
+import com.google.gwt.json.client.JSONValue;
 
 /**
  * Represents a single tile of data.
@@ -36,8 +33,6 @@ import com.google.gwt.json.client.JSONParser;
 // that sent to us in a PlottablePointTile
 
 public final class GrapherTile {
-	// One or the other of these fields will always be null
-	private final String url;
 	private final int level;
 	private final int offset;
 	private final PlottablePointTile tile;
@@ -68,88 +63,44 @@ public final class GrapherTile {
 	 * @throws NullPointerException
 	 * 		if url or json is <tt>null</tt>
 	 */
-	public GrapherTile(String url, int level, int offset, String json) {
-		if (url == null || json == null)
-			throw new NullPointerException(
-				"Null parameter for construction of GrapherTile");
-
-		this.url = url;
-
-		// Allow for the special case in which JSON is the empty string
-		if (json.equals("")) {
-			tile = null;
+	public GrapherTile(int level, int offset, JSONValue tile) {
+		// Allow for the special case in which JSON from the server
+		// is the empty string
+		if (tile == null) {
+			this.tile = null;
 			photoDescs = null;
 			this.level = level;
 			this.offset = offset;
 			return;
 		}
 
-		if (isArray(json)) {
+		if (tile.isArray() != null) {
 			this.level = level;
 			this.offset = offset;
 
-			tile = null;
+			this.tile = null;
 			photoDescs = new ArrayList<PhotoDescription>();
 
-			JsArray<JavaScriptObject> arr = evalArray(json);
+			JSONArray arr = tile.isArray();
 
-			for (int i = 0; i < arr.length(); i++)
-				photoDescs.add((PhotoDescription) arr.get(i));
+			for (int i = 0; i < arr.size(); i++) {
+				// TODO: This is a hack
+				PhotoDescription desc =
+					PhotoDescription.buildDescription(arr.get(i).toString());
+				photoDescs.add(desc);
+			}
 		} else {
 			photoDescs = null;
-			tile = PlottablePointTile.buildTile(json);
+			// TODO: Another hack
+			this.tile = PlottablePointTile.buildTile(tile.toString());
 
 			// Use the tile's actual level and offset in this case only
 			// Only in this case will the server ever return a level
 			// different from the level requested
-			this.level = tile.getLevel();
-			this.offset = tile.getOffset();
+			this.level = this.tile.getLevel();
+			this.offset = this.tile.getOffset();
 		}
 	}
-
-	/**
-	 * Tells if the specified text refers to a JavaScript
-	 * Array object rather than to a dictionary.
-	 *
-	 * <h2 style="color: red">WARNING:</h2>
-	 *
-	 * <p>This uses the JavaScript eval() function, which makes
-	 * it dangerous if json is from an untrusted source.  See the
-	 * full warning at
-	 * {@link #retrieveTile(String, int, int, List, Alertable)}, which
-	 * completely applies here as well.</p>
-	 *
-	 * @param json
-	 * 		the JSON string to parse
-	 * @return
-	 * 		<tt>true</tt> if json represents a JavaScript
-	 * 		Array value, not a dictionary
-	 */
-	private static boolean isArray(String json) {
-		return JSONParser.parseLenient(json).isArray() != null;
-	}
-
-	/**
-	 * Reads an array from json, which is assumed to be a JSON
-	 * representation of an array.
-	 *
-	 * <h2 style="color: red">WARNING:</h2>
-	 *
-	 * <p>This uses the JavaScript eval() function, which makes
-	 * it dangerous if json is from an untrusted source.  See the
-	 * full warning at
-	 * {@link #retrieveTile(String, int, int, List, Alertable)}, which
-	 * completely applies here as well.</p>
-	 *
-	 * @param json
-	 * 		the JSON string representing an array
-	 * @return
-	 * 		the array of the objects found in json
-	 */
-	private static native JsArray<JavaScriptObject> evalArray(String json) /*-{
-		eval("var arr = " + json);
-		return arr;
-	}-*/;
 
 	/**
 	 * Retrieves a tile from the specified URL.
@@ -188,36 +139,27 @@ public final class GrapherTile {
 	 * 		in notifications because it allows callback to
 	 * 		differentiate between several requested tiles.
 	 */
-	public static void retrieveTile(final String url,
+	public static native void retrieveTile(final JavaScriptObject datasource,
 			final int level,
 			final int offset,
 			final List<GrapherTile> destination,
-			final Alertable<GrapherTile> callback) {
-		WebDownloader.doGet(url, new DownloadAlertable() {
-			@Override
-			public void onSuccess(String response) {
-				GrapherTile successTile = new GrapherTile(url, level,
-					offset, response);
-				callback.onSuccess(successTile);
-				destination.add(successTile);
-			}
-
-			@Override
-			public void onFailure(Request failed) {
-				callback.onFailure(new GrapherTile(url, level, offset, ""));
-			}
-		});
-	}
-
-	/**
-	 * Returns the URL used to create this <tt>GrapherTile</tt>.
-	 *
-	 * @return
-	 * 		the URL used to create this <tt>GrapherTile</tt>
-	 */
-	public String getUrl() {
-		return url;
-	}
+			final Alertable<GrapherTile> callback) /*-{
+		datasource(level,
+			offset,
+			function (tile) {
+				var success_tile = @org.bodytrack.client.GrapherTile::new(IILcom/google/gwt/json/client/JSONValue;)(level, offset, tile);
+				// The following two methods are generic in Java, but changing
+				// the parameter specification to Object seems to work, if
+				// only because of type erasure
+				callback.@org.bodytrack.client.Alertable::onSuccess(Ljava/lang/Object;)(success_tile);
+				destination.@java.util.List::add(Ljava/lang/Object;)(success_tile);
+			},
+			function (failure_info) {
+				var failure_tile = @org.bodytrack.client.GrapherTile::new(IILcom/google/gwt/json/client/JSONValue;)(level, offset, null);
+				// Again, replacing a Java generic with Object seems to work
+				callback.@org.bodytrack.client.Alertable::onFailure(Ljava/lang/Object;)(failure_tile);
+			});
+	}-*/;
 
 	/**
 	 * Returns the level used to create this <tt>GrapherTile</tt>.

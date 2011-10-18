@@ -819,7 +819,8 @@ public class ViewSwitchWidget extends HorizontalPanel {
 				channels.clear();
 
 				for (DataPlot newPlot: newChannels.getDataPlots()) {
-					newPlot.setXAxis(xAxis);
+					// TODO: IMPLEMENT
+					// newPlot.setXAxis(xAxis);
 					channels.addChannel(newPlot);
 				}
 			}

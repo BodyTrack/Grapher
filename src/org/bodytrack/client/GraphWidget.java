@@ -510,7 +510,7 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 
 		// Now draw the data
 		for (DataPlot plot: channelMgr.getDataPlots())
-			plot.paint();
+			plot.paint(Canvas.buildCanvas(this));
 
 		this.restore();
 	}

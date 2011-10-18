@@ -1,16 +1,16 @@
 package org.bodytrack.client;
 
+import gwt.g2d.client.graphics.Color;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import com.google.gwt.json.client.JSONObject;
-import gwt.g2d.client.graphics.Color;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.FlowPanel;
@@ -26,7 +26,6 @@ public class BodyTrackWidget extends VerticalPanel {
 	GraphAxis timeAxis;
 	List<DataPlot> plots;
 
-	
 	Widget mainPanel;
 	
 	BodyTrackWidget() {
@@ -145,14 +144,13 @@ public class BodyTrackWidget extends VerticalPanel {
 					axisMargin * 3,
 					false);
 
-         final DataPlot plot = new DataPlot(graphWidget,
-                                            timeAxis,
-                                            yAxis,
-                                            new Channel(channel.dev_nickname(), channel.ch_name(), (JSONObject)null),
-                                            channel.tileUrl(),
-                                            minLevel,
-                                            DATA_PLOT_COLORS[i],
-                                            true);
+         // TODO: Initialize this properly
+         final DataPlot plot = new DataPlot(null,
+            null,
+            null,
+            new Channel(channel.dev_nickname(), channel.ch_name(), (JSONObject)null),
+            minLevel,
+            DATA_PLOT_COLORS[i]);
          graphWidget.addDataPlot(plot);
 		}
 	}

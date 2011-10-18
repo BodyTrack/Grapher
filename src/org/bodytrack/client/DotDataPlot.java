@@ -1,5 +1,7 @@
 package org.bodytrack.client;
 
+import com.google.gwt.core.client.JavaScriptObject;
+
 import gwt.g2d.client.graphics.Color;
 import gwt.g2d.client.graphics.Surface;
 import gwt.g2d.client.graphics.shapes.CircleShape;
@@ -16,15 +18,13 @@ public class DotDataPlot extends DataPlot {
 
    private static final int DOT_RADIUS = 3;
 
-   public DotDataPlot(final GraphWidget container,
-                      final GraphAxis xAxis,
-                      final GraphAxis yAxis,
+   public DotDataPlot(final JavaScriptObject datasource,
+                      final JavaScriptObject nativeXAxis,
+                      final JavaScriptObject nativeYAxis,
                       final Channel channel,
-                      final String url,
                       final int minLevel,
-                      final Color color,
-                      final boolean publishValueOnHighlight) {
-      super(container, xAxis, yAxis, channel, url, minLevel, color, publishValueOnHighlight);
+                      final Color color) {
+      super(datasource, nativeXAxis, nativeYAxis, channel, minLevel, color);
    }
 
    @Override
@@ -33,9 +33,10 @@ public class DotDataPlot extends DataPlot {
                                  final double x,
                                  final double y,
                                  final PlottablePoint rawDataPoint) {
-      final Surface surface = getCanvas().getSurface();
+      final Surface surface = drawing.getCanvas().getSurface();
       surface.setFillStyle(getColor());
-      surface.fillShape(new CircleShape(new Vector2(x, y), rawDataPoint.hasComment() ? HIGHLIGHTED_DOT_RADIUS : DOT_RADIUS));
+      surface.fillShape(new CircleShape(new Vector2(x, y),
+         rawDataPoint.hasComment() ? HIGHLIGHTED_DOT_RADIUS : DOT_RADIUS));
    }
 
    @Override

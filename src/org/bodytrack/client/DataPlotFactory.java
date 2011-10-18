@@ -1,17 +1,19 @@
 package org.bodytrack.client;
 
+import gwt.g2d.client.graphics.Color;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.bodytrack.client.WebDownloader.DownloadAlertable;
+
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.http.client.Request;
 import com.google.gwt.json.client.JSONNumber;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONParser;
 import com.google.gwt.json.client.JSONValue;
-import gwt.g2d.client.graphics.Color;
-import org.bodytrack.client.WebDownloader.DownloadAlertable;
-
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * A class with methods to create new objects of type {@link DataPlot}.
@@ -221,9 +223,8 @@ public final class DataPlotFactory {
          throw new NullPointerException("Cannot build plot with null axis");
       }
 
-      final String baseUrl = DataPlot.buildBaseUrl(userId, channel);
-
-      return new DataPlot(widget, xAxis, yAxis, channel, baseUrl, minLevel, getNextColor(), true);
+      // TODO: Fix parameters so no exception on this call
+      return new DataPlot(null, null, null, channel, minLevel, getNextColor());
    }
 
 	/**
@@ -262,9 +263,8 @@ public final class DataPlotFactory {
       if (xAxis == null || yAxis == null)
 			throw new NullPointerException("Cannot build plot with null axis");
 
-		final String baseUrl = DataPlot.buildBaseUrl(userId, channel);
-
-		return new ZeoDataPlot(widget, xAxis, yAxis, channel, baseUrl, minLevel);
+        // TODO: Fix these null parameters
+		return new ZeoDataPlot(null, null, null, channel, minLevel);
 	}
 
 	/**
@@ -293,9 +293,9 @@ public final class DataPlotFactory {
          throw new NullPointerException("Cannot build plot with null axis");
       }
 
-      final String baseUrl = DataPlot.buildBaseUrl(userId, channel);
-
-      return new DotDataPlot(widget, xAxis, yAxis, channel, baseUrl, minLevel, getNextColor(), true);
+      // TODO: Initialize this properly
+      return new DotDataPlot(null, null, null, channel, minLevel,
+         getNextColor());
    }
 
 	/**
@@ -324,9 +324,9 @@ public final class DataPlotFactory {
          throw new NullPointerException("Cannot build plot with null axis");
       }
 
-      final String baseUrl = DataPlot.buildBaseUrl(userId, channel);
-
-      return new LollipopDataPlot(widget, xAxis, yAxis, channel, baseUrl, minLevel, getNextColor(), true);
+      // TODO: Initialize this properly
+      return new LollipopDataPlot(null, null, null, channel, minLevel,
+         getNextColor());
    }
 
    /**
@@ -351,10 +351,8 @@ public final class DataPlotFactory {
       if (xAxis == null || yAxis == null)
 			throw new NullPointerException("Cannot build plot with null axis");
 
-		// Can't just use DataPlot.buildBaseUrl
-		final String baseUrl = PhotoDataPlot.buildPhotoBaseUrl(userId);
-
-		return new PhotoDataPlot(widget, xAxis, yAxis, channel, baseUrl, userId, minLevel);
+		// TODO: Proper initialization of fields
+		return new PhotoDataPlot(null, null, null, channel, userId, minLevel);
 	}
 
    /**

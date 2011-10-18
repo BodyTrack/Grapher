@@ -27,6 +27,7 @@ import com.google.gwt.user.client.ui.PopupPanel.PositionCallback;
 /**
  * A widget that shows the names of the current panels in a flowing layout.
  */
+// TODO: Do we need this class at all?
 public class CurrentChannelsWidget extends FlowPanel
 		implements ChannelChangedListener {
 	/**
@@ -179,7 +180,8 @@ public class CurrentChannelsWidget extends FlowPanel
 						chan.getYAxis().highlight(GraphAxis.DARKEN_AXIS_ONLY);
 					}
 
-					chan.getContainer().paint();
+					// TODO: Do we need this?
+					// chan.getContainer().paint();
 				}
 			});
 			link.addDoubleClickHandler(new DoubleClickHandler() {
