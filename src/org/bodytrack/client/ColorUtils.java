@@ -1,9 +1,12 @@
 package org.bodytrack.client;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import gwt.g2d.client.graphics.Color;
+import gwt.g2d.client.graphics.KnownColor;
 
 /**
  * A class containing utilities related to colors.
@@ -201,6 +204,15 @@ public final class ColorUtils {
 			return parseRgbaColor(name);
 		if (name.startsWith("RGB"))
 			return parseRgbColor(name);
+
+		// Chances are, if we have gotten this far, the KnownColor
+		// check won't help either
+		List<KnownColor> knownColors =
+			new ArrayList<KnownColor>(KnownColor.getKnownColors());
+		for (KnownColor color: knownColors) {
+			if (color.getColorCode().equalsIgnoreCase(name))
+				return color;
+		}
 
 		return null;
 	}
