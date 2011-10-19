@@ -1001,9 +1001,10 @@ public class DataPlot implements Alertable<GrapherTile> {
     * @return
     * 		the X-axis for this DataPlot
     */
-   public native GraphAxis getXAxis() /*-{
-      return xAxis.__backingAxis;
-   }-*/;
+   public GraphAxis getXAxis() {
+      DynamicJavaScriptObject djso = xAxis.cast();
+      return djso.getField("__backingAxis");
+   }
 
    public JavaScriptObject getNativeXAxis() {
 	   return xAxis;
@@ -1033,9 +1034,10 @@ public class DataPlot implements Alertable<GrapherTile> {
     * @return
     * 		the Y-axis for this DataPlot
     */
-   public native GraphAxis getYAxis() /*-{
-      return yAxis.__backingAxis;
-   }-*/;
+   public GraphAxis getYAxis() {
+      DynamicJavaScriptObject djso = yAxis.cast();
+      return djso.getField("__backingAxis");
+   }
 
    public JavaScriptObject getNativeYAxis() {
 	   return yAxis;

@@ -187,6 +187,12 @@ public final class InfoPublisher {
 				// surgically changing the backing plot
 				this.style = new_style;
 			}
+		};
+
+		// TODO: This is a hack to get around GWT's asynchronous loading,
+		// which ensures that GWT scripts load last
+		if (!!($wnd.grapherLoad)) {
+			$wnd.grapherLoad();
 		}
 	}-*/;
 }
