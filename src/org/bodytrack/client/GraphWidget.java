@@ -454,26 +454,26 @@ public class GraphWidget implements ChannelChangedListener {
 		}
 	}
 
-   public void setSize(final int width, final int height) {
-      drawing.setSize(width, height);
-      this.width = width;
-      this.height = height;
-      paint();
-   }
+	public void setSize(final int width, final int height) {
+		drawing.setSize(width, height);
+		this.width = width;
+		this.height = height;
+		paint();
+	}
 
-   public int getHeight() {
-      return height;
-   }
+	public int getHeight() {
+		return height;
+	}
 
-   public int getWidth() {
-      return width;
-   }
+	public int getWidth() {
+		return width;
+	}
 
-   public Surface getSurface() {
-      return drawing;
-   }
+	public Surface getSurface() {
+		return drawing;
+	}
 
-   /**
+	/**
 	 * Actually paints this widget twice, with the two paint operations
 	 * separated by PAINT_TWICE_DELAY milliseconds.
 	 */
@@ -611,7 +611,7 @@ public class GraphWidget implements ChannelChangedListener {
 	public void addDataPlot(DataPlot plot) {
 		channelMgr.addChannel(plot);
 	}
-	
+
 	/**
 	 * Removes plot from the list of data plots to be drawn.
 	 *
