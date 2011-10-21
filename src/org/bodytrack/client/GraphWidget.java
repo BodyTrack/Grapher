@@ -24,8 +24,9 @@ import com.google.gwt.event.dom.client.MouseUpHandler;
 import com.google.gwt.event.dom.client.MouseWheelEvent;
 import com.google.gwt.event.dom.client.MouseWheelHandler;
 import com.google.gwt.user.client.Timer;
+import com.google.gwt.user.client.ui.RootPanel;
 
-public class GraphWidget extends Surface implements ChannelChangedListener {
+public class GraphWidget implements ChannelChangedListener {
 	/**
 	 * The default loading message for this widget to show.  This class
 	 * never actually uses this value, but makes it available for classes
@@ -66,6 +67,7 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 	private static final double TEXT_HEIGHT = 12;
 	private static final double TEXT_LINE_WIDTH = 0.75;
 
+	private final Surface drawing;
 	private final ChannelManager channelMgr;
 
 	// For the loading message API, which shows one message at a time
@@ -95,8 +97,13 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 	// Once a GraphWidget object is instantiated, this doesn't change
 	private final double mouseWheelZoomRate;
 
-	public GraphWidget(final int width, final int height, final int axisMargin) {
-		super(width, height);
+	public GraphWidget(final String placeholder, final int width,
+			final int height, final int axisMargin) {
+		drawing = new Surface(width, height);
+		if (placeholder != null) {
+			RootPanel.get(placeholder).add(drawing);
+		}
+
 		this.width = width;
 		this.height = height;
 		this.axisMargin = axisMargin;
@@ -110,7 +117,7 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 		nextValueMessageId = INITIAL_MESSAGE_ID;
 		valueMessages = new ArrayList<DisplayMessage>();
 
-		this.addMouseWheelHandler(new MouseWheelHandler() {
+		drawing.addMouseWheelHandler(new MouseWheelHandler() {
 			@Override
 			public void onMouseWheel(MouseWheelEvent event) {
 				handleMouseWheelEvent(event);
@@ -122,28 +129,28 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 			}
 		});
 
-		this.addMouseDownHandler(new MouseDownHandler() {
+		drawing.addMouseDownHandler(new MouseDownHandler() {
 			@Override
 			public void onMouseDown(MouseDownEvent event) {
 				handleMouseDownEvent(event);
 			}
 		});
 
-		this.addMouseMoveHandler(new MouseMoveHandler() {
+		drawing.addMouseMoveHandler(new MouseMoveHandler() {
 			@Override
 			public void onMouseMove(MouseMoveEvent event) {
 				handleMouseMoveEvent(event);
 			}
 		});
 
-		this.addMouseUpHandler(new MouseUpHandler() {
+		drawing.addMouseUpHandler(new MouseUpHandler() {
 			@Override
 			public void onMouseUp(MouseUpEvent event) {
 				handleMouseUpEvent(event);
 			}
 		});
 
-		this.addMouseOutHandler(new MouseOutHandler() {
+		drawing.addMouseOutHandler(new MouseOutHandler() {
 			@Override
 			public void onMouseOut(MouseOutEvent event) {
 				handleMouseOutEvent(event);
@@ -447,9 +454,8 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 		}
 	}
 
-   @Override
    public void setSize(final int width, final int height) {
-      super.setSize(width, height);
+      drawing.setSize(width, height);
       this.width = width;
       this.height = height;
       paint();
@@ -461,6 +467,10 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 
    public int getWidth() {
       return width;
+   }
+
+   public Surface getSurface() {
+      return drawing;
    }
 
    /**
@@ -482,9 +492,9 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 
 	public void paint() {
 		layout();
-		this.clear();
-		this.save();
-		this.translate(.5, .5);
+		drawing.clear();
+		drawing.save();
+		drawing.translate(.5, .5);
 
 		// Draw any Loading... messages that might be requested
 		if (loadingMessages.size() > 0) {
@@ -510,9 +520,9 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 
 		// Now draw the data
 		for (DataPlot plot: channelMgr.getDataPlots())
-			plot.paint(Canvas.buildCanvas(this));
+			plot.paint(Canvas.buildCanvas(drawing));
 
-		this.restore();
+		drawing.restore();
 	}
 
 	/**
@@ -525,23 +535,23 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 	 */
 	private void showLoadingMessage(DisplayMessage msg) {
 		// Save old data to be restored later
-		TextAlign oldTextAlign = getTextAlign();
-		double oldLineWidth = getLineWidth();
+		TextAlign oldTextAlign = drawing.getTextAlign();
+		double oldLineWidth = drawing.getLineWidth();
 
 		// Change settings
-		setTextAlign(TextAlign.LEFT);
-		setLineWidth(TEXT_LINE_WIDTH);
-		setStrokeStyle(msg.getColor());
+		drawing.setTextAlign(TextAlign.LEFT);
+		drawing.setLineWidth(TEXT_LINE_WIDTH);
+		drawing.setStrokeStyle(msg.getColor());
 
 		// Actually write the text
 		double bottom = height - LOADING_MSG_Y_MARGIN;
 		double textTop = bottom - TEXT_HEIGHT;
-		strokeText(msg.getText(), LOADING_MSG_X_MARGIN, textTop);
+		drawing.strokeText(msg.getText(), LOADING_MSG_X_MARGIN, textTop);
 
 		// Restore old settings
-		setTextAlign(oldTextAlign);
-		setLineWidth(oldLineWidth);
-		setStrokeStyle(Canvas.DEFAULT_COLOR);
+		drawing.setTextAlign(oldTextAlign);
+		drawing.setLineWidth(oldLineWidth);
+		drawing.setStrokeStyle(Canvas.DEFAULT_COLOR);
 	}
 
 	/**
@@ -556,12 +566,12 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 	 */
 	private void showValueMessages(List<DisplayMessage> messages) {
 		// Save old data to be restored later
-		TextAlign oldTextAlign = getTextAlign();
-		double oldLineWidth = getLineWidth();
+		TextAlign oldTextAlign = drawing.getTextAlign();
+		double oldLineWidth = drawing.getLineWidth();
 
 		// Change settings
-		setTextAlign(TextAlign.RIGHT);
-		setLineWidth(TEXT_LINE_WIDTH);
+		drawing.setTextAlign(TextAlign.RIGHT);
+		drawing.setLineWidth(TEXT_LINE_WIDTH);
 
 		// Actually write the text
 		double bottom = height - VALUE_MSG_Y_MARGIN;
@@ -569,13 +579,13 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 			// Right edge X-value with right text alignment
 
 		for (DisplayMessage msg: messages) {
-			setStrokeStyle(msg.getColor());
+			drawing.setStrokeStyle(msg.getColor());
 
 			double textTop = bottom - TEXT_HEIGHT;
 			String text = msg.getText();
 
 			// Find left edge, given that we know right edge
-			strokeText(text, x, textTop);
+			drawing.strokeText(text, x, textTop);
 
 			// Move upwards for next loop iteration
 			bottom = textTop - VALUE_MSG_GAP;
@@ -583,9 +593,9 @@ public class GraphWidget extends Surface implements ChannelChangedListener {
 		}
 
 		// Restore old settings
-		setTextAlign(oldTextAlign);
-		setLineWidth(oldLineWidth);
-		setStrokeStyle(Canvas.DEFAULT_COLOR);
+		drawing.setTextAlign(oldTextAlign);
+		drawing.setLineWidth(oldLineWidth);
+		drawing.setStrokeStyle(Canvas.DEFAULT_COLOR);
 	}
 
 	/**

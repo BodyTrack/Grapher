@@ -165,9 +165,10 @@ public class BodyTrackWidget extends VerticalPanel {
 
 		int axisMargin = 10;
 
-		graphWidget = new GraphWidget(Window.getClientWidth(), 
-					         Window.getClientHeight() - 300, 
-					         axisMargin);
+		graphWidget = new GraphWidget(null,
+				Window.getClientWidth(),
+				Window.getClientHeight() - 300,
+				axisMargin);
 
 		//timeAxis = new TimeGraphAxis(
 			//	1293861600-86400*365,
@@ -200,7 +201,7 @@ public class BodyTrackWidget extends VerticalPanel {
 		ChannelNamesWidget allChans = new ChannelNamesWidget(mgr, factory);
 		
 		mainLayout.add(viewSwitcher);
-		mainLayout.add(graphWidget);
+		mainLayout.add(graphWidget.getSurface());
 		mainLayout.add(currentChans);
 		mainLayout.add(allChans);
 		
