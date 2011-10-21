@@ -97,15 +97,15 @@ public class GraphWidget implements ChannelChangedListener {
 	// Once a GraphWidget object is instantiated, this doesn't change
 	private final double mouseWheelZoomRate;
 
-	public GraphWidget(final String placeholder, final int width,
-			final int height, final int axisMargin) {
+	public GraphWidget(final String placeholder, final int axisMargin) {
 		drawing = new Surface(width, height);
 		if (placeholder != null) {
 			RootPanel.get(placeholder).add(drawing);
+			this.width = RootPanel.get(placeholder).getOffsetWidth();
+			this.height = RootPanel.get(placeholder).getOffsetHeight();
+			// TODO: Add handler to auto-resize on DOM changes
 		}
 
-		this.width = width;
-		this.height = height;
 		this.axisMargin = axisMargin;
 
 		channelMgr = new ChannelManager();

@@ -9,16 +9,52 @@ package org.bodytrack.client;
  * and the rest of the webpage.</p>
  */
 public final class InfoPublisher {
+
+	// Set to true so that setUpWrappers is called only once.
+	// With threading, this would be problematic, but there is no issue
+	// here because JavaScript is single-threaded.
+	private static boolean wrappersSet = false;
+
+	// Used for the monotonically increasing ID on each object built
+	// from the API
+	@SuppressWarnings("unused") // Actually used in JavaScript
+	private static int nextID;
+
+	public static void setUpWrappers() {
+		if (wrappersSet)
+			return;
+		wrappersSet = true;
+		nextID = 1;
+
+		setUpJavaScriptWrappers();
+	}
+
 	/**
 	 * Initializes the wrapper objects for the JavaScript API.
 	 */
-	public static native void setUpWrappers() /*-{
+	private static native void setUpJavaScriptWrappers() /*-{
+		/// Private function to update and return the next ID
+		///
+		/// @return
+		///		The next ID for an object
+		var __getNextID = function() {
+			var id = @org.bodytrack.client.InfoPublisher::nextID;
+			@org.bodytrack.client.InfoPublisher::nextID = id + 1;
+			return id;
+		};
+
 		/// Private function to create a new axis constructor
 		///
 		/// This is intended to be called only to create the NumberAxis and
 		/// GraphAxis constructors.  It is declared as a var so that its
 		/// scope will be local to the function that GWT creates to replace
 		/// setUpWrappers.
+		///
+		/// @param axisConstructor
+		///		The Java constructor that will be used for the backing axis
+		/// @return
+		///		A constructor that will build an axis when called, with the
+		///		backing axis built using axisConstructor
 		var __createAxisConstructor = function(axisConstructor) {
 			return function(placeholder, orientation, range) {
 				if (placeholder === undefined || orientation === undefined) {
@@ -86,6 +122,7 @@ public final class InfoPublisher {
 					// Exceptions for illegal min and max values are handled in Java
 					this.__backingAxis.@org.bodytrack.client.GraphAxis::replaceBounds(DD)(min, max);
 				};
+				this.id = __getNextID();
 			};
 		}
 
@@ -187,6 +224,34 @@ public final class InfoPublisher {
 				// surgically changing the backing plot
 				this.style = new_style;
 			}
+			this.id = __getNextID();
+		};
+
+		/// Initializes a new PlotContainer
+		///
+		/// @param placeholder
+		///		The ID of a div in which this container should go, or null
+		/// @param plots
+		///		Optional parameter: an array of plots that act as the initial
+		///		list of plots for this container
+		$wnd.PlotContainer = function(placeholder, plots) {
+			if (placeholder === undefined) {
+				// It's OK to pass in a null placeholder, but calling
+				// new PlotContainer() with no arguments isn't OK
+				throw 'Must pass in placeholder';
+			}
+
+			this.getPlaceholder = function() { return placeholder; };
+			this.__backingWidget = (function() {
+				// TODO: Don't hardcode the axis margin
+				// TODO: Fill in the initial set of plots if applicable
+				return @org.bodytrack.client.GraphWidget::new(Ljava/lang/String;I)(placeholder, 10);
+			})();
+			this.paint = function() {
+				this.__backingWidget.@org.bodytrack.client.GraphWidget::paint()();
+			};
+			// TODO: Add getPlots, addPlot, and removePlot
+			this.id = __getNextID();
 		};
 
 		// TODO: This is a hack to get around GWT's asynchronous loading,
