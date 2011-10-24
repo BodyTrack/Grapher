@@ -1002,8 +1002,8 @@ public class DataPlot implements Alertable<GrapherTile> {
     * 		the X-axis for this DataPlot
     */
    public GraphAxis getXAxis() {
-      DynamicJavaScriptObject djso = xAxis.cast();
-      return djso.getField("__backingAxis");
+      Dynamic djso = xAxis.cast();
+      return djso.get("__backingAxis");
    }
 
    public JavaScriptObject getNativeXAxis() {
@@ -1035,8 +1035,8 @@ public class DataPlot implements Alertable<GrapherTile> {
     * 		the Y-axis for this DataPlot
     */
    public GraphAxis getYAxis() {
-      DynamicJavaScriptObject djso = yAxis.cast();
-      return djso.getField("__backingAxis");
+      Dynamic djso = yAxis.cast();
+      return djso.get("__backingAxis");
    }
 
    public JavaScriptObject getNativeYAxis() {
