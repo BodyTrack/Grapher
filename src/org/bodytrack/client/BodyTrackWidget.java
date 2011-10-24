@@ -12,7 +12,6 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.user.client.DOM;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
@@ -196,12 +195,10 @@ public class BodyTrackWidget extends VerticalPanel {
 		 						     factory.getUserId(), mgr);
 		CurrentChannelsWidget currentChans =
 		    new CurrentChannelsWidget(mgr);
-		ChannelNamesWidget allChans = new ChannelNamesWidget(mgr, factory);
 		
 		mainLayout.add(viewSwitcher);
 		mainLayout.add(graphWidget.getSurface());
 		mainLayout.add(currentChans);
-		mainLayout.add(allChans);
 		
 		mainPanel = mainLayout;
 		this.add(mainPanel);
