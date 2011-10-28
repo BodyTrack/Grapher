@@ -193,12 +193,9 @@ public class BodyTrackWidget extends VerticalPanel {
 		ChannelManager mgr = graphWidget.getChannelManager();
 		ViewSwitchWidget viewSwitcher = new ViewSwitchWidget(graphWidget,
 		 						     factory.getUserId(), mgr);
-		CurrentChannelsWidget currentChans =
-		    new CurrentChannelsWidget(mgr);
 		
 		mainLayout.add(viewSwitcher);
 		mainLayout.add(graphWidget.getSurface());
-		mainLayout.add(currentChans);
 		
 		mainPanel = mainLayout;
 		this.add(mainPanel);
