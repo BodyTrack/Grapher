@@ -7,6 +7,7 @@ import org.bodytrack.client.Continuation.EmptyContinuation;
 import org.bodytrack.client.WebDownloader.DownloadAlertable;
 import org.bodytrack.client.WebDownloader.DownloadSuccessAlertable;
 
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.http.client.Request;
@@ -818,7 +819,7 @@ public class ViewSwitchWidget extends HorizontalPanel {
 				GraphAxis xAxis = CollectionUtil.getFirst(channels.getXAxes());
 				channels.clear();
 
-				for (DataPlot newPlot: newChannels.getDataPlots()) {
+				for (JavaScriptObject newPlot: newChannels.getDataPlots()) {
 					// TODO: IMPLEMENT
 					// newPlot.setXAxis(xAxis);
 					channels.addChannel(newPlot);

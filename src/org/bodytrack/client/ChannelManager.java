@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.gwt.core.client.JavaScriptObject;
+
 /**
  * A global channel management class, which keeps track of which
  * channels are showing and which are not.
@@ -16,8 +18,11 @@ import java.util.Set;
  * objects of this class thread-safe.</p>
  */
 public class ChannelManager {
-	private final List<DataPlot> dataPlots;
-	private List<DataPlot> unmodDataPlots;
+	// Need to go through wrapper every time we draw, in case the
+	// user switches a plot style.  That's why we can't use the Java object
+	// every time
+	private final List<JavaScriptObject> dataPlots;
+	private List<JavaScriptObject> unmodDataPlots;
 
 	/*
 	 * xAxisMap and yAxisMap provide the reverse mapping from
@@ -28,18 +33,18 @@ public class ChannelManager {
 	 * An invariant is that each element of xAxisMap and yAxisMap
 	 * has at least one plot in dataPlots referencing it.
 	 */
-	private final Map<GraphAxis, List<DataPlot>> xAxisMap;
-	private Map<GraphAxis, List<DataPlot>> unmodXAxisMap;
+	private final Map<GraphAxis, List<JavaScriptObject>> xAxisMap;
+	private Map<GraphAxis, List<JavaScriptObject>> unmodXAxisMap;
 	private Set<GraphAxis> unmodXAxes;
 
-	private final Map<GraphAxis, List<DataPlot>> yAxisMap;
-	private Map<GraphAxis, List<DataPlot>> unmodYAxisMap;
+	private final Map<GraphAxis, List<JavaScriptObject>> yAxisMap;
+	private Map<GraphAxis, List<JavaScriptObject>> unmodYAxisMap;
 	private Set<GraphAxis> unmodYAxes;
 
 	// There is some redundancy provided by this variable, but it
 	// does increase efficiency when dealing with channel names
-	private final Map<StringPair, DataPlot> channelMap;
-	private Map<StringPair, DataPlot> unmodChannelMap;
+	private final Map<StringPair, JavaScriptObject> channelMap;
+	private Map<StringPair, JavaScriptObject> unmodChannelMap;
 	private Set<StringPair> unmodChannels;
 
 	private final List<ChannelChangedListener> listeners;
@@ -49,10 +54,10 @@ public class ChannelManager {
 	 * any channels.
 	 */
 	public ChannelManager() {
-		dataPlots = new ArrayList<DataPlot>();
-		xAxisMap = new HashMap<GraphAxis, List<DataPlot>>();
-		yAxisMap = new HashMap<GraphAxis, List<DataPlot>>();
-		channelMap = new HashMap<StringPair, DataPlot>();
+		dataPlots = new ArrayList<JavaScriptObject>();
+		xAxisMap = new HashMap<GraphAxis, List<JavaScriptObject>>();
+		yAxisMap = new HashMap<GraphAxis, List<JavaScriptObject>>();
+		channelMap = new HashMap<StringPair, JavaScriptObject>();
 		listeners = new ArrayList<ChannelChangedListener>();
 
 		refreshUnmodifiableCaches();
@@ -77,14 +82,12 @@ public class ChannelManager {
 
 	/**
 	 * Returns an unmodifiable view of the list of
-	 * {@link org.bodytrack.client.DataPlot DataPlot} objects
-	 * held by this <tt>ChannelManager</tt>.
+	 * the data plots held by this <tt>ChannelManager</tt>.
 	 *
 	 * @return
-	 * 		an unmodifiable view of the list of <tt>DataPlot</tt>
-	 * 		objects this holds
+	 * 		an unmodifiable view of the list of data plots this holds
 	 */
-	public List<DataPlot> getDataPlots() {
+	public List<JavaScriptObject> getDataPlots() {
 		return unmodDataPlots;
 	}
 
@@ -97,7 +100,7 @@ public class ChannelManager {
 	 * 		a map from channel names to plots that graph those
 	 * 		channels
 	 */
-	public Map<StringPair, DataPlot> getChannelMap() {
+	public Map<StringPair, JavaScriptObject> getChannelMap() {
 		return unmodChannelMap;
 	}
 
@@ -122,31 +125,29 @@ public class ChannelManager {
 	 * 		associated {@link org.bodytrack.client.DataPlot DataPlot}
 	 * 		objects
 	 */
-	public Map<GraphAxis, List<DataPlot>> getXAxisMap() {
+	public Map<GraphAxis, List<JavaScriptObject>> getXAxisMap() {
 		return unmodXAxisMap;
 	}
 
 	/**
 	 * Returns an unmodifiable view of a map from Y-axes back to their
-	 * associated {@link org.bodytrack.client.DataPlot DataPlot} objects.
+	 * associated data plots.
 	 *
 	 * @return
 	 * 		an unmodifiable view of a map from Y-axes back to their
-	 * 		associated {@link org.bodytrack.client.DataPlot DataPlot}
-	 * 		objects
+	 * 		associated plots
 	 */
-	public Map<GraphAxis, List<DataPlot>> getYAxisMap() {
+	public Map<GraphAxis, List<JavaScriptObject>> getYAxisMap() {
 		return unmodYAxisMap;
 	}
 
 	/**
 	 * Returns an unmodifiable view of the set of X-axes held by
-	 * any {@link org.bodytrack.client.DataPlot DataPlot} object
-	 * held by this <tt>ChannelManager</tt>.
+	 * any data plot held by this <tt>ChannelManager</tt>.
 	 *
 	 * @return
 	 * 		an unmodifiable view of the set of X-axes on
-	 * 		<tt>DataPlot</tt> objects this holds
+	 * 		data plots this holds
 	 */
 	public Set<GraphAxis> getXAxes() {
 		return unmodXAxes;
@@ -154,30 +155,41 @@ public class ChannelManager {
 
 	/**
 	 * Returns an unmodifiable view of the set of Y-axes held by
-	 * any {@link org.bodytrack.client.DataPlot DataPlot} object
-	 * held by this <tt>ChannelManager</tt>.
+	 * any data plot held by this <tt>ChannelManager</tt>.
 	 *
 	 * @return
-	 * 		an unmodifiable view of the set of Y-axes on
-	 * 		<tt>DataPlot</tt> objects this holds
+	 * 		an unmodifiable view of the set of Y-axes on data plots this holds
 	 */
 	public Set<GraphAxis> getYAxes() {
 		return unmodYAxes;
 	}
 
 	/**
-	 * Checks for inclusion of plot in the set of <tt>DataPlot</tt>
-	 * objects this <tt>ChannelManager</tt> maintains.
+	 * Checks for inclusion of plot in the set of data plots this
+	 * <tt>ChannelManager</tt> maintains.
 	 *
-	 * @param plot
-	 * 		the <tt>DataPlot</tt> to check for
+	 * @param nativePlot
+	 * 		the plot to check for
 	 * @return
-	 * 		<tt>false</tt> if plot is <tt>null</tt>, and the
-	 * 		equivalent of {@code getDataPlots().contains(plot)}
-	 * 		otherwise
+	 * 		<tt>false</tt> if nativePlotlot is <tt>null</tt>, and the
+	 * 		equivalent of {@code getDataPlots().contains(nativePlot)}
+	 * 		otherwise, comparing by IDs
 	 */
-	public boolean hasChannel(DataPlot plot) {
-		return (plot != null) && dataPlots.contains(plot);
+	public boolean hasChannel(JavaScriptObject nativePlot) {
+		if (nativePlot == null)
+			return false;
+
+		Dynamic plot = nativePlot.cast();
+		int id = plot.get("id");
+
+		for (JavaScriptObject test: dataPlots) {
+			Dynamic testPlot = test.cast();
+			int testID = testPlot.get("id");
+			if (testID == id)
+				return true;
+		}
+
+		return false;
 	}
 
 	/**
@@ -218,18 +230,17 @@ public class ChannelManager {
 	}
 
 	/**
-	 * Returns the {@link org.bodytrack.client.DataPlot DataPlot} associated
-	 * with the specified (deviceName, channelName) pair, if such a channel
-	 * is available.
+	 * Returns the plot associated with the specified
+	 * (deviceName, channelName) pair, if such a channel is available.
 	 *
 	 * @param name
 	 * 		the name of the channel
 	 * @return
-	 * 		the <tt>DataPlot</tt> associated with name, if possible, or
-	 * 		<tt>null</tt> if either name is <tt>null</tt> or has not
+	 * 		the plot associated with name, if possible, or
+	 * 		<tt>null</tt> if name is <tt>null</tt> or has not
 	 * 		been added through any channel
 	 */
-	public DataPlot getChannel(StringPair name) {
+	public JavaScriptObject getChannel(StringPair name) {
 		if (name == null)
 			return null;
 
@@ -237,47 +248,50 @@ public class ChannelManager {
 	}
 
 	/**
-	 * Adds the specified channel to the list of
-	 * {@link org.bodytrack.client.DataPlot DataPlot} objects
+	 * Adds the specified channel to the list of data plot objects
 	 * held by this <tt>ChannelManager</tt>, and updates axis references
 	 * as well.
 	 *
-	 * @param plot
-	 * 		the <tt>DataPlot</tt> to add to the set of plots this hold
+	 * @param nativePlot
+	 * 		the data plot to add to the set of plots this hold
 	 * @throws NullPointerException
-	 * 		if plot or one of its axes is <tt>null</tt>
+	 * 		if plot is <tt>null</tt>
 	 */
-	public void addChannel(DataPlot plot) {
-		if (plot == null)
-			throw new NullPointerException("Cannot add a null DataPlot");
-		if (plot.getXAxis() == null || plot.getYAxis() == null)
-			throw new NullPointerException("Cannot add plot with null axis");
+	public void addChannel(JavaScriptObject nativePlot) {
+		if (nativePlot == null)
+			throw new NullPointerException("Cannot add a null plot");
+
+		DataPlot plot = DataPlot.getDataPlot(nativePlot);
+		GraphAxis xAxis = plot.getXAxis();
+		GraphAxis yAxis = plot.getYAxis();
 
 		StringPair name =
 			new StringPair(plot.getDeviceName(), plot.getChannelName());
-		if (dataPlots.contains(plot) || channelMap.containsKey(name))
+		if (dataPlots.contains(nativePlot) || channelMap.containsKey(name))
 			return;
 
-		dataPlots.add(plot);
+		dataPlots.add(nativePlot);
 
 		// TODO: Check for bug if the same axis is both an X-axis
 		// and a Y-axis, which should never happen in reality
 
-		if (! xAxisMap.containsKey(plot.getXAxis())) {
-			List<DataPlot> axisList = new ArrayList<DataPlot>();
-			axisList.add(plot);
-			xAxisMap.put(plot.getXAxis(), axisList);
+		if (! xAxisMap.containsKey(xAxis)) {
+			List<JavaScriptObject> axisList =
+				new ArrayList<JavaScriptObject>();
+			axisList.add(nativePlot);
+			xAxisMap.put(xAxis, axisList);
 		} else
-			xAxisMap.get(plot.getXAxis()).add(plot);
+			xAxisMap.get(xAxis).add(nativePlot);
 
-		if (! yAxisMap.containsKey(plot.getYAxis())) {
-			List<DataPlot> axisList = new ArrayList<DataPlot>();
-			axisList.add(plot);
-			yAxisMap.put(plot.getYAxis(), axisList);
+		if (! yAxisMap.containsKey(yAxis)) {
+			List<JavaScriptObject> axisList =
+				new ArrayList<JavaScriptObject>();
+			axisList.add(nativePlot);
+			yAxisMap.put(yAxis, axisList);
 		} else
-			yAxisMap.get(plot.getYAxis()).add(plot);
+			yAxisMap.get(yAxis).add(nativePlot);
 
-		channelMap.put(name, plot);
+		channelMap.put(name, nativePlot);
 
 		// Notify our event listeners to the occurrence of an event
 		for (ChannelChangedListener l: listeners)
@@ -288,36 +302,36 @@ public class ChannelManager {
 	}
 
 	/**
-	 * Removes the specified channel from the list of
-	 * {@link org.bodytrack.client.DataPlot DataPlot} objects
+	 * Removes the specified channel from the list of plots
 	 * held by this <tt>ChannelManager</tt>, if it is part of that list,
 	 * and updates axis references as well.
 	 *
 	 * <p>If plot is <tt>null</tt> or has not yet been added using a call
-	 * to {@link #addChannel(DataPlot)}, does absolutely nothing.</p>
+	 * to {@link #addChannel(JavaScriptObject)}, does absolutely nothing.</p>
 	 *
-	 * @param plot
-	 * 		the <tt>DataPlot</tt> to remove from the set of plots this holds
+	 * @param nativePlot
+	 * 		the plot to remove from the set of plots this holds
 	 */
-	public void removeChannel(DataPlot plot) {
-		if (plot == null)
+	public void removeChannel(JavaScriptObject nativePlot) {
+		if (nativePlot == null)
 			return;
 
+		DataPlot plot = DataPlot.getDataPlot(nativePlot);
 		GraphAxis xAxis = plot.getXAxis();
 		GraphAxis yAxis = plot.getYAxis();
 
-		if (! dataPlots.contains(plot))
+		if (! dataPlots.contains(nativePlot))
 			return;
 
-		dataPlots.remove(plot);
+		dataPlots.remove(nativePlot);
 
 		if (xAxisMap.get(xAxis).size() > 1)
-			xAxisMap.get(xAxis).remove(plot);
+			xAxisMap.get(xAxis).remove(nativePlot);
 		else
 			xAxisMap.remove(xAxis);
 
 		if (yAxisMap.get(yAxis).size() > 1)
-			yAxisMap.get(yAxis).remove(plot);
+			yAxisMap.get(yAxis).remove(nativePlot);
 		else
 			yAxisMap.remove(yAxis);
 
@@ -401,8 +415,8 @@ public class ChannelManager {
 
 		clear();
 
-		for (DataPlot plot: other.getDataPlots())
-			addChannel(plot);
+		for (JavaScriptObject nativePlot: other.getDataPlots())
+			addChannel(nativePlot);
 	}
 
 	/**

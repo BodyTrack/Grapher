@@ -241,11 +241,17 @@ public final class InfoPublisher {
 				throw 'Must pass in placeholder';
 			}
 
+			if (plots === undefined || plots == null) {
+				plots = [];
+			}
+
 			this.getPlaceholder = function() { return placeholder; };
 			this.__backingWidget = (function() {
-				// TODO: Don't hardcode the axis margin
-				// TODO: Fill in the initial set of plots if applicable
-				return @org.bodytrack.client.GraphWidget::new(Ljava/lang/String;I)(placeholder, 10);
+				var widget = @org.bodytrack.client.GraphWidget::new(Ljava/lang/String;I)(placeholder, 10);
+				for (var i = 0; i < plots.length; i++) {
+					widget.@org.bodytrack.client.GraphWidget::addDataPlot(Lcom/google/gwt/core/client/JavaScriptObject;)(plots[i]);
+				}
+				return widget;
 			})();
 			this.paint = function() {
 				this.__backingWidget.@org.bodytrack.client.GraphWidget::paint()();

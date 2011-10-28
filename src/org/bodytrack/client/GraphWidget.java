@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.event.dom.client.MouseDownHandler;
 import com.google.gwt.event.dom.client.MouseMoveEvent;
@@ -244,9 +245,12 @@ public class GraphWidget implements ChannelChangedListener {
 				// Enforce minimum zoom: if any axis allows zooming,
 				// the user is able to zoom on the X-axes
 				boolean canZoomIn = false;
+				List<JavaScriptObject> nativePlots =
+					channelMgr.getXAxisMap().get(axis);
 
-				for (DataPlot plot: channelMgr.getXAxisMap().get(axis))
-					canZoomIn = canZoomIn || plot.shouldZoomIn();
+				for (JavaScriptObject nativePlot: nativePlots)
+					canZoomIn = canZoomIn
+						|| DataPlot.getDataPlot(nativePlot).shouldZoomIn();
 
 				if (zoomFactor >= 1 || canZoomIn) {
 					axis.zoom(zoomFactor, zoomAbout);
@@ -258,9 +262,11 @@ public class GraphWidget implements ChannelChangedListener {
 		} else {
 			// The mouse is over the viewing window
 			Set<DataPlot> highlightedPlots = new HashSet<DataPlot>();
-			for (DataPlot plot: channelMgr.getDataPlots())
+			for (JavaScriptObject nativePlot: channelMgr.getDataPlots()) {
+				DataPlot plot = DataPlot.getDataPlot(nativePlot);
 				if (plot.isHighlighted())
 					highlightedPlots.add(plot);
+			}
 
 			if (highlightedPlots.size() > 0) {
 				// We are dragging at least one data plot, so we zoom
@@ -306,9 +312,11 @@ public class GraphWidget implements ChannelChangedListener {
 			// or the whole viewing window
 
 			Set<DataPlot> highlightedPlots = new HashSet<DataPlot>();
-			for (DataPlot plot: channelMgr.getDataPlots())
+			for (JavaScriptObject nativePlot: channelMgr.getDataPlots()) {
+				DataPlot plot = DataPlot.getDataPlot(nativePlot);
 				if (plot.isHighlighted())
 					highlightedPlots.add(plot);
+			}
 
 			if (highlightedPlots.size() > 0) {
 				// We are dragging at least one data plot, so we drag
@@ -340,7 +348,8 @@ public class GraphWidget implements ChannelChangedListener {
 			// We are not dragging anything, so we just update the
 			// highlighting on the data plots and axes
 
-			for (DataPlot plot: channelMgr.getDataPlots()) {
+			for (JavaScriptObject nativePlot: channelMgr.getDataPlots()) {
+				DataPlot plot = DataPlot.getDataPlot(nativePlot);
 				plot.unhighlight();
 
 				double distanceThreshold = (plot instanceof PhotoDataPlot)
@@ -369,18 +378,21 @@ public class GraphWidget implements ChannelChangedListener {
 	 * 		of axes to sets of DataPlot objects, which describes the
 	 * 		relationship between data plots and axes
 	 */
-	private void setAxisHighlighting(Map<GraphAxis, List<DataPlot>> axes) {
-		for (Entry<GraphAxis, List<DataPlot>> entry: axes.entrySet()) {
+	private void setAxisHighlighting(Map<GraphAxis,
+			List<JavaScriptObject>> axes) {
+		for (Entry<GraphAxis, List<JavaScriptObject>> entry: axes.entrySet()) {
 			// Highlight an axis if any one of the plots associated
 			// with that axis is highlighted
 			GraphAxis axis = entry.getKey();
 			axis.unhighlight();
 
-			for (DataPlot plot: entry.getValue())
+			for (JavaScriptObject nativePlot: entry.getValue()) {
+				DataPlot plot = DataPlot.getDataPlot(nativePlot);
 				if (plot.isHighlighted()) {
 					axis.highlight(plot.getHighlightedPoint());
 					break;
 				}
+			}
 		}
 	}
 
@@ -398,8 +410,8 @@ public class GraphWidget implements ChannelChangedListener {
 		// Ensure that all data plots are unhighlighted, as are
 		// all axes
 
-		for (DataPlot plot: channelMgr.getDataPlots())
-			plot.unhighlight();
+		for (JavaScriptObject nativePlot: channelMgr.getDataPlots())
+			DataPlot.getDataPlot(nativePlot).unhighlight();
 
 		for (GraphAxis axis: channelMgr.getXAxes())
 			axis.unhighlight();
@@ -519,8 +531,9 @@ public class GraphWidget implements ChannelChangedListener {
 			yAxis.paint();
 
 		// Now draw the data
-		for (DataPlot plot: channelMgr.getDataPlots())
-			plot.paint(Canvas.buildCanvas(drawing));
+		for (JavaScriptObject nativePlot: channelMgr.getDataPlots())
+			DataPlot.getDataPlot(nativePlot)
+				.paint(Canvas.buildCanvas(drawing));
 
 		drawing.restore();
 	}
@@ -603,13 +616,15 @@ public class GraphWidget implements ChannelChangedListener {
 	 * 
 	 * Note that a plot can only be added once to this internal list.
 	 * 
-	 * @param plot
+	 * @param nativePlot
 	 * 		the plot to add to the list of plots to be drawn
 	 * @throws NullPointerException
 	 * 		if plot is <tt>null</tt>
 	 */
-	public void addDataPlot(DataPlot plot) {
-		channelMgr.addChannel(plot);
+	public void addDataPlot(JavaScriptObject nativePlot) {
+		if (nativePlot == null)
+			throw new NullPointerException("Cannot add null plot");
+		channelMgr.addChannel(nativePlot);
 	}
 
 	/**
@@ -618,11 +633,13 @@ public class GraphWidget implements ChannelChangedListener {
 	 * <p>Does nothing if plot is <tt>null</tt> or not present in
 	 * this <tt>GraphWidget</tt>.</p>
 	 *
-	 * @param plot
+	 * @param nativePlot
 	 * 		the plot to remove from the list of plots to be drawn
 	 */
-	public void removeDataPlot(DataPlot plot) {
-		channelMgr.removeChannel(plot);
+	public void removeDataPlot(JavaScriptObject nativePlot) {
+		if (nativePlot == null)
+			return;
+		channelMgr.removeChannel(nativePlot);
 	}
 
 	/**

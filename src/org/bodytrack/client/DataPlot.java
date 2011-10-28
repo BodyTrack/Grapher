@@ -248,6 +248,11 @@ public class DataPlot implements Alertable<GrapherTile> {
       return cleanedDeviceName + "." + cleanedChannelName;
    }
 
+   public static DataPlot getDataPlot(JavaScriptObject nativePlot) {
+		Dynamic dynPlot = nativePlot.cast();
+		return dynPlot.get("__backingPlot");
+   }
+
    /**
     * Returns the {@link ChartType} of this plot.  The {@link ChartType} is obtained from the {@link Channel}.
     *

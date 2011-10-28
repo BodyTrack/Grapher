@@ -1,7 +1,5 @@
 package org.bodytrack.client;
 
-import gwt.g2d.client.graphics.Color;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -115,7 +113,8 @@ public final class SavableView extends JavaScriptObject {
 				plotsJson.put(channel.getFirst(), new JSONObject());
 
 		// Now fill in the x_axis and y_axis fields for each device
-		for (DataPlot plot: mgr.getDataPlots()) {
+		for (JavaScriptObject nativePlot: mgr.getDataPlots()) {
+			DataPlot plot = DataPlot.getDataPlot(nativePlot);
 			String deviceName = plot.getDeviceName();
 			String channelName = plot.getChannelName();
 
@@ -173,6 +172,10 @@ public final class SavableView extends JavaScriptObject {
       // TODO: Put this in an actual div
       final GraphAxis[] xAxes = generateXAxes(null, axisMargin);
 
+      /* TODO: Bring this code back to allow for true rebuilding from
+       * a view (the problem here is that we need to drop into native
+       * JavaScript to build JavaScript objects as plots instead of
+       * just calling Java constructors)
       for (final Channel channel : getChannels()) {
          // TODO: Put this in an actual div
          final DataPlot plot = factory.buildPlot(channel,
@@ -191,6 +194,7 @@ public final class SavableView extends JavaScriptObject {
 
          result.addChannel(plot);
       }
+      */
 
       return result;
    }

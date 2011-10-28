@@ -1,16 +1,12 @@
 package org.bodytrack.client;
 
-import gwt.g2d.client.graphics.Color;
-
 import java.util.ArrayList;
 import java.util.List;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -63,7 +59,8 @@ public class BodyTrackWidget extends VerticalPanel {
 	void unselect() {
 		if (mainPanel != null) this.remove(mainPanel);
 	}
-	
+
+	/* TODO: Re-eneble this code
 	private static final Color[] DATA_PLOT_COLORS = {
 		Canvas.BLACK,
 		Canvas.GREEN,
@@ -73,7 +70,8 @@ public class BodyTrackWidget extends VerticalPanel {
 		new Color(  0, 200, 200),
 		new Color(200,   0, 200)
 	};
-	
+	*/
+
 	//String[] anneChannels = {
 		//	"{\"max_value\":\"100.0\",\"graph_type\":\"Line\",\"updated_at\":\"2011-01-09T09:20:56-05:00\",\"min_value\":\"0.0\",\"data_type\":\"Double\",\"max_graph_value\":null,\"id\":64,\"ch_name\":\"Humidity\",\"dev_nickname\":\"AR_Basestation\",\"user_id\":1,\"min_graph_value\":null,\"created_at\":\"2011-01-05T06:31:51-05:00\"}",
 			//"{\"max_value\":\"255.0\",\"graph_type\":\"Line\",\"updated_at\":\"2011-01-05T06:31:51-05:00\",\"min_value\":\"0.0\",\"data_type\":\"Double\",\"max_graph_value\":null,\"id\":63,\"ch_name\":\"Microphone\",\"dev_nickname\":\"AR_Basestation\",\"user_id\":1,\"min_graph_value\":null,\"created_at\":\"2011-01-05T06:31:51-05:00\"}",
@@ -119,8 +117,10 @@ public class BodyTrackWidget extends VerticalPanel {
 	}-*/;
 
 	void receiveChannels(JsArray<Graphable> channels) {
+		// TODO: Re-enable this code
+		/*
 		GWT.log("received " + channels.length() + " channels");
-	
+
 		for (int i = 0; i < channels.length(); i++) {
 			int axisMargin = 10;
 			Graphable channel = channels.get(i);
@@ -143,20 +143,22 @@ public class BodyTrackWidget extends VerticalPanel {
 					axisMargin * 3,
 					false);
 
-         // TODO: Initialize this properly
-         final DataPlot plot = new DataPlot(null,
-            null,
-            null,
-            new Channel(channel.dev_nickname(), channel.ch_name(), (JSONObject)null),
-            minLevel,
-            DATA_PLOT_COLORS[i]);
-         graphWidget.addDataPlot(plot);
+			// TODO: Initialize this properly
+			final DataPlot plot = new DataPlot(null,
+				null,
+				null,
+				new Channel(channel.dev_nickname(), channel.ch_name(), (JSONObject)null),
+				minLevel,
+				DATA_PLOT_COLORS[i]);
+
+			// TODO: Can't use this code until plot is converted
+			// to JavaScriptObject
+			graphWidget.addDataPlot(plot);
 		}
+		*/
 	}
 
 	void selectGraph() {
-
-
 		if (!loginWidget.isLoggedIn()) return;
 		unselect();
 		
