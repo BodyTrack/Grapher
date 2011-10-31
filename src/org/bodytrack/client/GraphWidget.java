@@ -14,6 +14,7 @@ import java.util.Set;
 import java.util.Map.Entry;
 
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.JsArray;
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.event.dom.client.MouseDownHandler;
 import com.google.gwt.event.dom.client.MouseMoveEvent;
@@ -568,6 +569,16 @@ public class GraphWidget implements ChannelChangedListener {
 		drawing.setTextAlign(oldTextAlign);
 		drawing.setLineWidth(oldLineWidth);
 		drawing.setStrokeStyle(Canvas.DEFAULT_COLOR);
+	}
+
+	public JavaScriptObject getPlots() {
+		JsArray<JavaScriptObject> result =
+			JavaScriptObject.createArray().cast();
+
+		for (JavaScriptObject plot: channelMgr.getDataPlots())
+			result.push(plot);
+
+		return result;
 	}
 
 	/**

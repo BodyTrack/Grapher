@@ -109,6 +109,10 @@ public final class InfoPublisher {
 						basis = @org.bodytrack.client.Basis::xRightYUp;
 					}
 
+					if (axisWidth == 0) {
+						axisWidth = DEFAULT_WIDTH;
+					}
+
 					return axisConstructor(placeholder, axisMin, axisMax,
 						basis, axisWidth, isXAxis);
 				})();
@@ -256,7 +260,21 @@ public final class InfoPublisher {
 			this.paint = function() {
 				this.__backingWidget.@org.bodytrack.client.GraphWidget::paint()();
 			};
-			// TODO: Add getPlots, addPlot, and removePlot
+			this.getPlots = function() {
+				return this.__backingWidget.@org.bodytrack.client.GraphWidget::getPlots()();
+			};
+			this.addPlot = function(plot) {
+				if (plot === undefined) {
+					throw 'The addPlot function requires one argument';
+				}
+				this.__backingWidget.@org.bodytrack.client.GraphWidget::addDataPlot(Lcom/google/gwt/core/client/JavaScriptObject;)(plot);
+			};
+			this.removePlot = function(plot) {
+				if (plot === undefined) {
+					throw 'The removePlot function requires one argument';
+				}
+				this.__backingWidget.@org.bodytrack.client.GraphWidget::removeDataPlot(Lcom/google/gwt/core/client/JavaScriptObject;)(plot);
+			}
 			this.id = __getNextID();
 		};
 
