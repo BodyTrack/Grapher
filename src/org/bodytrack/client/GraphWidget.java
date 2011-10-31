@@ -89,8 +89,6 @@ public class GraphWidget implements ChannelChangedListener {
 
 	private int width;
 	private int height;
-	private final int axisMargin;
-	private final int graphMargin = 5;
 
 	private GraphAxis mouseDragAxis;
 	private Vector2 mouseDragLastPos;
@@ -98,7 +96,7 @@ public class GraphWidget implements ChannelChangedListener {
 	// Once a GraphWidget object is instantiated, this doesn't change
 	private final double mouseWheelZoomRate;
 
-	public GraphWidget(final String placeholder, final int axisMargin) {
+	public GraphWidget(final String placeholder) {
 		drawing = new Surface(width, height);
 		if (placeholder != null) {
 			RootPanel.get(placeholder).add(drawing);
@@ -106,8 +104,6 @@ public class GraphWidget implements ChannelChangedListener {
 			this.height = RootPanel.get(placeholder).getOffsetHeight();
 			// TODO: Add handler to auto-resize on DOM changes
 		}
-
-		this.axisMargin = axisMargin;
 
 		channelMgr = new ChannelManager();
 		channelMgr.addChannelListener(this);
@@ -423,47 +419,10 @@ public class GraphWidget implements ChannelChangedListener {
 	}
 
 	private void layout() {
-		int xAxesWidth = calculateAxesWidth(channelMgr.getXAxes());
-		int yAxesWidth = calculateAxesWidth(channelMgr.getYAxes());
-		int graphWidth = width - graphMargin - yAxesWidth;
-		int graphHeight = height - graphMargin - xAxesWidth;
-		Vector2 xAxesBegin = new Vector2(graphMargin,
-			graphHeight + graphMargin);
-		layoutAxes(channelMgr.getXAxes(), graphWidth, xAxesBegin,
-			Basis.xDownYRight);
-
-		Vector2 yAxesBegin = new Vector2(graphWidth+graphMargin,
-			graphHeight + graphMargin);
-		layoutAxes(channelMgr.getYAxes(), graphHeight, yAxesBegin,
-			Basis.xRightYUp);
-	}
-
-	private int calculateAxesWidth(Set<GraphAxis> axes) {
-		if (axes.size() == 0)
-			return 0;
-
-		int ret = -axisMargin;
-		// Don't want to add the margin an extra time for the first
-		// axis, so we subtract once initially, and we know that, by
-		// the return statement, ret will be positive because we
-		// checked whether axes contains any elements
-
-		for (GraphAxis axis: axes)
-			ret += axis.getWidth() + axisMargin;
-
-		return ret;
-	}
-
-	private void layoutAxes(Set<GraphAxis> axes, double length,
-			Vector2 begin, Basis basis) {
-		Vector2 offset = begin;
-
-		for (GraphAxis axis: axes) {
-			axis.layout(offset, length);
-
-			offset = offset.add(
-					basis.x.scale(axisMargin + axis.getWidth()));
-		}
+		for (GraphAxis axis: channelMgr.getXAxes())
+			axis.layout();
+		for (GraphAxis axis: channelMgr.getYAxes())
+			axis.layout();
 	}
 
 	public void setSize(final int width, final int height) {

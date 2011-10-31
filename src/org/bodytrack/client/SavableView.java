@@ -161,16 +161,15 @@ public final class SavableView extends JavaScriptObject {
     * 		if widget is <tt>null</tt>
     */
    public ChannelManager getDataPlots(GraphWidget widget) {
-      if (widget == null) {
+      if (widget == null)
          throw new NullPointerException("Cannot draw on null widget");
-      }
 
-      final int axisMargin = Grapher2.getAxisMargin();
-      // final DataPlotFactory factory = DataPlotFactory.getInstance(widget);
       final ChannelManager result = new ChannelManager();
+      return result;
 
       // TODO: Put this in an actual div
-      final GraphAxis[] xAxes = generateXAxes(null, axisMargin);
+      // TODO: Remove this hardcoded constant
+      // final GraphAxis[] xAxes = generateXAxes(null, 70);
 
       /* TODO: Bring this code back to allow for true rebuilding from
        * a view (the problem here is that we need to drop into native
@@ -194,12 +193,13 @@ public final class SavableView extends JavaScriptObject {
 
          result.addChannel(plot);
       }
-      */
 
       return result;
+      */
    }
 
-   private GraphAxis[] generateXAxes(String divName, int axisMargin) {
+   /*
+   private GraphAxis[] generateXAxes(String divName, int axisWidth) {
 		GraphAxis[] xAxes = new GraphAxis[countXAxes()];
 
 		for (int i = 0; i < xAxes.length; i++) {
@@ -207,7 +207,7 @@ public final class SavableView extends JavaScriptObject {
 				getMinTime(i),
 				getMaxTime(i),
 				Basis.xDownYRight,
-				axisMargin * 7,
+				axisWidth,
 				true);
 		}
 
@@ -215,20 +215,21 @@ public final class SavableView extends JavaScriptObject {
 	}
 
 	private GraphAxis generateYAxis(final String divName,
-			final Channel channel, final int axisMargin) {
+			final Channel channel, final int axisWidth) {
       final int yAxisIndex = getYAxisIndex(channel);
 
       if (ChartType.PHOTO.equals(channel.getChartType()))
-         return new PhotoGraphAxis(divName, axisMargin * 3);
+         return new PhotoGraphAxis(divName, axisWidth);
 
       // Default unless we need a photo axis
       return new GraphAxis(divName,
             getMinValue(yAxisIndex),
             getMaxValue(yAxisIndex),
             Basis.xRightYUp,
-            axisMargin * 3,
+            axisWidth,
             false);
    }
+   */
 
 	/**
 	 * Returns the name for this view.

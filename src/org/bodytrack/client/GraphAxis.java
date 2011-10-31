@@ -84,7 +84,19 @@ public class GraphAxis {
 		highlightedPoint = null;
 	}
 
-	public void layout(Vector2 begin, double length) {
+	public void layout() {
+		if (drawingCanvas == null)
+			return;
+
+		double width = drawingCanvas.getSurface().getWidth();
+		double height = drawingCanvas.getSurface().getHeight();
+
+		double length = isXAxis ? width : height;
+
+		layout(Vector2.ZERO, length);
+	}
+
+	private void layout(Vector2 begin, double length) {
 		this.begin = begin;
 		this.length = length;
 		rescale();

@@ -247,7 +247,7 @@ public final class InfoPublisher {
 
 			this.getPlaceholder = function() { return placeholder; };
 			this.__backingWidget = (function() {
-				var widget = @org.bodytrack.client.GraphWidget::new(Ljava/lang/String;I)(placeholder, 10);
+				var widget = @org.bodytrack.client.GraphWidget::new(Ljava/lang/String;)(placeholder);
 				for (var i = 0; i < plots.length; i++) {
 					widget.@org.bodytrack.client.GraphWidget::addDataPlot(Lcom/google/gwt/core/client/JavaScriptObject;)(plots[i]);
 				}

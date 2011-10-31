@@ -12,9 +12,4 @@ public class Grapher2 implements EntryPoint {
 	public void onModuleLoad() {
 		InfoPublisher.setUpWrappers();
 	}
-
-	// TODO: Remove the dependence on this method
-	public static int getAxisMargin() {
-		return 10;
-	}
 }

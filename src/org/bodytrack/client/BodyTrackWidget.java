@@ -166,7 +166,7 @@ public class BodyTrackWidget extends VerticalPanel {
 		int axisMargin = 10;
 
 		// TODO: Clean this up immensely
-		graphWidget = new GraphWidget(null, axisMargin);
+		graphWidget = new GraphWidget(null);
 
 		//timeAxis = new TimeGraphAxis(
 			//	1293861600-86400*365,
