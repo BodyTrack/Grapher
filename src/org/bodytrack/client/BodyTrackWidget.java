@@ -1,6 +1,5 @@
 package org.bodytrack.client;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import com.google.gwt.core.client.JavaScriptObject;
@@ -17,7 +16,7 @@ public class BodyTrackWidget extends VerticalPanel {
 	LoginWidget loginWidget = new LoginWidget();
 	NavBar navBar = new NavBar();
 	GraphWidget graphWidget;
-	DataPlotFactory factory;
+	// DataPlotFactory factory;
 	GraphAxis timeAxis;
 	List<DataPlot> plots;
 
@@ -184,6 +183,7 @@ public class BodyTrackWidget extends VerticalPanel {
 				axisMargin * 7,
 				true);
 
+		/* TODO: Replace with calls into the JavaScript API
 		// Added by Anne 7/10/11
 		factory = DataPlotFactory.getInstance(graphWidget);
 
@@ -197,12 +197,14 @@ public class BodyTrackWidget extends VerticalPanel {
 		 						     factory.getUserId(), mgr);
 		
 		mainLayout.add(viewSwitcher);
+		*/
+
 		mainLayout.add(graphWidget.getSurface());
 		
 		mainPanel = mainLayout;
 		this.add(mainPanel);
 
-		graphWidget.paint();		
+		graphWidget.paint();
 
 		receiveChannels(jsArrayGraphableFromJSON(fetchChannelsJSON()));
 	}

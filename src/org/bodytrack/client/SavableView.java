@@ -166,7 +166,7 @@ public final class SavableView extends JavaScriptObject {
       }
 
       final int axisMargin = Grapher2.getAxisMargin();
-      final DataPlotFactory factory = DataPlotFactory.getInstance(widget);
+      // final DataPlotFactory factory = DataPlotFactory.getInstance(widget);
       final ChannelManager result = new ChannelManager();
 
       // TODO: Put this in an actual div
