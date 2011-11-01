@@ -47,7 +47,8 @@ public class DataPlot implements Alertable<GrapherTile> {
    /**
     * The width at which a normal line is drawn.
     */
-   protected static final int NORMAL_STROKE_WIDTH = 1;
+   // should be 1, but we use 1.01 to work around a Chrome bug (http://code.google.com/p/chromium/issues/detail?id=102286)
+   protected static final double NORMAL_STROKE_WIDTH = 1.01;
 
    /**
     * The width at which a highlighted line is drawn.
