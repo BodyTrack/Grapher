@@ -180,14 +180,16 @@ public class ChannelManager {
 			return false;
 
 		Dynamic plot = nativePlot.cast();
-		int id = plot.get("id");
+		Integer id = plot.get("id");
 
-		for (JavaScriptObject test: dataPlots) {
-			Dynamic testPlot = test.cast();
-			int testID = testPlot.get("id");
-			if (testID == id)
-				return true;
-		}
+      if (id != null) {
+         for (JavaScriptObject test: dataPlots) {
+            Dynamic testPlot = test.cast();
+            Integer testID = testPlot.get("id");
+            if (id.equals(testID))
+               return true;
+         }
+      }
 
 		return false;
 	}
