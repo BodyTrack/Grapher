@@ -99,12 +99,12 @@ public final class InfoPublisher {
 					var basis = null;
 					if (isXAxis) {
 						axisWidth = placeholderElement != null
-							? placeholderElement.offsetHeight
+							? placeholderElement.clientHeight
 							: DEFAULT_WIDTH;
 						basis = @org.bodytrack.client.Basis::xDownYRight;
 					} else {
 						axisWidth = placeholderElement != null
-							? placeholderElement.offsetWidth
+							? placeholderElement.clientWidth
 							: DEFAULT_WIDTH;
 						basis = @org.bodytrack.client.Basis::xRightYUp;
 					}
