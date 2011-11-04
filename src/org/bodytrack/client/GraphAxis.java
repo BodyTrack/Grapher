@@ -55,25 +55,31 @@ public class GraphAxis {
 	protected static final double HIGHLIGHTED_POINT_LINE_WIDTH = 3;
 	protected static final double HIGHLIGHTED_POINT_LINE_LENGTH = 15;
 
-	final static int JUSTIFY_MIN = 0;
-	final static int JUSTIFY_MED = 1;
-	final static int JUSTIFY_MAX = 2;
+	static final int JUSTIFY_MIN = 0;
+	static final int JUSTIFY_MED = 1;
+	static final int JUSTIFY_MAX = 2;
+   private final String divName;
 
-	public GraphAxis(String divName, double min, double max, Basis basis,
-			double width, boolean isXAxis) {
-		if (basis == null)
+   public GraphAxis(final String divName,
+                    final double min,
+                    final double max,
+                    final Basis basis,
+                    final double width,
+                    final boolean isXAxis) {
+      this.divName = divName;
+      if (basis == null)
 			throw new NullPointerException("Null basis");
 		if (min > max)
 			throw new IllegalArgumentException("Axis min is greater than max");
 
 		if (divName != null) {
-			RootPanel div = RootPanel.get(divName);
-			Surface drawingSurface = new Surface(div.getOffsetWidth(),
-				div.getOffsetHeight());
+			final RootPanel div = RootPanel.get(divName);
+			final Surface drawingSurface = new Surface(div.getOffsetWidth(), div.getOffsetHeight());
 			div.add(drawingSurface);
 			drawingCanvas = Canvas.buildCanvas(drawingSurface);
-		} else
+		} else {
 			drawingCanvas = null;
+      }
 
 		this.min = min;
 		this.max = max;
@@ -85,35 +91,44 @@ public class GraphAxis {
 	}
 
 	public void layout() {
-		if (drawingCanvas == null)
-			return;
+		if (drawingCanvas == null) {
+         return;
+      }
 
-		double width = drawingCanvas.getSurface().getWidth();
-		double height = drawingCanvas.getSurface().getHeight();
+		final double axisLength;
+      final Vector2 beginVector;
+      if (isXAxis) {
+         axisLength = (double)drawingCanvas.getSurface().getWidth();
+         beginVector = Vector2.ZERO;
+      }
+      else {
+         final double elementHeight = drawingCanvas.getSurface().getHeight();
+         axisLength = elementHeight;
+         beginVector = new Vector2(0, elementHeight);
+      }
 
-		double length = isXAxis ? width : height;
-
-		layout(Vector2.ZERO, length);
+      layout(beginVector, axisLength);
 	}
 
-	private void layout(Vector2 begin, double length) {
+	private void layout(final Vector2 begin, final double length) {
 		this.begin = begin;
 		this.length = length;
 		rescale();
 	}
 
 	private void rescale() {
-		this.scale = length / (this.max - this.min);
-		Vector2 vWidth = new Vector2(basis.x.scale(this.width));
-		Vector2 vLength = new Vector2(basis.y.scale(this.length));
-		Vector2 end = this.begin.add(vWidth).add(vLength);
-		bounds = new BBox(new Vector2(Math.min(begin.getX(), end.getX()),
-				Math.min(begin.getY(), end.getY())),
-				new Vector2(Math.max(begin.getX(), end.getX()),
-						Math.max(begin.getY(), end.getY())));
-	}
+      this.scale = length / (this.max - this.min);
+      final Vector2 vWidth = new Vector2(basis.x.scale(this.width));
+      final Vector2 vLength = new Vector2(basis.y.scale(this.length));
+      final Vector2 end = this.begin.add(vWidth).add(vLength);
+      final Vector2 boundsMin = new Vector2(Math.min(begin.getX(), end.getX()),
+                                            Math.min(begin.getY(), end.getY()));
+      final Vector2 boundsMax = new Vector2(Math.max(begin.getX(), end.getX()),
+                                            Math.max(begin.getY(), end.getY()));
+      bounds = new BBox(boundsMin, boundsMax);
+   }
 
-	private double project1D(double value) {
+   private double project1D(final double value) {
 		return (value - this.min) * scale;
 	}
 
@@ -125,7 +140,7 @@ public class GraphAxis {
 	 * @param value
 	 * 		the value the user sees on the axis
 	 * @return
-	 * 		a {@link gwt.g2d.client.math.Vector2 Vector2} with one
+	 * 		a {@link Vector2 Vector2} with one
 	 * 		coordinate correct for drawing the specified value relative
 	 * 		to this axis
 	 */
@@ -467,29 +482,35 @@ public class GraphAxis {
 		return labelOffsetPixels;
 	}
 
-	protected void renderTicks(double offsetPixels, double tickSize,
-			TickGenerator tickGen, Canvas canvas, double tickWidthPixels,
-			LabelFormatter formatter) {
-		if (tickGen == null) tickGen = new TickGenerator(tickSize, 0);
+   protected void renderTicks(double offsetPixels,
+                              double tickSize,
+                              TickGenerator tickGen,
+                              Canvas canvas,
+                              double tickWidthPixels,
+                              LabelFormatter formatter) {
+      if (tickGen == null) {
+         tickGen = new TickGenerator(tickSize, 0);
+      }
 
-		double labelOffsetPixels = formatter == null ? 0
-				: setupText(canvas.getSurface(), JUSTIFY_MED)
-				+ offsetPixels + tickWidthPixels;
+      double labelOffsetPixels = formatter == null ? 0
+                                                   : setupText(canvas.getSurface(), JUSTIFY_MED)
+                                                     + offsetPixels + tickWidthPixels;
 
-		IterableTickGenerator gen =
-			new IterableTickGenerator(tickGen, this.min, this.max);
+      IterableTickGenerator gen =
+            new IterableTickGenerator(tickGen, this.min, this.max);
 
-		for (double tick: gen) {
-			renderTick(canvas.getRenderer(), tick,
-					offsetPixels + tickWidthPixels);
+      for (double tick : gen) {
+         renderTick(canvas.getRenderer(), tick,
+                    offsetPixels + tickWidthPixels);
 
-			if (formatter != null)
-				renderTickLabel(canvas.getSurface(), tick,
-						labelOffsetPixels, formatter);
-		}
-	}
+         if (formatter != null) {
+            renderTickLabel(canvas.getSurface(), tick,
+                            labelOffsetPixels, formatter);
+         }
+      }
+   }
 
-	protected void renderTicksRangeLabelInline(double offsetPixels,
+   protected void renderTicksRangeLabelInline(double offsetPixels,
 			double tickSize, TickGenerator tickGen, Canvas canvas,
 			double tickWidthPixels, LabelFormatter formatter) {
 		Surface surface = canvas.getSurface();
@@ -572,13 +593,15 @@ public class GraphAxis {
 		}
 	}
 
-	protected void renderTick(DirectShapeRenderer renderer, double tick,
-			double tickWidthPixels) {
-		renderer.drawLineSegment(project2D(tick),
-				project2D(tick).add(this.basis.x.scale(tickWidthPixels)));
-	}
+   protected void renderTick(final DirectShapeRenderer renderer,
+                             final double tick,
+                             final double tickWidthPixels) {
+      final Vector2 fromPosition = project2D(tick);
+      final Vector2 toPosition = fromPosition.add(this.basis.x.scale(tickWidthPixels));
+      renderer.drawLineSegment(fromPosition, toPosition);
+   }
 
-	protected void renderTickLabel(Surface surface, double tick,
+   protected void renderTickLabel(Surface surface, double tick,
 			double labelOffsetPixels, LabelFormatter formatter) {
 		renderTickLabel(surface, tick, labelOffsetPixels,
 				formatter.format(tick));
