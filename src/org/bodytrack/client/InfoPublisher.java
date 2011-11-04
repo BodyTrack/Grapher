@@ -128,7 +128,7 @@ public final class InfoPublisher {
 				};
 				this.id = __getNextID();
 			};
-		}
+		};
 
 		/// Initializes a new NumberAxis object
 		///
@@ -197,7 +197,7 @@ public final class InfoPublisher {
 				style.color = 'black';
 			}
 
-			this.getDatasource = function() { return datasource; }
+			this.getDatasource = function() { return datasource; };
 			this.__backingPlot = (function() {
 				var MIN_LEVEL = -20; // TODO: Offer control to the plot creator?
 
@@ -222,12 +222,12 @@ public final class InfoPublisher {
 				this.__backingPlot.@org.bodytrack.client.DataPlot::setYAxis(Lcom/google/gwt/core/client/JavaScriptObject;)(axis);
 			};
 			this.style = style;
-			this.getStyle = function() { return this.style; }
+			this.getStyle = function() { return this.style; };
 			this.setStyle = function(new_style) {
 				// TODO: Support changing the plot type, which requires
 				// surgically changing the backing plot
 				this.style = new_style;
-			}
+			};
 			this.id = __getNextID();
 		};
 
@@ -274,7 +274,7 @@ public final class InfoPublisher {
 					throw 'The removePlot function requires one argument';
 				}
 				this.__backingWidget.@org.bodytrack.client.GraphWidget::removeDataPlot(Lcom/google/gwt/core/client/JavaScriptObject;)(plot);
-			}
+			};
 			this.id = __getNextID();
 		};
 
