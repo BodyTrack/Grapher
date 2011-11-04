@@ -2,7 +2,7 @@
 <module rename-to='grapher2'>
   <!-- Inherit the core Web Toolkit stuff.                        -->
   <inherits name='com.google.gwt.user.User'/>
-  
+
   <inherits name='gwt.g2d.g2d'/>
   <inherits name="com.google.gwt.json.JSON" />
 
@@ -15,6 +15,9 @@
 
   <!-- Other module inherits                                      -->
   <inherits name="com.google.gwt.http.HTTP" />
+
+  <!-- For production, we set the default log level to `OFF` -->
+  <inherits name="com.allen_sauer.gwt.log.gwt-log-OFF" />
 
   <!-- Specify the app entry point class.                         -->
   <entry-point class='org.bodytrack.client.Grapher2'/>

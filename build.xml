@@ -9,6 +9,7 @@
       <pathelement location="${g2d.jar}"/>
       <pathelement location="${gwt-dev.jar}"/>
       <pathelement location="${gwt-user.jar}"/>
+      <pathelement location="${gwt-log.jar}"/>
    </path>
 
    <path id="project-test.classpath">
@@ -25,6 +26,7 @@
       <pathelement location="${g2d.jar}"/>
       <pathelement location="${gwt-dev.jar}"/>
       <pathelement location="${gwt-user.jar}"/>
+      <pathelement location="${gwt-log.jar}"/>
    </path>
 
    <!-- Compiler resources -->
