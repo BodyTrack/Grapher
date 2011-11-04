@@ -92,6 +92,10 @@ public class PhotoGraphAxis extends GraphAxis {
 	@Override
 	public void paint() {
 		Canvas canvas = getDrawingCanvas();
+      if (canvas == null)
+         return;
+
+      canvas.getSurface().clear();
 
 		// Pick the color to use, based on highlighting status
 		if (isHighlighted())

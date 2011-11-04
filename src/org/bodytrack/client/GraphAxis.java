@@ -206,6 +206,8 @@ public class GraphAxis {
 		if (drawingCanvas == null)
 			return;
 
+      drawingCanvas.getSurface().clear();
+
 		// Pick the color to use, based on highlighting status
 		if (isHighlighted())
 			drawingCanvas.getSurface().setStrokeStyle(HIGHLIGHTED_COLOR);

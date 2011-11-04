@@ -300,6 +300,8 @@ public class TimeGraphAxis extends GraphAxis {
 		if (canvas == null)
 			return;
 
+      canvas.getSurface().clear();
+      
 		// Pick the color to use, based on highlighting status
 		if (isHighlighted())
 			canvas.getSurface().setStrokeStyle(HIGHLIGHTED_COLOR);
