@@ -104,6 +104,8 @@ public class DataPlot implements Alertable<GrapherTile> {
     */
    private static final double LN_2 = Math.log(2);
 
+   private GraphWidget containingGraphWidget = null;
+
    private final JavaScriptObject datasource;
    private JavaScriptObject xAxis;
    private JavaScriptObject yAxis;
@@ -249,9 +251,26 @@ public class DataPlot implements Alertable<GrapherTile> {
    }
 
    public static DataPlot getDataPlot(JavaScriptObject nativePlot) {
-		Dynamic dynPlot = nativePlot.cast();
+		final Dynamic dynPlot = nativePlot.cast();
 		return dynPlot.get("__backingPlot");
    }
+
+   /** Sets the {@link GraphWidget} which contains this <code>DataPlot</code>. */
+    public final void registerGraphWidget(final GraphWidget graphWidget) {
+      this.containingGraphWidget = graphWidget;
+   }
+
+   /**
+    * Unregisters the given {@link GraphWidget} from this <code>DataPlot</code> if and only if the given
+    * {@link GraphWidget} is not <code>null</code> and is currently registered with this <code>DataPlot</code>. That is,
+    * if this <code>DataPlot</code> is already associated with a {@link GraphWidget} other than the given one, then
+    * nothing happens.
+    */
+    public final void unregisterGraphWidget(final GraphWidget graphWidget) {
+       if (graphWidget != null && graphWidget.equals(this.containingGraphWidget)) {
+          this.containingGraphWidget = null;
+       }
+    }
 
    /**
     * Returns the {@link ChartType} of this plot.  The {@link ChartType} is obtained from the {@link Channel}.
@@ -324,8 +343,9 @@ public class DataPlot implements Alertable<GrapherTile> {
       }
 
       color = newColor;
-      // TODO: Implement
-      // container.paintTwice();
+      if (containingGraphWidget != null) {
+         containingGraphWidget.paintTwice();
+      }
    }
 
    /**
@@ -479,8 +499,9 @@ public class DataPlot implements Alertable<GrapherTile> {
       // It is important to call container.paintTwice() rather than
       // simply paint() here, since the loading text does
       // not update unless container.paint() is called at least once
-      // TODO: Bring this back
-      // container.paintTwice();
+      if (containingGraphWidget != null) {
+         containingGraphWidget.paintTwice();
+      }
    }
 
    /**
@@ -518,8 +539,9 @@ public class DataPlot implements Alertable<GrapherTile> {
 
       // See the documentation in onSuccess() to see why
       // container.paintTwice() is important
-      // TODO: Bring this back
-      // container.paintTwice();
+      if (containingGraphWidget != null) {
+         containingGraphWidget.paintTwice();
+      }
    }
 
    /**
@@ -923,6 +945,7 @@ public class DataPlot implements Alertable<GrapherTile> {
     * 		currentData
     */
    private List<GrapherTile> getBestResolutionTiles() {
+
       final List<GrapherTile> best = new ArrayList<GrapherTile>();
 
       // When minTime and maxTime are used in calculations, they are
@@ -934,21 +957,19 @@ public class DataPlot implements Alertable<GrapherTile> {
 
       final int bestLevel = computeCurrentLevel();
 
+      final double timespan = maxTime - minTime;
       while (maxCoveredTime <= maxTime) {
-         final GrapherTile bestAtCurrTime = getBestResolutionTileAt(
-               maxCoveredTime + (maxTime - minTime) * 1e-3,
-               bestLevel);
+         final GrapherTile bestAtCurrTime = getBestResolutionTileAt(maxCoveredTime + timespan * 1e-3, bestLevel);
          // We need to move a little to the right of the current time
          // so we don't get the same tile twice
 
          if (bestAtCurrTime == null) {
-            maxCoveredTime += (maxTime - minTime) * 1e-2;
+            maxCoveredTime += timespan * 1e-2;
          }
          else {
             best.add(bestAtCurrTime);
 
-            maxCoveredTime =
-                  bestAtCurrTime.getDescription().getMaxTime();
+            maxCoveredTime = bestAtCurrTime.getDescription().getMaxTime();
          }
       }
 
