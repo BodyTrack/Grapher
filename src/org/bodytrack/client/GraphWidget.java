@@ -1,6 +1,16 @@
 package org.bodytrack.client;
 
-import com.allen_sauer.gwt.log.client.Log;
+import gwt.g2d.client.graphics.Color;
+import gwt.g2d.client.graphics.Surface;
+import gwt.g2d.client.graphics.TextAlign;
+import gwt.g2d.client.math.Vector2;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.event.dom.client.MouseDownHandler;
 import com.google.gwt.event.dom.client.MouseMoveEvent;
@@ -13,16 +23,6 @@ import com.google.gwt.event.dom.client.MouseWheelEvent;
 import com.google.gwt.event.dom.client.MouseWheelHandler;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.RootPanel;
-import gwt.g2d.client.graphics.Color;
-import gwt.g2d.client.graphics.Surface;
-import gwt.g2d.client.graphics.TextAlign;
-import gwt.g2d.client.math.Vector2;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
 
 public class GraphWidget {
    /**
