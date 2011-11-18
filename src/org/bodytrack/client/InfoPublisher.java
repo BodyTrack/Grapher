@@ -257,9 +257,6 @@ public final class InfoPublisher {
 				}
 				return widget;
 			})();
-			this.paint = function() {
-				this.__backingWidget.@org.bodytrack.client.GraphWidget::paint()();
-			};
 			this.addPlot = function(plot) {
 				if (plot === undefined) {
 					throw 'The addPlot function requires one argument';

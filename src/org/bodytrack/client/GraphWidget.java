@@ -1,6 +1,5 @@
 package org.bodytrack.client;
 
-import com.allen_sauer.gwt.log.client.Log;
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.event.dom.client.MouseDownHandler;
 import com.google.gwt.event.dom.client.MouseMoveEvent;
@@ -11,7 +10,6 @@ import com.google.gwt.event.dom.client.MouseUpEvent;
 import com.google.gwt.event.dom.client.MouseUpHandler;
 import com.google.gwt.event.dom.client.MouseWheelEvent;
 import com.google.gwt.event.dom.client.MouseWheelHandler;
-import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.RootPanel;
 import gwt.g2d.client.graphics.Color;
 import gwt.g2d.client.graphics.Surface;
@@ -53,8 +51,6 @@ public class GraphWidget {
    private static final double HIGHLIGHT_DISTANCE_THRESHOLD = 5;
    private static final double PHOTO_HIGHLIGHT_DISTANCE_THRESH = 10;
 
-   private static final int PAINT_TWICE_DELAY = 10;
-
    private static final int INITIAL_MESSAGE_ID = 1;
    private static final Color LOADING_MSG_COLOR = Canvas.DARK_GRAY;
    private static final double LOADING_MSG_X_MARGIN = 5;
@@ -92,6 +88,8 @@ public class GraphWidget {
    // Once a GraphWidget object is instantiated, this doesn't change
    private final double mouseWheelZoomRate;
 
+   private String previousPaintEventId = null;
+
    public GraphWidget(final String placeholder) {
       drawing = new Surface(width, height);
       if (placeholder != null) {
@@ -111,7 +109,7 @@ public class GraphWidget {
 
       drawing.addMouseWheelHandler(new MouseWheelHandler() {
          @Override
-         public void onMouseWheel(MouseWheelEvent event) {
+         public void onMouseWheel(final MouseWheelEvent event) {
             handleMouseWheelEvent(event);
 
             // Stops scrolling meant for the widget from moving the
@@ -123,28 +121,28 @@ public class GraphWidget {
 
       drawing.addMouseDownHandler(new MouseDownHandler() {
          @Override
-         public void onMouseDown(MouseDownEvent event) {
+         public void onMouseDown(final MouseDownEvent event) {
             handleMouseDownEvent(event);
          }
       });
 
       drawing.addMouseMoveHandler(new MouseMoveHandler() {
          @Override
-         public void onMouseMove(MouseMoveEvent event) {
+         public void onMouseMove(final MouseMoveEvent event) {
             handleMouseMoveEvent(event);
          }
       });
 
       drawing.addMouseUpHandler(new MouseUpHandler() {
          @Override
-         public void onMouseUp(MouseUpEvent event) {
+         public void onMouseUp(final MouseUpEvent event) {
             handleMouseUpEvent(event);
          }
       });
 
       drawing.addMouseOutHandler(new MouseOutHandler() {
          @Override
-         public void onMouseOut(MouseOutEvent event) {
+         public void onMouseOut(final MouseOutEvent event) {
             handleMouseOutEvent(event);
          }
       });
@@ -212,10 +210,9 @@ public class GraphWidget {
             highlightedYAxes.add(plot.getYAxis());
          }
          for (final GraphAxis yAxis : highlightedYAxes) {
-            yAxis.zoom(zoomFactor, yAxis.unproject(pos));
+            yAxis.zoom(zoomFactor, yAxis.unproject(pos), UUID.uuid());
          }
-      }
-      else {
+      } else {
          // We are not highlighting any plots, so we
          // zoom all Y-axes
 
@@ -224,30 +221,17 @@ public class GraphWidget {
             yAxes.add(plot.getYAxis());
          }
          for (final GraphAxis yAxis : yAxes) {
-            yAxis.zoom(zoomFactor, yAxis.unproject(pos));
+            yAxis.zoom(zoomFactor, yAxis.unproject(pos), UUID.uuid());
          }
       }
-
-      paint();
    }
 
    private void handleMouseDownEvent(final MouseDownEvent event) {
-
       mouseDragLastPos = new Vector2(event.getX(), event.getY());
-
-      paint();
    }
 
    private void handleMouseMoveEvent(final MouseMoveEvent event) {
       final Vector2 pos = new Vector2(event.getX(), event.getY());
-
-      // build a set of the highlighted plots
-      final Set<DataPlot> highlightedPlots = new HashSet<DataPlot>();
-      for (final DataPlot plot : dataPlots) {
-         if (plot.isHighlighted()) {
-            highlightedPlots.add(plot);
-         }
-      }
 
       // We can be dragging exactly one of: one or
       // more data plots, the whole viewing window, and nothing
@@ -256,6 +240,14 @@ public class GraphWidget {
          // or the whole viewing window. If there's one or more
          // highlighted plot, then just drag the axes
          // for those plots.  Otherwise, drag all axes.
+
+         // build a set of the highlighted plots
+         final Set<DataPlot> highlightedPlots = new HashSet<DataPlot>();
+         for (final DataPlot plot : dataPlots) {
+            if (plot.isHighlighted()) {
+               highlightedPlots.add(plot);
+            }
+         }
 
          // determine whether we're dragging only the highlighted plots
          final Set<DataPlot> plots = (highlightedPlots.size() > 0) ? highlightedPlots : dataPlots;
@@ -269,22 +261,24 @@ public class GraphWidget {
 
          // drag the axes
          for (final GraphAxis axis : axes) {
-            axis.drag(mouseDragLastPos, pos);
+            axis.drag(mouseDragLastPos, pos, UUID.uuid());
          }
 
          mouseDragLastPos = pos;
-      }
-      else {
+      } else {
          // We are not dragging anything, so we just update the
          // highlighting on the data plots and axes
 
+         final Set<DataPlot> highlightedPlots = new HashSet<DataPlot>();
          for (final DataPlot plot : dataPlots) {
             plot.unhighlight();
 
             final double distanceThreshold = (plot instanceof PhotoDataPlot)
                                              ? PHOTO_HIGHLIGHT_DISTANCE_THRESH
                                              : HIGHLIGHT_DISTANCE_THRESHOLD;
-            plot.highlightIfNear(pos, distanceThreshold);
+            if (plot.highlightIfNear(pos, distanceThreshold)) {
+               highlightedPlots.add(plot);
+            }
          }
 
          // Now we handle highlighting of the axes--first build a set of the unhighlighted plots
@@ -307,15 +301,13 @@ public class GraphWidget {
             plot.getXAxis().highlight(highlightedPoint);
             plot.getYAxis().highlight(highlightedPoint);
          }
-      }
 
-      paint();
+         paint();
+      }
    }
 
    private void handleMouseUpEvent(final MouseUpEvent event) {
       mouseDragLastPos = null;
-
-      paint();
    }
 
    private void handleMouseOutEvent(final MouseOutEvent event) {
@@ -361,57 +353,49 @@ public class GraphWidget {
       return drawing;
    }
 
-   /**
-    * Actually paints this widget twice, with the two paint operations
-    * separated by PAINT_TWICE_DELAY milliseconds.
-    */
-   public void paintTwice() {
-      paint();
-
-      final Timer timer = new Timer() {
-         @Override
-         public void run() {
-            paint();
-         }
-      };
-
-      timer.schedule(PAINT_TWICE_DELAY);
+   public void paint() {
+      paint(UUID.uuid());
    }
 
-   public void paint() {
-      layout();
-      drawing.clear();
-      drawing.save();
-      drawing.translate(.5, .5);
+   public void paint(final String newPaintEventId) {
+      // guard against redundant paints
+      if (previousPaintEventId == null || !previousPaintEventId.equals(newPaintEventId)) {
+         previousPaintEventId = newPaintEventId;
 
-      // Draw any Loading... messages that might be requested
-      if (loadingMessages.size() > 0) {
-         showLoadingMessage(loadingMessages.get(0));
+         layout();
+         drawing.clear();
+         drawing.save();
+         drawing.translate(.5, .5);
+
+         // Draw any Loading... messages that might be requested
+         if (loadingMessages.size() > 0) {
+            showLoadingMessage(loadingMessages.get(0));
+         }
+
+         // Draw any value messages that might be requested
+         if (valueMessages.size() > 0) {
+            // We use the first (oldest) VALUE_MESSAGES_CAPACITY
+            // messages in valueMessages, at least for now
+            final int numMessages = Math.min(VALUE_MESSAGES_CAPACITY,
+                                             valueMessages.size());
+
+            showValueMessages(valueMessages.subList(0, numMessages));
+         }
+
+         // Draw the axes
+         for (final DataPlot plot : dataPlots) {
+            plot.getXAxis().paint(newPaintEventId);
+            plot.getYAxis().paint(newPaintEventId);
+         }
+
+         // Now draw the data
+         final Canvas canvas = Canvas.buildCanvas(drawing);
+         for (final DataPlot plot : dataPlots) {
+            plot.paint(canvas, newPaintEventId);
+         }
+
+         drawing.restore();
       }
-
-      // Draw any value messages that might be requested
-      if (valueMessages.size() > 0) {
-         // We use the first (oldest) VALUE_MESSAGES_CAPACITY
-         // messages in valueMessages, at least for now
-         final int numMessages = Math.min(VALUE_MESSAGES_CAPACITY,
-                                          valueMessages.size());
-
-         showValueMessages(valueMessages.subList(0, numMessages));
-      }
-
-      // Draw the axes
-      for (final DataPlot plot : dataPlots) {
-         plot.getXAxis().paint();
-         plot.getYAxis().paint();
-      }
-
-      // Now draw the data
-      final Canvas canvas = Canvas.buildCanvas(drawing);
-      for (final DataPlot plot : dataPlots) {
-         plot.paint(canvas);
-      }
-
-      drawing.restore();
    }
 
    /**

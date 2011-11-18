@@ -7,20 +7,36 @@ import gwt.g2d.client.graphics.TextAlign;
 import gwt.g2d.client.graphics.TextBaseline;
 import gwt.g2d.client.math.Vector2;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.ui.RootPanel;
 
 public class GraphAxis {
+
+   public interface EventListener {
+      void onAxisChange(final String eventId);
+   }
+
 	/**
 	 * A point that signals to the {@link #highlight(PlottablePoint)}
 	 * method that there should be no visible highlighted point, just
 	 * a darkening of the axis
 	 */
-	public static final PlottablePoint DARKEN_AXIS_ONLY =
-		new PlottablePoint(Long.MIN_VALUE, Long.MIN_VALUE);
+	public static final PlottablePoint DARKEN_AXIS_ONLY = new PlottablePoint(Long.MIN_VALUE, Long.MIN_VALUE);
+
+   protected static final Color NORMAL_COLOR = Canvas.DARK_GRAY;
+   protected static final Color HIGHLIGHTED_COLOR = Canvas.BLACK;
+   protected static final Color HIGHLIGHTED_POINT_COLOR = Canvas.RED;
+   protected static final double HIGHLIGHTED_POINT_LINE_WIDTH = 3;
+   protected static final double HIGHLIGHTED_POINT_LINE_LENGTH = 15;
+
+   static final int JUSTIFY_MIN = 0;
+   static final int JUSTIFY_MED = 1;
+   static final int JUSTIFY_MAX = 2;
 
 	public double majorTickMinSpacingPixels = 50;
 	public double majorTickWidthPixels = 8;
@@ -49,17 +65,13 @@ public class GraphAxis {
 
 	// For determining whether to highlight this GraphAxis
 	private PlottablePoint highlightedPoint; // null if this isn't highlighted
-	protected static final Color NORMAL_COLOR = Canvas.DARK_GRAY;
-	protected static final Color HIGHLIGHTED_COLOR = Canvas.BLACK;
-	protected static final Color HIGHLIGHTED_POINT_COLOR = Canvas.RED;
-	protected static final double HIGHLIGHTED_POINT_LINE_WIDTH = 3;
-	protected static final double HIGHLIGHTED_POINT_LINE_LENGTH = 15;
 
-	static final int JUSTIFY_MIN = 0;
-	static final int JUSTIFY_MED = 1;
-	static final int JUSTIFY_MAX = 2;
    private final String divName;
 
+   private final Set<EventListener> eventListeners = new HashSet<EventListener>();
+
+   private String previousPaintEventId = null;
+   
    public GraphAxis(final String divName,
                     final double min,
                     final double max,
@@ -89,6 +101,18 @@ public class GraphAxis {
 
 		highlightedPoint = null;
 	}
+
+   public final void addEventListener(final EventListener listener) {
+      if (listener != null) {
+         eventListeners.add(listener);
+      }
+   }
+
+   public final void removeEventListener(final EventListener listener) {
+      if (listener != null) {
+         eventListeners.remove(listener);
+      }
+   }
 
 	public void layout() {
 		if (drawingCanvas == null) {
@@ -202,40 +226,44 @@ public class GraphAxis {
 		return highlightedPoint;
 	}
 
-	public void paint() {
-		if (drawingCanvas == null)
-			return;
+   public void paint(final String newPaintEventId) {
+      // guard against redundant paints
+      if (previousPaintEventId == null || !previousPaintEventId.equals(newPaintEventId)) {
+         previousPaintEventId = newPaintEventId;
 
-      drawingCanvas.getSurface().clear();
+         if (drawingCanvas == null) {
+            return;
+         }
 
-		// Pick the color to use, based on highlighting status
-		if (isHighlighted())
-			drawingCanvas.getSurface().setStrokeStyle(HIGHLIGHTED_COLOR);
-		else
-			drawingCanvas.getSurface().setStrokeStyle(NORMAL_COLOR);
+         drawingCanvas.getSurface().clear();
 
-		drawingCanvas.getRenderer().beginPath();
-		drawingCanvas.getRenderer().drawLineSegment(
-				project2D(this.min), project2D(this.max));
+         // Pick the color to use, based on highlighting status
+         if (isHighlighted()) {
+            drawingCanvas.getSurface().setStrokeStyle(HIGHLIGHTED_COLOR);
+         } else {
+            drawingCanvas.getSurface().setStrokeStyle(NORMAL_COLOR);
+         }
 
-		double majorTickSize = computeTickSize(majorTickMinSpacingPixels);
-		renderTicks(0, majorTickSize, null, drawingCanvas,
-				majorTickWidthPixels, new DefaultLabelFormatter());
-		//renderTickLabels(surface, majorTickSize, majorTickWidthPixels+3);
+         drawingCanvas.getRenderer().beginPath();
+         drawingCanvas.getRenderer().drawLineSegment(project2D(this.min), project2D(this.max));
 
-		double minorTickSize = computeTickSize(minorTickMinSpacingPixels);
-		renderTicks(0, minorTickSize, null, drawingCanvas,
-				minorTickWidthPixels, null);
+         final double majorTickSize = computeTickSize(majorTickMinSpacingPixels);
+         renderTicks(0, majorTickSize, null, drawingCanvas, majorTickWidthPixels, new DefaultLabelFormatter());
+         //renderTickLabels(surface, majorTickSize, majorTickWidthPixels+3);
 
-		drawingCanvas.getRenderer().stroke();
+         final double minorTickSize = computeTickSize(minorTickMinSpacingPixels);
+         renderTicks(0, minorTickSize, null, drawingCanvas, minorTickWidthPixels, null);
 
-		renderHighlight(drawingCanvas, highlightedPoint);
+         drawingCanvas.getRenderer().stroke();
 
-		// Clean up after ourselves
-		drawingCanvas.getSurface().setStrokeStyle(Canvas.DEFAULT_COLOR);
-	}
+         renderHighlight(drawingCanvas, highlightedPoint);
 
-	/**
+         // Clean up after ourselves
+         drawingCanvas.getSurface().setStrokeStyle(Canvas.DEFAULT_COLOR);
+      }
+   }
+
+   /**
 	 * Draws a colored line for point, if that is on this axis.
 	 *
 	 * <p>Note that this does absolutely nothing unless this
@@ -668,16 +696,25 @@ public class GraphAxis {
 		if (hasMaxRange) this.max = Math.min(this.max, maxRange);
 	}
 
-	public void zoom(double factor, double about) {
+	public void zoom(final double factor, final double about, final String eventId) {
 		this.min = about + factor * (this.min - about);
 		this.max = about + factor * (this.max - about);
 		clampToRange();
 		rescale();
-	}
 
-	public void drag(Vector2 from, Vector2 to) {
-		double motion = unproject(from) - unproject(to);
-		uncheckedDrag(motion);
+      // notify event listeners that the axis has changed
+      publishAxisChangeEvent(eventId);
+   }
+
+   private void publishAxisChangeEvent(final String eventId) {
+      for (final EventListener listener : eventListeners) {
+         listener.onAxisChange(eventId);
+      }
+   }
+
+   public void drag(final Vector2 from, final Vector2 to, final String eventId) {
+		final double motion = unproject(from) - unproject(to);
+		uncheckedDrag(motion, eventId);
 	}
 
 	/**
@@ -689,29 +726,13 @@ public class GraphAxis {
 	 * 		for an axis representing time, other values for another
 	 * 		axis), not in screen pixels
 	 */
-	private void uncheckedDrag(double motion) {
+	private void uncheckedDrag(final double motion, final String eventId) {
 		uncheckedTranslate(motion);
 		clampToRange();
 		rescale();
-	}
 
-	/**
-	 * Replaces the bounds of this axis with the bounds of newAxis.
-	 *
-	 * @param newAxis
-	 * 		the axis with the bounds to use for this axis
-	 * @throws NullPointerException
-	 * 		if newAxis is <tt>null</tt>
-	 */
-	public void replaceBounds(GraphAxis newAxis) {
-		if (newAxis == null)
-			throw new NullPointerException(
-				"Can't change bounds to those of a null axis");
-
-		double newMin = newAxis.getMin();
-		double newMax = newAxis.getMax();
-
-		replaceBounds(newMin, newMax);
+      // notify event listeners that the axis has changed
+      publishAxisChangeEvent(eventId);
 	}
 
 	/**
@@ -724,20 +745,20 @@ public class GraphAxis {
 	 * @throws IllegalArgumentException
 	 * 		if newMax > newMin
 	 */
-	public void replaceBounds(double newMin, double newMax) {
-		if (newMin > newMax)
-			throw new IllegalArgumentException(
-				"Can't have backwards axis bounds");
+	public void replaceBounds(final double newMin, final double newMax) {
+		if (newMin > newMax) {
+         throw new IllegalArgumentException("Can't have backwards axis bounds");
+      }
 
-		double oldMin = getMin();
-		double oldMax = getMax();
+		final double oldMin = getMin();
+		final double oldMax = getMax();
+
+      final String eventId = UUID.uuid();
 
 		// Zoom in place to the right factor
-		zoom((newMax - newMin) / (oldMax - oldMin),
-			(oldMin + oldMax) / 2);
+      zoom((newMax - newMin) / (oldMax - oldMin), (oldMin + oldMax) / 2, eventId);
 
 		// Now translate
-		oldMin = getMin();
-		uncheckedDrag(newMin - oldMin);
+		uncheckedDrag(newMin - getMin(), eventId);
 	}
 }
