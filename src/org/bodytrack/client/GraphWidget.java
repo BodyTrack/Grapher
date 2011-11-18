@@ -9,7 +9,6 @@ import com.google.gwt.event.dom.client.MouseOutHandler;
 import com.google.gwt.event.dom.client.MouseUpEvent;
 import com.google.gwt.event.dom.client.MouseUpHandler;
 import com.google.gwt.event.dom.client.MouseWheelEvent;
-import com.google.gwt.event.dom.client.MouseWheelHandler;
 import com.google.gwt.user.client.ui.RootPanel;
 import gwt.g2d.client.graphics.Color;
 import gwt.g2d.client.graphics.Surface;
@@ -44,9 +43,6 @@ public class GraphWidget {
     * using {@link #removeValueMessage(int)}.</p>
     */
    public static final int VALUE_MESSAGES_CAPACITY = 4;
-
-   private static final double MOUSE_WHEEL_ZOOM_RATE_MAC = 1.003;
-   private static final double MOUSE_WHEEL_ZOOM_RATE_PC = 1.1;
 
    private static final double HIGHLIGHT_DISTANCE_THRESHOLD = 5;
    private static final double PHOTO_HIGHLIGHT_DISTANCE_THRESH = 10;
@@ -85,9 +81,6 @@ public class GraphWidget {
 
    private Vector2 mouseDragLastPos;
 
-   // Once a GraphWidget object is instantiated, this doesn't change
-   private final double mouseWheelZoomRate;
-
    private String previousPaintEventId = null;
 
    public GraphWidget(final String placeholder) {
@@ -107,15 +100,10 @@ public class GraphWidget {
       nextValueMessageId = INITIAL_MESSAGE_ID;
       valueMessages = new ArrayList<DisplayMessage>();
 
-      drawing.addMouseWheelHandler(new MouseWheelHandler() {
+      drawing.addMouseWheelHandler(new BaseMouseWheelHandler() {
          @Override
-         public void onMouseWheel(final MouseWheelEvent event) {
-            handleMouseWheelEvent(event);
-
-            // Stops scrolling meant for the widget from moving the
-            // browser's scroll bar
-            event.preventDefault();
-            event.stopPropagation();
+         protected void handleMouseWheelEvent(final MouseWheelEvent event) {
+            GraphWidget.this.handleMouseWheelEvent(event, getMouseWheelZoomRate());
          }
       });
 
@@ -146,50 +134,9 @@ public class GraphWidget {
             handleMouseOutEvent(event);
          }
       });
-
-      mouseWheelZoomRate = shouldZoomMac()
-                           ? MOUSE_WHEEL_ZOOM_RATE_MAC
-                           : MOUSE_WHEEL_ZOOM_RATE_PC;
    }
 
-   /**
-    * Tells whether this application should use the Mac scroll wheel ratio.
-    *
-    * <p>Checks the <tt>navigator.platform</tt> property in JavaScript to
-    * determine if this code is on a Mac or not, and returns <tt>true</tt>
-    * iff the best guess is Mac.  If this property cannot be read, returns
-    * <tt>false</tt>.</p>
-    *
-    * <p>However, there is a twist: Google Chrome and Firefox seem to zoom
-    * Windows-style, regardless of platform.  Thus, this checks for
-    * Safari, and only returns <tt>true</tt> if the browser appears to be
-    * Safari on the Mac.</p>
-    *
-    * @return
-    * 		<tt>true</tt> if and only if the grapher should zoom Mac-style
-    */
-   private native boolean shouldZoomMac() /*-{
-      // Don't do anything unless navigator.platform is available
-      if (! ($wnd.navigator && $wnd.navigator.platform))
-         return false;
-
-      var isSafari = false;
-
-      // Safari zooms Mac-style, but Chrome and Firefox zoom
-      // Windows-style on the Mac
-      if ($wnd.navigator.vendor) {
-         // Chrome has vendor "Google Inc.", Safari has vendor
-         // "Apple Computer Inc.", and Firefox 3.5, at least,
-         // appears to have no navigator.vendor
-
-         isSafari =
-         $wnd.navigator.vendor.indexOf("Apple Computer") >= 0;
-      }
-
-      return isSafari && !!$wnd.navigator.platform.match(/.*mac/i);
-   }-*/;
-
-   private void handleMouseWheelEvent(final MouseWheelEvent event) {
+   private void handleMouseWheelEvent(final MouseWheelEvent event, final double mouseWheelZoomRate) {
       final Vector2 pos = new Vector2(event.getX(), event.getY());
       final double zoomFactor = Math.pow(mouseWheelZoomRate, event.getDeltaY());
 
