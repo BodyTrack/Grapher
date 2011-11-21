@@ -90,7 +90,9 @@ public class PhotoGraphAxis extends GraphAxis {
 	 * 		which we should draw the axis
 	 */
 	@Override
-	public void paint() {
+	public void paint(final String newPaintEventId) {
+      // TODO: check the newPaintEventId
+      
 		Canvas canvas = getDrawingCanvas();
       if (canvas == null)
          return;

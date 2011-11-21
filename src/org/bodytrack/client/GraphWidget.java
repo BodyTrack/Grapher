@@ -20,8 +20,6 @@ import com.google.gwt.event.dom.client.MouseOutHandler;
 import com.google.gwt.event.dom.client.MouseUpEvent;
 import com.google.gwt.event.dom.client.MouseUpHandler;
 import com.google.gwt.event.dom.client.MouseWheelEvent;
-import com.google.gwt.event.dom.client.MouseWheelHandler;
-import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.RootPanel;
 
 public class GraphWidget {
@@ -47,13 +45,8 @@ public class GraphWidget {
     */
    public static final int VALUE_MESSAGES_CAPACITY = 4;
 
-   private static final double MOUSE_WHEEL_ZOOM_RATE_MAC = 1.003;
-   private static final double MOUSE_WHEEL_ZOOM_RATE_PC = 1.1;
-
    private static final double HIGHLIGHT_DISTANCE_THRESHOLD = 5;
    private static final double PHOTO_HIGHLIGHT_DISTANCE_THRESH = 10;
-
-   private static final int PAINT_TWICE_DELAY = 10;
 
    private static final int INITIAL_MESSAGE_ID = 1;
    private static final Color LOADING_MSG_COLOR = Canvas.DARK_GRAY;
@@ -89,8 +82,7 @@ public class GraphWidget {
 
    private Vector2 mouseDragLastPos;
 
-   // Once a GraphWidget object is instantiated, this doesn't change
-   private final double mouseWheelZoomRate;
+   private String previousPaintEventId = null;
 
    public GraphWidget(final String placeholder) {
       drawing = new Surface(width, height);
@@ -109,89 +101,43 @@ public class GraphWidget {
       nextValueMessageId = INITIAL_MESSAGE_ID;
       valueMessages = new ArrayList<DisplayMessage>();
 
-      drawing.addMouseWheelHandler(new MouseWheelHandler() {
+      drawing.addMouseWheelHandler(new BaseMouseWheelHandler() {
          @Override
-         public void onMouseWheel(MouseWheelEvent event) {
-            handleMouseWheelEvent(event);
-
-            // Stops scrolling meant for the widget from moving the
-            // browser's scroll bar
-            event.preventDefault();
-            event.stopPropagation();
+         protected void handleMouseWheelEvent(final MouseWheelEvent event) {
+            GraphWidget.this.handleMouseWheelEvent(event, getMouseWheelZoomRate());
          }
       });
 
       drawing.addMouseDownHandler(new MouseDownHandler() {
          @Override
-         public void onMouseDown(MouseDownEvent event) {
+         public void onMouseDown(final MouseDownEvent event) {
             handleMouseDownEvent(event);
          }
       });
 
       drawing.addMouseMoveHandler(new MouseMoveHandler() {
          @Override
-         public void onMouseMove(MouseMoveEvent event) {
+         public void onMouseMove(final MouseMoveEvent event) {
             handleMouseMoveEvent(event);
          }
       });
 
       drawing.addMouseUpHandler(new MouseUpHandler() {
          @Override
-         public void onMouseUp(MouseUpEvent event) {
+         public void onMouseUp(final MouseUpEvent event) {
             handleMouseUpEvent(event);
          }
       });
 
       drawing.addMouseOutHandler(new MouseOutHandler() {
          @Override
-         public void onMouseOut(MouseOutEvent event) {
+         public void onMouseOut(final MouseOutEvent event) {
             handleMouseOutEvent(event);
          }
       });
-
-      mouseWheelZoomRate = shouldZoomMac()
-                           ? MOUSE_WHEEL_ZOOM_RATE_MAC
-                           : MOUSE_WHEEL_ZOOM_RATE_PC;
    }
 
-   /**
-    * Tells whether this application should use the Mac scroll wheel ratio.
-    *
-    * <p>Checks the <tt>navigator.platform</tt> property in JavaScript to
-    * determine if this code is on a Mac or not, and returns <tt>true</tt>
-    * iff the best guess is Mac.  If this property cannot be read, returns
-    * <tt>false</tt>.</p>
-    *
-    * <p>However, there is a twist: Google Chrome and Firefox seem to zoom
-    * Windows-style, regardless of platform.  Thus, this checks for
-    * Safari, and only returns <tt>true</tt> if the browser appears to be
-    * Safari on the Mac.</p>
-    *
-    * @return
-    * 		<tt>true</tt> if and only if the grapher should zoom Mac-style
-    */
-   private native boolean shouldZoomMac() /*-{
-      // Don't do anything unless navigator.platform is available
-      if (! ($wnd.navigator && $wnd.navigator.platform))
-         return false;
-
-      var isSafari = false;
-
-      // Safari zooms Mac-style, but Chrome and Firefox zoom
-      // Windows-style on the Mac
-      if ($wnd.navigator.vendor) {
-         // Chrome has vendor "Google Inc.", Safari has vendor
-         // "Apple Computer Inc.", and Firefox 3.5, at least,
-         // appears to have no navigator.vendor
-
-         isSafari =
-         $wnd.navigator.vendor.indexOf("Apple Computer") >= 0;
-      }
-
-      return isSafari && !!$wnd.navigator.platform.match(/.*mac/i);
-   }-*/;
-
-   private void handleMouseWheelEvent(final MouseWheelEvent event) {
+   private void handleMouseWheelEvent(final MouseWheelEvent event, final double mouseWheelZoomRate) {
       final Vector2 pos = new Vector2(event.getX(), event.getY());
       final double zoomFactor = Math.pow(mouseWheelZoomRate, event.getDeltaY());
 
@@ -212,10 +158,9 @@ public class GraphWidget {
             highlightedYAxes.add(plot.getYAxis());
          }
          for (final GraphAxis yAxis : highlightedYAxes) {
-            yAxis.zoom(zoomFactor, yAxis.unproject(pos));
+            yAxis.zoom(zoomFactor, yAxis.unproject(pos), UUID.uuid());
          }
-      }
-      else {
+      } else {
          // We are not highlighting any plots, so we
          // zoom all Y-axes
 
@@ -224,30 +169,17 @@ public class GraphWidget {
             yAxes.add(plot.getYAxis());
          }
          for (final GraphAxis yAxis : yAxes) {
-            yAxis.zoom(zoomFactor, yAxis.unproject(pos));
+            yAxis.zoom(zoomFactor, yAxis.unproject(pos), UUID.uuid());
          }
       }
-
-      paint();
    }
 
    private void handleMouseDownEvent(final MouseDownEvent event) {
-
       mouseDragLastPos = new Vector2(event.getX(), event.getY());
-
-      paint();
    }
 
    private void handleMouseMoveEvent(final MouseMoveEvent event) {
       final Vector2 pos = new Vector2(event.getX(), event.getY());
-
-      // build a set of the highlighted plots
-      final Set<DataPlot> highlightedPlots = new HashSet<DataPlot>();
-      for (final DataPlot plot : dataPlots) {
-         if (plot.isHighlighted()) {
-            highlightedPlots.add(plot);
-         }
-      }
 
       // We can be dragging exactly one of: one or
       // more data plots, the whole viewing window, and nothing
@@ -256,6 +188,14 @@ public class GraphWidget {
          // or the whole viewing window. If there's one or more
          // highlighted plot, then just drag the axes
          // for those plots.  Otherwise, drag all axes.
+
+         // build a set of the highlighted plots
+         final Set<DataPlot> highlightedPlots = new HashSet<DataPlot>();
+         for (final DataPlot plot : dataPlots) {
+            if (plot.isHighlighted()) {
+               highlightedPlots.add(plot);
+            }
+         }
 
          // determine whether we're dragging only the highlighted plots
          final Set<DataPlot> plots = (highlightedPlots.size() > 0) ? highlightedPlots : dataPlots;
@@ -269,22 +209,24 @@ public class GraphWidget {
 
          // drag the axes
          for (final GraphAxis axis : axes) {
-            axis.drag(mouseDragLastPos, pos);
+            axis.drag(mouseDragLastPos, pos, UUID.uuid());
          }
 
          mouseDragLastPos = pos;
-      }
-      else {
+      } else {
          // We are not dragging anything, so we just update the
          // highlighting on the data plots and axes
 
+         final Set<DataPlot> highlightedPlots = new HashSet<DataPlot>();
          for (final DataPlot plot : dataPlots) {
             plot.unhighlight();
 
             final double distanceThreshold = (plot instanceof PhotoDataPlot)
                                              ? PHOTO_HIGHLIGHT_DISTANCE_THRESH
                                              : HIGHLIGHT_DISTANCE_THRESHOLD;
-            plot.highlightIfNear(pos, distanceThreshold);
+            if (plot.highlightIfNear(pos, distanceThreshold)) {
+               highlightedPlots.add(plot);
+            }
          }
 
          // Now we handle highlighting of the axes--first build a set of the unhighlighted plots
@@ -307,15 +249,13 @@ public class GraphWidget {
             plot.getXAxis().highlight(highlightedPoint);
             plot.getYAxis().highlight(highlightedPoint);
          }
-      }
 
-      paint();
+         paint();
+      }
    }
 
    private void handleMouseUpEvent(final MouseUpEvent event) {
       mouseDragLastPos = null;
-
-      paint();
    }
 
    private void handleMouseOutEvent(final MouseOutEvent event) {
@@ -361,57 +301,49 @@ public class GraphWidget {
       return drawing;
    }
 
-   /**
-    * Actually paints this widget twice, with the two paint operations
-    * separated by PAINT_TWICE_DELAY milliseconds.
-    */
-   public void paintTwice() {
-      paint();
-
-      final Timer timer = new Timer() {
-         @Override
-         public void run() {
-            paint();
-         }
-      };
-
-      timer.schedule(PAINT_TWICE_DELAY);
+   public void paint() {
+      paint(UUID.uuid());
    }
 
-   public void paint() {
-      layout();
-      drawing.clear();
-      drawing.save();
-      drawing.translate(.5, .5);
+   public void paint(final String newPaintEventId) {
+      // guard against redundant paints
+      if (previousPaintEventId == null || !previousPaintEventId.equals(newPaintEventId)) {
+         previousPaintEventId = newPaintEventId;
 
-      // Draw any Loading... messages that might be requested
-      if (loadingMessages.size() > 0) {
-         showLoadingMessage(loadingMessages.get(0));
+         layout();
+         drawing.clear();
+         drawing.save();
+         drawing.translate(.5, .5);
+
+         // Draw any Loading... messages that might be requested
+         if (loadingMessages.size() > 0) {
+            showLoadingMessage(loadingMessages.get(0));
+         }
+
+         // Draw any value messages that might be requested
+         if (valueMessages.size() > 0) {
+            // We use the first (oldest) VALUE_MESSAGES_CAPACITY
+            // messages in valueMessages, at least for now
+            final int numMessages = Math.min(VALUE_MESSAGES_CAPACITY,
+                                             valueMessages.size());
+
+            showValueMessages(valueMessages.subList(0, numMessages));
+         }
+
+         // Draw the axes
+         for (final DataPlot plot : dataPlots) {
+            plot.getXAxis().paint(newPaintEventId);
+            plot.getYAxis().paint(newPaintEventId);
+         }
+
+         // Now draw the data
+         final Canvas canvas = Canvas.buildCanvas(drawing);
+         for (final DataPlot plot : dataPlots) {
+            plot.paint(canvas, newPaintEventId);
+         }
+
+         drawing.restore();
       }
-
-      // Draw any value messages that might be requested
-      if (valueMessages.size() > 0) {
-         // We use the first (oldest) VALUE_MESSAGES_CAPACITY
-         // messages in valueMessages, at least for now
-         final int numMessages = Math.min(VALUE_MESSAGES_CAPACITY,
-                                          valueMessages.size());
-
-         showValueMessages(valueMessages.subList(0, numMessages));
-      }
-
-      // Draw the axes
-      for (final DataPlot plot : dataPlots) {
-         plot.getXAxis().paint();
-         plot.getYAxis().paint();
-      }
-
-      // Now draw the data
-      final Canvas canvas = Canvas.buildCanvas(drawing);
-      for (final DataPlot plot : dataPlots) {
-         plot.paint(canvas);
-      }
-
-      drawing.restore();
    }
 
    /**

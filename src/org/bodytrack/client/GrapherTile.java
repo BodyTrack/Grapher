@@ -129,9 +129,6 @@ public final class GrapherTile {
     * 		the level of the tile we are retrieving
     * @param offset
     * 		the offset of the tile we are retrieving
-    * @param destination
-    * 		the {@link List List} into which this method
-    * 		will add the tile when the tile is loaded from the server
     * @param callback
     * 		an {@link Alertable<String>} that
     * 		is notified whenever the tile arrives, using a message
@@ -142,7 +139,6 @@ public final class GrapherTile {
    public static native void retrieveTile(final JavaScriptObject datasource,
                                           final int level,
                                           final int offset,
-                                          final List<GrapherTile> destination,
                                           final Alertable<GrapherTile> callback) /*-{
       datasource(level,
                  offset,
@@ -154,8 +150,6 @@ public final class GrapherTile {
                     // the parameter specification to Object seems to work, if
                     // only because of type erasure
                     callback.@org.bodytrack.client.Alertable::onSuccess(Ljava/lang/Object;)(success_tile);
-
-                    destination.@java.util.List::add(Ljava/lang/Object;)(success_tile);
                  },
                  function () {
                     var failure_tile = @org.bodytrack.client.GrapherTile::new(IILcom/google/gwt/json/client/JSONObject;)(level, offset, null);
