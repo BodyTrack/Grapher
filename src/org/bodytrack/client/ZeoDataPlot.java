@@ -62,7 +62,6 @@ public class ZeoDataPlot extends DataPlot {
     * This is the most important way in which this class modifies the behavior from
     * its parent {@link DataPlot} class.
     */
-   @Override
    protected void paintEdgePoint(final BoundedDrawingBox drawing,
                                  final GrapherTile tile,
                                  final double x,
@@ -84,20 +83,10 @@ public class ZeoDataPlot extends DataPlot {
    }
 
    /**
-    * Implemented here as a no-op, since we don't need highlighted
-    * points to look different.
-    */
-   @Override
-   protected void paintHighlightedPoint(final BoundedDrawingBox drawing,
-                                        final PlottablePoint point) {
-   }
-
-   /**
     * Paints the specified data point as a translucent rectangle.
     *
     * This is the most important way in which this class modifies the behavior from its parent {@link DataPlot} class.
     */
-   @Override
    protected void paintDataPoint(final BoundedDrawingBox drawing,
                                  final GrapherTile tile,
                                  final double prevX,
@@ -159,7 +148,9 @@ public class ZeoDataPlot extends DataPlot {
       if (isNoDataState) {
          // Draw a line
          final double oldLineWidth = surface.getLineWidth();
-         surface.setLineWidth(highlighted ? HIGHLIGHT_STROKE_WIDTH : NORMAL_STROKE_WIDTH);
+         surface.setLineWidth(highlighted
+            ? LineRenderer.HIGHLIGHT_STROKE_WIDTH
+            : LineRenderer.NORMAL_STROKE_WIDTH);
 
          renderer.beginPath();
          renderer.moveTo(leftX, bottomY);
@@ -177,19 +168,26 @@ public class ZeoDataPlot extends DataPlot {
                                Math.round(rightX)-Math.round(leftX), Math.round(bottomY)-Math.round(topY));
       }
 
-      // Draw lines around rectangles, but only if the width in pixels is large enough and it's not the NO_DATA state
+      // Draw lines around rectangles, but only if the width in pixels is large
+      // enough and it's not the NO_DATA state
       final int widthInPixels = (int)Math.round(rightX - leftX);
       if (!isNoDataState && widthInPixels > 6) {
          surface.setGlobalAlpha(Canvas.DEFAULT_ALPHA);
          surface.setFillStyle(Canvas.DEFAULT_COLOR);
 
          final double oldLineWidth = surface.getLineWidth();
-         surface.setLineWidth(highlighted ? HIGHLIGHT_STROKE_WIDTH : NORMAL_STROKE_WIDTH);
+         surface.setLineWidth(highlighted
+            ? LineRenderer.HIGHLIGHT_STROKE_WIDTH
+            : LineRenderer.NORMAL_STROKE_WIDTH);
+
          // Stroke the outside of the rectangle
-         // Round to nearest pixels so we draw the line in such a way that it completely fills pixels.  Otherwise a 1-pixel line
-         // turns into a 2-pixel grey blurry line.
-         surface.strokeRectangle(Math.round(leftX), Math.round(topY),
-                                 Math.round(rightX)-Math.round(leftX), Math.round(bottomY)-Math.round(topY));
+         // Round to nearest pixels so we draw the line in such a way that
+         // it completely fills pixels.  Otherwise a 1-pixel line turns into
+         // a 2-pixel grey blurry line.
+         surface.strokeRectangle(Math.round(leftX),
+                                 Math.round(topY),
+                                 Math.round(rightX) - Math.round(leftX),
+                                 Math.round(bottomY) - Math.round(topY));
          surface.setLineWidth(oldLineWidth);
       }
    }

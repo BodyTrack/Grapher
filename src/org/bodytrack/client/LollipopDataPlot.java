@@ -46,7 +46,9 @@ public class LollipopDataPlot extends DotDataPlot {
 
       // Draw a line
       final double oldLineWidth = surface.getLineWidth();
-      surface.setLineWidth(isHighlighted() ? HIGHLIGHT_STROKE_WIDTH : NORMAL_STROKE_WIDTH);
+      surface.setLineWidth(isHighlighted()
+         ? LineRenderer.HIGHLIGHT_STROKE_WIDTH
+         : LineRenderer.NORMAL_STROKE_WIDTH);
 
       renderer.beginPath();
       renderer.moveTo(x, minDrawY);

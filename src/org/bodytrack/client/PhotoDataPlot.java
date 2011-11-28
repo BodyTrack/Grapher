@@ -268,20 +268,12 @@ public class PhotoDataPlot extends DataPlot {
     * @param rawDataPoint
     * 		the raw {@link PlottablePoint}
     */
-   @Override
    protected void paintEdgePoint(final BoundedDrawingBox drawing,
                                  final GrapherTile tile,
                                  final double x,
                                  final double y,
                                  final PlottablePoint rawDataPoint) {
       drawAllImagesAtPoint(drawing, x, y);
-   }
-
-   /**
-    * Implemented here as a no-op, since we don't need highlighted points to look different.
-    */
-   @Override
-   protected void paintHighlightedPoint(final BoundedDrawingBox drawing, final PlottablePoint point) {
    }
 
    /**
@@ -307,7 +299,6 @@ public class PhotoDataPlot extends DataPlot {
     * @param rawDataPoint
     * 		the raw {@link PlottablePoint}
     */
-   @Override
    protected void paintDataPoint(final BoundedDrawingBox drawing,
                                  final GrapherTile tile,
                                  final double prevX,

@@ -15,7 +15,8 @@ import gwt.g2d.client.math.Vector2;
  * @author Chris Bartley (bartley@cmu.edu)
  */
 public class DotDataPlot extends DataPlot {
-
+   private static final int HIGHLIGHTED_DOT_RADIUS =
+      (int) LineRenderer.HIGHLIGHTED_DOT_RADIUS;
    private static final int DOT_RADIUS = 3;
 
    public DotDataPlot(final JavaScriptObject datasource,
@@ -27,7 +28,6 @@ public class DotDataPlot extends DataPlot {
       super(datasource, nativeXAxis, nativeYAxis, channel, minLevel, color);
    }
 
-   @Override
    protected void paintEdgePoint(final BoundedDrawingBox drawing,
                                  final GrapherTile tile,
                                  final double x,
@@ -39,7 +39,6 @@ public class DotDataPlot extends DataPlot {
          rawDataPoint.hasComment() ? HIGHLIGHTED_DOT_RADIUS : DOT_RADIUS));
    }
 
-   @Override
    protected void paintDataPoint(final BoundedDrawingBox drawing,
                                  final GrapherTile tile,
                                  final double prevX,
