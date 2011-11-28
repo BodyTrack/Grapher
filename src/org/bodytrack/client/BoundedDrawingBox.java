@@ -85,7 +85,8 @@ public final class BoundedDrawingBox {
 	}
 
 	/**
-	 * Returns a {@link Vector2} representing the top left corner of the region this encloses.
+	 * Returns a {@link Vector2} representing the top left corner of the
+	 * region this encloses.
 	 *
 	 * @return
 	 * 		a <tt>Vector2</tt> with components <tt>(minX, minY)</tt>,
@@ -96,7 +97,8 @@ public final class BoundedDrawingBox {
 	}
 
 	/**
-	 * Returns a {@link Vector2} representing the bottom right corner of the region this encloses.
+	 * Returns a {@link Vector2} representing the bottom right corner of the
+	 * region this encloses.
 	 *
 	 * @return
 	 * 		a <tt>Vector2</tt> with components <tt>(maxX, maxY)</tt>,

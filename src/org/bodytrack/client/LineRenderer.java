@@ -5,6 +5,7 @@ public class LineRenderer extends AbstractPlotRenderer {
 		super(highlighted, drawComments);
 	}
 
+	@Override
 	protected void paintEdgePoint(final BoundedDrawingBox drawing,
 			final GrapherTile tile,
 			final double x,
@@ -17,6 +18,7 @@ public class LineRenderer extends AbstractPlotRenderer {
 		}
 	}
 
+	@Override
 	protected void paintDataPoint(final BoundedDrawingBox drawing,
 			final double prevX,
 			final double prevY,
@@ -30,6 +32,7 @@ public class LineRenderer extends AbstractPlotRenderer {
 		}
 	}
 
+	@Override
 	protected void paintHighlightedPoint(final BoundedDrawingBox drawing,
 			double x, double y) {
 		// Draw three concentric circles to look like one filled-in circle

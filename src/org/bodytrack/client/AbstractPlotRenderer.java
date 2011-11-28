@@ -362,7 +362,7 @@ public abstract class AbstractPlotRenderer implements HighlightableRenderer {
 		}
 	}
 
-	private GraphAxis getAxis(JavaScriptObject nativeAxis) {
+	protected GraphAxis getAxis(JavaScriptObject nativeAxis) {
 		Dynamic djso = nativeAxis.cast();
 		return djso.get("__backingAxis");
 	}
