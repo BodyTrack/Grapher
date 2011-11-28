@@ -74,9 +74,6 @@ public class DataPlot implements Alertable<GrapherTile> {
    private final Map<String, Integer> pendingUrls = new HashMap<String, Integer>();
    private final List<GrapherTile> pendingData = new ArrayList<GrapherTile>();
 
-   // TODO: Bring this back
-   // private final Map<String, List<Integer>> loadingUrls;
-
    // Determining whether or not we should retrieve more data from
    // the server
    private int currentLevel;
@@ -86,15 +83,6 @@ public class DataPlot implements Alertable<GrapherTile> {
    // If highlightedPoint is null, then this should not be highlighted.
    // Otherwise, this is the point to highlight on the axes
    private PlottablePoint highlightedPoint;
-
-   // If publishValueOnHighlight is true, we will show our data value
-   // as a decimal whenever this axis is highlighted, using the
-   // data value publishing API in GraphWidget.
-   /* TODO: Bring back value publishing?
-   private final boolean publishValueOnHighlight;
-
-   private int publishedValueId;
-   */
 
    private final GraphAxis.EventListener graphAxisEventListener = new GraphAxis.EventListener() {
       @Override
@@ -187,14 +175,11 @@ public class DataPlot implements Alertable<GrapherTile> {
       this.normalRenderer = normalRenderer;
       this.highlightRenderer = highlightRenderer;
 
-      // loadingUrls = new HashMap<String, List<Integer>>();
-
       currentLevel = Integer.MIN_VALUE;
       currentMinOffset = Integer.MAX_VALUE;
       currentMaxOffset = Integer.MIN_VALUE;
 
       highlightedPoint = null;
-      // publishedValueId = 0;
 
       shouldZoomIn = checkForFetch();
    }
@@ -389,81 +374,11 @@ public class DataPlot implements Alertable<GrapherTile> {
 
       final String tileKey = level + "." + offset;
 
-      // Tell the user we are looking for information
-      addLoadingText(level, offset, tileKey);
-
       // Make sure we don't fetch this again unnecessarily
       pendingDescriptions.add(desc);
       pendingUrls.put(tileKey, 0);
 
       GrapherTile.retrieveTile(datasource, level, offset, this);
-   }
-
-   /**
-    * Adds the specified loading text to container.
-    *
-    * <p>This is one of two methods to handle the loading text feature
-    * for DataPlot objects.  The other is
-    * {@link #removeLoadingText(String)}.  This method will create
-    * a loading text string and publish it to container.</p>
-    *
-    * @param level
-    * 		the level of the tile that is loading
-    * @param offset
-    * 		the offset of the tile that is loading
-    * @param url
-    * 		the URL of the tile that is loading
-    */
-   private void addLoadingText(final int level, final int offset, final String url) {
-      /* TODO: IMPLEMENT
-      final String msg = "Loading " + url;
-
-      // Actually add the message
-      final int id = container.addLoadingMessage(msg);
-
-      final List<Integer> ids = loadingUrls.containsKey(url)
-                                ? loadingUrls.remove(url)
-                                : new ArrayList<Integer>();
-      ids.add(id);
-      loadingUrls.put(url, ids);
-      */
-   }
-
-   /**
-    * Removes the specified loading text from container.
-    *
-    * <p>This is one of two methods to handle the loading text feature
-    * for DataPlot objects.  The other is
-    * {@link #addLoadingText(int, int, String)}.  This method will
-    * remove from container the loading text string associated
-    * with url.  Thus, it is required that this take the same
-    * URL that was passed to addLoadingText to create the message.</p>
-    *
-    * @param url
-    * 		the URL of the tile that is finished loading
-    */
-   private void removeLoadingText(final String url) {
-      /* TODO: IMPLEMENT
-      if (loadingUrls.containsKey(url)) {
-         // Always maintain the invariant that each value in
-         // loadingUrls has at least one element.  Since this
-         // is the place where things are removed from loadingUrls,
-         // and since no empty lists are added to loadingUrls,
-         // this method is responsible for maintaining the
-         // invariant.
-
-         // Note that we remove from loadingUrls
-         final List<Integer> ids = loadingUrls.remove(url);
-         final int id = ids.remove(0);
-
-         if (ids.size() > 0) {
-            loadingUrls.put(url, ids);
-         }
-
-         container.removeLoadingMessage(id);
-      }
-      // Don't do anything if we don't have an ID with this URL
-      */
    }
 
    /**
@@ -481,8 +396,6 @@ public class DataPlot implements Alertable<GrapherTile> {
       if (pendingUrls.containsKey(tileKey)) {
          pendingUrls.remove(tileKey);
       }
-
-      removeLoadingText(tileKey);
 
       checkForNewData();
 
@@ -509,9 +422,6 @@ public class DataPlot implements Alertable<GrapherTile> {
       if (pendingUrls.containsKey(tileKey)) {
          final int oldValue = pendingUrls.get(tileKey);
          if (oldValue > MAX_REQUESTS_PER_URL) {
-            // TODO: Log or alert user whenever we can't get data
-            removeLoadingText(tileKey);
-
             return;
          }
 
@@ -1094,7 +1004,6 @@ public class DataPlot implements Alertable<GrapherTile> {
     */
    public void unhighlight() {
       highlightedPoint = null;
-      possiblyDisplayHighlightedValue();
    }
 
    /**
@@ -1144,41 +1053,7 @@ public class DataPlot implements Alertable<GrapherTile> {
     */
    public boolean highlightIfNear(final Vector2 pos, final double threshold) {
       highlightedPoint = closest(pos, threshold);
-      possiblyDisplayHighlightedValue();
       return isHighlighted();
-   }
-
-   /**
-    * Handles the value to be shown in the container as the highlighted
-    * value.
-    *
-    * <p>This first checks publishValueOnHighlight.  If that is
-    * <tt>false</tt>, does nothing.  Otherwise, checks highlightedPoint.
-    * If it is <tt>null</tt> or equal to
-    * {@link #HIGHLIGHTED_NO_SINGLE_POINT}, removes any messages that
-    * might be showing for this data plot.  Otherwise, ensures that the
-    * current value is being shown on the parent container, with the
-    * value returned by {@link #getDataLabel(PlottablePoint)}.</p>
-    */
-   private void possiblyDisplayHighlightedValue() {
-      // TODO: IMPLEMENT
-      /*
-      if (!publishValueOnHighlight) {
-         return;
-      }
-
-      if (highlightedPoint == null
-          || highlightedPoint == HIGHLIGHTED_NO_SINGLE_POINT) {
-         // TODO: should this be an .equals() comparison instead?
-         // We can call this without problems because we know
-         // that container will ignore any invalid message IDs
-         container.removeValueMessage(publishedValueId);
-         publishedValueId = 0;
-      } else if (publishedValueId == 0) { // Don't add message twice
-         publishedValueId = container.addValueMessage(
-               getDataLabel(highlightedPoint), color);
-      }
-      */
    }
 
    /**
