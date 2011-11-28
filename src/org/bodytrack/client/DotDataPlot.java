@@ -16,7 +16,7 @@ import gwt.g2d.client.math.Vector2;
  */
 public class DotDataPlot extends DataPlot {
    private static final int HIGHLIGHTED_DOT_RADIUS =
-      (int) LineRenderer.HIGHLIGHTED_DOT_RADIUS;
+      (int) AbstractPlotRenderer.HIGHLIGHTED_DOT_RADIUS;
    private static final int DOT_RADIUS = 3;
 
    public DotDataPlot(final JavaScriptObject datasource,

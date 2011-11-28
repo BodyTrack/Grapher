@@ -149,8 +149,8 @@ public class ZeoDataPlot extends DataPlot {
          // Draw a line
          final double oldLineWidth = surface.getLineWidth();
          surface.setLineWidth(highlighted
-            ? LineRenderer.HIGHLIGHT_STROKE_WIDTH
-            : LineRenderer.NORMAL_STROKE_WIDTH);
+            ? AbstractPlotRenderer.HIGHLIGHT_STROKE_WIDTH
+            : AbstractPlotRenderer.NORMAL_STROKE_WIDTH);
 
          renderer.beginPath();
          renderer.moveTo(leftX, bottomY);
@@ -177,8 +177,8 @@ public class ZeoDataPlot extends DataPlot {
 
          final double oldLineWidth = surface.getLineWidth();
          surface.setLineWidth(highlighted
-            ? LineRenderer.HIGHLIGHT_STROKE_WIDTH
-            : LineRenderer.NORMAL_STROKE_WIDTH);
+            ? AbstractPlotRenderer.HIGHLIGHT_STROKE_WIDTH
+            : AbstractPlotRenderer.NORMAL_STROKE_WIDTH);
 
          // Stroke the outside of the rectangle
          // Round to nearest pixels so we draw the line in such a way that

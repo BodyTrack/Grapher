@@ -993,7 +993,7 @@ public class DataPlot implements Alertable<GrapherTile> {
     * DataPlot.</p>
     */
    public void highlight() {
-      highlightedPoint = LineRenderer.HIGHLIGHTED_NO_SINGLE_POINT;
+      highlightedPoint = AbstractPlotRenderer.HIGHLIGHTED_NO_SINGLE_POINT;
    }
 
    /**
