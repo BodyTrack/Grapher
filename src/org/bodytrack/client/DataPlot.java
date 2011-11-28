@@ -60,8 +60,8 @@ public class DataPlot implements Alertable<GrapherTile> {
    private JavaScriptObject xAxis;
    private JavaScriptObject yAxis;
    private final Channel channel;
-   private LineRenderer normalRenderer;
-   private LineRenderer highlightRenderer;
+   private final HighlightableRenderer normalRenderer;
+   private final HighlightableRenderer highlightRenderer;
 
    private final int minLevel;
    private Color color;
@@ -137,7 +137,7 @@ public class DataPlot implements Alertable<GrapherTile> {
     * 		if container, xAxis, yAxis, deviceName, channelName, url,
     * 		or color is <tt>null</tt>
     * @throws IllegalArgumentException
-    * 		if xAxis is really a Y-axis, or if yAxis is really a Y-axis
+    * 		if xAxis is really a Y-axis, or if yAxis is really an X-axis
     */
    public DataPlot(final JavaScriptObject datasource,
                    final JavaScriptObject nativeXAxis,
@@ -145,6 +145,20 @@ public class DataPlot implements Alertable<GrapherTile> {
                    final Channel channel,
                    final int minLevel,
                    final Color color) {
+      this(datasource, nativeXAxis, nativeYAxis, channel,
+         minLevel, color, new LineRenderer(false, true),
+         new LineRenderer(true, false));
+         // Only the normal renderer needs to draw comments
+   }
+
+   public DataPlot(final JavaScriptObject datasource,
+                   final JavaScriptObject nativeXAxis,
+                   final JavaScriptObject nativeYAxis,
+                   final Channel channel,
+                   final int minLevel,
+                   final Color color,
+                   final HighlightableRenderer normalRenderer,
+                   final HighlightableRenderer highlightRenderer) {
       if (datasource == null || nativeXAxis == null
           || nativeYAxis == null || channel == null || color == null) {
          throw new NullPointerException(
@@ -170,7 +184,8 @@ public class DataPlot implements Alertable<GrapherTile> {
       this.minLevel = minLevel;
 
       this.color = color;
-      // this.publishValueOnHighlight = publishValueOnHighlight;
+      this.normalRenderer = normalRenderer;
+      this.highlightRenderer = highlightRenderer;
 
       // loadingUrls = new HashMap<String, List<Integer>>();
 
@@ -180,10 +195,6 @@ public class DataPlot implements Alertable<GrapherTile> {
 
       highlightedPoint = null;
       // publishedValueId = 0;
-
-      normalRenderer = new LineRenderer(false, true);
-      highlightRenderer = new LineRenderer(true, false);
-         // Only the normal renderer needs to draw comments
 
       shouldZoomIn = checkForFetch();
    }
@@ -535,8 +546,8 @@ public class DataPlot implements Alertable<GrapherTile> {
          canvas.getSurface().setStrokeStyle(color);
          final BoundedDrawingBox drawing = getDrawingBounds(canvas);
 
-         LineRenderer renderer = isHighlighted() ? highlightRenderer
-                                                 : normalRenderer;
+         HighlightableRenderer renderer =
+            isHighlighted() ? highlightRenderer : normalRenderer;
          renderer.setHighlightedPoint(getHighlightedPoint());
          renderer.render(drawing, getBestResolutionTiles(), xAxis, yAxis);
          renderer.setHighlightedPoint(null);

@@ -19,7 +19,7 @@ import com.google.gwt.user.client.ui.PopupPanel;
  * comment panel, which may be visible or invisible at different points in
  * painting this line.</p>
  */
-public class LineRenderer implements SeriesPlotRenderer {
+public class LineRenderer implements HighlightableRenderer {
 	/**
 	 * The width at which a normal line is drawn.
 	 */
@@ -78,13 +78,10 @@ public class LineRenderer implements SeriesPlotRenderer {
 		highlightedPoint = null;
 	}
 
-	/**
-	 * Sets the highlighted point for this LineRenderer
-	 *
-	 * @param highlightedPoint
-	 * 	The point to highlight in future calls to render, or null to
-	 * 	indicate that no point should be highlighted in future calls to render
-	 */
+	public PlottablePoint getHighlightedPoint() {
+		return highlightedPoint;
+	}
+
 	public void setHighlightedPoint(PlottablePoint highlightedPoint) {
 		this.highlightedPoint = highlightedPoint;
 	}
