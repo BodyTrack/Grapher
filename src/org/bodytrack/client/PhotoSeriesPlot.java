@@ -60,6 +60,8 @@ public class PhotoSeriesPlot extends DataSeriesPlot {
    private double previousWidth;
    // Since overlap is only valid at a X-axis width (in seconds)
 
+   private String previousPaintEventId = null;
+
    /**
     * Initializes a new PhotoSeriesPlot.
     *
@@ -105,7 +107,7 @@ public class PhotoSeriesPlot extends DataSeriesPlot {
     * the set of available images whenever called, which happens
     * to be every time the points are needed in
     * {@link DataSeriesPlot} methods.  The
-    * methods {@link DataSeriesPlot#paintDataPoint(BoundedDrawingBox, GrapherTile, double, double, double, double, PlottablePoint)} and
+    * methods {@link #paintDataPoint(BoundedDrawingBox, GrapherTile, double, double, double, double, PlottablePoint)} and
     * {@link Plot#highlightIfNear(Vector2)} expect this images to
     * be filled, which is always the case whenever they use elements
     * of images, just by the way the code is written.</p>
@@ -256,7 +258,7 @@ public class PhotoSeriesPlot extends DataSeriesPlot {
     *
     * <p>Although we handle edge points and regular points in the same way in this class, we still need to draw all the
     * images, so this does exactly the same thing that
-    * {@link DataSeriesPlot#paintDataPoint(BoundedDrawingBox, GrapherTile, double, double, double, double, PlottablePoint)}
+    * {@link #paintDataPoint(BoundedDrawingBox, GrapherTile, double, double, double, double, PlottablePoint)}
     * does.</p>
     *
     * @param drawing
@@ -282,6 +284,120 @@ public class PhotoSeriesPlot extends DataSeriesPlot {
     * Implemented here as a no-op, since we don't need highlighted points to look different.
     */
    protected void paintHighlightedPoint(final BoundedDrawingBox drawing, final PlottablePoint point) {
+   }
+
+   /**
+    * Paints this DataSeriesPlot in its PlotContainer.
+    *
+    * <p>Does not draw the axes associated with this DataSeriesPlot.</p>
+    *
+    * <p>Note that it is <strong>not</strong> recommended that a subclass
+    * override this method.  Instead, it is recommended that a subclass
+    * override the {@link #paintAllDataPoints} method.</p>
+    */
+   @Override
+   public void paint(final Canvas canvas, final String newPaintEventId) {
+      // guard against redundant paints
+      if (previousPaintEventId == null || !previousPaintEventId.equals(newPaintEventId)) {
+         previousPaintEventId = newPaintEventId;
+
+         // Draw data points
+         canvas.getSurface().setStrokeStyle(getColor());
+         canvas.getSurface().setLineWidth(isHighlighted()
+                                          ? AbstractPlotRenderer.HIGHLIGHT_STROKE_WIDTH
+                                          : AbstractPlotRenderer.NORMAL_STROKE_WIDTH);
+
+         final BoundedDrawingBox drawing = getDrawingBounds(canvas);
+
+         paintAllDataPoints(drawing);
+
+         // TODO: hideComment();
+         if (isSinglePointHighlighted()) {
+            drawing.beginClippedPath();
+            final PlottablePoint highlightedPoint = getHighlightedPoint();
+            paintHighlightedPoint(drawing, highlightedPoint);
+            drawing.strokeClippedPath();
+            if (highlightedPoint.hasComment()) {
+               // TODO: paintComment(drawing, highlightedPoint);
+            }
+         }
+
+         // Clean up after ourselves
+         canvas.getSurface().setStrokeStyle(Canvas.DEFAULT_COLOR);
+         canvas.getSurface().setLineWidth(AbstractPlotRenderer.NORMAL_STROKE_WIDTH);
+
+         // Make sure we shouldn't get any more info from the server
+         checkForFetch();
+      }
+   }
+
+   /**
+    * Renders all the salient data points in currentData.
+    *
+    * @param drawing
+    * 		the {@link BoundedDrawingBox
+    * 		BoundedDrawingBox} in which all points should be
+    * 		drawn
+    */
+   private void paintAllDataPoints(final BoundedDrawingBox drawing) {
+      // TODO: improve the algorithm for getting the best resolution tile
+      // Current algorithm is O(n m), where n is currentData.length()
+      // and m is getBestResolutionTiles().length()
+      // Could use a cache for the best resolution tiles, but would
+      // have to be careful to drop the cache if we pan or zoom too much,
+      // and definitely if we pull in more data
+
+      drawing.beginClippedPath();
+
+      // Putting these declarations outside the loop ensures
+      // that no gaps appear between lines
+      double prevX = -Double.MAX_VALUE;
+      double prevY = -Double.MAX_VALUE;
+
+      for (final GrapherTile tile : getBestResolutionTiles()) {
+         final List<PlottablePoint> dataPoints = getDataPoints(tile);
+
+         if (dataPoints == null) {
+            continue;
+         }
+
+         for (final PlottablePoint point : dataPoints) {
+            final double x = getXAxis().project2D(point.getDate()).getX();
+            final double y = getYAxis().project2D(point.getValue()).getY();
+
+            if (x < SeriesPlotRenderer.MIN_DRAWABLE_VALUE || y < SeriesPlotRenderer.MIN_DRAWABLE_VALUE
+                || Double.isInfinite(x) || Double.isInfinite(y)) {
+               // Don't draw a boundary point
+
+               // So that we don't draw a boundary point, we (relying
+               // on the fact that MIN_DRAWABLE_VALUE is negative)
+               // set prevY to something smaller than
+               // MIN_DRAWABLE_VALUE, ensuring that paintEdgePoint
+               // will be called on the next loop iteration
+               prevY = SeriesPlotRenderer.MIN_DRAWABLE_VALUE * 1.01;
+
+               continue;
+            }
+
+            // Skip any "reverse" drawing
+            if (prevX > x) {
+               continue;
+            }
+
+            // Draw this part of the line
+            if (prevX > SeriesPlotRenderer.MIN_DRAWABLE_VALUE
+                && prevY > SeriesPlotRenderer.MIN_DRAWABLE_VALUE) {
+               paintDataPoint(drawing, tile, prevX, prevY, x, y, point);
+            } else {
+               paintEdgePoint(drawing, tile, x, y, point);
+            }
+
+            prevX = x;
+            prevY = y;
+         }
+      }
+
+      drawing.strokeClippedPath();
    }
 
    /**

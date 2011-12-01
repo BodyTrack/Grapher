@@ -172,7 +172,7 @@ public class DataSeriesPlot extends BaseSeriesPlot implements Alertable<GrapherT
     * 		this point, <tt>false</tt> if the user shouldn't be allowed
     * 		to zoom past this point
     */
-   private boolean checkForFetch() {
+   protected final boolean checkForFetch() {
       final int correctLevel = computeCurrentLevel();
       final int correctMinOffset = computeMinOffset(correctLevel);
       final int correctMaxOffset = computeMaxOffset(correctLevel);
@@ -318,7 +318,7 @@ public class DataSeriesPlot extends BaseSeriesPlot implements Alertable<GrapherT
     * 		a <tt>BoundedDrawingBox</tt> that will only allow drawing
     * 		within the axes
     */
-   private BoundedDrawingBox getDrawingBounds(final Canvas canvas) {
+   protected final BoundedDrawingBox getDrawingBounds(final Canvas canvas) {
       final double minX = getXAxis().project2D(getXAxis().getMin()).getX();
       final double maxX = getXAxis().project2D(getXAxis().getMax()).getX();
 
@@ -382,7 +382,7 @@ public class DataSeriesPlot extends BaseSeriesPlot implements Alertable<GrapherT
     * 		a sorted list of all the best resolution tiles in
     * 		currentData
     */
-   private List<GrapherTile> getBestResolutionTiles() {
+   protected final List<GrapherTile> getBestResolutionTiles() {
 
       final List<GrapherTile> best = new ArrayList<GrapherTile>();
 

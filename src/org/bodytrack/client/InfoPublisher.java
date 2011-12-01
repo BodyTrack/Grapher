@@ -156,7 +156,20 @@ public final class InfoPublisher {
 		///		If this key is not present, a default range will be assigned
 		$wnd.DateAxis = __createAxisConstructor(@org.bodytrack.client.TimeGraphAxis::new(Ljava/lang/String;DDLorg/bodytrack/client/Basis;DZ));
 
-		/// Initializes a new SeriesPlot object
+		/// Initializes a new PhotoAxis object
+		///
+		/// @param placeholder
+		///		The ID of a div in which this axis should go, or null
+		/// @param orientation
+		///		Either 'horizontal', for an X-axis, or 'vertical', for a Y-axis
+		/// @param range
+		///		Optional parameter: a dictionary with keys 'min' and 'max',
+		///		representing the bounds on the axis.  The values on these keys
+		///		must be numbers, with the max value greater than the min value.
+		///		If this key is not present, a default range will be assigned
+		$wnd.PhotoAxis = __createAxisConstructor(@org.bodytrack.client.PhotoGraphAxis::new(Ljava/lang/String;DDLorg/bodytrack/client/Basis;DZ));
+
+		/// Initializes a new DataSeriesPlot object
 		///
 		/// @param datasource
 		///		A function to be used as the data source for the new
@@ -168,7 +181,7 @@ public final class InfoPublisher {
 		/// @param style
 		///		Optional parameter: a dictionary specifying the style of
 		///		the new plot
-		$wnd.SeriesPlot = function(datasource, horizontalAxis, verticalAxis, style) {
+		$wnd.DataSeriesPlot = function(datasource, horizontalAxis, verticalAxis, style) {
 			if (datasource == null) {
 				throw 'Must pass in datasource';
 			}
@@ -193,7 +206,7 @@ public final class InfoPublisher {
 
             var styleObject = @com.google.gwt.json.client.JSONObject::new(Lcom/google/gwt/core/client/JavaScriptObject;)(style);
 
-				return @org.bodytrack.client.DataSeriesPlot::new(Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/core/client/JavaScriptObject;ILgwt/g2d/client/graphics/Color;)(datasource, horizontalAxis, verticalAxis, MIN_LEVEL, color);
+				return @org.bodytrack.client.DataSeriesPlot::new(Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/core/client/JavaScriptObject;ILgwt/g2d/client/graphics/Color;Lcom/google/gwt/json/client/JSONObject;)(datasource, horizontalAxis, verticalAxis, MIN_LEVEL, color, styleObject);
 			})();
 			this.getHorizontalAxis = function() {
 				return this.__backingPlot.@org.bodytrack.client.DataSeriesPlot::getNativeXAxis()();
@@ -206,6 +219,39 @@ public final class InfoPublisher {
 			this.setStyle = function(new_style) {
 				// TODO: Support changing the plot style
 				this.style = new_style;
+			};
+			this.id = __getNextID();
+		};
+
+		/// Initializes a new PhotoSeriesPlot object
+		///
+		/// @param datasource
+		///		A function to be used as the data source for the new
+		///		plot.  This parameter must not be null
+		/// @param horizontalAxis
+		///		An non-null axis with horizontal orientation
+		/// @param verticalAxis
+		///		A non-null axis with vertical orientation
+		$wnd.PhotoSeriesPlot = function(datasource, horizontalAxis, verticalAxis, userId) {
+			if (datasource == null) {
+				throw 'Must pass in datasource';
+			}
+
+			if (horizontalAxis == null || verticalAxis == null) {
+				throw 'Must pass in both axes';
+			}
+
+			this.getDatasource = function() { return datasource; };
+			this.__backingPlot = (function() {
+				var MIN_LEVEL = -20; // TODO: Offer control to the plot creator?
+
+				return @org.bodytrack.client.PhotoSeriesPlot::new(Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/core/client/JavaScriptObject;II)(datasource, horizontalAxis, verticalAxis, MIN_LEVEL, userId);
+			})();
+			this.getHorizontalAxis = function() {
+				return this.__backingPlot.@org.bodytrack.client.PhotoSeriesPlot::getNativeXAxis()();
+			};
+			this.getVerticalAxis = function() {
+				return this.__backingPlot.@org.bodytrack.client.PhotoSeriesPlot::getNativeYAxis()();
 			};
 			this.id = __getNextID();
 		};
