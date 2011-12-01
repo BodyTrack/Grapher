@@ -28,7 +28,7 @@ public final class PhotoGetter extends JavaScriptObject {
 	 * At least for now, we always download images at size
 	 * DEFAULT_WIDTH and do not use other image sizes.
 	 */
-	public static final int DEFAULT_WIDTH = 300;
+	public static final int DEFAULT_WIDTH = 150;
 
 	/* Overlay types always have protected zero-arg constructors. */
 	protected PhotoGetter() { }
@@ -57,7 +57,7 @@ public final class PhotoGetter extends JavaScriptObject {
 		// Declare this constant, and these functions, inside this
 		// function so we don't pollute the global namespace
 
-		var DEFAULT_WIDTH = 300;
+		var DEFAULT_WIDTH = 150;
 
 		// TODO: Possibly inline these functions for speed, since
 		// the inlining is trivial here
