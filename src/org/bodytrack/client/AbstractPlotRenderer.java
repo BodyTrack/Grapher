@@ -81,27 +81,27 @@ public abstract class AbstractPlotRenderer implements HighlightableRenderer {
 		highlightedPoint = null;
 	}
 
-	public PlottablePoint getHighlightedPoint() {
+	public final PlottablePoint getHighlightedPoint() {
 		return highlightedPoint;
 	}
 
-	public void setHighlightedPoint(PlottablePoint highlightedPoint) {
+	public final void setHighlightedPoint(PlottablePoint highlightedPoint) {
 		this.highlightedPoint = highlightedPoint;
 	}
 
-	protected boolean isHighlighted() {
+	protected final boolean isHighlighted() {
 		return highlighted;
 	}
 
-	protected boolean isDrawingComments() {
+	protected final boolean isDrawingComments() {
 		return drawComments;
 	}
 
 	@Override
 	public void render(BoundedDrawingBox drawing, Iterable<GrapherTile> tiles,
 			JavaScriptObject nativeXAxis, JavaScriptObject nativeYAxis) {
-		GraphAxis xAxis = getAxis(nativeXAxis);
-		GraphAxis yAxis = getAxis(nativeYAxis);
+		GraphAxis xAxis = GraphAxis.getAxis(nativeXAxis);
+		GraphAxis yAxis = GraphAxis.getAxis(nativeYAxis);
 
 		drawing.getCanvas().getSurface().setLineWidth(highlighted
 				? HIGHLIGHT_STROKE_WIDTH
@@ -360,10 +360,5 @@ public abstract class AbstractPlotRenderer implements HighlightableRenderer {
 			commentPanel.hide();
 			commentPanel = null;
 		}
-	}
-
-	protected GraphAxis getAxis(JavaScriptObject nativeAxis) {
-		Dynamic djso = nativeAxis.cast();
-		return djso.get("__backingAxis");
 	}
 }

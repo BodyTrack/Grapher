@@ -18,7 +18,7 @@ public class LollipopRenderer extends DotRenderer {
 	public void render(BoundedDrawingBox drawing, Iterable<GrapherTile> tiles,
 			JavaScriptObject nativeXAxis, JavaScriptObject nativeYAxis) {
 		// Just save the Y-axis for use in paintDot
-		yAxis = getAxis(nativeYAxis);
+		yAxis = GraphAxis.getAxis(nativeYAxis);
 		super.render(drawing, tiles, nativeXAxis, nativeYAxis);
 	}
 

@@ -1,5 +1,6 @@
 package org.bodytrack.client;
 
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.event.dom.client.MouseDownHandler;
 import com.google.gwt.event.dom.client.MouseMoveEvent;
@@ -158,6 +159,26 @@ public class GraphAxis {
       this.isXAxis = isXAxis;
 
       highlightedPoint = null;
+   }
+
+   /**
+    * Returns the unwrapped GraphAxis from nativeAxis
+    *
+    * @param nativeAxis
+    *  The native wrapped axis passed in from JavaScript code
+    * @return
+    *  The GraphAxis object wrapped by nativeAxis if possible, or
+    *  <code>null</code> if not
+    * @throws NullPointerException
+    *  If nativeAxis is <code>null</code>
+    */
+   public static GraphAxis getAxis(JavaScriptObject nativeAxis) {
+      if (nativeAxis == null) {
+         throw new NullPointerException("Cannot get axis from null");
+      }
+
+      Dynamic djso = nativeAxis.cast();
+      return djso.get("__backingAxis");
    }
 
    public final void addEventListener(final EventListener listener) {

@@ -623,8 +623,7 @@ public class DataPlot implements Alertable<GrapherTile> {
     * 		the X-axis for this DataPlot
     */
    public GraphAxis getXAxis() {
-      Dynamic djso = xAxis.cast();
-      return djso.get("__backingAxis");
+      return GraphAxis.getAxis(xAxis);
    }
 
    public JavaScriptObject getNativeXAxis() {
@@ -647,6 +646,10 @@ public class DataPlot implements Alertable<GrapherTile> {
          throw new NullPointerException("Cannot use null X-axis");
       }
 
+      if (GraphAxis.getAxis(axis) == null) {
+          throw new IllegalArgumentException("Require a real axis object");
+      }
+
       // unregister self from the existing axis
       unregisterGraphAxisEventListener(getXAxis());
 
@@ -663,8 +666,7 @@ public class DataPlot implements Alertable<GrapherTile> {
     * 		the Y-axis for this DataPlot
     */
    public GraphAxis getYAxis() {
-      Dynamic djso = yAxis.cast();
-      return djso.get("__backingAxis");
+      return GraphAxis.getAxis(yAxis);
    }
 
    public JavaScriptObject getNativeYAxis() {
@@ -683,6 +685,10 @@ public class DataPlot implements Alertable<GrapherTile> {
    void setYAxis(final JavaScriptObject axis) {
       if (axis == null) {
          throw new NullPointerException("Cannot use null Y-axis");
+      }
+
+      if (GraphAxis.getAxis(axis) == null) {
+         throw new IllegalArgumentException("Require a real axis object");
       }
 
       // unregister self from the existing axis
