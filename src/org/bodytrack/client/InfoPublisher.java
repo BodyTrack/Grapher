@@ -11,7 +11,7 @@ package org.bodytrack.client;
 public final class InfoPublisher {
 
 	// Set to true so that setUpWrappers is called only once.
-	// With threading, this would be problematic, but there is no issue
+	// With threading, this would be unsafe, but there is no issue
 	// here because JavaScript is single-threaded.
 	private static boolean wrappersSet = false;
 
@@ -188,10 +188,12 @@ public final class InfoPublisher {
 				style = {};
 			}
 			if (!('device_name' in style)) {
-				style.device_name = 'device';
+				// Because foo.bar is the sine wave channel
+				style.device_name = 'foo';
 			}
 			if (!('channel_name' in style)) {
-				style.channel_name = 'channel';
+				// Because foo.bar is the sine wave channel
+				style.channel_name = 'bar';
 			}
 			if (!('color' in style)) {
 				style.color = 'black';
