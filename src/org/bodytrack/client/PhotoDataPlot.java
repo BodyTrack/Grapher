@@ -69,10 +69,6 @@ public class PhotoDataPlot extends DataPlot {
     * 		the X-axis along which this data set will be aligned when drawn
     * @param nativeYAxis
     * 		the Y-axis along which this data set will be aligned when drawn
-	 * @param deviceName
-	 * 		the name of the device from which this channel came
-	 * @param channelName
-	 * 		the name of the channel on the device specified by deviceName
 	 * @param userId
 	 * 		the user ID of the current user
 	 * @param minLevel
@@ -83,10 +79,9 @@ public class PhotoDataPlot extends DataPlot {
 	public PhotoDataPlot(final JavaScriptObject datasource,
                         final JavaScriptObject nativeXAxis,
                         final JavaScriptObject nativeYAxis,
-                        final Channel channel,
                         final int userId,
                         final int minLevel) {
-		super(datasource, nativeXAxis, nativeYAxis, channel, minLevel,
+		super(datasource, nativeXAxis, nativeYAxis, minLevel,
 			Canvas.DEFAULT_COLOR);
 
 		this.userId = userId;
@@ -109,7 +104,7 @@ public class PhotoDataPlot extends DataPlot {
 	 * There is some subtlety here: the call to this method populates
 	 * the set of available images whenever called, which happens
 	 * to be every time the points are needed in
-	 * {@link org.bodytrack.client.DataPlot DataPlot} methods.  The
+	 * {@link DataPlot} methods.  The
 	 * methods {@link DataPlot#paintDataPoint(BoundedDrawingBox, GrapherTile, double, double, double, double, PlottablePoint)} and
 	 * {@link #highlightIfNear(Vector2, double)} expect this images to
 	 * be filled, which is always the case whenever they use elements

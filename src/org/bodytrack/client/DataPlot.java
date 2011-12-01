@@ -59,7 +59,6 @@ public class DataPlot implements Alertable<GrapherTile> {
    private final JavaScriptObject datasource;
    private JavaScriptObject xAxis;
    private JavaScriptObject yAxis;
-   private final Channel channel;
    private final HighlightableRenderer normalRenderer;
    private final HighlightableRenderer highlightRenderer;
 
@@ -104,7 +103,7 @@ public class DataPlot implements Alertable<GrapherTile> {
     * URL to fetch) of the URL which will be used to get more data.
     * Note that this <strong>must</strong> be a trusted BodyTrack
     * URL.  As described in the documentation for
-    * {@link GrapherTile#retrieveTile(String, int, int, List, Alertable)},
+    * {@link GrapherTile#retrieveTile(JavaScriptObject, int, int, Alertable)},
     * an untrusted connection could allow
     * unauthorized access to all of a user's data.</p>
     *
@@ -114,26 +113,22 @@ public class DataPlot implements Alertable<GrapherTile> {
     * 		the X-axis along which this data set will be aligned when drawn
     * @param nativeYAxis
     * 		the Y-axis along which this data set will be aligned when drawn
-    * @param channel
-    * 		the channel
     * @param minLevel
     * 		the minimum level to which the user will be allowed to zoom
     * @param color
     * 		the color in which to draw these data points (note that
     * 		this does not affect the color of the axes)
     * @throws NullPointerException
-    * 		if container, xAxis, yAxis, deviceName, channelName, url,
-    * 		or color is <tt>null</tt>
+    * 		if datasource, xAxis, yAxis, url, or color is <tt>null</tt>
     * @throws IllegalArgumentException
     * 		if xAxis is really a Y-axis, or if yAxis is really an X-axis
     */
    public DataPlot(final JavaScriptObject datasource,
                    final JavaScriptObject nativeXAxis,
                    final JavaScriptObject nativeYAxis,
-                   final Channel channel,
                    final int minLevel,
                    final Color color) {
-      this(datasource, nativeXAxis, nativeYAxis, channel,
+      this(datasource, nativeXAxis, nativeYAxis,
          minLevel, color, new LineRenderer(false, true),
          new LineRenderer(true, false));
          // Only the normal renderer needs to draw comments
@@ -142,15 +137,14 @@ public class DataPlot implements Alertable<GrapherTile> {
    public DataPlot(final JavaScriptObject datasource,
                    final JavaScriptObject nativeXAxis,
                    final JavaScriptObject nativeYAxis,
-                   final Channel channel,
                    final int minLevel,
                    final Color color,
                    final HighlightableRenderer normalRenderer,
                    final HighlightableRenderer highlightRenderer) {
       if (datasource == null || nativeXAxis == null
-          || nativeYAxis == null || channel == null || color == null) {
+          || nativeYAxis == null || color == null) {
          throw new NullPointerException(
-               "Cannot have a null datasource, axis, channel, or color");
+               "Cannot have a null datasource, axis, or color");
       }
 
       this.xAxis = nativeXAxis;
@@ -167,7 +161,6 @@ public class DataPlot implements Alertable<GrapherTile> {
       registerGraphAxisEventListener(getYAxis());
 
       this.datasource = datasource;
-      this.channel = channel;
       shouldZoomIn = true;
       this.minLevel = minLevel;
 
@@ -196,32 +189,6 @@ public class DataPlot implements Alertable<GrapherTile> {
       }
    }
 
-   /**
-    * Combines the device and channel name to get the overall
-    * name for the channel.
-    *
-    * @param deviceName
-    * 		the name of the device, which may be <tt>null</tt>
-    * @param channelName
-    * 		the name of the channel, which may be <tt>null</tt>
-    * @return
-    * 		a string representing the device and channel name
-    * 		together
-    */
-   // TODO: Rename to a more useful name
-   // TODO: Move this to StringPair, then refactor StringPair to have
-   // a different name
-   public static String getDeviceChanName(final String deviceName, final String channelName) {
-      final String cleanedDeviceName = (deviceName == null) ? "" : deviceName;
-      final String cleanedChannelName = (channelName == null) ? "" : channelName;
-
-      if ("".equals(cleanedDeviceName)) {
-         return cleanedChannelName;
-      }
-
-      return cleanedDeviceName + "." + cleanedChannelName;
-   }
-
    public static DataPlot getDataPlot(JavaScriptObject nativePlot) {
       final Dynamic dynPlot = nativePlot.cast();
       return dynPlot.get("__backingPlot");
@@ -242,40 +209,6 @@ public class DataPlot implements Alertable<GrapherTile> {
       if (graphWidget != null && graphWidget.equals(this.containingGraphWidget)) {
          this.containingGraphWidget = null;
       }
-   }
-
-   /**
-    * Returns the {@link ChartType} of this plot.  The {@link ChartType} is obtained from the {@link Channel}.
-    *
-    * @see Channel#getChartType()
-    */
-   public final ChartType getChartType() {
-      return channel.getChartType();
-   }
-
-   /** Returns the {@link Channel} for this plot. */
-   public final Channel getChannel() {
-      return channel;
-   }
-
-   /**
-    * Returns the device name for this plot.
-    *
-    * @return
-    * 		the device name passed to the constructor
-    */
-   public final String getDeviceName() {
-      return channel.getDeviceName();
-   }
-
-   /**
-    * Returns the channel name for this plot.
-    *
-    * @return
-    * 		the channel name passed to the constructor
-    */
-   public final String getChannelName() {
-      return channel.getChannelName();
    }
 
    /**

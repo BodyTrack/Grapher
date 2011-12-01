@@ -177,21 +177,9 @@ public final class InfoPublisher {
 				throw 'Must pass in both axes';
 			}
 
-			// TODO: The following four conditionals are gross hacks!
-			// Right now the DataPlot requires a Channel object, which has
-			// a device and channel.  Without that information, it's
-			// pretty much impossible to initialize a new DataPlot object.
-			// These conditionals attempt to paper over that problem
-			// by ensuring that there is always some device name and
-			// channel name in style.
+			// create a default style if necessary
 			if (style == null) {
 				style = {};
-			}
-			if (!('device_name' in style)) {
-				style.device_name = 'device';
-			}
-			if (!('channel_name' in style)) {
-				style.channel_name = 'channel';
 			}
 			if (!('color' in style)) {
 				style.color = 'black';
@@ -201,31 +189,22 @@ public final class InfoPublisher {
 			this.__backingPlot = (function() {
 				var MIN_LEVEL = -20; // TODO: Offer control to the plot creator?
 
-				// TODO: Get the channel type from the style (only getting
-				// the device and channel names right now)
-				var channel = @org.bodytrack.client.Channel::new(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)(style.device_name, style.channel_name, null);
-
 				var color = @org.bodytrack.client.ColorUtils::buildColor(Ljava/lang/String;)(style.color);
 
-				return @org.bodytrack.client.DataPlot::new(Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/core/client/JavaScriptObject;Lorg/bodytrack/client/Channel;ILgwt/g2d/client/graphics/Color;)(datasource, horizontalAxis, verticalAxis, channel, MIN_LEVEL, color);
+            var styleObject = @com.google.gwt.json.client.JSONObject::new(Lcom/google/gwt/core/client/JavaScriptObject;)(style);
+
+				return @org.bodytrack.client.DataPlot::new(Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/core/client/JavaScriptObject;ILgwt/g2d/client/graphics/Color;)(datasource, horizontalAxis, verticalAxis, MIN_LEVEL, color);
 			})();
 			this.getHorizontalAxis = function() {
 				return this.__backingPlot.@org.bodytrack.client.DataPlot::getNativeXAxis()();
 			};
-			this.setHorizontalAxis = function(axis) {
-				this.__backingPlot.@org.bodytrack.client.DataPlot::setXAxis(Lcom/google/gwt/core/client/JavaScriptObject;)(axis);
-			};
 			this.getVerticalAxis = function() {
 				return this.__backingPlot.@org.bodytrack.client.DataPlot::getNativeYAxis()();
-			};
-			this.setVerticalAxis = function(axis) {
-				this.__backingPlot.@org.bodytrack.client.DataPlot::setYAxis(Lcom/google/gwt/core/client/JavaScriptObject;)(axis);
 			};
 			this.style = style;
 			this.getStyle = function() { return this.style; };
 			this.setStyle = function(new_style) {
-				// TODO: Support changing the plot type, which requires
-				// surgically changing the backing plot
+				// TODO: Support changing the plot style
 				this.style = new_style;
 			};
 			this.id = __getNextID();

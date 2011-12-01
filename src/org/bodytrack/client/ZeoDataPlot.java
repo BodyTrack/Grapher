@@ -39,21 +39,15 @@ public class ZeoDataPlot extends DataPlot {
     * 		the X-axis along which this data set will be aligned when drawn
     * @param nativeYAxis
     * 		the Y-axis along which this data set will be aligned when drawn
-    * @param deviceName
-    * 		the name of the device from which this channel came
-    * @param channelName
-    * 		the name of the channel on the device specified by deviceName
     * @param minLevel
     * 		the minimum level to which this will zoom
-    * @see DataPlot#DataPlot(JavaScriptObject, JavaScriptObject, JavaScriptObject, Channel, int, Color)
+    * @see DataPlot#DataPlot(JavaScriptObject, JavaScriptObject, JavaScriptObject, int, Color)
     */
    public ZeoDataPlot(final JavaScriptObject datasource,
                       final JavaScriptObject nativeXAxis,
                       final JavaScriptObject nativeYAxis,
-                      final Channel channel,
                       final int minLevel) {
-      super(datasource, nativeXAxis, nativeYAxis, channel, minLevel,
-         Canvas.DEFAULT_COLOR);
+      super(datasource, nativeXAxis, nativeYAxis, minLevel, Canvas.DEFAULT_COLOR);
    }
 
    /**
