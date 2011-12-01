@@ -60,8 +60,8 @@ public class DataPlot implements Alertable<GrapherTile> {
    private JavaScriptObject xAxis;
    private JavaScriptObject yAxis;
    private final Channel channel;
-   private final HighlightableRenderer normalRenderer;
-   private final HighlightableRenderer highlightRenderer;
+   private HighlightableRenderer normalRenderer;
+   private HighlightableRenderer highlightRenderer;
 
    private final int minLevel;
    private Color color;
@@ -318,6 +318,15 @@ public class DataPlot implements Alertable<GrapherTile> {
       if (containingGraphWidget != null) {
          containingGraphWidget.paint();
       }
+   }
+
+   public void setStyle(HighlightableRenderer normalRenderer,
+                        HighlightableRenderer highlightRenderer) {
+      if (normalRenderer == null || highlightRenderer == null) {
+         throw new NullPointerException("Cannot set style to null");
+      }
+      this.normalRenderer = normalRenderer;
+      this.highlightRenderer = highlightRenderer;
    }
 
    /**
