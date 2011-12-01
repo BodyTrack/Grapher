@@ -14,12 +14,13 @@ public class LineRenderer extends AbstractPlotRenderer {
 		drawing.drawDot(x, y, DOT_RADIUS);
 
 		if (isDrawingComments() && rawDataPoint.hasComment()) {
-			paintHighlightedPoint(drawing, x, y);
+			paintHighlightedPoint(drawing, x, y, rawDataPoint);
 		}
 	}
 
 	@Override
 	protected void paintDataPoint(final BoundedDrawingBox drawing,
+			final GrapherTile tile,
 			final double prevX,
 			final double prevY,
 			final double x,
@@ -28,13 +29,13 @@ public class LineRenderer extends AbstractPlotRenderer {
 		drawing.drawLineSegment(prevX, prevY, x, y);
 
 		if (isDrawingComments() && rawDataPoint.hasComment()) {
-			paintHighlightedPoint(drawing, x, y);
+			paintHighlightedPoint(drawing, x, y, rawDataPoint);
 		}
 	}
 
 	@Override
 	protected void paintHighlightedPoint(final BoundedDrawingBox drawing,
-			double x, double y) {
+			double x, double y, PlottablePoint rawDataPoint) {
 		// Draw three concentric circles to look like one filled-in circle
 		// The real radius is the first one used: HIGHLIGHTED_DOT_RADIUS
 		drawing.drawDot(x, y, HIGHLIGHTED_DOT_RADIUS);

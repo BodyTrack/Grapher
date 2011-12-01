@@ -20,8 +20,9 @@ public class DotRenderer extends AbstractPlotRenderer {
 	}
 
 	@Override
-	protected final void paintDataPoint(BoundedDrawingBox drawing, double prevX,
-			double prevY, double x, double y, PlottablePoint rawDataPoint) {
+	protected final void paintDataPoint(BoundedDrawingBox drawing,
+			GrapherTile tile, double prevX, double prevY, double x,
+			double y, PlottablePoint rawDataPoint) {
 		paintDot(drawing, x, y, rawDataPoint.hasComment());
 	}
 
@@ -33,7 +34,7 @@ public class DotRenderer extends AbstractPlotRenderer {
 
 	@Override
 	protected final void paintHighlightedPoint(BoundedDrawingBox drawing, double x,
-			double y) {
+			double y, PlottablePoint rawDataPoint) {
 		paintDot(drawing, x, y, true);
 	}
 

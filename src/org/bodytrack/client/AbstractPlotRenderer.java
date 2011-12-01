@@ -144,7 +144,7 @@ public abstract class AbstractPlotRenderer implements HighlightableRenderer {
 				// Draw this part of the line
 				if (prevX > MIN_DRAWABLE_VALUE
 						&& prevY > MIN_DRAWABLE_VALUE) {
-					paintDataPoint(drawing, prevX, prevY, x, y, point);
+					paintDataPoint(drawing, tile, prevX, prevY, x, y, point);
 				} else {
 					paintEdgePoint(drawing, tile, x, y, point);
 				}
@@ -163,7 +163,8 @@ public abstract class AbstractPlotRenderer implements HighlightableRenderer {
 			drawing.beginClippedPath();
 			paintHighlightedPoint(drawing,
 					xAxis.project2D(highlightedPoint.getDate()).getX(),
-					yAxis.project2D(highlightedPoint.getValue()).getY());
+					yAxis.project2D(highlightedPoint.getValue()).getY(),
+					highlightedPoint);
 			drawing.strokeClippedPath();
 			if (highlightedPoint.hasComment()) {
 				paintComment(drawing, highlightedPoint,
@@ -213,20 +214,26 @@ public abstract class AbstractPlotRenderer implements HighlightableRenderer {
 	 * 	The {@link BoundedDrawingBox} that should constrain the drawing.
 	 * 	Forwarding graphics calls through drawing will ensure that everything
 	 * 	draws up to the edge of the viewing window but no farther
+	 * @param tile
+	 * 	The tile from which the data point to be drawn was obtained
 	 * @param prevX
-	 * 	The previous X-value, which will be greater than MIN_DRAWABLE_VALUE
+	 * 	The previous X-value, which is expected to be greater than
+	 * 	MIN_DRAWABLE_VALUE
 	 * @param prevY
-	 * 	The previous Y-value, which will be greater than MIN_DRAWABLE_VALUE
+	 * 	The previous Y-value, which is expected to be greater than
+	 * 	MIN_DRAWABLE_VALUE
 	 * @param x
-	 * 	The current X-value, which will be greater than MIN_DRAWABLE_VALUE,
-	 * 	and greater than or equal to prevX
+	 * 	The current X-value, which is expected to be greater than
+	 * 	MIN_DRAWABLE_VALUE, and greater than or equal to prevX
 	 * @param y
-	 * 	The current Y-value, which will be greater than MIN_DRAWABLE_VALUE
+	 * 	The current Y-value, which is expected to be greater than
+	 * 	MIN_DRAWABLE_VALUE
 	 * @param rawDataPoint
 	 * 	The raw {@link PlottablePoint}
 	 * @see #MIN_DRAWABLE_VALUE
 	 */
 	protected abstract void paintDataPoint(final BoundedDrawingBox drawing,
+			final GrapherTile tile,
 			final double prevX,
 			final double prevY,
 			final double x,
@@ -253,9 +260,13 @@ public abstract class AbstractPlotRenderer implements HighlightableRenderer {
 	 * 	The X-position of the point to draw, in screen pixels
 	 * @param y
 	 * 	The Y-position of the point to draw, in screen pixels
+	 * @param rawDataPoint
+	 * 	The raw {@link PlottablePoint}
 	 */
 	protected abstract void paintHighlightedPoint(final BoundedDrawingBox drawing,
-			double x, double y);
+			final double x,
+			final double y,
+			final PlottablePoint rawDataPoint);
 
 	private void paintComment(final BoundedDrawingBox drawing,
 			final PlottablePoint highlightedPoint, double x, double y) {
