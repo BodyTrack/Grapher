@@ -65,6 +65,10 @@ public abstract class AbstractPlotRenderer implements HighlightableRenderer {
 	private PopupPanel commentPanel;
 	private PlottablePoint highlightedPoint;
 
+	// Two temporary axes that can be used by subclasses
+	private GraphAxis xAxis;
+	private GraphAxis yAxis;
+
 	/**
 	 * Creates a new AbstractPlotRenderer object
 	 *
@@ -89,19 +93,39 @@ public abstract class AbstractPlotRenderer implements HighlightableRenderer {
 		this.highlightedPoint = highlightedPoint;
 	}
 
-	protected final boolean isHighlighted() {
+	public final boolean isHighlighted() {
 		return highlighted;
 	}
 
-	protected final boolean isDrawingComments() {
+	public final boolean isDrawingComments() {
 		return drawComments;
+	}
+
+	protected final GraphAxis getXAxis() {
+		return xAxis;
+	}
+
+	protected final GraphAxis getYAxis() {
+		return yAxis;
 	}
 
 	@Override
 	public void render(BoundedDrawingBox drawing, Iterable<GrapherTile> tiles,
 			JavaScriptObject nativeXAxis, JavaScriptObject nativeYAxis) {
-		GraphAxis xAxis = GraphAxis.getAxis(nativeXAxis);
-		GraphAxis yAxis = GraphAxis.getAxis(nativeYAxis);
+		if (drawing == null || tiles == null
+				|| nativeXAxis == null || nativeYAxis == null) {
+			throw new NullPointerException(
+					"Drawing box, tiles, and axes must be non-null");
+		}
+
+		// Save to xAxis and yAxis so that subclass implementations of
+		// paintDataPoint etc. can use these
+		xAxis = GraphAxis.getAxis(nativeXAxis);
+		yAxis = GraphAxis.getAxis(nativeYAxis);
+
+		if (xAxis == null || yAxis == null) {
+			throw new IllegalArgumentException("Bad axis passed to render");
+		}
 
 		drawing.getCanvas().getSurface().setLineWidth(highlighted
 				? HIGHLIGHT_STROKE_WIDTH
