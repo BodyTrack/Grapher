@@ -2,7 +2,6 @@ package org.bodytrack.client;
 
 import java.util.List;
 
-import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PopupPanel;
@@ -13,7 +12,7 @@ import com.google.gwt.user.client.ui.PopupPanel;
  * <p>An AbstractPlotRenderer maintains a highlighted point, as set by the
  * {@link #setHighlightedPoint(PlottablePoint)} method.  If this value is
  * not null, that point is drawn at a larger radius whenever
- * {@link #render(BoundedDrawingBox, Iterable, JavaScriptObject, JavaScriptObject)}
+ * {@link #render(BoundedDrawingBox, Iterable, GraphAxis, GraphAxis)}
  * is called.  Other than this highlighted point, however, an
  * AbstractPlotRenderer is logically immutable.  Hidden from the user of this
  * object is a mutable comment panel, which may be visible or invisible at
@@ -50,7 +49,7 @@ public abstract class AbstractPlotRenderer implements HighlightableRenderer {
 	private static final int PREFERRED_MAX_COMMENT_WIDTH = 600;
 
 	/**
-	 * Whenever the {@link #highlight()} method is called, we don't know
+	 * Whenever the {@link Plot#highlight()} method is called, we don't know
 	 * which points on the axes should be highlighted, so we use this
 	 * value to indicate this.  As such, testing with == is OK as a test
 	 * for this point, since we set highlightedPoint to this exact
@@ -75,7 +74,7 @@ public abstract class AbstractPlotRenderer implements HighlightableRenderer {
 	 * 	True if this AbstractPlotRenderer should draw comment boxes,
 	 * 	and false otherwise
 	 */
-	public AbstractPlotRenderer(boolean highlighted, boolean drawComments) {
+	public AbstractPlotRenderer(final boolean highlighted, final boolean drawComments) {
 		this.highlighted = highlighted;
 		this.drawComments = drawComments;
 		highlightedPoint = null;
@@ -85,7 +84,7 @@ public abstract class AbstractPlotRenderer implements HighlightableRenderer {
 		return highlightedPoint;
 	}
 
-	public void setHighlightedPoint(PlottablePoint highlightedPoint) {
+	public void setHighlightedPoint(final PlottablePoint highlightedPoint) {
 		this.highlightedPoint = highlightedPoint;
 	}
 
@@ -98,11 +97,10 @@ public abstract class AbstractPlotRenderer implements HighlightableRenderer {
 	}
 
 	@Override
-	public void render(BoundedDrawingBox drawing, Iterable<GrapherTile> tiles,
-			JavaScriptObject nativeXAxis, JavaScriptObject nativeYAxis) {
-		GraphAxis xAxis = getAxis(nativeXAxis);
-		GraphAxis yAxis = getAxis(nativeYAxis);
-
+	public void render(final BoundedDrawingBox drawing,
+                      final Iterable<GrapherTile> tiles,
+                      final GraphAxis xAxis,
+                      final GraphAxis yAxis) {
 		drawing.getCanvas().getSurface().setLineWidth(highlighted
 				? HIGHLIGHT_STROKE_WIDTH
 						: NORMAL_STROKE_WIDTH);
@@ -157,22 +155,22 @@ public abstract class AbstractPlotRenderer implements HighlightableRenderer {
 		drawing.strokeClippedPath();
 
 		hideComment();
-		if (highlightedPoint != null
-				&& highlightedPoint != HIGHLIGHTED_NO_SINGLE_POINT) {
-			// TODO: should this be an .equals() comparison instead?
-			drawing.beginClippedPath();
-			paintHighlightedPoint(drawing,
-					xAxis.project2D(highlightedPoint.getDate()).getX(),
-					yAxis.project2D(highlightedPoint.getValue()).getY());
-			drawing.strokeClippedPath();
-			if (highlightedPoint.hasComment()) {
-				paintComment(drawing, highlightedPoint,
-						xAxis.project2D(highlightedPoint.getDate()).getX(),
-						yAxis.project2D(highlightedPoint.getValue()).getY());
-			}
-		}
+      if (highlightedPoint != null
+          && highlightedPoint != HIGHLIGHTED_NO_SINGLE_POINT) {
+         // TODO: should this be an .equals() comparison instead?
+         drawing.beginClippedPath();
+         paintHighlightedPoint(drawing,
+                               xAxis.project2D(highlightedPoint.getDate()).getX(),
+                               yAxis.project2D(highlightedPoint.getValue()).getY());
+         drawing.strokeClippedPath();
+         if (highlightedPoint.hasComment()) {
+            paintComment(drawing, highlightedPoint,
+                         xAxis.project2D(highlightedPoint.getDate()).getX(),
+                         yAxis.project2D(highlightedPoint.getValue()).getY());
+         }
+      }
 
-		drawing.getCanvas().getSurface().setLineWidth(NORMAL_STROKE_WIDTH);
+      drawing.getCanvas().getSurface().setLineWidth(NORMAL_STROKE_WIDTH);
 	}
 
 	/**
@@ -257,10 +255,12 @@ public abstract class AbstractPlotRenderer implements HighlightableRenderer {
 	protected abstract void paintHighlightedPoint(final BoundedDrawingBox drawing,
 			double x, double y);
 
-	private void paintComment(final BoundedDrawingBox drawing,
-			final PlottablePoint highlightedPoint, double x, double y) {
-		int ix = (int)x;
-		int iy = (int)y;
+   private void paintComment(final BoundedDrawingBox drawing,
+                             final PlottablePoint highlightedPoint,
+                             final double x,
+                             final double y) {
+      final int ix = (int)x;
+		final int iy = (int)y;
 
 		if (drawComments && highlightedPoint.hasComment()) {
 			// create the panel, but display it offscreen so we can measure
@@ -360,10 +360,5 @@ public abstract class AbstractPlotRenderer implements HighlightableRenderer {
 			commentPanel.hide();
 			commentPanel = null;
 		}
-	}
-
-	protected GraphAxis getAxis(JavaScriptObject nativeAxis) {
-		Dynamic djso = nativeAxis.cast();
-		return djso.get("__backingAxis");
 	}
 }

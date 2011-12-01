@@ -232,7 +232,7 @@ public final class InfoPublisher {
 			this.__backingPlotContainer = (function() {
 				var widget = @org.bodytrack.client.PlotContainer::new(Ljava/lang/String;)(placeholder);
 				for (var i = 0; i < plots.length; i++) {
-					widget.@org.bodytrack.client.PlotContainer::addDataPlot(Lorg/bodytrack/client/DataSeriesPlot;)(plots[i].__backingPlot);
+					widget.@org.bodytrack.client.PlotContainer::addPlot(Lorg/bodytrack/client/Plot;)(plots[i].__backingPlot);
 				}
 				return widget;
 			})();
@@ -240,13 +240,13 @@ public final class InfoPublisher {
 				if (plot === undefined) {
 					throw 'The addPlot function requires one argument';
 				}
-				this.__backingPlotContainer.@org.bodytrack.client.PlotContainer::addDataPlot(Lorg/bodytrack/client/DataSeriesPlot;)(plot.__backingPlot);
+				this.__backingPlotContainer.@org.bodytrack.client.PlotContainer::addPlot(Lorg/bodytrack/client/Plot;)(plot.__backingPlot);
 			};
 			this.removePlot = function(plot) {
 				if (plot === undefined) {
 					throw 'The removePlot function requires one argument';
 				}
-				this.__backingPlotContainer.@org.bodytrack.client.PlotContainer::removeDataPlot(Lorg/bodytrack/client/DataSeriesPlot;)(plot.__backingPlot);
+				this.__backingPlotContainer.@org.bodytrack.client.PlotContainer::removePlot(Lorg/bodytrack/client/Plot;)(plot.__backingPlot);
 			};
 			this.id = __getNextID();
 		};

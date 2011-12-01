@@ -7,7 +7,7 @@ import gwt.g2d.client.graphics.DirectShapeRenderer;
 import gwt.g2d.client.graphics.Surface;
 
 /**
- * Represents a data plot for Zeo data.
+ * Represents a plot for Zeo data.
  *
  * Overrides the {@link DataSeriesPlot#getDataPoints},
  * {@link DataSeriesPlot#paintEdgePoint}, and

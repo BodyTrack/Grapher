@@ -45,9 +45,6 @@ public class PlotContainer {
     */
    public static final int VALUE_MESSAGES_CAPACITY = 4;
 
-   private static final double HIGHLIGHT_DISTANCE_THRESHOLD = 5;
-   private static final double PHOTO_HIGHLIGHT_DISTANCE_THRESH = 10;
-
    private static final int INITIAL_MESSAGE_ID = 1;
    private static final Color LOADING_MSG_COLOR = Canvas.DARK_GRAY;
    private static final double LOADING_MSG_X_MARGIN = 5;
@@ -59,7 +56,7 @@ public class PlotContainer {
    private static final double TEXT_LINE_WIDTH = 0.75;
 
    private final Surface drawing;
-   private final Set<DataSeriesPlot> containedPlots = new HashSet<DataSeriesPlot>();
+   private final Set<Plot> containedPlots = new HashSet<Plot>();
 
    // For the loading message API, which shows one message at a time
    // on the bottom left, without regard to width
@@ -142,19 +139,19 @@ public class PlotContainer {
       final double zoomFactor = Math.pow(mouseWheelZoomRate, event.getDeltaY());
 
       // The mouse is over the viewing window
-      final Set<DataSeriesPlot> highlightedPlots = new HashSet<DataSeriesPlot>();
-      for (final DataSeriesPlot plot : containedPlots) {
+      final Set<Plot> highlightedPlots = new HashSet<Plot>();
+      for (final Plot plot : containedPlots) {
          if (plot.isHighlighted()) {
             highlightedPlots.add(plot);
          }
       }
 
       if (highlightedPlots.size() > 0) {
-         // We are zooming at least one data plot, so we zoom
+         // We are zooming at least one plot, so we zoom
          // the associated Y-axes
 
          final Set<GraphAxis> highlightedYAxes = new HashSet<GraphAxis>();
-         for (final DataSeriesPlot plot : highlightedPlots) {
+         for (final Plot plot : highlightedPlots) {
             highlightedYAxes.add(plot.getYAxis());
          }
          for (final GraphAxis yAxis : highlightedYAxes) {
@@ -165,7 +162,7 @@ public class PlotContainer {
          // zoom all Y-axes
 
          final Set<GraphAxis> yAxes = new HashSet<GraphAxis>();
-         for (final DataSeriesPlot plot : containedPlots) {
+         for (final Plot plot : containedPlots) {
             yAxes.add(plot.getYAxis());
          }
          for (final GraphAxis yAxis : yAxes) {
@@ -182,27 +179,27 @@ public class PlotContainer {
       final Vector2 pos = new Vector2(event.getX(), event.getY());
 
       // We can be dragging exactly one of: one or
-      // more data plots, the whole viewing window, and nothing
+      // more plots, the whole viewing window, and nothing
       if (mouseDragLastPos != null) {
-         // We are either dragging either one or more data plots,
+         // We are either dragging either one or more plots,
          // or the whole viewing window. If there's one or more
          // highlighted plot, then just drag the axes
          // for those plots.  Otherwise, drag all axes.
 
          // build a set of the highlighted plots
-         final Set<DataSeriesPlot> highlightedPlots = new HashSet<DataSeriesPlot>();
-         for (final DataSeriesPlot plot : containedPlots) {
+         final Set<Plot> highlightedPlots = new HashSet<Plot>();
+         for (final Plot plot : containedPlots) {
             if (plot.isHighlighted()) {
                highlightedPlots.add(plot);
             }
          }
 
          // determine whether we're dragging only the highlighted plots
-         final Set<DataSeriesPlot> plots = (highlightedPlots.size() > 0) ? highlightedPlots : containedPlots;
+         final Set<Plot> plots = (highlightedPlots.size() > 0) ? highlightedPlots : containedPlots;
 
          // build a Set of axes to eliminate dupes
          final Set<GraphAxis> axes = new HashSet<GraphAxis>();
-         for (final DataSeriesPlot plot : plots) {
+         for (final Plot plot : plots) {
             axes.add(plot.getXAxis());
             axes.add(plot.getYAxis());
          }
@@ -215,27 +212,24 @@ public class PlotContainer {
          mouseDragLastPos = pos;
       } else {
          // We are not dragging anything, so we just update the
-         // highlighting on the data plots and axes
+         // highlighting on the plots and axes
 
-         final Set<DataSeriesPlot> highlightedPlots = new HashSet<DataSeriesPlot>();
-         for (final DataSeriesPlot plot : containedPlots) {
+         final Set<Plot> highlightedPlots = new HashSet<Plot>();
+         for (final Plot plot : containedPlots) {
             plot.unhighlight();
 
-            final double distanceThreshold = (plot instanceof PhotoSeriesPlot)
-                                             ? PHOTO_HIGHLIGHT_DISTANCE_THRESH
-                                             : HIGHLIGHT_DISTANCE_THRESHOLD;
-            if (plot.highlightIfNear(pos, distanceThreshold)) {
+            if (plot.highlightIfNear(pos)) {
                highlightedPlots.add(plot);
             }
          }
 
          // Now we handle highlighting of the axes--first build a set of the unhighlighted plots
-         final Set<DataSeriesPlot> unhighlightedPlots = new HashSet<DataSeriesPlot>(containedPlots);
+         final Set<Plot> unhighlightedPlots = new HashSet<Plot>(containedPlots);
          unhighlightedPlots.removeAll(highlightedPlots);
 
          // unhighlight the axes of the unhighlighted plots
          final Set<GraphAxis> unhighlightedAxes = new HashSet<GraphAxis>();
-         for (final DataSeriesPlot plot : unhighlightedPlots) {
+         for (final Plot plot : unhighlightedPlots) {
             unhighlightedAxes.add(plot.getXAxis());
             unhighlightedAxes.add(plot.getYAxis());
          }
@@ -244,7 +238,7 @@ public class PlotContainer {
          }
 
          // now highlight the axes of the highlighted plots
-         for (final DataSeriesPlot plot : highlightedPlots) {
+         for (final Plot plot : highlightedPlots) {
             final PlottablePoint highlightedPoint = plot.getHighlightedPoint();
             plot.getXAxis().highlight(highlightedPoint);
             plot.getYAxis().highlight(highlightedPoint);
@@ -261,8 +255,8 @@ public class PlotContainer {
    private void handleMouseOutEvent(final MouseOutEvent event) {
       mouseDragLastPos = null;
 
-      // Ensure that all data plots are unhighlighted, as are all axes
-      for (final DataSeriesPlot plot : containedPlots) {
+      // Ensure that all plots are unhighlighted, as are all axes
+      for (final Plot plot : containedPlots) {
          plot.unhighlight();
          plot.getXAxis().unhighlight();
          plot.getYAxis().unhighlight();
@@ -273,7 +267,7 @@ public class PlotContainer {
 
    private void layout() {
       final Set<GraphAxis> axes = new HashSet<GraphAxis>();
-      for (final DataSeriesPlot plot : containedPlots) {
+      for (final Plot plot : containedPlots) {
          axes.add(plot.getXAxis());
          axes.add(plot.getYAxis());
       }
@@ -331,14 +325,14 @@ public class PlotContainer {
          }
 
          // Draw the axes
-         for (final DataSeriesPlot plot : containedPlots) {
+         for (final Plot plot : containedPlots) {
             plot.getXAxis().paint(newPaintEventId);
             plot.getYAxis().paint(newPaintEventId);
          }
 
          // Now draw the data
          final Canvas canvas = Canvas.buildCanvas(drawing);
-         for (final DataSeriesPlot plot : containedPlots) {
+         for (final Plot plot : containedPlots) {
             plot.paint(canvas, newPaintEventId);
          }
 
@@ -420,13 +414,13 @@ public class PlotContainer {
    }
 
    /**
-    * Adds the given {@link DataSeriesPlot} to the collection of data plots to be drawn.
+    * Adds the given {@link Plot} to the collection of plots to be drawn.
     *
     * Note that a plot can only be added once to this PlotContainer's internal collection.
     *
     * @throws NullPointerException if plot is <code>null</code>
     */
-   public void addDataPlot(final DataSeriesPlot plot) {
+   public void addPlot(final Plot plot) {
       if (plot == null) {
          throw new NullPointerException("Cannot add null plot");
       }
@@ -437,11 +431,11 @@ public class PlotContainer {
    }
 
    /**
-    * Removes the given {@link DataSeriesPlot} from the collection of data plots to be drawn.
+    * Removes the given {@link Plot} from the collection of plots to be drawn.
     *
     * <p>Does nothing if plot is <code>null</code> or not contained by this {@link PlotContainer}<p>
     */
-   public void removeDataPlot(final DataSeriesPlot plot) {
+   public void removePlot(final Plot plot) {
       if (plot == null) {
          return;
       }

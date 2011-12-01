@@ -1,20 +1,17 @@
 package org.bodytrack.client;
 
+import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.i18n.client.NumberFormat;
+import com.google.gwt.json.client.JSONObject;
 import gwt.g2d.client.graphics.Color;
 import gwt.g2d.client.math.Vector2;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import com.google.gwt.core.client.GWT;
-import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.i18n.client.DateTimeFormat;
-import com.google.gwt.i18n.client.NumberFormat;
 
 /**
  * Represents a single set of data, along with references to its
@@ -42,35 +39,27 @@ import com.google.gwt.i18n.client.NumberFormat;
  * will draw, and the order in which paintAllDataPoints will draw
  * them.</p>
  */
-public class DataSeriesPlot implements Alertable<GrapherTile> {
+public class DataSeriesPlot extends BaseSeriesPlot implements Alertable<GrapherTile> {
    /**
     * We never re-request a URL with MAX_REQUESTS_PER_URL or more failures
     * in a row.
     */
    private static final int MAX_REQUESTS_PER_URL = 5;
 
-   /**
-    * Used to speed up the log2 method.
-    */
-   private static final double LN_2 = Math.log(2);
+   private static final double HIGHLIGHT_DISTANCE_THRESHOLD = 5;
 
    public static DataSeriesPlot getDataSeriesPlot(final JavaScriptObject nativePlot) {
       final Dynamic dynPlot = nativePlot.cast();
       return dynPlot.get("__backingPlot");
    }
 
-   private PlotContainer plotContainer = null;
-
    private final JavaScriptObject datasource;
-   private JavaScriptObject xAxis;
-   private JavaScriptObject yAxis;
    private final HighlightableRenderer normalRenderer;
    private final HighlightableRenderer highlightRenderer;
 
    private final int minLevel;
    private Color color;
-
-   private boolean shouldZoomIn;
+   private JSONObject styleJson; // TODO: might make sense to eventually make this an overlay type...
 
    // Values related to getting new values from the server (the data will be pulled in with the checkForFetch call)
    private final List<GrapherTile> currentData = new ArrayList<GrapherTile>();
@@ -84,34 +73,10 @@ public class DataSeriesPlot implements Alertable<GrapherTile> {
    private int currentMinOffset;
    private int currentMaxOffset;
 
-   // If highlightedPoint is null, then this should not be highlighted.
-   // Otherwise, this is the point to highlight on the axes
-   private PlottablePoint highlightedPoint;
-
-   private final GraphAxis.EventListener graphAxisEventListener = new GraphAxis.EventListener() {
-      @Override
-      public void onAxisChange(final String eventId) {
-         if (DataSeriesPlot.this.plotContainer != null) {
-            DataSeriesPlot.this.plotContainer.paint(eventId);
-         }
-      }
-   };
-
    private String previousPaintEventId = null;
 
    /**
     * Main constructor for the DataSeriesPlot object.
-    *
-    * <p>The parameter url is the trickiest to get right.  This parameter
-    * should be the <strong>beginning</strong> (the text up to, but
-    * not including, the &lt;level&gt;.&lt;offset&gt;.json part of the
-    * URL to fetch) of the URL which will be used to get more data.
-    * Note that this <strong>must</strong> be a trusted BodyTrack
-    * URL.  As described in the documentation for
-    * {@link GrapherTile#retrieveTile(JavaScriptObject, int, int, Alertable)},
-    * an untrusted connection could allow
-    * unauthorized access to all of a user's data.</p>
-    *
     * @param datasource
     * 		a native JavaScript function which can be used to retrieve tiles
     * @param nativeXAxis
@@ -124,7 +89,7 @@ public class DataSeriesPlot implements Alertable<GrapherTile> {
     * 		the color in which to draw these data points (note that
     * 		this does not affect the color of the axes)
     * @throws NullPointerException
-    * 		if datasource, xAxis, yAxis, url, or color is <tt>null</tt>
+    * 		if datasource, nativeXAxis, nativeYAxis, or color is <tt>null</tt>
     * @throws IllegalArgumentException
     * 		if xAxis is really a Y-axis, or if yAxis is really an X-axis
     */
@@ -133,94 +98,41 @@ public class DataSeriesPlot implements Alertable<GrapherTile> {
                          final JavaScriptObject nativeYAxis,
                          final int minLevel,
                          final Color color) {
-      this(datasource, nativeXAxis, nativeYAxis,
-         minLevel, color, new LineRenderer(false, true),
-         new LineRenderer(true, false));
-         // Only the normal renderer needs to draw comments
+      this(datasource,
+           nativeXAxis,
+           nativeYAxis,
+           minLevel,
+           color,
+           null);
    }
 
-   public DataSeriesPlot(final JavaScriptObject datasource,
+   private DataSeriesPlot(final JavaScriptObject datasource,
                          final JavaScriptObject nativeXAxis,
                          final JavaScriptObject nativeYAxis,
                          final int minLevel,
                          final Color color,
-                         final HighlightableRenderer normalRenderer,
-                         final HighlightableRenderer highlightRenderer) {
+                         final JSONObject styleJson) {
+      super(nativeXAxis, nativeYAxis);
       if (datasource == null || nativeXAxis == null
           || nativeYAxis == null || color == null) {
          throw new NullPointerException(
                "Cannot have a null datasource, axis, or color");
       }
 
-      this.xAxis = nativeXAxis;
-      this.yAxis = nativeYAxis;
-      if (!getXAxis().isXAxis()) {
-         throw new IllegalArgumentException("X-axis must be horizontal");
-      }
-      if (getYAxis().isXAxis()) {
-         throw new IllegalArgumentException("Y-axis must be vertical");
-      }
-
-      // register self as an event listener to the axes...
-      registerGraphAxisEventListener(getXAxis());
-      registerGraphAxisEventListener(getYAxis());
-
       this.datasource = datasource;
-      shouldZoomIn = true;
       this.minLevel = minLevel;
-
       this.color = color;
-      this.normalRenderer = normalRenderer;
-      this.highlightRenderer = highlightRenderer;
+      this.styleJson = styleJson;
+
+      // TODO: get these from the style...
+      this.normalRenderer = new LineRenderer(false, true);
+      this.highlightRenderer = new LineRenderer(true, false);   // Only the normal renderer needs to draw comments
 
       currentLevel = Integer.MIN_VALUE;
       currentMinOffset = Integer.MAX_VALUE;
       currentMaxOffset = Integer.MIN_VALUE;
 
-      highlightedPoint = null;
-
-      shouldZoomIn = checkForFetch();
-   }
-
-   private void registerGraphAxisEventListener(final GraphAxis axis) {
-      if (axis != null) {
-         axis.addEventListener(graphAxisEventListener);
-      }
-   }
-
-   private void unregisterGraphAxisEventListener(final GraphAxis axis) {
-      if (axis != null) {
-         axis.removeEventListener(graphAxisEventListener);
-      }
-   }
-
-   /** Sets the {@link PlotContainer} which contains this <code>DataSeriesPlot</code>. */
-   public final void registerPlotContainer(final PlotContainer plotContainer) {
-      this.plotContainer = plotContainer;
-   }
-
-   /**
-    * Unregisters the given {@link PlotContainer} from this <code>DataSeriesPlot</code> if and only if the given
-    * {@link PlotContainer} is not <code>null</code> and is currently registered with this <code>DataSeriesPlot</code>. That is,
-    * if this <code>DataSeriesPlot</code> is already associated with a {@link PlotContainer} other than the given one, then
-    * nothing happens.
-    */
-   public final void unregisterPlotContainer(final PlotContainer plotContainer) {
-      if (plotContainer != null && plotContainer.equals(this.plotContainer)) {
-         this.plotContainer = null;
-      }
-   }
-
-   /**
-    * Returns <tt>true</tt> if and only if the X-axis is allowed to
-    * zoom in farther, based on the zoom policy of this DataSeriesPlot.
-    *
-    * @return
-    * 		<tt>true</tt> if the X-axis should be allowed to
-    * 		zoom in more, <tt>false</tt> otherwise
-    */
-   public boolean shouldZoomIn() {
-      return shouldZoomIn;
+      checkForFetch();
    }
 
    /**
@@ -248,9 +160,7 @@ public class DataSeriesPlot implements Alertable<GrapherTile> {
       }
 
       color = newColor;
-      if (plotContainer != null) {
-         plotContainer.paint();
-      }
+      signalRepaintOfPlotContainer();
    }
 
    /**
@@ -332,9 +242,7 @@ public class DataSeriesPlot implements Alertable<GrapherTile> {
 
       checkForNewData();
 
-      if (plotContainer != null) {
-         plotContainer.paint();
-      }
+      signalRepaintOfPlotContainer();
    }
 
    /**
@@ -366,13 +274,11 @@ public class DataSeriesPlot implements Alertable<GrapherTile> {
 
       GrapherTile.retrieveTile(datasource, level, offset, this);
 
-      if (plotContainer != null) {
-         plotContainer.paint();
-      }
+      signalRepaintOfPlotContainer();
    }
 
    /**
-    * Paints this DataSeriesPlot on the stored PlotContainer.
+    * Paints this DataSeriesPlot in its PlotContainer.
     *
     * <p>Does not draw the axes associated with this DataSeriesPlot.</p>
     *
@@ -380,6 +286,7 @@ public class DataSeriesPlot implements Alertable<GrapherTile> {
     * override this method.  Instead, it is recommended that a subclass
     * override the {@link #paintAllDataPoints} method.</p>
     */
+   @Override
    public void paint(final Canvas canvas, final String newPaintEventId) {
       // guard against redundant paints
       if (previousPaintEventId == null || !previousPaintEventId.equals(newPaintEventId)) {
@@ -392,14 +299,14 @@ public class DataSeriesPlot implements Alertable<GrapherTile> {
          HighlightableRenderer renderer =
             isHighlighted() ? highlightRenderer : normalRenderer;
          renderer.setHighlightedPoint(getHighlightedPoint());
-         renderer.render(drawing, getBestResolutionTiles(), xAxis, yAxis);
+         renderer.render(drawing, getBestResolutionTiles(), getXAxis(), getYAxis());
          renderer.setHighlightedPoint(null);
 
          // Clean up after ourselves
          canvas.getSurface().setStrokeStyle(Canvas.DEFAULT_COLOR);
 
          // Make sure we shouldn't get any more info from the server
-         shouldZoomIn = checkForFetch();
+         checkForFetch();
       }
    }
 
@@ -411,7 +318,7 @@ public class DataSeriesPlot implements Alertable<GrapherTile> {
     * 		a <tt>BoundedDrawingBox</tt> that will only allow drawing
     * 		within the axes
     */
-   private BoundedDrawingBox getDrawingBounds(Canvas canvas) {
+   private BoundedDrawingBox getDrawingBounds(final Canvas canvas) {
       final double minX = getXAxis().project2D(getXAxis().getMin()).getX();
       final double maxX = getXAxis().project2D(getXAxis().getMax()).getX();
 
@@ -550,113 +457,6 @@ public class DataSeriesPlot implements Alertable<GrapherTile> {
    }
 
    /**
-    * Returns the X-Axis for this DataSeriesPlot.
-    *
-    * @return
-    * 		the X-axis for this DataSeriesPlot
-    */
-   public GraphAxis getXAxis() {
-      Dynamic djso = xAxis.cast();
-      return djso.get("__backingAxis");
-   }
-
-   public JavaScriptObject getNativeXAxis() {
-      return xAxis;
-   }
-
-   /**
-    * Sets the X-axis for this <tt>DataSeriesPlot</tt>.
-    *
-    * <p>This is only intended to be used within this package.
-    * In almost all cases, there is no need for this method.</p>
-    *
-    * @param axis
-    * 		the new X-axis to use
-    * @throws NullPointerException
-    * 		if axis is <tt>null</tt>
-    */
-   void setXAxis(final JavaScriptObject axis) {
-      if (axis == null) {
-         throw new NullPointerException("Cannot use null X-axis");
-      }
-
-      // unregister self from the existing axis
-      unregisterGraphAxisEventListener(getXAxis());
-
-      xAxis = axis;
-
-      // now register self with this new axis
-      registerGraphAxisEventListener(getXAxis());
-   }
-
-   /**
-    * Returns the Y-Axis for this DataSeriesPlot.
-    *
-    * @return
-    * 		the Y-axis for this DataSeriesPlot
-    */
-   public GraphAxis getYAxis() {
-      Dynamic djso = yAxis.cast();
-      return djso.get("__backingAxis");
-   }
-
-   public JavaScriptObject getNativeYAxis() {
-      return yAxis;
-   }
-
-   /**
-    * Sets the Y-axis for this <tt>DataSeriesPlot</tt>.
-    *
-    * <p>This is only intended to be used within this package.
-    * In almost all cases, there is no need for this method.</p>
-    *
-    * @param axis
-    * 		the new Y-axis to use
-    */
-   void setYAxis(final JavaScriptObject axis) {
-      if (axis == null) {
-         throw new NullPointerException("Cannot use null Y-axis");
-      }
-
-      // unregister self from the existing axis
-      unregisterGraphAxisEventListener(getYAxis());
-
-      yAxis = axis;
-
-      // now register self with this new axis
-      registerGraphAxisEventListener(getYAxis());
-   }
-
-   /**
-    * Computes the value for currentLevel based on xAxis.
-    *
-    * @return
-    * 		the level at which xAxis is operating
-    */
-   private int computeCurrentLevel() {
-      final double xAxisWidth = getXAxis().getMax() - getXAxis().getMin();
-      final double dataPointWidth = xAxisWidth / GrapherTile.TILE_WIDTH;
-
-      return log2(dataPointWidth);
-   }
-
-   /**
-    * Computes the floor of the log (base 2) of x.
-    *
-    * @param x
-    * 		the value for which we want to take the log
-    * @return
-    * 		the floor of the log (base 2) of x
-    */
-   private static int log2(final double x) {
-      if (x <= 0) {
-         return Integer.MIN_VALUE;
-      }
-
-      return (int)Math.floor((Math.log(x) / LN_2));
-   }
-
-   /**
     * Returns the offset at which the left edge of the X-axis is operating.
     *
     * Returns the offset of the tile in which the minimum value
@@ -734,7 +534,7 @@ public class DataSeriesPlot implements Alertable<GrapherTile> {
     * @throws IllegalArgumentException
     * 		if threshold is negative
     */
-   public PlottablePoint closest(final Vector2 pos, final double threshold) {
+   private PlottablePoint closest(final Vector2 pos, final double threshold) {
       if (threshold < 0) {
          throw new IllegalArgumentException(
                "Cannot work with a negative distance");
@@ -781,9 +581,8 @@ public class DataSeriesPlot implements Alertable<GrapherTile> {
                                                      centerTime,
                                                      centerValue);
 
-      // pos is right on the border between two tiles
+      // pos is right on the border between two tiles (TODO: should this be an .equals() comparison instead?)
       if (bestTileMinTime != bestTileMaxTime) {
-         // TODO: should this be an .equals() comparison instead?
          // This is unlikely but possible, especially if threshold
          // is large
 
@@ -919,53 +718,8 @@ public class DataSeriesPlot implements Alertable<GrapherTile> {
    }
 
    /**
-    * Highlights this DataSeriesPlot in future
-    * {@link DataSeriesPlot#paint() paint} calls.
-    *
-    * <p>Note that this does not highlight the axes associated with this
-    * DataSeriesPlot.</p>
-    */
-   public void highlight() {
-      highlightedPoint = AbstractPlotRenderer.HIGHLIGHTED_NO_SINGLE_POINT;
-   }
-
-   /**
-    * Stops highlighting this DataSeriesPlot.
-    *
-    * <p>Note that this does not affect the highlighting status on the
-    * axes associated with this DataSeriesPlot.</p>
-    */
-   public void unhighlight() {
-      highlightedPoint = null;
-   }
-
-   /**
-    * Tells whether or not this DataSeriesPlot is highlighted.
-    *
-    * <p>If {@link #highlight()} has been called since the constructor
-    * and since the last call to {@link #unhighlight()}, returns
-    * <tt>true</tt>.  Otherwise, returns <tt>false</tt>.</p>
-    *
-    * @return
-    * 		<tt>true</tt> if and only if this DataSeriesPlot is highlighted
-    */
-   public boolean isHighlighted() {
-      return highlightedPoint != null;
-   }
-
-   /**
     * Highlights this <tt>DataSeriesPlot</tt> if and only if it contains a
     * point within threshold pixels of pos.
-    *
-    * <p>Also, if this data plot should be highlighted, this publishes
-    * the highlighted data plot's value to the container widget, as long
-    * as such a preference was indicated when this <tt>DataSeriesPlot</tt>
-    * was created, using the publishValueOnHighlight constructor parameter.
-    * On the other hand, if this data plot is currently highlighted but
-    * should be unhighlighted, this removes the published value.  If a
-    * subclass would like to change the formatting of the published
-    * value, it should accomplish that by overriding
-    * {@link #getDataLabel(PlottablePoint)}.</p>
     *
     * <p>Note that this does <strong>not</strong> unhighlight this
     * <tt>DataSeriesPlot</tt> if there is no point within threshold pixels of
@@ -984,8 +738,9 @@ public class DataSeriesPlot implements Alertable<GrapherTile> {
     * @throws IllegalArgumentException
     * 		if threshold is negative
     */
-   public boolean highlightIfNear(final Vector2 pos, final double threshold) {
-      highlightedPoint = closest(pos, threshold);
+   @Override
+   public boolean highlightIfNear(final Vector2 pos) {
+      setHighlightedPoint(closest(pos, HIGHLIGHT_DISTANCE_THRESHOLD));
       return isHighlighted();
    }
 
@@ -1027,96 +782,5 @@ public class DataSeriesPlot implements Alertable<GrapherTile> {
 
       return timeString
              + NumberFormat.getFormat("###,##0.0##").format(value);
-   }
-
-   /**
-    * Returns a time string representing the specified time.
-    *
-    * <p>A caveat: time should be the number of <em>seconds</em>,
-    * since the epoch.
-    *
-    * @param secondsSinceEpoch
-    * 		the number of seconds since the epoch
-    * @return
-    * 		a string representation of time
-    */
-   protected final String getTimeString(final double secondsSinceEpoch) {
-      return getTimeString((long)(secondsSinceEpoch * 1000));
-   }
-
-   /**
-    * Returns a time string representing the specified time.
-    *
-    * <p>A caveat: time should be the number of <em>milliseconds</em>,
-    * not seconds, since the epoch.  If a caller forgets to multiply
-    * a time by 1000, wrong date strings (usually something
-    * involving January 15, 1970) will come back.</p>
-    *
-    * @param time
-    * 		the number of milliseconds since the epoch
-    * @return
-    * 		a string representation of time
-    */
-   private String getTimeString(final long time) {
-      String formatString = "EEE MMM dd yyyy, HH:mm:ss";
-      final int fractionalSecondDigits = getFractionalSecondDigits();
-
-      // We know that fractionalSecondDigits will always be 0, 1, 2, or 3
-      switch (fractionalSecondDigits) {
-         case 0:
-            break;
-         case 1:
-            formatString += ".S";
-            break;
-         case 2:
-            formatString += ".SS";
-            break;
-         case 3:
-            formatString += ".SSS";
-            break;
-         default:
-            GWT.log("DataSeriesPlot.getTimeString(): Unexpected number of "
-                    + "fractionalSecondDigits: " + fractionalSecondDigits);
-      }
-
-      final DateTimeFormat format = DateTimeFormat.getFormat(formatString);
-      return format.format(new Date(time));
-   }
-
-   /**
-    * Computes the number of fractional second digits that should
-    * appear in a displayed time string, based on the current level.
-    *
-    * <p>This <em>always</em> returns a nonnegative integer less than
-    * or equal to 3.</p>
-    *
-    * @return
-    * 		the number of fractional second digits that should appear
-    * 		in a displayed times string
-    */
-   private int getFractionalSecondDigits() {
-      final int level = computeCurrentLevel();
-      if (level > 1) {
-         return 0;
-      }
-      if (level == 1) {
-         return 1;
-      }
-      if (level > -2) // 0 or -1
-      {
-         return 2;
-      }
-      return 3; // We can't get better than millisecond precision
-   }
-
-   /**
-    * Returns the highlighted point maintained by this <tt>DataSeriesPlot</tt>.
-    *
-    * @return
-    * 		the highlighted point this <tt>DataSeriesPlot</tt> keeps, or
-    * 		<tt>null</tt> if there is no highlighted point
-    */
-   public PlottablePoint getHighlightedPoint() {
-      return highlightedPoint;
    }
 }

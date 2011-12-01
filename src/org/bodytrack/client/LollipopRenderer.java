@@ -1,7 +1,5 @@
 package org.bodytrack.client;
 
-import com.google.gwt.core.client.JavaScriptObject;
-
 import gwt.g2d.client.graphics.DirectShapeRenderer;
 import gwt.g2d.client.graphics.Surface;
 
@@ -15,11 +13,13 @@ public class LollipopRenderer extends DotRenderer {
 	}
 
 	@Override
-	public void render(BoundedDrawingBox drawing, Iterable<GrapherTile> tiles,
-			JavaScriptObject nativeXAxis, JavaScriptObject nativeYAxis) {
+	public void render(final BoundedDrawingBox drawing,
+                      final Iterable<GrapherTile> tiles,
+                      final GraphAxis xAxis,
+                      final GraphAxis yAxis) {
 		// Just save the Y-axis for use in paintDot
-		yAxis = getAxis(nativeYAxis);
-		super.render(drawing, tiles, nativeXAxis, nativeYAxis);
+		this.yAxis = yAxis;
+		super.render(drawing, tiles, xAxis, yAxis);
 	}
 
 	@Override
