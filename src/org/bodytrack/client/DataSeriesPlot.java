@@ -53,12 +53,11 @@ public class DataSeriesPlot extends BaseSeriesPlot implements Alertable<GrapherT
       return dynPlot.get("__backingPlot");
    }
 
-   private final JavaScriptObject datasource;
    private final HighlightableRenderer normalRenderer;
    private final HighlightableRenderer highlightRenderer;
 
    private final int minLevel;
-   private Color color;
+   private Color color;          // TODO: color should eventually just be part of the style
    private JSONObject styleJson; // TODO: might make sense to eventually make this an overlay type...
 
    // Values related to getting new values from the server (the data will be pulled in with the checkForFetch call)
@@ -107,14 +106,12 @@ public class DataSeriesPlot extends BaseSeriesPlot implements Alertable<GrapherT
                          final int minLevel,
                          final Color color,
                          final JSONObject styleJson) {
-      super(nativeXAxis, nativeYAxis);
-      if (datasource == null || nativeXAxis == null
-          || nativeYAxis == null || color == null) {
+      super(datasource, nativeXAxis, nativeYAxis);
+      if (nativeXAxis == null || nativeYAxis == null || color == null) {
          throw new NullPointerException(
                "Cannot have a null datasource, axis, or color");
       }
 
-      this.datasource = datasource;
       this.minLevel = minLevel;
       this.color = color;
       this.styleJson = styleJson;
@@ -128,34 +125,6 @@ public class DataSeriesPlot extends BaseSeriesPlot implements Alertable<GrapherT
       currentMaxOffset = Integer.MIN_VALUE;
 
       checkForFetch();
-   }
-
-   /**
-    * Returns the color at which this <tt>DataSeriesPlot</tt> is drawn.
-    *
-    * @return
-    * 		the color used to draw this <tt>DataSeriesPlot</tt>
-    */
-   public Color getColor() {
-      return color;
-   }
-
-   /**
-    * Sets the color at which this <tt>DataSeriesPlot</tt> is drawn.
-    *
-    * @param newColor
-    * 		the color that should be used to draw this <tt>DataSeriesPlot</tt>
-    * @throws NullPointerException
-    * 		if newColor is <tt>null</tt>
-    */
-   public void setColor(final Color newColor) {
-      if (newColor == null) {
-         throw new NullPointerException(
-               "Cannot use null color to draw plot");
-      }
-
-      color = newColor;
-      signalRepaintOfPlotContainer();
    }
 
    /**
@@ -216,7 +185,7 @@ public class DataSeriesPlot extends BaseSeriesPlot implements Alertable<GrapherT
       pendingDescriptions.add(desc);
       pendingUrls.put(tileKey, 0);
 
-      GrapherTile.retrieveTile(datasource, level, offset, this);
+      GrapherTile.retrieveTile(getDatasource(), level, offset, this);
    }
 
    /**
@@ -267,7 +236,7 @@ public class DataSeriesPlot extends BaseSeriesPlot implements Alertable<GrapherT
          pendingUrls.put(tileKey, 1);
       }
 
-      GrapherTile.retrieveTile(datasource, level, offset, this);
+      GrapherTile.retrieveTile(getDatasource(), level, offset, this);
 
       signalRepaintOfPlotContainer();
    }
@@ -303,29 +272,6 @@ public class DataSeriesPlot extends BaseSeriesPlot implements Alertable<GrapherT
          // Make sure we shouldn't get any more info from the server
          checkForFetch();
       }
-   }
-
-   /**
-    * Builds and returns a new {@link BoundedDrawingBox
-    * BoundedDrawingBox} that constrains drawing to the viewing window.
-    *
-    * @return
-    * 		a <tt>BoundedDrawingBox</tt> that will only allow drawing
-    * 		within the axes
-    */
-   protected final BoundedDrawingBox getDrawingBounds(final Canvas canvas) {
-      final double minX = getXAxis().project2D(getXAxis().getMin()).getX();
-      final double maxX = getXAxis().project2D(getXAxis().getMax()).getX();
-
-      // Although minY and maxY appear to be switched, this is actually
-      // the correct way to define these variables, since we draw the
-      // Y-axis from bottom to top but pixel values increase from top
-      // to bottom.  Thus, the max Y-value is associated with the min
-      // axis value, and vice versa.
-      final double minY = getYAxis().project2D(getYAxis().getMax()).getY();
-      final double maxY = getYAxis().project2D(getYAxis().getMin()).getY();
-
-      return new BoundedDrawingBox(canvas, minX, minY, maxX, maxY);
    }
 
    /**

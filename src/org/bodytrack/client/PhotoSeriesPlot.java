@@ -302,7 +302,7 @@ public class PhotoSeriesPlot extends DataSeriesPlot {
          previousPaintEventId = newPaintEventId;
 
          // Draw data points
-         canvas.getSurface().setStrokeStyle(getColor());
+         canvas.getSurface().setStrokeStyle(Canvas.DEFAULT_COLOR);
          canvas.getSurface().setLineWidth(isHighlighted()
                                           ? AbstractPlotRenderer.HIGHLIGHT_STROKE_WIDTH
                                           : AbstractPlotRenderer.NORMAL_STROKE_WIDTH);

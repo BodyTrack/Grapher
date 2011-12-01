@@ -43,6 +43,7 @@ public abstract class BaseSeriesPlot implements Plot {
 
    private PlotContainer plotContainer = null;
 
+   private final JavaScriptObject datasource;
    private final JavaScriptObject xAxisNative;
    private final JavaScriptObject yAxisNative;
    private final GraphAxis xAxis;
@@ -62,21 +63,26 @@ public abstract class BaseSeriesPlot implements Plot {
    };
 
    /**
+    * @param datasource
+    * 		a native JavaScript function which can be used to retrieve tiles
     * @param nativeXAxis
     * 		the X-axis along which this data set will be aligned when drawn
     * @param nativeYAxis
     * 		the Y-axis along which this data set will be aligned when drawn
     *
     * @throws NullPointerException
-    * 		if nativeXAxis or nativeYAxis is <code>null</code>
+    * 		if datasource, nativeXAxis, or nativeYAxis is <code>null</code>
     * @throws IllegalArgumentException
     * 		if xAxis is really a Y-axis, or if yAxis is really a Y-axis
     */
-   protected BaseSeriesPlot(final JavaScriptObject nativeXAxis, final JavaScriptObject nativeYAxis) {
-      if (nativeXAxis == null || nativeYAxis == null) {
-         throw new NullPointerException("Cannot have a null axis");
+   protected BaseSeriesPlot(final JavaScriptObject datasource,
+                            final JavaScriptObject nativeXAxis,
+                            final JavaScriptObject nativeYAxis) {
+      if (datasource == null || nativeXAxis == null || nativeYAxis == null) {
+         throw new NullPointerException("Cannot have a null datasource or axis");
       }
 
+      this.datasource = datasource;
       this.xAxisNative = nativeXAxis;
       this.yAxisNative = nativeYAxis;
       this.xAxis = convertNativeAxisToGraphAxis(this.xAxisNative);
@@ -135,6 +141,33 @@ public abstract class BaseSeriesPlot implements Plot {
       if (plotContainer != null) {
          plotContainer.paint();
       }
+   }
+
+   protected final JavaScriptObject getDatasource() {
+      return datasource;
+   }
+
+   /**
+    * Builds and returns a new {@link BoundedDrawingBox
+    * BoundedDrawingBox} that constrains drawing to the viewing window.
+    *
+    * @return
+    * 		a <tt>BoundedDrawingBox</tt> that will only allow drawing
+    * 		within the axes
+    */
+   protected final BoundedDrawingBox getDrawingBounds(final Canvas canvas) {
+      final double minX = getXAxis().project2D(getXAxis().getMin()).getX();
+      final double maxX = getXAxis().project2D(getXAxis().getMax()).getX();
+
+      // Although minY and maxY appear to be switched, this is actually
+      // the correct way to define these variables, since we draw the
+      // Y-axis from bottom to top but pixel values increase from top
+      // to bottom.  Thus, the max Y-value is associated with the min
+      // axis value, and vice versa.
+      final double minY = getYAxis().project2D(getYAxis().getMax()).getY();
+      final double maxY = getYAxis().project2D(getYAxis().getMin()).getY();
+
+      return new BoundedDrawingBox(canvas, minX, minY, maxX, maxY);
    }
 
    /**
