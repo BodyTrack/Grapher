@@ -45,8 +45,6 @@ public class PhotoDataPlot extends DataPlot {
 	private final Map<PlottablePoint, Set<PhotoGetter>> images;
 
 	private final PhotoAlertable loadListener;
-	// TODO: Add this back in?
-	// private final Map<PhotoGetter, Integer> loadingText;
 
 	private Set<PhotoGetter> highlightedImages;
 
@@ -181,10 +179,6 @@ public class PhotoDataPlot extends DataPlot {
 		PhotoGetter photo = PhotoGetter.buildPhotoGetter(userId,
 			photoId, time, loadListener);
 
-		// TODO: Put loading text back on?
-		// loadingText.put(photo,
-		// 	getContainer().addLoadingMessage(photo.getUrl()));
-
 		addOverlaps(photo, getPhotoHeight());
 
 		return photo;
@@ -222,38 +216,12 @@ public class PhotoDataPlot extends DataPlot {
 		overlap.put(photo, overlapping);
 	}
 
-	/**
-	 * Removes loading text for the photo from the container
-	 * in which this draws itself.
-	 *
-	 * @param photo
-	 * 		the photo that has just loaded (or failed)
-	 * @return
-	 * 		<tt>true</tt> if we actually remove text from the
-	 * 		container, <tt>false</tt> if there was no text to
-	 * 		begin with for this particular image
-	 */
-	private boolean removePhotoLoadingText(PhotoGetter photo) {
-		// TODO: Add this back in?
-		/*
-		boolean contains = loadingText.containsKey(photo);
-
-		if (contains) {
-			int msgId = loadingText.get(photo);
-			getContainer().removeLoadingMessage(msgId);
-			loadingText.remove(photo);
-		}
-
-		return contains;
-		*/
-		return true;
-	}
-
    /**
     * Draws the images at the specified point.
     *
-    * <p>Although we handle edge points and regular points in the same way in this class, we still need to draw all the
-    * images, so this does exactly the same thing that
+    * <p>Although we handle edge points and regular points in the same way in
+    * this class, we still need to draw all the images, so this does exactly
+    * the same thing that
     * {@link DataPlot#paintDataPoint(BoundedDrawingBox, GrapherTile, double, double, double, double, PlottablePoint)}
     * does.</p>
     *
@@ -665,8 +633,6 @@ public class PhotoDataPlot extends DataPlot {
 		 */
 		@Override
 		public void onSuccess(PhotoGetter photo) {
-			removePhotoLoadingText(photo);
-
 			// TODO: Add this back in?
 			// getContainer().paint();
 		}
@@ -687,8 +653,6 @@ public class PhotoDataPlot extends DataPlot {
 			// a successful load (should never happen)
 			if (photo.imageLoaded())
 				return;
-
-			removePhotoLoadingText(photo);
 
 			// TODO: Add this back in?
 			// getContainer().paint();
