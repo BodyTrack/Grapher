@@ -98,12 +98,7 @@ public class DataSeriesPlot extends BaseSeriesPlot implements Alertable<GrapherT
                          final JavaScriptObject nativeYAxis,
                          final int minLevel,
                          final Color color) {
-      this(datasource,
-           nativeXAxis,
-           nativeYAxis,
-           minLevel,
-           color,
-           null);
+      this(datasource, nativeXAxis, nativeYAxis, minLevel, color, null);
    }
 
    private DataSeriesPlot(final JavaScriptObject datasource,
@@ -730,13 +725,8 @@ public class DataSeriesPlot extends BaseSeriesPlot implements Alertable<GrapherT
     * @param pos
     * 		the position at which the mouse is hovering, and from which
     * 		we want to derive our highlighting
-    * @param threshold
-    * 		the maximum distance the mouse can be from a point, while
-    * 		still causing the highlighting effects
     * @return
     * 		<tt>true</tt> if and only if this highlights the axes
-    * @throws IllegalArgumentException
-    * 		if threshold is negative
     */
    @Override
    public boolean highlightIfNear(final Vector2 pos) {
