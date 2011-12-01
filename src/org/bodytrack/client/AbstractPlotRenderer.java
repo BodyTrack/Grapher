@@ -8,7 +8,7 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PopupPanel;
 
 /**
- * Draws lines for the default DataPlot view
+ * Draws lines for the default DataSeriesPlot view
  *
  * <p>An AbstractPlotRenderer maintains a highlighted point, as set by the
  * {@link #setHighlightedPoint(PlottablePoint)} method.  If this value is

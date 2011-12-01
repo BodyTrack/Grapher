@@ -12,9 +12,9 @@ import java.util.Set;
 import com.google.gwt.core.client.JavaScriptObject;
 
 /**
- * A class to show photos on a {@link GraphWidget}.
+ * A class to show photos on a {@link PlotContainer}.
  */
-public class PhotoDataPlot extends DataPlot {
+public class PhotoSeriesPlot extends DataSeriesPlot {
 	/**
 	 * If the difference in height between the current height, in pixels,
 	 * and the value of previousHeight is greater than
@@ -60,7 +60,7 @@ public class PhotoDataPlot extends DataPlot {
 		// Since overlap is only valid at a X-axis width (in seconds)
 
 	/**
-	 * Initializes a new PhotoDataPlot.
+	 * Initializes a new PhotoSeriesPlot.
 	 *
     * @param datasource
     * 		a native JavaScript function which can be used to retrieve
@@ -76,11 +76,11 @@ public class PhotoDataPlot extends DataPlot {
 	 * @throws NullPointerException
 	 * 		if any parameter is <tt>null</tt>
 	 */
-	public PhotoDataPlot(final JavaScriptObject datasource,
-                        final JavaScriptObject nativeXAxis,
-                        final JavaScriptObject nativeYAxis,
-                        final int userId,
-                        final int minLevel) {
+	public PhotoSeriesPlot(final JavaScriptObject datasource,
+                          final JavaScriptObject nativeXAxis,
+                          final JavaScriptObject nativeYAxis,
+                          final int userId,
+                          final int minLevel) {
 		super(datasource, nativeXAxis, nativeYAxis, minLevel,
 			Canvas.DEFAULT_COLOR);
 
@@ -104,8 +104,8 @@ public class PhotoDataPlot extends DataPlot {
 	 * There is some subtlety here: the call to this method populates
 	 * the set of available images whenever called, which happens
 	 * to be every time the points are needed in
-	 * {@link DataPlot} methods.  The
-	 * methods {@link DataPlot#paintDataPoint(BoundedDrawingBox, GrapherTile, double, double, double, double, PlottablePoint)} and
+	 * {@link DataSeriesPlot} methods.  The
+	 * methods {@link DataSeriesPlot#paintDataPoint(BoundedDrawingBox, GrapherTile, double, double, double, double, PlottablePoint)} and
 	 * {@link #highlightIfNear(Vector2, double)} expect this images to
 	 * be filled, which is always the case whenever they use elements
 	 * of images, just by the way the code is written.</p>
@@ -249,7 +249,7 @@ public class PhotoDataPlot extends DataPlot {
     *
     * <p>Although we handle edge points and regular points in the same way in this class, we still need to draw all the
     * images, so this does exactly the same thing that
-    * {@link DataPlot#paintDataPoint(BoundedDrawingBox, GrapherTile, double, double, double, double, PlottablePoint)}
+    * {@link DataSeriesPlot#paintDataPoint(BoundedDrawingBox, GrapherTile, double, double, double, double, PlottablePoint)}
     * does.</p>
     *
     * @param drawing
@@ -578,7 +578,7 @@ public class PhotoDataPlot extends DataPlot {
 	}
 
 	/**
-	 * The same as {@link DataPlot#highlightIfNear(Vector2, double)},
+	 * The same as {@link DataSeriesPlot#highlightIfNear(Vector2, double)},
 	 * except that this counts threshold as a percentage of image height.
 	 * rather than as a number of pixels.
 	 *
@@ -605,7 +605,7 @@ public class PhotoDataPlot extends DataPlot {
 	}
 
 	/**
-	 * A method, similar to {@link DataPlot#closest(Vector2, double)}, that
+	 * A method, similar to {@link DataSeriesPlot#closest(Vector2, double)}, that
 	 * finds the images with centers within threshold pixels of pos.
 	 *
 	 * @param pos

@@ -193,13 +193,13 @@ public final class InfoPublisher {
 
             var styleObject = @com.google.gwt.json.client.JSONObject::new(Lcom/google/gwt/core/client/JavaScriptObject;)(style);
 
-				return @org.bodytrack.client.DataPlot::new(Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/core/client/JavaScriptObject;ILgwt/g2d/client/graphics/Color;)(datasource, horizontalAxis, verticalAxis, MIN_LEVEL, color);
+				return @org.bodytrack.client.DataSeriesPlot::new(Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/core/client/JavaScriptObject;ILgwt/g2d/client/graphics/Color;)(datasource, horizontalAxis, verticalAxis, MIN_LEVEL, color);
 			})();
 			this.getHorizontalAxis = function() {
-				return this.__backingPlot.@org.bodytrack.client.DataPlot::getNativeXAxis()();
+				return this.__backingPlot.@org.bodytrack.client.DataSeriesPlot::getNativeXAxis()();
 			};
 			this.getVerticalAxis = function() {
-				return this.__backingPlot.@org.bodytrack.client.DataPlot::getNativeYAxis()();
+				return this.__backingPlot.@org.bodytrack.client.DataSeriesPlot::getNativeYAxis()();
 			};
 			this.style = style;
 			this.getStyle = function() { return this.style; };
@@ -229,10 +229,10 @@ public final class InfoPublisher {
 			}
 
 			this.getPlaceholder = function() { return placeholder; };
-			this.__backingWidget = (function() {
-				var widget = @org.bodytrack.client.GraphWidget::new(Ljava/lang/String;)(placeholder);
+			this.__backingPlotContainer = (function() {
+				var widget = @org.bodytrack.client.PlotContainer::new(Ljava/lang/String;)(placeholder);
 				for (var i = 0; i < plots.length; i++) {
-					widget.@org.bodytrack.client.GraphWidget::addDataPlot(Lorg/bodytrack/client/DataPlot;)(plots[i].__backingPlot);
+					widget.@org.bodytrack.client.PlotContainer::addDataPlot(Lorg/bodytrack/client/DataSeriesPlot;)(plots[i].__backingPlot);
 				}
 				return widget;
 			})();
@@ -240,13 +240,13 @@ public final class InfoPublisher {
 				if (plot === undefined) {
 					throw 'The addPlot function requires one argument';
 				}
-				this.__backingWidget.@org.bodytrack.client.GraphWidget::addDataPlot(Lorg/bodytrack/client/DataPlot;)(plot.__backingPlot);
+				this.__backingPlotContainer.@org.bodytrack.client.PlotContainer::addDataPlot(Lorg/bodytrack/client/DataSeriesPlot;)(plot.__backingPlot);
 			};
 			this.removePlot = function(plot) {
 				if (plot === undefined) {
 					throw 'The removePlot function requires one argument';
 				}
-				this.__backingWidget.@org.bodytrack.client.GraphWidget::removeDataPlot(Lorg/bodytrack/client/DataPlot;)(plot.__backingPlot);
+				this.__backingPlotContainer.@org.bodytrack.client.PlotContainer::removeDataPlot(Lorg/bodytrack/client/DataSeriesPlot;)(plot.__backingPlot);
 			};
 			this.id = __getNextID();
 		};

@@ -22,7 +22,7 @@ import com.google.gwt.event.dom.client.MouseUpHandler;
 import com.google.gwt.event.dom.client.MouseWheelEvent;
 import com.google.gwt.user.client.ui.RootPanel;
 
-public class GraphWidget {
+public class PlotContainer {
    /**
     * The default loading message for this widget to show.  This class
     * never actually uses this value, but makes it available for classes
@@ -59,7 +59,7 @@ public class GraphWidget {
    private static final double TEXT_LINE_WIDTH = 0.75;
 
    private final Surface drawing;
-   private final Set<DataPlot> dataPlots = new HashSet<DataPlot>();
+   private final Set<DataSeriesPlot> containedPlots = new HashSet<DataSeriesPlot>();
 
    // For the loading message API, which shows one message at a time
    // on the bottom left, without regard to width
@@ -84,7 +84,7 @@ public class GraphWidget {
 
    private String previousPaintEventId = null;
 
-   public GraphWidget(final String placeholder) {
+   public PlotContainer(final String placeholder) {
       drawing = new Surface(width, height);
       if (placeholder != null) {
          RootPanel.get(placeholder).add(drawing);
@@ -104,7 +104,7 @@ public class GraphWidget {
       drawing.addMouseWheelHandler(new BaseMouseWheelHandler() {
          @Override
          protected void handleMouseWheelEvent(final MouseWheelEvent event) {
-            GraphWidget.this.handleMouseWheelEvent(event, getMouseWheelZoomRate());
+            PlotContainer.this.handleMouseWheelEvent(event, getMouseWheelZoomRate());
          }
       });
 
@@ -142,8 +142,8 @@ public class GraphWidget {
       final double zoomFactor = Math.pow(mouseWheelZoomRate, event.getDeltaY());
 
       // The mouse is over the viewing window
-      final Set<DataPlot> highlightedPlots = new HashSet<DataPlot>();
-      for (final DataPlot plot : dataPlots) {
+      final Set<DataSeriesPlot> highlightedPlots = new HashSet<DataSeriesPlot>();
+      for (final DataSeriesPlot plot : containedPlots) {
          if (plot.isHighlighted()) {
             highlightedPlots.add(plot);
          }
@@ -154,7 +154,7 @@ public class GraphWidget {
          // the associated Y-axes
 
          final Set<GraphAxis> highlightedYAxes = new HashSet<GraphAxis>();
-         for (final DataPlot plot : highlightedPlots) {
+         for (final DataSeriesPlot plot : highlightedPlots) {
             highlightedYAxes.add(plot.getYAxis());
          }
          for (final GraphAxis yAxis : highlightedYAxes) {
@@ -165,7 +165,7 @@ public class GraphWidget {
          // zoom all Y-axes
 
          final Set<GraphAxis> yAxes = new HashSet<GraphAxis>();
-         for (final DataPlot plot : dataPlots) {
+         for (final DataSeriesPlot plot : containedPlots) {
             yAxes.add(plot.getYAxis());
          }
          for (final GraphAxis yAxis : yAxes) {
@@ -190,19 +190,19 @@ public class GraphWidget {
          // for those plots.  Otherwise, drag all axes.
 
          // build a set of the highlighted plots
-         final Set<DataPlot> highlightedPlots = new HashSet<DataPlot>();
-         for (final DataPlot plot : dataPlots) {
+         final Set<DataSeriesPlot> highlightedPlots = new HashSet<DataSeriesPlot>();
+         for (final DataSeriesPlot plot : containedPlots) {
             if (plot.isHighlighted()) {
                highlightedPlots.add(plot);
             }
          }
 
          // determine whether we're dragging only the highlighted plots
-         final Set<DataPlot> plots = (highlightedPlots.size() > 0) ? highlightedPlots : dataPlots;
+         final Set<DataSeriesPlot> plots = (highlightedPlots.size() > 0) ? highlightedPlots : containedPlots;
 
          // build a Set of axes to eliminate dupes
          final Set<GraphAxis> axes = new HashSet<GraphAxis>();
-         for (final DataPlot plot : plots) {
+         for (final DataSeriesPlot plot : plots) {
             axes.add(plot.getXAxis());
             axes.add(plot.getYAxis());
          }
@@ -217,11 +217,11 @@ public class GraphWidget {
          // We are not dragging anything, so we just update the
          // highlighting on the data plots and axes
 
-         final Set<DataPlot> highlightedPlots = new HashSet<DataPlot>();
-         for (final DataPlot plot : dataPlots) {
+         final Set<DataSeriesPlot> highlightedPlots = new HashSet<DataSeriesPlot>();
+         for (final DataSeriesPlot plot : containedPlots) {
             plot.unhighlight();
 
-            final double distanceThreshold = (plot instanceof PhotoDataPlot)
+            final double distanceThreshold = (plot instanceof PhotoSeriesPlot)
                                              ? PHOTO_HIGHLIGHT_DISTANCE_THRESH
                                              : HIGHLIGHT_DISTANCE_THRESHOLD;
             if (plot.highlightIfNear(pos, distanceThreshold)) {
@@ -230,12 +230,12 @@ public class GraphWidget {
          }
 
          // Now we handle highlighting of the axes--first build a set of the unhighlighted plots
-         final Set<DataPlot> unhighlightedPlots = new HashSet<DataPlot>(dataPlots);
+         final Set<DataSeriesPlot> unhighlightedPlots = new HashSet<DataSeriesPlot>(containedPlots);
          unhighlightedPlots.removeAll(highlightedPlots);
 
          // unhighlight the axes of the unhighlighted plots
          final Set<GraphAxis> unhighlightedAxes = new HashSet<GraphAxis>();
-         for (final DataPlot plot : unhighlightedPlots) {
+         for (final DataSeriesPlot plot : unhighlightedPlots) {
             unhighlightedAxes.add(plot.getXAxis());
             unhighlightedAxes.add(plot.getYAxis());
          }
@@ -244,7 +244,7 @@ public class GraphWidget {
          }
 
          // now highlight the axes of the highlighted plots
-         for (final DataPlot plot : highlightedPlots) {
+         for (final DataSeriesPlot plot : highlightedPlots) {
             final PlottablePoint highlightedPoint = plot.getHighlightedPoint();
             plot.getXAxis().highlight(highlightedPoint);
             plot.getYAxis().highlight(highlightedPoint);
@@ -262,7 +262,7 @@ public class GraphWidget {
       mouseDragLastPos = null;
 
       // Ensure that all data plots are unhighlighted, as are all axes
-      for (final DataPlot plot : dataPlots) {
+      for (final DataSeriesPlot plot : containedPlots) {
          plot.unhighlight();
          plot.getXAxis().unhighlight();
          plot.getYAxis().unhighlight();
@@ -273,7 +273,7 @@ public class GraphWidget {
 
    private void layout() {
       final Set<GraphAxis> axes = new HashSet<GraphAxis>();
-      for (final DataPlot plot : dataPlots) {
+      for (final DataSeriesPlot plot : containedPlots) {
          axes.add(plot.getXAxis());
          axes.add(plot.getYAxis());
       }
@@ -331,14 +331,14 @@ public class GraphWidget {
          }
 
          // Draw the axes
-         for (final DataPlot plot : dataPlots) {
+         for (final DataSeriesPlot plot : containedPlots) {
             plot.getXAxis().paint(newPaintEventId);
             plot.getYAxis().paint(newPaintEventId);
          }
 
          // Now draw the data
          final Canvas canvas = Canvas.buildCanvas(drawing);
-         for (final DataPlot plot : dataPlots) {
+         for (final DataSeriesPlot plot : containedPlots) {
             plot.paint(canvas, newPaintEventId);
          }
 
@@ -420,33 +420,33 @@ public class GraphWidget {
    }
 
    /**
-    * Adds the given {@link DataPlot} to the collection of data plots to be drawn.
+    * Adds the given {@link DataSeriesPlot} to the collection of data plots to be drawn.
     *
-    * Note that a plot can only be added once to this GraphWidget's internal collection.
+    * Note that a plot can only be added once to this PlotContainer's internal collection.
     *
     * @throws NullPointerException if plot is <code>null</code>
     */
-   public void addDataPlot(final DataPlot plot) {
+   public void addDataPlot(final DataSeriesPlot plot) {
       if (plot == null) {
          throw new NullPointerException("Cannot add null plot");
       }
-      dataPlots.add(plot);
-      plot.registerGraphWidget(this);
+      containedPlots.add(plot);
+      plot.registerPlotContainer(this);
 
       paint();
    }
 
    /**
-    * Removes the given {@link DataPlot} from the collection of data plots to be drawn.
+    * Removes the given {@link DataSeriesPlot} from the collection of data plots to be drawn.
     *
-    * <p>Does nothing if plot is <code>null</code> or not contained by this {@link GraphWidget}<p>
+    * <p>Does nothing if plot is <code>null</code> or not contained by this {@link PlotContainer}<p>
     */
-   public void removeDataPlot(final DataPlot plot) {
+   public void removeDataPlot(final DataSeriesPlot plot) {
       if (plot == null) {
          return;
       }
-      dataPlots.remove(plot);
-      plot.unregisterGraphWidget(this);
+      containedPlots.remove(plot);
+      plot.unregisterPlotContainer(this);
 
       paint();
    }
@@ -615,7 +615,7 @@ public class GraphWidget {
 
    /**
     * Returns the number of value messages currently held in this
-    * <tt>GraphWidget</tt>.
+    * <tt>PlotContainer</tt>.
     *
     * @return
     * 		the number of messages that have been added using

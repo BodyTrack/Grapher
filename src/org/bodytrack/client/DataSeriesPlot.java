@@ -28,21 +28,21 @@ import com.google.gwt.i18n.client.NumberFormat;
  * the data whenever it comes in from the server.</p>
  *
  * <p>A class that wishes to inherit this class can override
- * {@link DataPlot#paintAllDataPoints}, but the easiest way to modify
- * functionality it to override {@link DataPlot#paintDataPoint} and
- * {@link DataPlot#paintEdgePoint(BoundedDrawingBox, GrapherTile, double, double, PlottablePoint)}.
+ * {@link DataSeriesPlot#paintAllDataPoints}, but the easiest way to modify
+ * functionality it to override {@link DataSeriesPlot#paintDataPoint} and
+ * {@link DataSeriesPlot#paintEdgePoint(BoundedDrawingBox, GrapherTile, double, double, PlottablePoint)}.
  * These two functions are responsible for painting a single point on
- * this DataPlot.  This (parent) class will automatically handle
+ * this DataSeriesPlot.  This (parent) class will automatically handle
  * highlighting, zooming, and the Ajax calls for pulling extra data
  * from the server.</p>
  *
  * <p>A classes that wishes to inherit this class may also wish to
- * override {@link DataPlot#getDataPoints(GrapherTile)}, which
- * determines the points that {@link DataPlot#paintAllDataPoints}
+ * override {@link DataSeriesPlot#getDataPoints(GrapherTile)}, which
+ * determines the points that {@link DataSeriesPlot#paintAllDataPoints}
  * will draw, and the order in which paintAllDataPoints will draw
  * them.</p>
  */
-public class DataPlot implements Alertable<GrapherTile> {
+public class DataSeriesPlot implements Alertable<GrapherTile> {
    /**
     * We never re-request a URL with MAX_REQUESTS_PER_URL or more failures
     * in a row.
@@ -54,7 +54,12 @@ public class DataPlot implements Alertable<GrapherTile> {
     */
    private static final double LN_2 = Math.log(2);
 
-   private GraphWidget containingGraphWidget = null;
+   public static DataSeriesPlot getDataSeriesPlot(final JavaScriptObject nativePlot) {
+      final Dynamic dynPlot = nativePlot.cast();
+      return dynPlot.get("__backingPlot");
+   }
+
+   private PlotContainer plotContainer = null;
 
    private final JavaScriptObject datasource;
    private JavaScriptObject xAxis;
@@ -86,8 +91,8 @@ public class DataPlot implements Alertable<GrapherTile> {
    private final GraphAxis.EventListener graphAxisEventListener = new GraphAxis.EventListener() {
       @Override
       public void onAxisChange(final String eventId) {
-         if (DataPlot.this.containingGraphWidget != null) {
-            DataPlot.this.containingGraphWidget.paint(eventId);
+         if (DataSeriesPlot.this.plotContainer != null) {
+            DataSeriesPlot.this.plotContainer.paint(eventId);
          }
       }
    };
@@ -95,7 +100,7 @@ public class DataPlot implements Alertable<GrapherTile> {
    private String previousPaintEventId = null;
 
    /**
-    * Main constructor for the DataPlot object.
+    * Main constructor for the DataSeriesPlot object.
     *
     * <p>The parameter url is the trickiest to get right.  This parameter
     * should be the <strong>beginning</strong> (the text up to, but
@@ -123,24 +128,24 @@ public class DataPlot implements Alertable<GrapherTile> {
     * @throws IllegalArgumentException
     * 		if xAxis is really a Y-axis, or if yAxis is really an X-axis
     */
-   public DataPlot(final JavaScriptObject datasource,
-                   final JavaScriptObject nativeXAxis,
-                   final JavaScriptObject nativeYAxis,
-                   final int minLevel,
-                   final Color color) {
+   public DataSeriesPlot(final JavaScriptObject datasource,
+                         final JavaScriptObject nativeXAxis,
+                         final JavaScriptObject nativeYAxis,
+                         final int minLevel,
+                         final Color color) {
       this(datasource, nativeXAxis, nativeYAxis,
          minLevel, color, new LineRenderer(false, true),
          new LineRenderer(true, false));
          // Only the normal renderer needs to draw comments
    }
 
-   public DataPlot(final JavaScriptObject datasource,
-                   final JavaScriptObject nativeXAxis,
-                   final JavaScriptObject nativeYAxis,
-                   final int minLevel,
-                   final Color color,
-                   final HighlightableRenderer normalRenderer,
-                   final HighlightableRenderer highlightRenderer) {
+   public DataSeriesPlot(final JavaScriptObject datasource,
+                         final JavaScriptObject nativeXAxis,
+                         final JavaScriptObject nativeYAxis,
+                         final int minLevel,
+                         final Color color,
+                         final HighlightableRenderer normalRenderer,
+                         final HighlightableRenderer highlightRenderer) {
       if (datasource == null || nativeXAxis == null
           || nativeYAxis == null || color == null) {
          throw new NullPointerException(
@@ -189,31 +194,26 @@ public class DataPlot implements Alertable<GrapherTile> {
       }
    }
 
-   public static DataPlot getDataPlot(JavaScriptObject nativePlot) {
-      final Dynamic dynPlot = nativePlot.cast();
-      return dynPlot.get("__backingPlot");
-   }
-
-   /** Sets the {@link GraphWidget} which contains this <code>DataPlot</code>. */
-   public final void registerGraphWidget(final GraphWidget graphWidget) {
-      this.containingGraphWidget = graphWidget;
+   /** Sets the {@link PlotContainer} which contains this <code>DataSeriesPlot</code>. */
+   public final void registerPlotContainer(final PlotContainer plotContainer) {
+      this.plotContainer = plotContainer;
    }
 
    /**
-    * Unregisters the given {@link GraphWidget} from this <code>DataPlot</code> if and only if the given
-    * {@link GraphWidget} is not <code>null</code> and is currently registered with this <code>DataPlot</code>. That is,
-    * if this <code>DataPlot</code> is already associated with a {@link GraphWidget} other than the given one, then
+    * Unregisters the given {@link PlotContainer} from this <code>DataSeriesPlot</code> if and only if the given
+    * {@link PlotContainer} is not <code>null</code> and is currently registered with this <code>DataSeriesPlot</code>. That is,
+    * if this <code>DataSeriesPlot</code> is already associated with a {@link PlotContainer} other than the given one, then
     * nothing happens.
     */
-   public final void unregisterGraphWidget(final GraphWidget graphWidget) {
-      if (graphWidget != null && graphWidget.equals(this.containingGraphWidget)) {
-         this.containingGraphWidget = null;
+   public final void unregisterPlotContainer(final PlotContainer plotContainer) {
+      if (plotContainer != null && plotContainer.equals(this.plotContainer)) {
+         this.plotContainer = null;
       }
    }
 
    /**
     * Returns <tt>true</tt> if and only if the X-axis is allowed to
-    * zoom in farther, based on the zoom policy of this DataPlot.
+    * zoom in farther, based on the zoom policy of this DataSeriesPlot.
     *
     * @return
     * 		<tt>true</tt> if the X-axis should be allowed to
@@ -224,20 +224,20 @@ public class DataPlot implements Alertable<GrapherTile> {
    }
 
    /**
-    * Returns the color at which this <tt>DataPlot</tt> is drawn.
+    * Returns the color at which this <tt>DataSeriesPlot</tt> is drawn.
     *
     * @return
-    * 		the color used to draw this <tt>DataPlot</tt>
+    * 		the color used to draw this <tt>DataSeriesPlot</tt>
     */
    public Color getColor() {
       return color;
    }
 
    /**
-    * Sets the color at which this <tt>DataPlot</tt> is drawn.
+    * Sets the color at which this <tt>DataSeriesPlot</tt> is drawn.
     *
     * @param newColor
-    * 		the color that should be used to draw this <tt>DataPlot</tt>
+    * 		the color that should be used to draw this <tt>DataSeriesPlot</tt>
     * @throws NullPointerException
     * 		if newColor is <tt>null</tt>
     */
@@ -248,8 +248,8 @@ public class DataPlot implements Alertable<GrapherTile> {
       }
 
       color = newColor;
-      if (containingGraphWidget != null) {
-         containingGraphWidget.paint();
+      if (plotContainer != null) {
+         plotContainer.paint();
       }
    }
 
@@ -332,8 +332,8 @@ public class DataPlot implements Alertable<GrapherTile> {
 
       checkForNewData();
 
-      if (containingGraphWidget != null) {
-         containingGraphWidget.paint();
+      if (plotContainer != null) {
+         plotContainer.paint();
       }
    }
 
@@ -366,15 +366,15 @@ public class DataPlot implements Alertable<GrapherTile> {
 
       GrapherTile.retrieveTile(datasource, level, offset, this);
 
-      if (containingGraphWidget != null) {
-         containingGraphWidget.paint();
+      if (plotContainer != null) {
+         plotContainer.paint();
       }
    }
 
    /**
-    * Paints this DataPlot on the stored GraphWidget.
+    * Paints this DataSeriesPlot on the stored PlotContainer.
     *
-    * <p>Does not draw the axes associated with this DataPlot.</p>
+    * <p>Does not draw the axes associated with this DataSeriesPlot.</p>
     *
     * <p>Note that it is <strong>not</strong> recommended that a subclass
     * override this method.  Instead, it is recommended that a subclass
@@ -448,7 +448,7 @@ public class DataPlot implements Alertable<GrapherTile> {
    }
 
    /**
-    * Returns the ordered list of points this DataPlot should draw
+    * Returns the ordered list of points this DataSeriesPlot should draw
     * in {@link #paintAllDataPoints}.
     *
     * <p>It is acceptable, and not considered an error, if this or a subclass
@@ -550,10 +550,10 @@ public class DataPlot implements Alertable<GrapherTile> {
    }
 
    /**
-    * Returns the X-Axis for this DataPlot.
+    * Returns the X-Axis for this DataSeriesPlot.
     *
     * @return
-    * 		the X-axis for this DataPlot
+    * 		the X-axis for this DataSeriesPlot
     */
    public GraphAxis getXAxis() {
       Dynamic djso = xAxis.cast();
@@ -565,7 +565,7 @@ public class DataPlot implements Alertable<GrapherTile> {
    }
 
    /**
-    * Sets the X-axis for this <tt>DataPlot</tt>.
+    * Sets the X-axis for this <tt>DataSeriesPlot</tt>.
     *
     * <p>This is only intended to be used within this package.
     * In almost all cases, there is no need for this method.</p>
@@ -590,10 +590,10 @@ public class DataPlot implements Alertable<GrapherTile> {
    }
 
    /**
-    * Returns the Y-Axis for this DataPlot.
+    * Returns the Y-Axis for this DataSeriesPlot.
     *
     * @return
-    * 		the Y-axis for this DataPlot
+    * 		the Y-axis for this DataSeriesPlot
     */
    public GraphAxis getYAxis() {
       Dynamic djso = yAxis.cast();
@@ -605,7 +605,7 @@ public class DataPlot implements Alertable<GrapherTile> {
    }
 
    /**
-    * Sets the Y-axis for this <tt>DataPlot</tt>.
+    * Sets the Y-axis for this <tt>DataSeriesPlot</tt>.
     *
     * <p>This is only intended to be used within this package.
     * In almost all cases, there is no need for this method.</p>
@@ -714,7 +714,7 @@ public class DataPlot implements Alertable<GrapherTile> {
 
    /**
     * Returns a PlottablePoint if and only if there is a point, part of
-    * this DataPlot, within threshold pixels of pos.  Otherwise, returns
+    * this DataSeriesPlot, within threshold pixels of pos.  Otherwise, returns
     * <tt>null</tt>.
     *
     * This actually builds a square of 2 * threshold pixels on each
@@ -806,7 +806,7 @@ public class DataPlot implements Alertable<GrapherTile> {
    }
 
    /**
-    * Helper method for {@link DataPlot#closest(Vector2, double)}.
+    * Helper method for {@link DataSeriesPlot#closest(Vector2, double)}.
     *
     * This method has a lot of similar parameters, which is normally
     * poor style, but it is an internal helper method, so this is
@@ -919,47 +919,47 @@ public class DataPlot implements Alertable<GrapherTile> {
    }
 
    /**
-    * Highlights this DataPlot in future
-    * {@link DataPlot#paint() paint} calls.
+    * Highlights this DataSeriesPlot in future
+    * {@link DataSeriesPlot#paint() paint} calls.
     *
     * <p>Note that this does not highlight the axes associated with this
-    * DataPlot.</p>
+    * DataSeriesPlot.</p>
     */
    public void highlight() {
       highlightedPoint = AbstractPlotRenderer.HIGHLIGHTED_NO_SINGLE_POINT;
    }
 
    /**
-    * Stops highlighting this DataPlot.
+    * Stops highlighting this DataSeriesPlot.
     *
     * <p>Note that this does not affect the highlighting status on the
-    * axes associated with this DataPlot.</p>
+    * axes associated with this DataSeriesPlot.</p>
     */
    public void unhighlight() {
       highlightedPoint = null;
    }
 
    /**
-    * Tells whether or not this DataPlot is highlighted.
+    * Tells whether or not this DataSeriesPlot is highlighted.
     *
     * <p>If {@link #highlight()} has been called since the constructor
     * and since the last call to {@link #unhighlight()}, returns
     * <tt>true</tt>.  Otherwise, returns <tt>false</tt>.</p>
     *
     * @return
-    * 		<tt>true</tt> if and only if this DataPlot is highlighted
+    * 		<tt>true</tt> if and only if this DataSeriesPlot is highlighted
     */
    public boolean isHighlighted() {
       return highlightedPoint != null;
    }
 
    /**
-    * Highlights this <tt>DataPlot</tt> if and only if it contains a
+    * Highlights this <tt>DataSeriesPlot</tt> if and only if it contains a
     * point within threshold pixels of pos.
     *
     * <p>Also, if this data plot should be highlighted, this publishes
     * the highlighted data plot's value to the container widget, as long
-    * as such a preference was indicated when this <tt>DataPlot</tt>
+    * as such a preference was indicated when this <tt>DataSeriesPlot</tt>
     * was created, using the publishValueOnHighlight constructor parameter.
     * On the other hand, if this data plot is currently highlighted but
     * should be unhighlighted, this removes the published value.  If a
@@ -968,7 +968,7 @@ public class DataPlot implements Alertable<GrapherTile> {
     * {@link #getDataLabel(PlottablePoint)}.</p>
     *
     * <p>Note that this does <strong>not</strong> unhighlight this
-    * <tt>DataPlot</tt> if there is no point within threshold pixels of
+    * <tt>DataSeriesPlot</tt> if there is no point within threshold pixels of
     * pos.  A subclass may also change the measurement unit on threshold
     * (the unit is pixels here), as long as that fact is clearly
     * documented.</p>
@@ -1075,7 +1075,7 @@ public class DataPlot implements Alertable<GrapherTile> {
             formatString += ".SSS";
             break;
          default:
-            GWT.log("DataPlot.getTimeString(): Unexpected number of "
+            GWT.log("DataSeriesPlot.getTimeString(): Unexpected number of "
                     + "fractionalSecondDigits: " + fractionalSecondDigits);
       }
 
@@ -1110,10 +1110,10 @@ public class DataPlot implements Alertable<GrapherTile> {
    }
 
    /**
-    * Returns the highlighted point maintained by this <tt>DataPlot</tt>.
+    * Returns the highlighted point maintained by this <tt>DataSeriesPlot</tt>.
     *
     * @return
-    * 		the highlighted point this <tt>DataPlot</tt> keeps, or
+    * 		the highlighted point this <tt>DataSeriesPlot</tt> keeps, or
     * 		<tt>null</tt> if there is no highlighted point
     */
    public PlottablePoint getHighlightedPoint() {

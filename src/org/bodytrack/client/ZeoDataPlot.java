@@ -9,15 +9,15 @@ import gwt.g2d.client.graphics.Surface;
 /**
  * Represents a data plot for Zeo data.
  *
- * Overrides the {@link DataPlot#getDataPoints},
- * {@link DataPlot#paintEdgePoint}, and
- * {@link DataPlot#paintDataPoint} methods of {@link DataPlot}, allowing
- * this class to take advantage of the capabilities of {@link DataPlot}
+ * Overrides the {@link DataSeriesPlot#getDataPoints},
+ * {@link DataSeriesPlot#paintEdgePoint}, and
+ * {@link DataSeriesPlot#paintDataPoint} methods of {@link DataSeriesPlot}, allowing
+ * this class to take advantage of the capabilities of {@link DataSeriesPlot}
  * without much code.
  *
- * @see DataPlot
+ * @see DataSeriesPlot
  */
-public class ZeoDataPlot extends DataPlot {
+public class ZeoDataPlot extends DataSeriesPlot {
    /**
     * The alpha value used when drawing rectangles for Zeo plots.
     */
@@ -41,7 +41,7 @@ public class ZeoDataPlot extends DataPlot {
     * 		the Y-axis along which this data set will be aligned when drawn
     * @param minLevel
     * 		the minimum level to which this will zoom
-    * @see DataPlot#DataPlot(JavaScriptObject, JavaScriptObject, JavaScriptObject, int, Color)
+    * @see DataSeriesPlot#DataSeriesPlot(JavaScriptObject, JavaScriptObject, JavaScriptObject, int, Color)
     */
    public ZeoDataPlot(final JavaScriptObject datasource,
                       final JavaScriptObject nativeXAxis,
@@ -54,7 +54,7 @@ public class ZeoDataPlot extends DataPlot {
     * Paints the specified data point as a translucent rectangle.
     *
     * This is the most important way in which this class modifies the behavior from
-    * its parent {@link DataPlot} class.
+    * its parent {@link DataSeriesPlot} class.
     */
    protected void paintEdgePoint(final BoundedDrawingBox drawing,
                                  final GrapherTile tile,
@@ -79,7 +79,7 @@ public class ZeoDataPlot extends DataPlot {
    /**
     * Paints the specified data point as a translucent rectangle.
     *
-    * This is the most important way in which this class modifies the behavior from its parent {@link DataPlot} class.
+    * This is the most important way in which this class modifies the behavior from its parent {@link DataSeriesPlot} class.
     */
    protected void paintDataPoint(final BoundedDrawingBox drawing,
                                  final GrapherTile tile,

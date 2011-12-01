@@ -2,7 +2,7 @@ package org.bodytrack.client;
 
 import gwt.g2d.client.math.Vector2;
 
-import org.bodytrack.client.PhotoDataPlot.PhotoAlertable;
+import org.bodytrack.client.PhotoSeriesPlot.PhotoAlertable;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.user.client.Element;
@@ -95,7 +95,7 @@ public final class PhotoGetter extends JavaScriptObject {
 			if (getter.callback)
 				// In Java-like style:
 				// getter.callback.onSuccess(getter);
-				getter.callback.@org.bodytrack.client.PhotoDataPlot.PhotoAlertable::onSuccess(Lorg/bodytrack/client/PhotoGetter;)(getter);
+				getter.callback.@org.bodytrack.client.PhotoSeriesPlot.PhotoAlertable::onSuccess(Lorg/bodytrack/client/PhotoGetter;)(getter);
 		}
 		getter.img.onerror = function() {
 			if (! getter.imageLoaded)
@@ -104,7 +104,7 @@ public final class PhotoGetter extends JavaScriptObject {
 			if (getter.callback)
 				// In Java-like style:
 				// getter.callback.onFailure(getter);
-				getter.callback.@org.bodytrack.client.PhotoDataPlot.PhotoAlertable::onFailure(Lorg/bodytrack/client/PhotoGetter;)(getter);
+				getter.callback.@org.bodytrack.client.PhotoSeriesPlot.PhotoAlertable::onFailure(Lorg/bodytrack/client/PhotoGetter;)(getter);
 		}
 
 		// Actually request that the browser load the image
