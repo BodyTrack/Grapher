@@ -50,14 +50,14 @@ public class StandardTileLoader implements TileLoader {
    }
 
    @Override
-   public void addEventListener(final EventListener listener) {
+   public final void addEventListener(final EventListener listener) {
       if (listener != null) {
          eventListeners.add(listener);
       }
    }
 
    @Override
-   public void removeEventListener(final EventListener listener) {
+   public final void removeEventListener(final EventListener listener) {
       if (listener != null) {
          eventListeners.remove(listener);
       }
