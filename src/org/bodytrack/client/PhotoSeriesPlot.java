@@ -60,8 +60,6 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
    private double previousWidth;
    // Since overlap is only valid at a X-axis width (in seconds)
 
-   private String previousPaintEventId = null;
-
    private final PhotoRenderer normalRenderer;
    private final PhotoRenderer highlightRenderer;
 
@@ -101,7 +99,7 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
       previousWidth = 1e-10;
 
       this.normalRenderer = new PhotoRenderer(false, true);
-      this.highlightRenderer = new PhotoRenderer(true, false);   // Only the normal renderer needs to draw comments
+      this.highlightRenderer = new PhotoRenderer(true, true);
    }
 
    /**
@@ -203,7 +201,7 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
    }
 
    @Override
-   protected HighlightableRenderer getRenderer() {
+   protected SeriesPlotRenderer getRenderer() {
       return isHighlighted() ? highlightRenderer : normalRenderer;
    }
 
@@ -582,13 +580,9 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
    public boolean highlightIfNear(final Vector2 pos) {
       highlightedImages = closeImages(pos, PHOTO_HIGHLIGHT_DISTANCE_THRESHOLD * getPhotoHeight() / 100);
 
-      final boolean haveImages = highlightedImages.size() > 0;
-
-      if (haveImages) {
-         highlight();
-      }
-
-      return haveImages;
+      // TODO: call setHighlightedPoint()
+      
+      return highlightedImages.size() > 0;
    }
 
    /**

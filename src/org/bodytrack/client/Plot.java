@@ -40,13 +40,6 @@ public interface Plot {
    GraphAxis getYAxis();
 
    /**
-    * Highlights this Plot in future future paint calls.
-    *
-    * <p>Note that this does not highlight the axes associated with this Plot.</p>
-    */
-   void highlight();
-
-   /**
     * Stops highlighting this Plot.
     *
     * <p>Note that this does not affect the highlighting status on the axes associated with this Plot.</p>
@@ -56,7 +49,7 @@ public interface Plot {
    /**
     * Tells whether or not this Plot is highlighted.
     *
-    * <p>If {@link #highlight()} has been called since the constructor and since the last call to
+    * <p>If {@link #setHighlightedPoint(PlottablePoint)} has been called since the constructor and since the last call to
     * {@link #unhighlight()}, returns <code>true</code>.  Otherwise, returns <code>false</code>.</p>
     *
     * @return <code>true</code> if and only if this Plot is highlighted
@@ -83,4 +76,6 @@ public interface Plot {
     * 		<code>null</code> if there is no highlighted point
     */
    PlottablePoint getHighlightedPoint();
+
+   void setHighlightedPoint(final PlottablePoint highlightedPoint);
 }

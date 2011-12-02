@@ -16,10 +16,10 @@ public class LollipopRenderer extends DotRenderer {
 	public void render(final BoundedDrawingBox drawing,
                       final Iterable<GrapherTile> tiles,
                       final GraphAxis xAxis,
-                      final GraphAxis yAxis) {
+                      final GraphAxis yAxis, PlottablePoint highlightedPoint) {
 		// Just save the Y-axis for use in paintDot
 		this.yAxis = yAxis;
-		super.render(drawing, tiles, xAxis, yAxis);
+		super.render(drawing, tiles, xAxis, yAxis, highlightedPoint);
 	}
 
 	@Override

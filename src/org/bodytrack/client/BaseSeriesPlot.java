@@ -14,15 +14,6 @@ import java.util.Date;
  * @author Chris Bartley (bartley@cmu.edu)
  */
 public abstract class BaseSeriesPlot implements Plot {
-   /**
-    * Whenever the {@link #highlight()} method is called, we don't know
-    * which points on the axes should be highlighted, so we use this
-    * value to indicate this.  As such, testing with == is OK as a test
-    * for this point, since we set highlightedPoint to this exact
-    * memory location whenever we don't know which point should be
-    * highlighted.
-    */
-   private static final PlottablePoint HIGHLIGHTED_NO_SINGLE_POINT = new PlottablePoint(Double.MIN_VALUE, 0.0);
 
    /** Used to speed up the {@link #log2(double)} method. */
    private static final double LN_2 = Math.log(2);
@@ -158,7 +149,7 @@ public abstract class BaseSeriesPlot implements Plot {
 
    /**
     * Called before the {@link #paint(Canvas, String)} method calls
-    * {@link SeriesPlotRenderer#render(BoundedDrawingBox, Iterable, GraphAxis, GraphAxis)},
+    * {@link SeriesPlotRenderer#render(BoundedDrawingBox, Iterable, GraphAxis, GraphAxis, PlottablePoint)},
     * to allow implementations to prepare for rendering.
     *
     * @param canvas
@@ -173,7 +164,7 @@ public abstract class BaseSeriesPlot implements Plot {
    /**
     * Get the appropriate renderer required for painting.
     */
-   protected abstract HighlightableRenderer getRenderer();
+   protected abstract SeriesPlotRenderer getRenderer();
 
    /**
     * Paints this plot in its {@link PlotContainer}.
@@ -190,13 +181,12 @@ public abstract class BaseSeriesPlot implements Plot {
          
          beforeRender(canvas, drawing);
 
-         final HighlightableRenderer renderer = getRenderer();
-         renderer.setHighlightedPoint(getHighlightedPoint());
+         final SeriesPlotRenderer renderer = getRenderer();
          renderer.render(drawing,
                          tileLoader.getBestResolutionTiles(computeCurrentLevel()),
                          getXAxis(),
-                         getYAxis());
-         renderer.setHighlightedPoint(null);
+                         getYAxis(),
+                         getHighlightedPoint());
 
          // Clean up after ourselves
          afterRender(canvas, drawing);
@@ -208,7 +198,7 @@ public abstract class BaseSeriesPlot implements Plot {
 
    /**
     * Called after the {@link #paint(Canvas, String)} method calls
-    * {@link SeriesPlotRenderer#render(BoundedDrawingBox, Iterable, GraphAxis, GraphAxis)},
+    * {@link SeriesPlotRenderer#render(BoundedDrawingBox, Iterable, GraphAxis, GraphAxis, PlottablePoint)},
     * to allow implementations to clean up after rendering.
     *
     * @param canvas
@@ -292,27 +282,8 @@ public abstract class BaseSeriesPlot implements Plot {
       return highlightedPoint;
    }
 
-   protected final void setHighlightedPoint(final PlottablePoint highlightedPoint) {
+   public final void setHighlightedPoint(final PlottablePoint highlightedPoint) {
       this.highlightedPoint = highlightedPoint;
-   }
-
-   /**
-    * Returns <code>true</code> if there is a single highlighted point.
-    */
-   protected final boolean isSinglePointHighlighted() {
-      return highlightedPoint != null && highlightedPoint != HIGHLIGHTED_NO_SINGLE_POINT;
-   }
-
-   /**
-    * Highlights this {@link Plot} in future
-    * {@link Plot#paint(Canvas, String)} calls.
-    *
-    * <p>Note that this does not highlight the axes associated with this
-    * {@link Plot}.</p>
-    */
-   @Override
-   public final void highlight() {
-      highlightedPoint = HIGHLIGHTED_NO_SINGLE_POINT;
    }
 
    /**
@@ -329,7 +300,7 @@ public abstract class BaseSeriesPlot implements Plot {
    /**
     * Tells whether or not this {@link Plot} is highlighted.
     *
-    * <p>If {@link #highlight()} has been called since the constructor
+    * <p>If {@link #setHighlightedPoint(PlottablePoint)} has been called since the constructor
     * and since the last call to {@link #unhighlight()}, returns
     * <code>true</code>.  Otherwise, returns <tt>false</tt>.</p>
     *

@@ -16,16 +16,16 @@ public interface SeriesPlotRenderer {
 	/**
 	 * Draws the supplied tiles on a canvas
 	 *
-	 * @param drawing
-	 * 	The {@link BoundedDrawingBox} that should constrain the drawing.
-	 * 	Forwarding graphics calls through drawing will ensure that everything
-	 * 	draws up to the edge of the viewing window but no farther
-	 * @param tiles
-	 * 	The tiles to draw using drawing
-	 * @param xAxis
-	 * 	The X-axis to use for lining up points from tiles
-	 * @param yAxis
-	 * 	The Y-axis to use for lining up points from tiles
-	 */
-	void render(BoundedDrawingBox drawing, Iterable<GrapherTile> tiles, GraphAxis xAxis, GraphAxis yAxis);
+    * @param drawing
+    * 	The {@link BoundedDrawingBox} that should constrain the drawing.
+    * 	Forwarding graphics calls through drawing will ensure that everything
+    * 	draws up to the edge of the viewing window but no farther
+    * @param tiles
+    * 	The tiles to draw using drawing
+    * @param xAxis
+    * 	The X-axis to use for lining up points from tiles
+    * @param yAxis
+    * @param highlightedPoint
+    */
+	void render(BoundedDrawingBox drawing, Iterable<GrapherTile> tiles, GraphAxis xAxis, GraphAxis yAxis, PlottablePoint highlightedPoint);
 }

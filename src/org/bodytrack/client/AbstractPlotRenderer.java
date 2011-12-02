@@ -9,18 +9,17 @@ import com.google.gwt.user.client.ui.PopupPanel;
 /**
  * Draws lines for the default DataSeriesPlot view
  *
- * <p>An AbstractPlotRenderer maintains a highlighted point, as set by the
- * {@link #setHighlightedPoint(PlottablePoint)} method.  If this value is
+ * <p>An AbstractPlotRenderer can render a highlighted point, as set by the
+ * {@link Plot#setHighlightedPoint(PlottablePoint)} method.  If this value is
  * not null, that point is drawn at a larger radius whenever
- * {@link #render(BoundedDrawingBox, Iterable, GraphAxis, GraphAxis)}
- * is called.  Other than this highlighted point, however, an
- * AbstractPlotRenderer is logically immutable.  Hidden from the user of this
+ * {@link SeriesPlotRenderer#render(BoundedDrawingBox, Iterable, GraphAxis, GraphAxis, PlottablePoint)} 
+ * is called.  Hidden from the user of this
  * object is a mutable comment panel, which may be visible or invisible at
  * different points in time.  This mutable comment panel is never initialized
  * and never shown if the drawComments parameter to the constructor is passed
  * in as false.</p>
  */
-public abstract class AbstractPlotRenderer implements HighlightableRenderer {
+public abstract class AbstractPlotRenderer implements SeriesPlotRenderer {
 	/**
 	 * The width at which a normal line is drawn.
 	 */
@@ -48,21 +47,9 @@ public abstract class AbstractPlotRenderer implements HighlightableRenderer {
 	 */
 	private static final int PREFERRED_MAX_COMMENT_WIDTH = 600;
 
-	/**
-	 * Whenever the {@link Plot#highlight()} method is called, we don't know
-	 * which points on the axes should be highlighted, so we use this
-	 * value to indicate this.  As such, testing with == is OK as a test
-	 * for this point, since we set highlightedPoint to this exact
-	 * memory location whenever we don't know which point should be
-	 * highlighted.
-	 */
-	public static final PlottablePoint HIGHLIGHTED_NO_SINGLE_POINT =
-		new PlottablePoint(Double.MIN_VALUE, 0.0);
-
 	private final boolean highlighted;
 	private final boolean drawComments;
 	private PopupPanel commentPanel;
-	private PlottablePoint highlightedPoint;
 
 	/**
 	 * Creates a new AbstractPlotRenderer object
@@ -77,15 +64,6 @@ public abstract class AbstractPlotRenderer implements HighlightableRenderer {
 	public AbstractPlotRenderer(final boolean highlighted, final boolean drawComments) {
 		this.highlighted = highlighted;
 		this.drawComments = drawComments;
-		highlightedPoint = null;
-	}
-
-	public PlottablePoint getHighlightedPoint() {
-		return highlightedPoint;
-	}
-
-	public void setHighlightedPoint(final PlottablePoint highlightedPoint) {
-		this.highlightedPoint = highlightedPoint;
 	}
 
 	protected boolean isHighlighted() {
@@ -100,7 +78,8 @@ public abstract class AbstractPlotRenderer implements HighlightableRenderer {
 	public void render(final BoundedDrawingBox drawing,
                       final Iterable<GrapherTile> tiles,
                       final GraphAxis xAxis,
-                      final GraphAxis yAxis) {
+                      final GraphAxis yAxis,
+                      final PlottablePoint highlightedPoint) {
 		drawing.getCanvas().getSurface().setLineWidth(highlighted
 				? HIGHLIGHT_STROKE_WIDTH
 						: NORMAL_STROKE_WIDTH);
@@ -155,9 +134,7 @@ public abstract class AbstractPlotRenderer implements HighlightableRenderer {
 		drawing.strokeClippedPath();
 
 		hideComment();
-      if (highlightedPoint != null
-          && highlightedPoint != HIGHLIGHTED_NO_SINGLE_POINT) {
-         // TODO: should this be an .equals() comparison instead?
+      if (highlightedPoint != null) {
          drawing.beginClippedPath();
          paintHighlightedPoint(drawing,
                                xAxis.project2D(highlightedPoint.getDate()).getX(),
