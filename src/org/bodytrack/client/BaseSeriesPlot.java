@@ -43,11 +43,11 @@ public abstract class BaseSeriesPlot implements Plot {
 
    private PlotContainer plotContainer = null;
 
-   private final JavaScriptObject datasource;
    private final JavaScriptObject xAxisNative;
    private final JavaScriptObject yAxisNative;
    private final GraphAxis xAxis;
    private final GraphAxis yAxis;
+   private final TileLoader tileLoader;
 
    // If highlightedPoint is null, then this should not be highlighted.
    // Otherwise, this is the point to highlight on the axes
@@ -62,14 +62,18 @@ public abstract class BaseSeriesPlot implements Plot {
       }
    };
 
+   private String previousPaintEventId = null;
+
    /**
+    *
     * @param datasource
     * 		a native JavaScript function which can be used to retrieve tiles
     * @param nativeXAxis
     * 		the X-axis along which this data set will be aligned when drawn
     * @param nativeYAxis
     * 		the Y-axis along which this data set will be aligned when drawn
-    *
+    * @param minLevel
+    * 		the minimum level to which the user will be allowed to zoom
     * @throws NullPointerException
     * 		if datasource, nativeXAxis, or nativeYAxis is <code>null</code>
     * @throws IllegalArgumentException
@@ -77,12 +81,12 @@ public abstract class BaseSeriesPlot implements Plot {
     */
    protected BaseSeriesPlot(final JavaScriptObject datasource,
                             final JavaScriptObject nativeXAxis,
-                            final JavaScriptObject nativeYAxis) {
+                            final JavaScriptObject nativeYAxis,
+                            final int minLevel) {
       if (datasource == null || nativeXAxis == null || nativeYAxis == null) {
          throw new NullPointerException("Cannot have a null datasource or axis");
       }
 
-      this.datasource = datasource;
       this.xAxisNative = nativeXAxis;
       this.yAxisNative = nativeYAxis;
       this.xAxis = convertNativeAxisToGraphAxis(this.xAxisNative);
@@ -94,6 +98,22 @@ public abstract class BaseSeriesPlot implements Plot {
       if (yAxis.isXAxis()) {
          throw new IllegalArgumentException("Y-axis must be vertical");
       }
+
+      this.tileLoader = new StandardTileLoader(minLevel, datasource, xAxis);
+      tileLoader.addEventListener(
+            new TileLoader.EventListener() {
+               @Override
+               public void handleLoadSuccess() {
+                  signalRepaintOfPlotContainer();
+               }
+
+               @Override
+               public void handleLoadFailure() {
+                  signalRepaintOfPlotContainer();
+               }
+            }
+      );
+      tileLoader.checkForFetch(computeCurrentLevel());
 
       // register self as an event listener to the axes...
       registerGraphAxisEventListener(getXAxis());
@@ -136,15 +156,75 @@ public abstract class BaseSeriesPlot implements Plot {
       }
    }
 
+   /**
+    * Called before the {@link #paint(Canvas, String)} method calls
+    * {@link SeriesPlotRenderer#render(BoundedDrawingBox, Iterable, GraphAxis, GraphAxis)},
+    * to allow implementations to prepare for rendering.
+    *
+    * @param canvas
+    *    The canvas upon which rendering will take place.
+    * @param drawing
+    * 	The {@link BoundedDrawingBox} that should constrain the drawing.
+    * 	Forwarding graphics calls through drawing will ensure that everything
+    * 	draws up to the edge of the viewing window but no farther
+    */
+   protected abstract void beforeRender(final Canvas canvas, final BoundedDrawingBox drawing);
+
+   /**
+    * Get the appropriate renderer required for painting.
+    */
+   protected abstract HighlightableRenderer getRenderer();
+
+   /**
+    * Paints this plot in its {@link PlotContainer}.
+    *
+    * <p>Does not draw the axes associated with this plot.</p>
+    */
+   @Override
+   public final void paint(final Canvas canvas, final String newPaintEventId) {
+      // guard against redundant paints
+      if (previousPaintEventId == null || !previousPaintEventId.equals(newPaintEventId)) {
+         previousPaintEventId = newPaintEventId;
+
+         final BoundedDrawingBox drawing = getDrawingBounds(canvas);
+         
+         beforeRender(canvas, drawing);
+
+         final HighlightableRenderer renderer = getRenderer();
+         renderer.setHighlightedPoint(getHighlightedPoint());
+         renderer.render(drawing,
+                         tileLoader.getBestResolutionTiles(computeCurrentLevel()),
+                         getXAxis(),
+                         getYAxis());
+         renderer.setHighlightedPoint(null);
+
+         // Clean up after ourselves
+         afterRender(canvas, drawing);
+
+         // Make sure we shouldn't get any more info from the server
+         tileLoader.checkForFetch(computeCurrentLevel());
+      }
+   }
+
+   /**
+    * Called after the {@link #paint(Canvas, String)} method calls
+    * {@link SeriesPlotRenderer#render(BoundedDrawingBox, Iterable, GraphAxis, GraphAxis)},
+    * to allow implementations to clean up after rendering.
+    *
+    * @param canvas
+    *    The canvas upon which rendering took place.
+    * @param drawing
+    * 	The {@link BoundedDrawingBox} that should constrain the drawing.
+    * 	Forwarding graphics calls through drawing will ensure that everything
+    * 	draws up to the edge of the viewing window but no farther
+    */
+   protected abstract void afterRender(final Canvas canvas, final BoundedDrawingBox drawing);
+
    /** Causes the containing {@link PlotContainer} to paint itself. */
    protected final void signalRepaintOfPlotContainer(){
       if (plotContainer != null) {
          plotContainer.paint();
       }
-   }
-
-   protected final JavaScriptObject getDatasource() {
-      return datasource;
    }
 
    /**
@@ -267,7 +347,7 @@ public abstract class BaseSeriesPlot implements Plot {
     * @return
     * 		the level at which xAxis is operating
     */
-   protected final int computeCurrentLevel() {
+   private int computeCurrentLevel() {
       final double xAxisWidth = getXAxis().getMax() - getXAxis().getMin();
       final double dataPointWidth = xAxisWidth / GrapherTile.TILE_WIDTH;
 
@@ -353,4 +433,9 @@ public abstract class BaseSeriesPlot implements Plot {
       }
       return 3; // We can't get better than millisecond precision
    }
+
+   protected final GrapherTile getBestResolutionTileAt(final double time){
+      return tileLoader.getBestResolutionTileAt(time, computeCurrentLevel());
+   }
+
 }

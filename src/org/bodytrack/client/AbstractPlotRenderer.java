@@ -113,7 +113,7 @@ public abstract class AbstractPlotRenderer implements HighlightableRenderer {
 		double prevY = -Double.MAX_VALUE;
 
 		for (final GrapherTile tile: tiles) {
-			final List<PlottablePoint> dataPoints = tile.getDataPoints();
+			final List<PlottablePoint> dataPoints = getDataPoints(tile);
 
 			if (dataPoints == null) {
 				continue;
@@ -172,6 +172,10 @@ public abstract class AbstractPlotRenderer implements HighlightableRenderer {
 
       drawing.getCanvas().getSurface().setLineWidth(NORMAL_STROKE_WIDTH);
 	}
+
+   protected List<PlottablePoint> getDataPoints(final GrapherTile tile) {
+      return tile.getDataPoints();
+   }
 
 	/**
 	 * Paints a left edge point for a segment of the plot

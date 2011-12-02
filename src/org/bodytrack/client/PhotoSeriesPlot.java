@@ -13,7 +13,7 @@ import java.util.Set;
 /**
  * A class to show photos on a {@link PlotContainer}.
  */
-public class PhotoSeriesPlot extends DataSeriesPlot {
+public class PhotoSeriesPlot extends BaseSeriesPlot {
    /**
     * If the difference in height between the current height, in pixels,
     * and the value of previousHeight is greater than
@@ -62,6 +62,9 @@ public class PhotoSeriesPlot extends DataSeriesPlot {
 
    private String previousPaintEventId = null;
 
+   private final PhotoRenderer normalRenderer;
+   private final PhotoRenderer highlightRenderer;
+
    /**
     * Initializes a new PhotoSeriesPlot.
     *
@@ -84,7 +87,7 @@ public class PhotoSeriesPlot extends DataSeriesPlot {
                           final JavaScriptObject nativeYAxis,
                           final int minLevel,
                           final int userId) {
-      super(datasource, nativeXAxis, nativeYAxis, minLevel, Canvas.DEFAULT_COLOR);
+      super(datasource, nativeXAxis, nativeYAxis, minLevel);
 
       this.userId = userId;
 
@@ -96,68 +99,9 @@ public class PhotoSeriesPlot extends DataSeriesPlot {
       overlap = new HashMap<PhotoGetter, Set<PhotoGetter>>();
       previousHeight = 1e-10;
       previousWidth = 1e-10;
-   }
 
-   /**
-    * Returns the points that will form the centers of the images.
-    *
-    * <p>This also has the hidden side effect of starting to load
-    * any unseen images in tile, thus making our drawing possible.
-    * There is some subtlety here: the call to this method populates
-    * the set of available images whenever called, which happens
-    * to be every time the points are needed in
-    * {@link DataSeriesPlot} methods.  The
-    * methods {@link #paintDataPoint(BoundedDrawingBox, GrapherTile, double, double, double, double, PlottablePoint)} and
-    * {@link Plot#highlightIfNear(Vector2)} expect this images to
-    * be filled, which is always the case whenever they use elements
-    * of images, just by the way the code is written.</p>
-    */
-   @Override
-   protected List<PlottablePoint> getDataPoints(final GrapherTile tile) {
-      // There is no data in the tile
-      if (tile.getPhotoDescriptions() == null) {
-         return new ArrayList<PlottablePoint>();
-      }
-
-      final List<PhotoDescription> descs = tile.getPhotoDescriptions();
-      final List<PlottablePoint> result = new ArrayList<PlottablePoint>();
-
-      for (final PhotoDescription desc : descs) {
-         final PlottablePoint pos = new PlottablePoint(desc.getBeginDate(), IMAGE_Y_VALUE);
-
-         // This depends on the fact that equality of PlottablePoint
-         // objects is based on equality of the floors of the times
-         // of the objects (this is robust to small variations in
-         // even the same object)
-         if (images.containsKey(pos)) {
-            final Set<PhotoGetter> value = images.get(pos);
-
-            boolean haveDesc = false;
-
-            for (final PhotoGetter photo : value) {
-               if (photo.getImageId() == desc.getId()
-                   && photo.getUserId() == userId) {
-                  haveDesc = true;
-                  break;
-               }
-            }
-
-            if (!haveDesc) {
-               value.add(loadPhoto(userId, desc.getId(),
-                                   desc.getBeginDate()));
-            }
-         } else {
-            final Set<PhotoGetter> newValue = new HashSet<PhotoGetter>();
-            final PhotoGetter photoGetter = loadPhoto(userId, desc.getId(), desc.getBeginDate());
-            newValue.add(photoGetter);
-            images.put(pos, newValue);
-         }
-
-         // Now handle the PlottablePoint we just generated
-         result.add(pos);
-      }
-
-      return result;
+      this.normalRenderer = new PhotoRenderer(false, true);
+      this.highlightRenderer = new PhotoRenderer(true, false);   // Only the normal renderer needs to draw comments
    }
 
    /**
@@ -253,184 +197,82 @@ public class PhotoSeriesPlot extends DataSeriesPlot {
       return true;
    }
 
-   /**
-    * Draws the images at the specified point.
-    *
-    * <p>Although we handle edge points and regular points in the same way in this class, we still need to draw all the
-    * images, so this does exactly the same thing that
-    * {@link #paintDataPoint(BoundedDrawingBox, GrapherTile, double, double, double, double, PlottablePoint)}
-    * does.</p>
-    *
-    * @param drawing
-    * 		the bounding box that constrains where photos will draw
-    * @param tile
-    *       the tile from which the data point to be drawn was obtained
-    * @param x
-    * 		the X-value (in pixels) at which we draw the image
-    * @param y
-    * 		ignored
-    * @param rawDataPoint
-    * 		the raw {@link PlottablePoint}
-    */
-   protected void paintEdgePoint(final BoundedDrawingBox drawing,
-                                 final GrapherTile tile,
-                                 final double x,
-                                 final double y,
-                                 final PlottablePoint rawDataPoint) {
-      drawAllImagesAtPoint(drawing, x, y);
-   }
-
-   /**
-    * Implemented here as a no-op, since we don't need highlighted points to look different.
-    */
-   protected void paintHighlightedPoint(final BoundedDrawingBox drawing, final PlottablePoint point) {
-   }
-
-   /**
-    * Paints this DataSeriesPlot in its PlotContainer.
-    *
-    * <p>Does not draw the axes associated with this DataSeriesPlot.</p>
-    *
-    * <p>Note that it is <strong>not</strong> recommended that a subclass
-    * override this method.  Instead, it is recommended that a subclass
-    * override the {@link #paintAllDataPoints} method.</p>
-    */
    @Override
-   public void paint(final Canvas canvas, final String newPaintEventId) {
-      // guard against redundant paints
-      if (previousPaintEventId == null || !previousPaintEventId.equals(newPaintEventId)) {
-         previousPaintEventId = newPaintEventId;
-
-         // Draw data points
-         canvas.getSurface().setStrokeStyle(Canvas.DEFAULT_COLOR);
-         canvas.getSurface().setLineWidth(isHighlighted()
-                                          ? AbstractPlotRenderer.HIGHLIGHT_STROKE_WIDTH
-                                          : AbstractPlotRenderer.NORMAL_STROKE_WIDTH);
-
-         final BoundedDrawingBox drawing = getDrawingBounds(canvas);
-
-         paintAllDataPoints(drawing);
-
-         // TODO: hideComment();
-         if (isSinglePointHighlighted()) {
-            drawing.beginClippedPath();
-            final PlottablePoint highlightedPoint = getHighlightedPoint();
-            paintHighlightedPoint(drawing, highlightedPoint);
-            drawing.strokeClippedPath();
-            if (highlightedPoint.hasComment()) {
-               // TODO: paintComment(drawing, highlightedPoint);
-            }
-         }
-
-         // Clean up after ourselves
-         canvas.getSurface().setStrokeStyle(Canvas.DEFAULT_COLOR);
-         canvas.getSurface().setLineWidth(AbstractPlotRenderer.NORMAL_STROKE_WIDTH);
-
-         // Make sure we shouldn't get any more info from the server
-         checkForFetch();
-      }
+   protected void beforeRender(final Canvas canvas, final BoundedDrawingBox drawing) {
+      canvas.getSurface().setStrokeStyle(Canvas.DEFAULT_COLOR);
    }
 
-   /**
-    * Renders all the salient data points in currentData.
-    *
-    * @param drawing
-    * 		the {@link BoundedDrawingBox
-    * 		BoundedDrawingBox} in which all points should be
-    * 		drawn
-    */
-   private void paintAllDataPoints(final BoundedDrawingBox drawing) {
-      // TODO: improve the algorithm for getting the best resolution tile
-      // Current algorithm is O(n m), where n is currentData.length()
-      // and m is getBestResolutionTiles().length()
-      // Could use a cache for the best resolution tiles, but would
-      // have to be careful to drop the cache if we pan or zoom too much,
-      // and definitely if we pull in more data
-
-      drawing.beginClippedPath();
-
-      // Putting these declarations outside the loop ensures
-      // that no gaps appear between lines
-      double prevX = -Double.MAX_VALUE;
-      double prevY = -Double.MAX_VALUE;
-
-      for (final GrapherTile tile : getBestResolutionTiles()) {
-         final List<PlottablePoint> dataPoints = getDataPoints(tile);
-
-         if (dataPoints == null) {
-            continue;
-         }
-
-         for (final PlottablePoint point : dataPoints) {
-            final double x = getXAxis().project2D(point.getDate()).getX();
-            final double y = getYAxis().project2D(point.getValue()).getY();
-
-            if (x < SeriesPlotRenderer.MIN_DRAWABLE_VALUE || y < SeriesPlotRenderer.MIN_DRAWABLE_VALUE
-                || Double.isInfinite(x) || Double.isInfinite(y)) {
-               // Don't draw a boundary point
-
-               // So that we don't draw a boundary point, we (relying
-               // on the fact that MIN_DRAWABLE_VALUE is negative)
-               // set prevY to something smaller than
-               // MIN_DRAWABLE_VALUE, ensuring that paintEdgePoint
-               // will be called on the next loop iteration
-               prevY = SeriesPlotRenderer.MIN_DRAWABLE_VALUE * 1.01;
-
-               continue;
-            }
-
-            // Skip any "reverse" drawing
-            if (prevX > x) {
-               continue;
-            }
-
-            // Draw this part of the line
-            if (prevX > SeriesPlotRenderer.MIN_DRAWABLE_VALUE
-                && prevY > SeriesPlotRenderer.MIN_DRAWABLE_VALUE) {
-               paintDataPoint(drawing, tile, prevX, prevY, x, y, point);
-            } else {
-               paintEdgePoint(drawing, tile, x, y, point);
-            }
-
-            prevX = x;
-            prevY = y;
-         }
-      }
-
-      drawing.strokeClippedPath();
+   @Override
+   protected HighlightableRenderer getRenderer() {
+      return isHighlighted() ? highlightRenderer : normalRenderer;
    }
 
+   @Override
+   protected void afterRender(final Canvas canvas, final BoundedDrawingBox drawing) {
+      // Clean up after ourselves
+      canvas.getSurface().setStrokeStyle(Canvas.DEFAULT_COLOR);
+   }
+
+
    /**
-    * Draws the images that are matched with x.
+    * Returns the points that will form the centers of the images.
     *
-    * <p>This does nothing except draw the images matched with x, ignoring
-    * all other parameters, since the Y-values on our points are just
-    * dummy values anyway, and since we don't draw lines between successive
-    * points.</p>
-    *
-    * @param drawing
-    * 		the bounding box that constrains where photos will draw
-    * @param tile
-    *       the tile from which the data point to be drawn was obtained
-    * @param prevX
-    * 		ignored
-    * @param prevY
-    * 		ignored
-    * @param x
-    * 		the X-value (in pixels) at which we draw the image
-    * @param y
-    * 		ignored
-    * @param rawDataPoint
-    * 		the raw {@link PlottablePoint}
+    * <p>This also has the hidden side effect of starting to load
+    * any unseen images in tile, thus making our drawing possible.
+    * There is some subtlety here: the call to this method populates
+    * the set of available images whenever called, which happens
+    * to be every time the points are needed in
+    * {@link DataSeriesPlot} methods.  The
+    * methods {@link PhotoRenderer#paintDataPoint(BoundedDrawingBox, double, double, double, double, PlottablePoint)} and
+    * {@link Plot#highlightIfNear(Vector2)} expect this images to
+    * be filled, which is always the case whenever they use elements
+    * of images, just by the way the code is written.</p>
     */
-   protected void paintDataPoint(final BoundedDrawingBox drawing,
-                                 final GrapherTile tile,
-                                 final double prevX,
-                                 final double prevY,
-                                 final double x,
-                                 final double y,
-                                 final PlottablePoint rawDataPoint) {
-      drawAllImagesAtPoint(drawing, x, y);
+   private List<PlottablePoint> getDataPoints(final GrapherTile tile) {
+      // There is no data in the tile
+      if (tile.getPhotoDescriptions() == null) {
+         return new ArrayList<PlottablePoint>();
+      }
+
+      final List<PhotoDescription> descs = tile.getPhotoDescriptions();
+      final List<PlottablePoint> result = new ArrayList<PlottablePoint>();
+
+      for (final PhotoDescription desc : descs) {
+         final PlottablePoint pos = new PlottablePoint(desc.getBeginDate(), IMAGE_Y_VALUE);
+
+         // This depends on the fact that equality of PlottablePoint
+         // objects is based on equality of the floors of the times
+         // of the objects (this is robust to small variations in
+         // even the same object)
+         if (images.containsKey(pos)) {
+            final Set<PhotoGetter> value = images.get(pos);
+
+            boolean haveDesc = false;
+
+            for (final PhotoGetter photo : value) {
+               if (photo.getImageId() == desc.getId()
+                   && photo.getUserId() == userId) {
+                  haveDesc = true;
+                  break;
+               }
+            }
+
+            if (!haveDesc) {
+               value.add(loadPhoto(userId, desc.getId(),
+                                   desc.getBeginDate()));
+            }
+         } else {
+            final Set<PhotoGetter> newValue = new HashSet<PhotoGetter>();
+            final PhotoGetter photoGetter = loadPhoto(userId, desc.getId(), desc.getBeginDate());
+            newValue.add(photoGetter);
+            images.put(pos, newValue);
+         }
+
+         // Now handle the PlottablePoint we just generated
+         result.add(pos);
+      }
+
+      return result;
    }
 
    /**
@@ -792,6 +634,86 @@ public class PhotoSeriesPlot extends DataSeriesPlot {
       }
 
       return result;
+   }
+
+   private final class PhotoRenderer extends AbstractPlotRenderer {
+      private PhotoRenderer(final boolean highlighted, final boolean drawComments) {
+         super(highlighted, drawComments);
+      }
+
+      /**
+       * Draws the images at the specified point.
+       *
+       * <p>Although we handle edge points and regular points in the same way in this class, we still need to draw all the
+       * images, so this does exactly the same thing that
+       * {@link PhotoRenderer#paintDataPoint(BoundedDrawingBox, double, double, double, double, PlottablePoint)}
+       * does.</p>
+       *
+       * @param drawing
+       * 		the bounding box that constrains where photos will draw
+       * @param tile
+       *       the tile from which the data point to be drawn was obtained
+       * @param x
+       * 		the X-value (in pixels) at which we draw the image
+       * @param y
+       * 		ignored
+       * @param rawDataPoint
+       * 		the raw {@link PlottablePoint}
+       */
+      @Override
+      protected void paintEdgePoint(final BoundedDrawingBox drawing,
+                                    final GrapherTile tile,
+                                    final double x,
+                                    final double y,
+                                    final PlottablePoint rawDataPoint) {
+         drawAllImagesAtPoint(drawing, x, y);
+      }
+
+      /**
+       * Draws the images that are matched with x.
+       *
+       * <p>This does nothing except draw the images matched with x, ignoring
+       * all other parameters, since the Y-values on our points are just
+       * dummy values anyway, and since we don't draw lines between successive
+       * points.</p>
+       *
+       * @param drawing
+       * 		the bounding box that constrains where photos will draw
+       * @param prevX
+       * 		ignored
+       * @param prevY
+       * 		ignored
+       * @param x
+       * 		the X-value (in pixels) at which we draw the image
+       * @param y
+       * 		ignored
+       * @param rawDataPoint
+       * 		the raw {@link PlottablePoint}
+       */
+      @Override
+      protected void paintDataPoint(final BoundedDrawingBox drawing,
+                                    final double prevX,
+                                    final double prevY,
+                                    final double x,
+                                    final double y,
+                                    final PlottablePoint rawDataPoint) {
+         drawAllImagesAtPoint(drawing, x, y);
+      }
+
+      /**
+       * Implemented here as a no-op, since we don't need highlighted points to look different.
+       */
+      @Override
+      protected void paintHighlightedPoint(final BoundedDrawingBox drawing,
+                                           final double x,
+                                           final double y) {
+         // no need to do anything
+      }
+
+      @Override
+      protected List<PlottablePoint> getDataPoints(final GrapherTile tile) {
+         return PhotoSeriesPlot.this.getDataPoints(tile);
+      }
    }
 
    /**
