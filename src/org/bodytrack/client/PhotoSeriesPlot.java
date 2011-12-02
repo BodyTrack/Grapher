@@ -60,8 +60,7 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
    private double previousWidth;
    // Since overlap is only valid at a X-axis width (in seconds)
 
-   private final PhotoRenderer normalRenderer;
-   private final PhotoRenderer highlightRenderer;
+   private final PhotoRenderer renderer;
 
    /**
     * Initializes a new PhotoSeriesPlot.
@@ -98,8 +97,7 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
       previousHeight = 1e-10;
       previousWidth = 1e-10;
 
-      this.normalRenderer = new PhotoRenderer(false, true);
-      this.highlightRenderer = new PhotoRenderer(true, true);
+      this.renderer = new PhotoRenderer(true);
    }
 
    /**
@@ -202,7 +200,7 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 
    @Override
    protected SeriesPlotRenderer getRenderer() {
-      return isHighlighted() ? highlightRenderer : normalRenderer;
+      return renderer;
    }
 
    @Override
@@ -631,8 +629,8 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
    }
 
    private final class PhotoRenderer extends AbstractPlotRenderer {
-      private PhotoRenderer(final boolean highlighted, final boolean drawComments) {
-         super(highlighted, drawComments);
+      private PhotoRenderer(final boolean drawComments) {
+         super(drawComments);
       }
 
       /**

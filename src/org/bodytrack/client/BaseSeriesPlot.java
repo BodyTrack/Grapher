@@ -162,7 +162,7 @@ public abstract class BaseSeriesPlot implements Plot {
    protected abstract void beforeRender(final Canvas canvas, final BoundedDrawingBox drawing);
 
    /**
-    * Get the appropriate renderer required for painting.
+    * Get the renderer required for painting.
     */
    protected abstract SeriesPlotRenderer getRenderer();
 

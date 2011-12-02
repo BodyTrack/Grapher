@@ -43,8 +43,7 @@ public class DataSeriesPlot extends BaseSeriesPlot {
       return dynPlot.get("__backingPlot");
    }
 
-   private final SeriesPlotRenderer normalRenderer;
-   private final SeriesPlotRenderer highlightRenderer;
+   private final SeriesPlotRenderer renderer;
    private Color color;          // TODO: color should eventually just be part of the style
    private JSONObject styleJson; // TODO: might make sense to eventually make this an overlay type...
 
@@ -89,9 +88,9 @@ public class DataSeriesPlot extends BaseSeriesPlot {
       this.color = color;
       this.styleJson = styleJson;
 
-      // TODO: get these from the style...
-      this.normalRenderer = new LineRenderer(false, true);
-      this.highlightRenderer = new LineRenderer(true, true);
+      // TODO: instead of concrete classes, we should just have a general
+      // renderer that behaves differently based on the style...
+      this.renderer = new LineRenderer(true);
    }
 
    @Override
@@ -101,7 +100,7 @@ public class DataSeriesPlot extends BaseSeriesPlot {
 
    @Override
    protected SeriesPlotRenderer getRenderer() {
-      return isHighlighted() ? highlightRenderer : normalRenderer;
+      return renderer;
    }
 
    @Override

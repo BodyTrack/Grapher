@@ -12,7 +12,7 @@ import com.google.gwt.user.client.ui.PopupPanel;
  * <p>An AbstractPlotRenderer can render a highlighted point, as set by the
  * {@link Plot#setHighlightedPoint(PlottablePoint)} method.  If this value is
  * not null, that point is drawn at a larger radius whenever
- * {@link SeriesPlotRenderer#render(BoundedDrawingBox, Iterable, GraphAxis, GraphAxis, PlottablePoint)} 
+ * {@link SeriesPlotRenderer#render(BoundedDrawingBox, Iterable, GraphAxis, GraphAxis, PlottablePoint)}
  * is called.  Hidden from the user of this
  * object is a mutable comment panel, which may be visible or invisible at
  * different points in time.  This mutable comment panel is never initialized
@@ -47,27 +47,18 @@ public abstract class AbstractPlotRenderer implements SeriesPlotRenderer {
 	 */
 	private static final int PREFERRED_MAX_COMMENT_WIDTH = 600;
 
-	private final boolean highlighted;
 	private final boolean drawComments;
 	private PopupPanel commentPanel;
 
 	/**
 	 * Creates a new AbstractPlotRenderer object
 	 *
-	 * @param highlighted
-	 * 	True if this AbstractPlotRenderer should draw in highlighted,
-	 * 	thicker lines, and false otherwise
-	 * @param drawComments
-	 * 	True if this AbstractPlotRenderer should draw comment boxes,
-	 * 	and false otherwise
-	 */
-	public AbstractPlotRenderer(final boolean highlighted, final boolean drawComments) {
-		this.highlighted = highlighted;
+    * @param drawComments
+    * 	True if this AbstractPlotRenderer should draw comment boxes,
+    * 	and false otherwise
+    */
+	public AbstractPlotRenderer(final boolean drawComments) {
 		this.drawComments = drawComments;
-	}
-
-	protected boolean isHighlighted() {
-		return highlighted;
 	}
 
 	protected boolean isDrawingComments() {
@@ -80,61 +71,63 @@ public abstract class AbstractPlotRenderer implements SeriesPlotRenderer {
                       final GraphAxis xAxis,
                       final GraphAxis yAxis,
                       final PlottablePoint highlightedPoint) {
-		drawing.getCanvas().getSurface().setLineWidth(highlighted
-				? HIGHLIGHT_STROKE_WIDTH
-						: NORMAL_STROKE_WIDTH);
 
-		drawing.beginClippedPath();
+      final boolean isHighlighted = highlightedPoint != null;
+      drawing.getCanvas().getSurface().setLineWidth(isHighlighted
+                                                    ? HIGHLIGHT_STROKE_WIDTH
+                                                    : NORMAL_STROKE_WIDTH);
 
-		// Putting these declarations outside the loop ensures
-		// that no gaps appear between lines
-		double prevX = -Double.MAX_VALUE;
-		double prevY = -Double.MAX_VALUE;
+      drawing.beginClippedPath();
 
-		for (final GrapherTile tile: tiles) {
-			final List<PlottablePoint> dataPoints = getDataPoints(tile);
+      // Putting these declarations outside the loop ensures
+      // that no gaps appear between lines
+      double prevX = -Double.MAX_VALUE;
+      double prevY = -Double.MAX_VALUE;
 
-			if (dataPoints == null) {
-				continue;
-			}
+      for (final GrapherTile tile : tiles) {
+         final List<PlottablePoint> dataPoints = getDataPoints(tile);
 
-			for (final PlottablePoint point: dataPoints) {
-				final double x = xAxis.project2D(point.getDate()).getX();
-				final double y = yAxis.project2D(point.getValue()).getY();
+         if (dataPoints == null) {
+            continue;
+         }
 
-				if (x < MIN_DRAWABLE_VALUE || y < MIN_DRAWABLE_VALUE
-						|| Double.isInfinite(x) || Double.isInfinite(y)) {
-					// To avoid drawing a boundary point, we set prevY
-					// to something smaller than MIN_DRAWABLE_VALUE, to
-					// cause paintEdgePoint to be called on the next
-					// loop iteration
-					prevY = MIN_DRAWABLE_VALUE * 1.01;
+         for (final PlottablePoint point : dataPoints) {
+            final double x = xAxis.project2D(point.getDate()).getX();
+            final double y = yAxis.project2D(point.getValue()).getY();
 
-					continue;
-				}
+            if (x < MIN_DRAWABLE_VALUE || y < MIN_DRAWABLE_VALUE
+                || Double.isInfinite(x) || Double.isInfinite(y)) {
+               // To avoid drawing a boundary point, we set prevY
+               // to something smaller than MIN_DRAWABLE_VALUE, to
+               // cause paintEdgePoint to be called on the next
+               // loop iteration
+               prevY = MIN_DRAWABLE_VALUE * 1.01;
 
-				// Skip any "reverse" drawing
-				if (prevX > x) {
-					continue;
-				}
+               continue;
+            }
 
-				// Draw this part of the line
-				if (prevX > MIN_DRAWABLE_VALUE
-						&& prevY > MIN_DRAWABLE_VALUE) {
-					paintDataPoint(drawing, prevX, prevY, x, y, point);
-				} else {
-					paintEdgePoint(drawing, tile, x, y, point);
-				}
+            // Skip any "reverse" drawing
+            if (prevX > x) {
+               continue;
+            }
 
-				prevX = x;
-				prevY = y;
-			}
-		}
+            // Draw this part of the line
+            if (prevX > MIN_DRAWABLE_VALUE
+                && prevY > MIN_DRAWABLE_VALUE) {
+               paintDataPoint(drawing, prevX, prevY, x, y, point);
+            } else {
+               paintEdgePoint(drawing, tile, x, y, point);
+            }
 
-		drawing.strokeClippedPath();
+            prevX = x;
+            prevY = y;
+         }
+      }
 
-		hideComment();
-      if (highlightedPoint != null) {
+      drawing.strokeClippedPath();
+
+      hideComment();
+      if (isHighlighted) {
          drawing.beginClippedPath();
          paintHighlightedPoint(drawing,
                                xAxis.project2D(highlightedPoint.getDate()).getX(),
@@ -148,7 +141,7 @@ public abstract class AbstractPlotRenderer implements SeriesPlotRenderer {
       }
 
       drawing.getCanvas().getSurface().setLineWidth(NORMAL_STROKE_WIDTH);
-	}
+   }
 
    protected List<PlottablePoint> getDataPoints(final GrapherTile tile) {
       return tile.getDataPoints();
