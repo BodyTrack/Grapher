@@ -363,4 +363,11 @@ public final class ColorUtils {
 			return null;
 		}
 	}
+
+	public static Color getColor(String name, Color defaultColor) {
+		if (name == null)
+			return defaultColor;
+		Color trueColor = buildColor(name);
+		return (trueColor != null) ? trueColor : defaultColor;
+	}
 }
