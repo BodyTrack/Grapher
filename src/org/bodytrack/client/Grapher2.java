@@ -10,6 +10,6 @@ public class Grapher2 implements EntryPoint {
 	 * This is the entry point method.
 	 */
 	public void onModuleLoad() {
-		InfoPublisher.setUpWrappers();
+		NativeInterface.setUpWrappers();
 	}
 }

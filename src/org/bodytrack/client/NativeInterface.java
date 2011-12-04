@@ -1,14 +1,10 @@
 package org.bodytrack.client;
 
 /**
- * Publishes information to the page outside of the Grapher widget.  This
- * information is available outside of GWT and offers a consistent interface
- * to the rest of the page, regardless of how GWT compiles this widget.
- *
- * <p>This class deals with the public API between the GWT application
- * and the rest of the webpage.</p>
+ * Deals with the public API between the GWT application and the rest
+ * of the webpage.
  */
-public final class InfoPublisher {
+public final class NativeInterface {
 
 	// Set to true so that setUpWrappers is called only once.
 	// With threading, this would be unsafe, but there is no issue
@@ -38,8 +34,8 @@ public final class InfoPublisher {
 		/// @return
 		///		The next ID for an object
 		var __getNextID = function() {
-			var id = @org.bodytrack.client.InfoPublisher::nextID;
-			@org.bodytrack.client.InfoPublisher::nextID = id + 1;
+			var id = @org.bodytrack.client.NativeInterface::nextID;
+			@org.bodytrack.client.NativeInterface::nextID = id + 1;
 			return id;
 		};
 
