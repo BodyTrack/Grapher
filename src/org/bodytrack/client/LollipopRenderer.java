@@ -4,13 +4,15 @@ import gwt.g2d.client.graphics.DirectShapeRenderer;
 import gwt.g2d.client.graphics.Surface;
 
 public class LollipopRenderer extends DotRenderer {
-	public LollipopRenderer(boolean highlighted, boolean drawComments) {
-		super(highlighted, drawComments);
+	public LollipopRenderer(final boolean drawComments) {
+		super(drawComments);
 	}
 
 	@Override
-	protected void paintDot(BoundedDrawingBox drawing, double x, double y,
-			boolean highlighted) {
+	protected void paintDot(final BoundedDrawingBox drawing,
+			final double x,
+			final double y,
+			final boolean highlighted) {
 		super.paintDot(drawing, x, y, highlighted);
 
 		final Canvas canvas = drawing.getCanvas();

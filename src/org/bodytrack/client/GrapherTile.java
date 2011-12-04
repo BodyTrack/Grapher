@@ -2,7 +2,8 @@ package org.bodytrack.client;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.json.client.JSONArray;
-import com.google.gwt.json.client.JSONObject;
+import com.google.gwt.json.client.JSONParser;
+import com.google.gwt.json.client.JSONValue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,17 +52,18 @@ public final class GrapherTile {
     * 		the level of this tile
     * @param offset
     * 		the offset of this tile
-    * @param tile
-    * 		the JSON representation of either a list of PhotoDescription
+    * @param tileObj
+    * 		A JSON string representation of either a list of PhotoDescription
     * 		objects or a single PlottablePointTile object.  Another
     * 		possibility is to pass the <code>null</code>, to represent
     * 		that this tile contains no data
     */
-   public GrapherTile(final int level, final int offset, final JSONObject tile) {
-      if (tile != null) {
-         if (tile.isObject() != null) {
+   public GrapherTile(final int level, final int offset, final JavaScriptObject tileObj) {
+      if (tileObj != null) {
+         final JSONValue jsonTile = JSONParser.parseStrict(tileObj.toString());
+         if (jsonTile.isObject() != null) {
             photoDescs = null;
-            this.tile = PlottablePointTile.buildTile(tile.toString());
+            this.tile = PlottablePointTile.buildTile(jsonTile.toString());
 
             // Use the tile's actual level and offset in this case only
             // Only in this case will the server ever return a level
@@ -73,14 +75,14 @@ public final class GrapherTile {
                this.level = level;
                this.offset = offset;
             }
-         } else if (tile.isArray() != null) {
+         } else if (jsonTile.isArray() != null) {
             this.level = level;
             this.offset = offset;
 
             this.tile = null;
             photoDescs = new ArrayList<PhotoDescription>();
 
-            final JSONArray arr = tile.isArray();
+            final JSONArray arr = jsonTile.isArray();
 
             for (int i = 0; i < arr.size(); i++) {
                // TODO: This is a hack
@@ -101,63 +103,6 @@ public final class GrapherTile {
          this.offset = offset;
       }
    }
-
-   /**
-    * Retrieves a tile from the specified URL.
-    *
-    * <p>Adds a tile retrieved from url into destination whenever that tile
-    * arrives.  Since GWT only supports asynchronous server requests, there
-    * is no clean way to make this method block until the object comes in.
-    * Thus, this method takes a {@link List List}, into which
-    * the GrapherTile is placed when received.</p>
-    *
-    * <h2 style="color: red">WARNING:</h2>
-    *
-    * <p>Note that the URL is assumed to be trusted.  This method uses
-    * the JavaScript eval() function, <strong>which could allow arbitrary
-    * code to execute on a user's browser</strong> if this URL is not to
-    * a BodyTrack site over a secure connection.  This could allow an
-    * attacker to view all of a user's data, simply by filling in code
-    * to request all valid data tiles and then to send those tiles
-    * to the attacker's machine.  As such, URLs for insecure connections,
-    * and especially for other websites, should not be passed in as
-    * the data parameter here.</p>
-    *
-    * @param datasource
-    * 		the datasource from which to retrieve the data
-    * @param level
-    * 		the level of the tile we are retrieving
-    * @param offset
-    * 		the offset of the tile we are retrieving
-    * @param callback
-    * 		an {@link Alertable<String>} that
-    * 		is notified whenever the tile arrives, using a message
-    * 		of the url parameter.  This url parameter is helpful
-    * 		in notifications because it allows callback to
-    * 		differentiate between several requested tiles.
-    */
-   public static native void retrieveTile(final JavaScriptObject datasource,
-                                          final int level,
-                                          final int offset,
-                                          final Alertable<GrapherTile> callback) /*-{
-      datasource(level,
-                 offset,
-                 function (tile) {
-                    var jsonObject = @com.google.gwt.json.client.JSONObject::new(Lcom/google/gwt/core/client/JavaScriptObject;)(tile);
-                    var success_tile = @org.bodytrack.client.GrapherTile::new(IILcom/google/gwt/json/client/JSONObject;)(level, offset, jsonObject);
-
-                    // The following two methods are generic in Java, but changing
-                    // the parameter specification to Object seems to work, if
-                    // only because of type erasure
-                    callback.@org.bodytrack.client.Alertable::onSuccess(Ljava/lang/Object;)(success_tile);
-                 },
-                 function () {
-                    var failure_tile = @org.bodytrack.client.GrapherTile::new(IILcom/google/gwt/json/client/JSONObject;)(level, offset, null);
-
-                    // Again, replacing a Java generic with Object seems to work
-                    callback.@org.bodytrack.client.Alertable::onFailure(Ljava/lang/Object;)(failure_tile);
-                 });
-   }-*/;
 
    /**
     * Returns the level used to create this <tt>GrapherTile</tt>.

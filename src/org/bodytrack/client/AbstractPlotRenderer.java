@@ -2,26 +2,24 @@ package org.bodytrack.client;
 
 import java.util.List;
 
-import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PopupPanel;
 
 /**
- * Draws lines for the default DataPlot view
+ * Draws lines for the default DataSeriesPlot view
  *
- * <p>An AbstractPlotRenderer maintains a highlighted point, as set by the
- * {@link #setHighlightedPoint(PlottablePoint)} method.  If this value is
+ * <p>An AbstractPlotRenderer can render a highlighted point, as set by the
+ * {@link Plot#setHighlightedPoint(PlottablePoint)} method.  If this value is
  * not null, that point is drawn at a larger radius whenever
- * {@link #render(BoundedDrawingBox, Iterable, JavaScriptObject, JavaScriptObject)}
- * is called.  Other than this highlighted point, however, an
- * AbstractPlotRenderer is logically immutable.  Hidden from the user of this
+ * {@link SeriesPlotRenderer#render(BoundedDrawingBox, Iterable, GraphAxis, GraphAxis, PlottablePoint)}
+ * is called.  Hidden from the user of this
  * object is a mutable comment panel, which may be visible or invisible at
  * different points in time.  This mutable comment panel is never initialized
  * and never shown if the drawComments parameter to the constructor is passed
  * in as false.</p>
  */
-public abstract class AbstractPlotRenderer implements HighlightableRenderer {
+public abstract class AbstractPlotRenderer implements SeriesPlotRenderer {
 	/**
 	 * The width at which a normal line is drawn.
 	 */
@@ -49,52 +47,23 @@ public abstract class AbstractPlotRenderer implements HighlightableRenderer {
 	 */
 	private static final int PREFERRED_MAX_COMMENT_WIDTH = 600;
 
-	/**
-	 * Whenever the {@link #highlight()} method is called, we don't know
-	 * which points on the axes should be highlighted, so we use this
-	 * value to indicate this.  As such, testing with == is OK as a test
-	 * for this point, since we set highlightedPoint to this exact
-	 * memory location whenever we don't know which point should be
-	 * highlighted.
-	 */
-	public static final PlottablePoint HIGHLIGHTED_NO_SINGLE_POINT =
-		new PlottablePoint(Double.MIN_VALUE, 0.0);
-
-	private final boolean highlighted;
 	private final boolean drawComments;
 	private PopupPanel commentPanel;
-	private PlottablePoint highlightedPoint;
 
-	// Two temporary axes that can be used by subclasses
+	// Three temporary fields that can be used by subclasses in paint*
 	private GraphAxis xAxis;
 	private GraphAxis yAxis;
+	private boolean highlighted;
 
 	/**
 	 * Creates a new AbstractPlotRenderer object
 	 *
-	 * @param highlighted
-	 * 	True if this AbstractPlotRenderer should draw in highlighted,
-	 * 	thicker lines, and false otherwise
-	 * @param drawComments
-	 * 	True if this AbstractPlotRenderer should draw comment boxes,
-	 * 	and false otherwise
-	 */
-	public AbstractPlotRenderer(boolean highlighted, boolean drawComments) {
-		this.highlighted = highlighted;
+    * @param drawComments
+    * 	True if this AbstractPlotRenderer should draw comment boxes,
+    * 	and false otherwise
+    */
+	public AbstractPlotRenderer(final boolean drawComments) {
 		this.drawComments = drawComments;
-		highlightedPoint = null;
-	}
-
-	public final PlottablePoint getHighlightedPoint() {
-		return highlightedPoint;
-	}
-
-	public final void setHighlightedPoint(PlottablePoint highlightedPoint) {
-		this.highlightedPoint = highlightedPoint;
-	}
-
-	public final boolean isHighlighted() {
-		return highlighted;
 	}
 
 	public final boolean isDrawingComments() {
@@ -109,96 +78,91 @@ public abstract class AbstractPlotRenderer implements HighlightableRenderer {
 		return yAxis;
 	}
 
-	@Override
-	public void render(BoundedDrawingBox drawing, Iterable<GrapherTile> tiles,
-			JavaScriptObject nativeXAxis, JavaScriptObject nativeYAxis) {
-		if (drawing == null || tiles == null
-				|| nativeXAxis == null || nativeYAxis == null) {
-			throw new NullPointerException(
-					"Drawing box, tiles, and axes must be non-null");
-		}
-
-		// Save to xAxis and yAxis so that subclass implementations of
-		// paintDataPoint etc. can use these
-		xAxis = GraphAxis.getAxis(nativeXAxis);
-		yAxis = GraphAxis.getAxis(nativeYAxis);
-
-		if (xAxis == null || yAxis == null) {
-			throw new IllegalArgumentException("Bad axis passed to render");
-		}
-
-		drawing.getCanvas().getSurface().setLineWidth(highlighted
-				? HIGHLIGHT_STROKE_WIDTH
-						: NORMAL_STROKE_WIDTH);
-
-		drawing.beginClippedPath();
-
-		// Putting these declarations outside the loop ensures
-		// that no gaps appear between lines
-		double prevX = -Double.MAX_VALUE;
-		double prevY = -Double.MAX_VALUE;
-
-		for (final GrapherTile tile: tiles) {
-			final List<PlottablePoint> dataPoints = tile.getDataPoints();
-
-			if (dataPoints == null) {
-				continue;
-			}
-
-			for (final PlottablePoint point: dataPoints) {
-				final double x = xAxis.project2D(point.getDate()).getX();
-				final double y = yAxis.project2D(point.getValue()).getY();
-
-				if (x < MIN_DRAWABLE_VALUE || y < MIN_DRAWABLE_VALUE
-						|| Double.isInfinite(x) || Double.isInfinite(y)) {
-					// To avoid drawing a boundary point, we set prevY
-					// to something smaller than MIN_DRAWABLE_VALUE, to
-					// cause paintEdgePoint to be called on the next
-					// loop iteration
-					prevY = MIN_DRAWABLE_VALUE * 1.01;
-
-					continue;
-				}
-
-				// Skip any "reverse" drawing
-				if (prevX > x) {
-					continue;
-				}
-
-				// Draw this part of the line
-				if (prevX > MIN_DRAWABLE_VALUE
-						&& prevY > MIN_DRAWABLE_VALUE) {
-					paintDataPoint(drawing, tile, prevX, prevY, x, y, point);
-				} else {
-					paintEdgePoint(drawing, tile, x, y, point);
-				}
-
-				prevX = x;
-				prevY = y;
-			}
-		}
-
-		drawing.strokeClippedPath();
-
-		hideComment();
-		if (highlightedPoint != null
-				&& highlightedPoint != HIGHLIGHTED_NO_SINGLE_POINT) {
-			// TODO: should this be an .equals() comparison instead?
-			drawing.beginClippedPath();
-			paintHighlightedPoint(drawing,
-					xAxis.project2D(highlightedPoint.getDate()).getX(),
-					yAxis.project2D(highlightedPoint.getValue()).getY(),
-					highlightedPoint);
-			drawing.strokeClippedPath();
-			if (highlightedPoint.hasComment()) {
-				paintComment(drawing, highlightedPoint,
-						xAxis.project2D(highlightedPoint.getDate()).getX(),
-						yAxis.project2D(highlightedPoint.getValue()).getY());
-			}
-		}
-
-		drawing.getCanvas().getSurface().setLineWidth(NORMAL_STROKE_WIDTH);
+	protected final boolean isHighlighted() {
+		return highlighted;
 	}
+
+	@Override
+	public void render(final BoundedDrawingBox drawing,
+                      final Iterable<GrapherTile> tiles,
+                      final GraphAxis xAxis,
+                      final GraphAxis yAxis,
+                      final PlottablePoint highlightedPoint) {
+      highlighted = highlightedPoint != null;
+      drawing.getCanvas().getSurface().setLineWidth(highlighted
+                                                    ? HIGHLIGHT_STROKE_WIDTH
+                                                    : NORMAL_STROKE_WIDTH);
+
+      drawing.beginClippedPath();
+
+      // Putting these declarations outside the loop ensures
+      // that no gaps appear between lines
+      double prevX = -Double.MAX_VALUE;
+      double prevY = -Double.MAX_VALUE;
+
+      for (final GrapherTile tile : tiles) {
+         final List<PlottablePoint> dataPoints = getDataPoints(tile);
+
+         if (dataPoints == null) {
+            continue;
+         }
+
+         for (final PlottablePoint point : dataPoints) {
+            final double x = xAxis.project2D(point.getDate()).getX();
+            final double y = yAxis.project2D(point.getValue()).getY();
+
+            if (x < MIN_DRAWABLE_VALUE || y < MIN_DRAWABLE_VALUE
+                || Double.isInfinite(x) || Double.isInfinite(y)) {
+               // To avoid drawing a boundary point, we set prevY
+               // to something smaller than MIN_DRAWABLE_VALUE, to
+               // cause paintEdgePoint to be called on the next
+               // loop iteration
+               prevY = MIN_DRAWABLE_VALUE * 1.01;
+
+               continue;
+            }
+
+            // Skip any "reverse" drawing
+            if (prevX > x) {
+               continue;
+            }
+
+            // Draw this part of the line
+            if (prevX > MIN_DRAWABLE_VALUE
+                && prevY > MIN_DRAWABLE_VALUE) {
+               paintDataPoint(drawing, tile, prevX, prevY, x, y, point);
+            } else {
+               paintEdgePoint(drawing, tile, x, y, point);
+            }
+
+            prevX = x;
+            prevY = y;
+         }
+      }
+
+      drawing.strokeClippedPath();
+
+      hideComment();
+      if (highlighted) {
+         drawing.beginClippedPath();
+         paintHighlightedPoint(drawing,
+                               xAxis.project2D(highlightedPoint.getDate()).getX(),
+                               yAxis.project2D(highlightedPoint.getValue()).getY(),
+                               highlightedPoint);
+         drawing.strokeClippedPath();
+         if (highlightedPoint.hasComment()) {
+            paintComment(drawing, highlightedPoint,
+                         xAxis.project2D(highlightedPoint.getDate()).getX(),
+                         yAxis.project2D(highlightedPoint.getValue()).getY());
+         }
+      }
+
+      drawing.getCanvas().getSurface().setLineWidth(NORMAL_STROKE_WIDTH);
+   }
+
+   protected List<PlottablePoint> getDataPoints(final GrapherTile tile) {
+      return tile.getDataPoints();
+   }
 
 	/**
 	 * Paints a left edge point for a segment of the plot
@@ -292,10 +256,12 @@ public abstract class AbstractPlotRenderer implements HighlightableRenderer {
 			final double y,
 			final PlottablePoint rawDataPoint);
 
-	private void paintComment(final BoundedDrawingBox drawing,
-			final PlottablePoint highlightedPoint, double x, double y) {
-		int ix = (int)x;
-		int iy = (int)y;
+   private void paintComment(final BoundedDrawingBox drawing,
+                             final PlottablePoint highlightedPoint,
+                             final double x,
+                             final double y) {
+      final int ix = (int)x;
+		final int iy = (int)y;
 
 		if (drawComments && highlightedPoint.hasComment()) {
 			// create the panel, but display it offscreen so we can measure

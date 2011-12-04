@@ -22,7 +22,7 @@ import com.google.gwt.event.dom.client.MouseUpHandler;
 import com.google.gwt.event.dom.client.MouseWheelEvent;
 import com.google.gwt.user.client.ui.RootPanel;
 
-public class GraphWidget {
+public class PlotContainer {
    /**
     * The default loading message for this widget to show.  This class
     * never actually uses this value, but makes it available for classes
@@ -45,9 +45,6 @@ public class GraphWidget {
     */
    public static final int VALUE_MESSAGES_CAPACITY = 4;
 
-   private static final double HIGHLIGHT_DISTANCE_THRESHOLD = 5;
-   private static final double PHOTO_HIGHLIGHT_DISTANCE_THRESH = 10;
-
    private static final int INITIAL_MESSAGE_ID = 1;
    private static final Color LOADING_MSG_COLOR = Canvas.DARK_GRAY;
    private static final double LOADING_MSG_X_MARGIN = 5;
@@ -59,7 +56,7 @@ public class GraphWidget {
    private static final double TEXT_LINE_WIDTH = 0.75;
 
    private final Surface drawing;
-   private final Set<DataPlot> dataPlots = new HashSet<DataPlot>();
+   private final Set<Plot> containedPlots = new HashSet<Plot>();
 
    // For the loading message API, which shows one message at a time
    // on the bottom left, without regard to width
@@ -84,7 +81,7 @@ public class GraphWidget {
 
    private String previousPaintEventId = null;
 
-   public GraphWidget(final String placeholder) {
+   public PlotContainer(final String placeholder) {
       drawing = new Surface(width, height);
       if (placeholder != null) {
          RootPanel.get(placeholder).add(drawing);
@@ -104,7 +101,7 @@ public class GraphWidget {
       drawing.addMouseWheelHandler(new BaseMouseWheelHandler() {
          @Override
          protected void handleMouseWheelEvent(final MouseWheelEvent event) {
-            GraphWidget.this.handleMouseWheelEvent(event, getMouseWheelZoomRate());
+            PlotContainer.this.handleMouseWheelEvent(event, getMouseWheelZoomRate());
          }
       });
 
@@ -142,19 +139,19 @@ public class GraphWidget {
       final double zoomFactor = Math.pow(mouseWheelZoomRate, event.getDeltaY());
 
       // The mouse is over the viewing window
-      final Set<DataPlot> highlightedPlots = new HashSet<DataPlot>();
-      for (final DataPlot plot : dataPlots) {
+      final Set<Plot> highlightedPlots = new HashSet<Plot>();
+      for (final Plot plot : containedPlots) {
          if (plot.isHighlighted()) {
             highlightedPlots.add(plot);
          }
       }
 
       if (highlightedPlots.size() > 0) {
-         // We are zooming at least one data plot, so we zoom
+         // We are zooming at least one plot, so we zoom
          // the associated Y-axes
 
          final Set<GraphAxis> highlightedYAxes = new HashSet<GraphAxis>();
-         for (final DataPlot plot : highlightedPlots) {
+         for (final Plot plot : highlightedPlots) {
             highlightedYAxes.add(plot.getYAxis());
          }
          for (final GraphAxis yAxis : highlightedYAxes) {
@@ -165,7 +162,7 @@ public class GraphWidget {
          // zoom all Y-axes
 
          final Set<GraphAxis> yAxes = new HashSet<GraphAxis>();
-         for (final DataPlot plot : dataPlots) {
+         for (final Plot plot : containedPlots) {
             yAxes.add(plot.getYAxis());
          }
          for (final GraphAxis yAxis : yAxes) {
@@ -182,27 +179,27 @@ public class GraphWidget {
       final Vector2 pos = new Vector2(event.getX(), event.getY());
 
       // We can be dragging exactly one of: one or
-      // more data plots, the whole viewing window, and nothing
+      // more plots, the whole viewing window, and nothing
       if (mouseDragLastPos != null) {
-         // We are either dragging either one or more data plots,
+         // We are either dragging either one or more plots,
          // or the whole viewing window. If there's one or more
          // highlighted plot, then just drag the axes
          // for those plots.  Otherwise, drag all axes.
 
          // build a set of the highlighted plots
-         final Set<DataPlot> highlightedPlots = new HashSet<DataPlot>();
-         for (final DataPlot plot : dataPlots) {
+         final Set<Plot> highlightedPlots = new HashSet<Plot>();
+         for (final Plot plot : containedPlots) {
             if (plot.isHighlighted()) {
                highlightedPlots.add(plot);
             }
          }
 
          // determine whether we're dragging only the highlighted plots
-         final Set<DataPlot> plots = (highlightedPlots.size() > 0) ? highlightedPlots : dataPlots;
+         final Set<Plot> plots = (highlightedPlots.size() > 0) ? highlightedPlots : containedPlots;
 
          // build a Set of axes to eliminate dupes
          final Set<GraphAxis> axes = new HashSet<GraphAxis>();
-         for (final DataPlot plot : plots) {
+         for (final Plot plot : plots) {
             axes.add(plot.getXAxis());
             axes.add(plot.getYAxis());
          }
@@ -215,27 +212,24 @@ public class GraphWidget {
          mouseDragLastPos = pos;
       } else {
          // We are not dragging anything, so we just update the
-         // highlighting on the data plots and axes
+         // highlighting on the plots and axes
 
-         final Set<DataPlot> highlightedPlots = new HashSet<DataPlot>();
-         for (final DataPlot plot : dataPlots) {
+         final Set<Plot> highlightedPlots = new HashSet<Plot>();
+         for (final Plot plot : containedPlots) {
             plot.unhighlight();
 
-            final double distanceThreshold = (plot instanceof PhotoDataPlot)
-                                             ? PHOTO_HIGHLIGHT_DISTANCE_THRESH
-                                             : HIGHLIGHT_DISTANCE_THRESHOLD;
-            if (plot.highlightIfNear(pos, distanceThreshold)) {
+            if (plot.highlightIfNear(pos)) {
                highlightedPlots.add(plot);
             }
          }
 
          // Now we handle highlighting of the axes--first build a set of the unhighlighted plots
-         final Set<DataPlot> unhighlightedPlots = new HashSet<DataPlot>(dataPlots);
+         final Set<Plot> unhighlightedPlots = new HashSet<Plot>(containedPlots);
          unhighlightedPlots.removeAll(highlightedPlots);
 
          // unhighlight the axes of the unhighlighted plots
          final Set<GraphAxis> unhighlightedAxes = new HashSet<GraphAxis>();
-         for (final DataPlot plot : unhighlightedPlots) {
+         for (final Plot plot : unhighlightedPlots) {
             unhighlightedAxes.add(plot.getXAxis());
             unhighlightedAxes.add(plot.getYAxis());
          }
@@ -244,7 +238,7 @@ public class GraphWidget {
          }
 
          // now highlight the axes of the highlighted plots
-         for (final DataPlot plot : highlightedPlots) {
+         for (final Plot plot : highlightedPlots) {
             final PlottablePoint highlightedPoint = plot.getHighlightedPoint();
             plot.getXAxis().highlight(highlightedPoint);
             plot.getYAxis().highlight(highlightedPoint);
@@ -261,8 +255,8 @@ public class GraphWidget {
    private void handleMouseOutEvent(final MouseOutEvent event) {
       mouseDragLastPos = null;
 
-      // Ensure that all data plots are unhighlighted, as are all axes
-      for (final DataPlot plot : dataPlots) {
+      // Ensure that all plots are unhighlighted, as are all axes
+      for (final Plot plot : containedPlots) {
          plot.unhighlight();
          plot.getXAxis().unhighlight();
          plot.getYAxis().unhighlight();
@@ -273,7 +267,7 @@ public class GraphWidget {
 
    private void layout() {
       final Set<GraphAxis> axes = new HashSet<GraphAxis>();
-      for (final DataPlot plot : dataPlots) {
+      for (final Plot plot : containedPlots) {
          axes.add(plot.getXAxis());
          axes.add(plot.getYAxis());
       }
@@ -331,14 +325,14 @@ public class GraphWidget {
          }
 
          // Draw the axes
-         for (final DataPlot plot : dataPlots) {
+         for (final Plot plot : containedPlots) {
             plot.getXAxis().paint(newPaintEventId);
             plot.getYAxis().paint(newPaintEventId);
          }
 
          // Now draw the data
          final Canvas canvas = Canvas.buildCanvas(drawing);
-         for (final DataPlot plot : dataPlots) {
+         for (final Plot plot : containedPlots) {
             plot.paint(canvas, newPaintEventId);
          }
 
@@ -420,33 +414,33 @@ public class GraphWidget {
    }
 
    /**
-    * Adds the given {@link DataPlot} to the collection of data plots to be drawn.
+    * Adds the given {@link Plot} to the collection of plots to be drawn.
     *
-    * Note that a plot can only be added once to this GraphWidget's internal collection.
+    * Note that a plot can only be added once to this PlotContainer's internal collection.
     *
     * @throws NullPointerException if plot is <code>null</code>
     */
-   public void addDataPlot(final DataPlot plot) {
+   public void addPlot(final Plot plot) {
       if (plot == null) {
          throw new NullPointerException("Cannot add null plot");
       }
-      dataPlots.add(plot);
-      plot.registerGraphWidget(this);
+      containedPlots.add(plot);
+      plot.registerPlotContainer(this);
 
       paint();
    }
 
    /**
-    * Removes the given {@link DataPlot} from the collection of data plots to be drawn.
+    * Removes the given {@link Plot} from the collection of plots to be drawn.
     *
-    * <p>Does nothing if plot is <code>null</code> or not contained by this {@link GraphWidget}<p>
+    * <p>Does nothing if plot is <code>null</code> or not contained by this {@link PlotContainer}<p>
     */
-   public void removeDataPlot(final DataPlot plot) {
+   public void removePlot(final Plot plot) {
       if (plot == null) {
          return;
       }
-      dataPlots.remove(plot);
-      plot.unregisterGraphWidget(this);
+      containedPlots.remove(plot);
+      plot.unregisterPlotContainer(this);
 
       paint();
    }
@@ -615,7 +609,7 @@ public class GraphWidget {
 
    /**
     * Returns the number of value messages currently held in this
-    * <tt>GraphWidget</tt>.
+    * <tt>PlotContainer</tt>.
     *
     * @return
     * 		the number of messages that have been added using

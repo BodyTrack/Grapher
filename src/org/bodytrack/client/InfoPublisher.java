@@ -156,7 +156,20 @@ public final class InfoPublisher {
 		///		If this key is not present, a default range will be assigned
 		$wnd.DateAxis = __createAxisConstructor(@org.bodytrack.client.TimeGraphAxis::new(Ljava/lang/String;DDLorg/bodytrack/client/Basis;DZ));
 
-		/// Initializes a new SeriesPlot object
+		/// Initializes a new PhotoAxis object
+		///
+		/// @param placeholder
+		///		The ID of a div in which this axis should go, or null
+		/// @param orientation
+		///		Either 'horizontal', for an X-axis, or 'vertical', for a Y-axis
+		/// @param range
+		///		Optional parameter: a dictionary with keys 'min' and 'max',
+		///		representing the bounds on the axis.  The values on these keys
+		///		must be numbers, with the max value greater than the min value.
+		///		If this key is not present, a default range will be assigned
+		$wnd.PhotoAxis = __createAxisConstructor(@org.bodytrack.client.PhotoGraphAxis::new(Ljava/lang/String;DDLorg/bodytrack/client/Basis;DZ));
+
+		/// Initializes a new DataSeriesPlot object
 		///
 		/// @param datasource
 		///		A function to be used as the data source for the new
@@ -168,7 +181,7 @@ public final class InfoPublisher {
 		/// @param style
 		///		Optional parameter: a dictionary specifying the style of
 		///		the new plot
-		$wnd.SeriesPlot = function(datasource, horizontalAxis, verticalAxis, style) {
+		$wnd.DataSeriesPlot = function(datasource, horizontalAxis, verticalAxis, style) {
 			if (datasource == null) {
 				throw 'Must pass in datasource';
 			}
@@ -177,23 +190,9 @@ public final class InfoPublisher {
 				throw 'Must pass in both axes';
 			}
 
-			// TODO: The following four conditionals are gross hacks!
-			// Right now the DataPlot requires a Channel object, which has
-			// a device and channel.  Without that information, it's
-			// pretty much impossible to initialize a new DataPlot object.
-			// These conditionals attempt to paper over that problem
-			// by ensuring that there is always some device name and
-			// channel name in style.
+			// create a default style if necessary
 			if (style == null) {
 				style = {};
-			}
-			if (!('device_name' in style)) {
-				// Because foo.bar is the sine wave channel
-				style.device_name = 'foo';
-			}
-			if (!('channel_name' in style)) {
-				// Because foo.bar is the sine wave channel
-				style.channel_name = 'bar';
 			}
 			if (!('color' in style)) {
 				style.color = 'black';
@@ -203,32 +202,54 @@ public final class InfoPublisher {
 			this.__backingPlot = (function() {
 				var MIN_LEVEL = -20; // TODO: Offer control to the plot creator?
 
-				// TODO: Get the channel type from the style (only getting
-				// the device and channel names right now)
-				var channel = @org.bodytrack.client.Channel::new(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)(style.device_name, style.channel_name, null);
-
 				var color = @org.bodytrack.client.ColorUtils::buildColor(Ljava/lang/String;)(style.color);
-
-				return @org.bodytrack.client.DataPlot::new(Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/core/client/JavaScriptObject;Lorg/bodytrack/client/Channel;ILgwt/g2d/client/graphics/Color;)(datasource, horizontalAxis, verticalAxis, channel, MIN_LEVEL, color);
+				var styleObject = @com.google.gwt.json.client.JSONObject::new(Lcom/google/gwt/core/client/JavaScriptObject;)(style);
+				return @org.bodytrack.client.DataSeriesPlot::new(Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/core/client/JavaScriptObject;ILgwt/g2d/client/graphics/Color;Lcom/google/gwt/json/client/JSONObject;)(datasource, horizontalAxis, verticalAxis, MIN_LEVEL, color, styleObject);
 			})();
 			this.getHorizontalAxis = function() {
-				return this.__backingPlot.@org.bodytrack.client.DataPlot::getNativeXAxis()();
-			};
-			this.setHorizontalAxis = function(axis) {
-				this.__backingPlot.@org.bodytrack.client.DataPlot::setXAxis(Lcom/google/gwt/core/client/JavaScriptObject;)(axis);
+				return this.__backingPlot.@org.bodytrack.client.DataSeriesPlot::getNativeXAxis()();
 			};
 			this.getVerticalAxis = function() {
-				return this.__backingPlot.@org.bodytrack.client.DataPlot::getNativeYAxis()();
-			};
-			this.setVerticalAxis = function(axis) {
-				this.__backingPlot.@org.bodytrack.client.DataPlot::setYAxis(Lcom/google/gwt/core/client/JavaScriptObject;)(axis);
+				return this.__backingPlot.@org.bodytrack.client.DataSeriesPlot::getNativeYAxis()();
 			};
 			this.style = style;
 			this.getStyle = function() { return this.style; };
 			this.setStyle = function(new_style) {
-				// TODO: Support changing the plot type, which requires
-				// surgically changing the backing plot
+				// TODO: Support changing the plot style
 				this.style = new_style;
+			};
+			this.id = __getNextID();
+		};
+
+		/// Initializes a new PhotoSeriesPlot object
+		///
+		/// @param datasource
+		///		A function to be used as the data source for the new
+		///		plot.  This parameter must not be null
+		/// @param horizontalAxis
+		///		An non-null axis with horizontal orientation
+		/// @param verticalAxis
+		///		A non-null axis with vertical orientation
+		$wnd.PhotoSeriesPlot = function(datasource, horizontalAxis, verticalAxis, userId) {
+			if (datasource == null) {
+				throw 'Must pass in datasource';
+			}
+
+			if (horizontalAxis == null || verticalAxis == null) {
+				throw 'Must pass in both axes';
+			}
+
+			this.getDatasource = function() { return datasource; };
+			this.__backingPlot = (function() {
+				var MIN_LEVEL = -20; // TODO: Offer control to the plot creator?
+
+				return @org.bodytrack.client.PhotoSeriesPlot::new(Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/core/client/JavaScriptObject;II)(datasource, horizontalAxis, verticalAxis, MIN_LEVEL, userId);
+			})();
+			this.getHorizontalAxis = function() {
+				return this.__backingPlot.@org.bodytrack.client.PhotoSeriesPlot::getNativeXAxis()();
+			};
+			this.getVerticalAxis = function() {
+				return this.__backingPlot.@org.bodytrack.client.PhotoSeriesPlot::getNativeYAxis()();
 			};
 			this.id = __getNextID();
 		};
@@ -252,10 +273,10 @@ public final class InfoPublisher {
 			}
 
 			this.getPlaceholder = function() { return placeholder; };
-			this.__backingWidget = (function() {
-				var widget = @org.bodytrack.client.GraphWidget::new(Ljava/lang/String;)(placeholder);
+			this.__backingPlotContainer = (function() {
+				var widget = @org.bodytrack.client.PlotContainer::new(Ljava/lang/String;)(placeholder);
 				for (var i = 0; i < plots.length; i++) {
-					widget.@org.bodytrack.client.GraphWidget::addDataPlot(Lorg/bodytrack/client/DataPlot;)(plots[i].__backingPlot);
+					widget.@org.bodytrack.client.PlotContainer::addPlot(Lorg/bodytrack/client/Plot;)(plots[i].__backingPlot);
 				}
 				return widget;
 			})();
@@ -263,13 +284,13 @@ public final class InfoPublisher {
 				if (plot === undefined) {
 					throw 'The addPlot function requires one argument';
 				}
-				this.__backingWidget.@org.bodytrack.client.GraphWidget::addDataPlot(Lorg/bodytrack/client/DataPlot;)(plot.__backingPlot);
+				this.__backingPlotContainer.@org.bodytrack.client.PlotContainer::addPlot(Lorg/bodytrack/client/Plot;)(plot.__backingPlot);
 			};
 			this.removePlot = function(plot) {
 				if (plot === undefined) {
 					throw 'The removePlot function requires one argument';
 				}
-				this.__backingWidget.@org.bodytrack.client.GraphWidget::removeDataPlot(Lorg/bodytrack/client/DataPlot;)(plot.__backingPlot);
+				this.__backingPlotContainer.@org.bodytrack.client.PlotContainer::removePlot(Lorg/bodytrack/client/Plot;)(plot.__backingPlot);
 			};
 			this.id = __getNextID();
 		};

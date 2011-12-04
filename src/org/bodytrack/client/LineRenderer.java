@@ -1,8 +1,8 @@
 package org.bodytrack.client;
 
 public class LineRenderer extends AbstractPlotRenderer {
-	public LineRenderer(boolean highlighted, boolean drawComments) {
-		super(highlighted, drawComments);
+	public LineRenderer(final boolean drawComments) {
+		super(drawComments);
 	}
 
 	@Override

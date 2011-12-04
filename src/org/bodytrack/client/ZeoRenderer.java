@@ -16,9 +16,8 @@ public class ZeoRenderer extends AbstractPlotRenderer {
 	//private static final double HIGHLIGHTED_ALPHA = 0.5;
 	private static final double HIGHLIGHTED_ALPHA = 1.0;
 
-	public ZeoRenderer(boolean highlighted, boolean drawComments) {
-		super(highlighted, drawComments);
-		// TODO Auto-generated constructor stub
+	public ZeoRenderer(boolean drawComments) {
+		super(drawComments);
 	}
 
 	@Override
