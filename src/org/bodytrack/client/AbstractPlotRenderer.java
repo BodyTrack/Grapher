@@ -58,10 +58,10 @@ public abstract class AbstractPlotRenderer implements SeriesPlotRenderer {
 	/**
 	 * Creates a new AbstractPlotRenderer object
 	 *
-    * @param drawComments
-    * 	True if this AbstractPlotRenderer should draw comment boxes,
-    * 	and false otherwise
-    */
+	 * @param drawComments
+	 * 	True if this AbstractPlotRenderer should draw comment boxes,
+	 * 	and false otherwise
+	 */
 	public AbstractPlotRenderer(final boolean drawComments) {
 		this.drawComments = drawComments;
 	}
@@ -84,85 +84,85 @@ public abstract class AbstractPlotRenderer implements SeriesPlotRenderer {
 
 	@Override
 	public void render(final BoundedDrawingBox drawing,
-                      final Iterable<GrapherTile> tiles,
-                      final GraphAxis xAxis,
-                      final GraphAxis yAxis,
-                      final PlottablePoint highlightedPoint) {
-      highlighted = highlightedPoint != null;
-      drawing.getCanvas().getSurface().setLineWidth(highlighted
-                                                    ? HIGHLIGHT_STROKE_WIDTH
-                                                    : NORMAL_STROKE_WIDTH);
+			final Iterable<GrapherTile> tiles,
+			final GraphAxis xAxis,
+			final GraphAxis yAxis,
+			final PlottablePoint highlightedPoint) {
+		highlighted = highlightedPoint != null;
+		drawing.getCanvas().getSurface().setLineWidth(highlighted
+				? HIGHLIGHT_STROKE_WIDTH
+						: NORMAL_STROKE_WIDTH);
 
-      drawing.beginClippedPath();
+		drawing.beginClippedPath();
 
-      // Putting these declarations outside the loop ensures
-      // that no gaps appear between lines
-      double prevX = -Double.MAX_VALUE;
-      double prevY = -Double.MAX_VALUE;
+		// Putting these declarations outside the loop ensures
+		// that no gaps appear between lines
+		double prevX = -Double.MAX_VALUE;
+		double prevY = -Double.MAX_VALUE;
 
-      for (final GrapherTile tile : tiles) {
-         final List<PlottablePoint> dataPoints = getDataPoints(tile);
+		for (final GrapherTile tile : tiles) {
+			final List<PlottablePoint> dataPoints = getDataPoints(tile);
 
-         if (dataPoints == null) {
-            continue;
-         }
+			if (dataPoints == null) {
+				continue;
+			}
 
-         for (final PlottablePoint point : dataPoints) {
-            final double x = xAxis.project2D(point.getDate()).getX();
-            final double y = yAxis.project2D(point.getValue()).getY();
+			for (final PlottablePoint point : dataPoints) {
+				final double x = xAxis.project2D(point.getDate()).getX();
+				final double y = yAxis.project2D(point.getValue()).getY();
 
-            if (x < MIN_DRAWABLE_VALUE || y < MIN_DRAWABLE_VALUE
-                || Double.isInfinite(x) || Double.isInfinite(y)) {
-               // To avoid drawing a boundary point, we set prevY
-               // to something smaller than MIN_DRAWABLE_VALUE, to
-               // cause paintEdgePoint to be called on the next
-               // loop iteration
-               prevY = MIN_DRAWABLE_VALUE * 1.01;
+				if (x < MIN_DRAWABLE_VALUE || y < MIN_DRAWABLE_VALUE
+						|| Double.isInfinite(x) || Double.isInfinite(y)) {
+					// To avoid drawing a boundary point, we set prevY
+					// to something smaller than MIN_DRAWABLE_VALUE, to
+					// cause paintEdgePoint to be called on the next
+					// loop iteration
+					prevY = MIN_DRAWABLE_VALUE * 1.01;
 
-               continue;
-            }
+					continue;
+				}
 
-            // Skip any "reverse" drawing
-            if (prevX > x) {
-               continue;
-            }
+				// Skip any "reverse" drawing
+				if (prevX > x) {
+					continue;
+				}
 
-            // Draw this part of the line
-            if (prevX > MIN_DRAWABLE_VALUE
-                && prevY > MIN_DRAWABLE_VALUE) {
-               paintDataPoint(drawing, tile, prevX, prevY, x, y, point);
-            } else {
-               paintEdgePoint(drawing, tile, x, y, point);
-            }
+				// Draw this part of the line
+				if (prevX > MIN_DRAWABLE_VALUE
+						&& prevY > MIN_DRAWABLE_VALUE) {
+					paintDataPoint(drawing, tile, prevX, prevY, x, y, point);
+				} else {
+					paintEdgePoint(drawing, tile, x, y, point);
+				}
 
-            prevX = x;
-            prevY = y;
-         }
-      }
+				prevX = x;
+				prevY = y;
+			}
+		}
 
-      drawing.strokeClippedPath();
+		drawing.strokeClippedPath();
 
-      hideComment();
-      if (highlighted) {
-         drawing.beginClippedPath();
-         paintHighlightedPoint(drawing,
-                               xAxis.project2D(highlightedPoint.getDate()).getX(),
-                               yAxis.project2D(highlightedPoint.getValue()).getY(),
-                               highlightedPoint);
-         drawing.strokeClippedPath();
-         if (highlightedPoint.hasComment()) {
-            paintComment(drawing, highlightedPoint,
-                         xAxis.project2D(highlightedPoint.getDate()).getX(),
-                         yAxis.project2D(highlightedPoint.getValue()).getY());
-         }
-      }
+		hideComment();
+		if (highlighted) {
+			drawing.beginClippedPath();
+			paintHighlightedPoint(drawing,
+					xAxis.project2D(highlightedPoint.getDate()).getX(),
+					yAxis.project2D(highlightedPoint.getValue()).getY(),
+					highlightedPoint);
+			drawing.strokeClippedPath();
+			if (highlightedPoint.hasComment()) {
+				paintComment(drawing, highlightedPoint,
+						xAxis.project2D(highlightedPoint.getDate()).getX(),
+						yAxis.project2D(highlightedPoint.getValue()).getY());
+			}
+		}
 
-      drawing.getCanvas().getSurface().setLineWidth(NORMAL_STROKE_WIDTH);
-   }
+		drawing.getCanvas().getSurface().setLineWidth(NORMAL_STROKE_WIDTH);
+	}
 
-   protected List<PlottablePoint> getDataPoints(final GrapherTile tile) {
-      return tile.getDataPoints();
-   }
+	protected List<PlottablePoint> getDataPoints(final GrapherTile tile) {
+		return tile.getDataPoints();
+	}
 
 	/**
 	 * Paints a left edge point for a segment of the plot
@@ -256,11 +256,11 @@ public abstract class AbstractPlotRenderer implements SeriesPlotRenderer {
 			final double y,
 			final PlottablePoint rawDataPoint);
 
-   private void paintComment(final BoundedDrawingBox drawing,
-                             final PlottablePoint highlightedPoint,
-                             final double x,
-                             final double y) {
-      final int ix = (int)x;
+	private void paintComment(final BoundedDrawingBox drawing,
+			final PlottablePoint highlightedPoint,
+			final double x,
+			final double y) {
+		final int ix = (int)x;
 		final int iy = (int)y;
 
 		if (drawComments && highlightedPoint.hasComment()) {
