@@ -1,12 +1,11 @@
 package org.bodytrack.client;
 
-import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.i18n.client.NumberFormat;
-import com.google.gwt.json.client.JSONObject;
-import gwt.g2d.client.graphics.Color;
 import gwt.g2d.client.math.Vector2;
 
 import java.util.List;
+
+import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.i18n.client.NumberFormat;
 
 /**
  * Represents a single set of data, along with references to its
@@ -35,7 +34,6 @@ import java.util.List;
  * them.</p>
  */
 public class DataSeriesPlot extends BaseSeriesPlot {
-
    private static final double HIGHLIGHT_DISTANCE_THRESHOLD = 5;
 
    public static DataSeriesPlot getDataSeriesPlot(final JavaScriptObject nativePlot) {
@@ -44,8 +42,7 @@ public class DataSeriesPlot extends BaseSeriesPlot {
    }
 
    private final SeriesPlotRenderer renderer;
-   private Color color;          // TODO: color should eventually just be part of the style
-   private JSONObject styleJson; // TODO: might make sense to eventually make this an overlay type...
+   private final StyleDescription style;
 
    /**
     * Main constructor for the DataSeriesPlot object.
@@ -57,9 +54,6 @@ public class DataSeriesPlot extends BaseSeriesPlot {
     * 		the Y-axis along which this data set will be aligned when drawn
     * @param minLevel
     * 		the minimum level to which the user will be allowed to zoom
-    * @param color
-    * 		the color in which to draw these data points (note that
-    * 		this does not affect the color of the axes)
     * @throws NullPointerException
     * 		if datasource, nativeXAxis, nativeYAxis, or color is <tt>null</tt>
     * @throws IllegalArgumentException
@@ -68,25 +62,22 @@ public class DataSeriesPlot extends BaseSeriesPlot {
    public DataSeriesPlot(final JavaScriptObject datasource,
                          final JavaScriptObject nativeXAxis,
                          final JavaScriptObject nativeYAxis,
-                         final int minLevel,
-                         final Color color) {
-      this(datasource, nativeXAxis, nativeYAxis, minLevel, color, null);
+                         final int minLevel) {
+      this(datasource, nativeXAxis, nativeYAxis, minLevel, null);
    }
 
-   private DataSeriesPlot(final JavaScriptObject datasource,
-                          final JavaScriptObject nativeXAxis,
-                          final JavaScriptObject nativeYAxis,
-                          final int minLevel,
-                          final Color color,
-                          final JSONObject styleJson) {
+   public DataSeriesPlot(final JavaScriptObject datasource,
+                         final JavaScriptObject nativeXAxis,
+                         final JavaScriptObject nativeYAxis,
+                         final int minLevel,
+                         final JavaScriptObject styleJson) {
+      // The superclass constructor checks for null in its parameters
       super(datasource, nativeXAxis, nativeYAxis, minLevel);
-      if (nativeXAxis == null || nativeYAxis == null || color == null) {
-         throw new NullPointerException(
-               "Cannot have a null datasource, axis, or color");
+      if (styleJson == null) {
+         throw new NullPointerException("Cannot have a null style");
       }
 
-      this.color = color;
-      this.styleJson = styleJson;
+      this.style = styleJson.cast();
 
       // TODO: instead of concrete classes, we should just have a general
       // renderer that behaves differently based on the style...
@@ -95,7 +86,7 @@ public class DataSeriesPlot extends BaseSeriesPlot {
 
    @Override
    protected void beforeRender(final Canvas canvas, final BoundedDrawingBox drawing) {
-      canvas.getSurface().setStrokeStyle(color);
+      canvas.getSurface().setStrokeStyle(style.getColor(Canvas.DEFAULT_COLOR));
    }
 
    @Override

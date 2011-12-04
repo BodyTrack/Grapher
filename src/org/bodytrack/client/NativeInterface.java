@@ -190,17 +190,11 @@ public final class NativeInterface {
 			if (style == null) {
 				style = {};
 			}
-			if (!('color' in style)) {
-				style.color = 'black';
-			}
 
 			this.getDatasource = function() { return datasource; };
 			this.__backingPlot = (function() {
 				var MIN_LEVEL = -20; // TODO: Offer control to the plot creator?
-
-				var color = @org.bodytrack.client.ColorUtils::buildColor(Ljava/lang/String;)(style.color);
-				var styleObject = @com.google.gwt.json.client.JSONObject::new(Lcom/google/gwt/core/client/JavaScriptObject;)(style);
-				return @org.bodytrack.client.DataSeriesPlot::new(Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/core/client/JavaScriptObject;ILgwt/g2d/client/graphics/Color;Lcom/google/gwt/json/client/JSONObject;)(datasource, horizontalAxis, verticalAxis, MIN_LEVEL, color, styleObject);
+				return @org.bodytrack.client.DataSeriesPlot::new(Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/core/client/JavaScriptObject;ILcom/google/gwt/core/client/JavaScriptObject;)(datasource, horizontalAxis, verticalAxis, MIN_LEVEL, style);
 			})();
 			this.getHorizontalAxis = function() {
 				return this.__backingPlot.@org.bodytrack.client.DataSeriesPlot::getNativeXAxis()();

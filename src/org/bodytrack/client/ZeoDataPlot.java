@@ -47,7 +47,7 @@ public class ZeoDataPlot extends DataSeriesPlot {
                       final JavaScriptObject nativeXAxis,
                       final JavaScriptObject nativeYAxis,
                       final int minLevel) {
-      super(datasource, nativeXAxis, nativeYAxis, minLevel, Canvas.DEFAULT_COLOR);
+      super(datasource, nativeXAxis, nativeYAxis, minLevel);
    }
 
    /**
