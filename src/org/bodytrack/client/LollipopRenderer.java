@@ -27,8 +27,9 @@ public class LollipopRenderer extends DotRenderer {
    protected void paintDot(final BoundedDrawingBox drawing,
                            final double x,
                            final double y,
-                           final boolean isHighlighted) {
-      super.paintDot(drawing, x, y, isHighlighted);
+                           final boolean isHighlighted,
+                           final PlottablePoint rawDataPoint) {
+      super.paintDot(drawing, x, y, isHighlighted, rawDataPoint);
 
       // This should never happen, since we set yAxis in render
       if (yAxis == null) {

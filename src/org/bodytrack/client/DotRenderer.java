@@ -1,8 +1,5 @@
 package org.bodytrack.client;
 
-import gwt.g2d.client.graphics.shapes.CircleShape;
-import gwt.g2d.client.math.Vector2;
-
 public class DotRenderer extends AbstractPlotRenderer {
    private static final int DOT_RADIUS = 3;
 
@@ -13,11 +10,16 @@ public class DotRenderer extends AbstractPlotRenderer {
    protected void paintDot(final BoundedDrawingBox drawing,
                            final double x,
                            final double y,
-                           final boolean isHighlighted) {
+                           final boolean isHighlighted,
+                           final PlottablePoint rawDataPoint) {
       if (drawing.contains(x, y)) {
-         drawing.getCanvas().getSurface().fillShape(
-               new CircleShape(new Vector2(x, y),
-                               isHighlighted ? HIGHLIGHTED_DOT_RADIUS : DOT_RADIUS));
+
+         final boolean willPaintLargerDot = isHighlighted ||
+                                            (isDrawingComments() &&
+                                             rawDataPoint != null &&
+                                             rawDataPoint.hasComment());
+
+         drawing.drawFilledDot(x, y, willPaintLargerDot ? HIGHLIGHTED_DOT_RADIUS : DOT_RADIUS);
       }
    }
 
@@ -28,7 +30,7 @@ public class DotRenderer extends AbstractPlotRenderer {
                                        final double x,
                                        final double y,
                                        final PlottablePoint rawDataPoint) {
-      paintDot(drawing, x, y, rawDataPoint.hasComment());
+      paintDot(drawing, x, y, false, rawDataPoint);
    }
 
    @Override
@@ -37,12 +39,13 @@ public class DotRenderer extends AbstractPlotRenderer {
                                        final double x,
                                        final double y,
                                        final PlottablePoint rawDataPoint) {
-      paintDot(drawing, x, y, rawDataPoint.hasComment());
+      paintDot(drawing, x, y, false, rawDataPoint);
    }
 
    @Override
-   protected final void paintHighlightedPoint(BoundedDrawingBox drawing, double x,
-                                              double y) {
-      paintDot(drawing, x, y, true);
+   protected final void paintHighlightedPoint(final BoundedDrawingBox drawing,
+                                              final double x,
+                                              final double y) {
+      paintDot(drawing, x, y, true, null);
    }
 }

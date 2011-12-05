@@ -36,10 +36,6 @@ public class LineRenderer extends AbstractPlotRenderer {
    protected void paintHighlightedPoint(final BoundedDrawingBox drawing,
                                         final double x,
                                         final double y) {
-      // Draw three concentric circles to look like one filled-in circle
-      // The real radius is the first one used: HIGHLIGHTED_DOT_RADIUS
-      drawing.drawDot(x, y, HIGHLIGHTED_DOT_RADIUS);
-      drawing.drawDot(x, y, HIGHLIGHT_STROKE_WIDTH);
-      drawing.drawDot(x, y, NORMAL_STROKE_WIDTH);
+      drawing.drawFilledDot(x, y, HIGHLIGHTED_DOT_RADIUS);
    }
 }

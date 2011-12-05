@@ -2,7 +2,10 @@ package org.bodytrack.client;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.i18n.client.NumberFormat;
+import com.google.gwt.json.client.JSONBoolean;
 import com.google.gwt.json.client.JSONObject;
+import com.google.gwt.json.client.JSONString;
+import com.google.gwt.json.client.JSONValue;
 import gwt.g2d.client.graphics.Color;
 import gwt.g2d.client.math.Vector2;
 
@@ -88,14 +91,47 @@ public class DataSeriesPlot extends BaseSeriesPlot {
       this.color = color;
       this.styleJson = styleJson;
 
+      boolean willShowComments = true;
+
+      // get whether to draw comments from the style
+      final JSONValue commentsJsonValue = styleJson.get("comments");
+      if (commentsJsonValue != null) {
+         final JSONObject commentsJsonObject = commentsJsonValue.isObject();
+         if (commentsJsonObject != null) {
+            final JSONValue showCommentsJsonValue = commentsJsonObject.get("show");
+            if (showCommentsJsonValue != null) {
+               final JSONBoolean showCommentsJsonBoolean = showCommentsJsonValue.isBoolean();
+               if (showCommentsJsonBoolean != null) {
+                  willShowComments = showCommentsJsonBoolean.booleanValue();
+               }
+            }
+         }
+      }
+
       // TODO: instead of concrete classes, we should just have a general
       // renderer that behaves differently based on the style...
-      this.renderer = new LineRenderer(true);
+      SeriesPlotRenderer tempRenderer = null;
+      if (styleJson != null) {
+         final JSONValue typeJsonValue = styleJson.get("type");
+         if (typeJsonValue != null) {
+            final JSONString typeJsonString = typeJsonValue.isString();
+            if (typeJsonString != null) {
+               final String type = typeJsonString.stringValue();
+               if (ChartType.DOT.getName().equalsIgnoreCase(type)) {
+                  tempRenderer = new DotRenderer(willShowComments);
+               } else if (ChartType.LOLLIPOP.getName().equalsIgnoreCase(type)) {
+                  tempRenderer = new LollipopRenderer(willShowComments);
+               }
+            }
+         }
+      }
+      this.renderer = tempRenderer == null ? new LineRenderer(willShowComments) : tempRenderer;
    }
 
    @Override
    protected void beforeRender(final Canvas canvas, final BoundedDrawingBox drawing) {
       canvas.getSurface().setStrokeStyle(color);
+      canvas.getSurface().setFillStyle(color);
    }
 
    @Override
@@ -107,6 +143,7 @@ public class DataSeriesPlot extends BaseSeriesPlot {
    protected void afterRender(final Canvas canvas, final BoundedDrawingBox drawing) {
       // Clean up after ourselves
       canvas.getSurface().setStrokeStyle(Canvas.DEFAULT_COLOR);
+      canvas.getSurface().setFillStyle(Canvas.DEFAULT_COLOR);
    }
 
    /**
