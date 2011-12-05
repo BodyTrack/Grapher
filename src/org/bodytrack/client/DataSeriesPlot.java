@@ -91,27 +91,27 @@ public class DataSeriesPlot extends BaseSeriesPlot {
       this.color = color;
       this.styleJson = styleJson;
 
-      boolean willShowComments = true;
-
-      // get whether to draw comments from the style
-      final JSONValue commentsJsonValue = styleJson.get("comments");
-      if (commentsJsonValue != null) {
-         final JSONObject commentsJsonObject = commentsJsonValue.isObject();
-         if (commentsJsonObject != null) {
-            final JSONValue showCommentsJsonValue = commentsJsonObject.get("show");
-            if (showCommentsJsonValue != null) {
-               final JSONBoolean showCommentsJsonBoolean = showCommentsJsonValue.isBoolean();
-               if (showCommentsJsonBoolean != null) {
-                  willShowComments = showCommentsJsonBoolean.booleanValue();
-               }
-            }
-         }
-      }
-
       // TODO: instead of concrete classes, we should just have a general
       // renderer that behaves differently based on the style...
       SeriesPlotRenderer tempRenderer = null;
+      boolean willShowComments = true;
       if (styleJson != null) {
+         // get whether to draw comments from the style
+         final JSONValue commentsJsonValue = styleJson.get("comments");
+         if (commentsJsonValue != null) {
+            final JSONObject commentsJsonObject = commentsJsonValue.isObject();
+            if (commentsJsonObject != null) {
+               final JSONValue showCommentsJsonValue = commentsJsonObject.get("show");
+               if (showCommentsJsonValue != null) {
+                  final JSONBoolean showCommentsJsonBoolean = showCommentsJsonValue.isBoolean();
+                  if (showCommentsJsonBoolean != null) {
+                     willShowComments = showCommentsJsonBoolean.booleanValue();
+                  }
+               }
+            }
+         }
+
+         // choose the appropriate renderer based on the type
          final JSONValue typeJsonValue = styleJson.get("type");
          if (typeJsonValue != null) {
             final JSONString typeJsonString = typeJsonValue.isString();
