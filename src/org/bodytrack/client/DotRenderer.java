@@ -1,7 +1,5 @@
 package org.bodytrack.client;
 
-import gwt.g2d.client.graphics.shapes.CircleShape;
-import gwt.g2d.client.math.Vector2;
 
 public class DotRenderer extends AbstractPlotRenderer {
 	private static final int DOT_RADIUS = 3;
@@ -13,11 +11,17 @@ public class DotRenderer extends AbstractPlotRenderer {
 	protected void paintDot(final BoundedDrawingBox drawing,
 			final double x,
 			final double y,
-			final boolean highlighted) {
+			final boolean highlighted,
+			final PlottablePoint rawDataPoint) {
 		if (drawing.contains(x, y)) {
-			drawing.getCanvas().getSurface().fillShape(
-					new CircleShape(new Vector2(x, y),
-							highlighted ? HIGHLIGHTED_DOT_RADIUS : DOT_RADIUS));
+			final boolean willPaintLargerDot =
+				highlighted
+				|| (isDrawingComments()
+						&& rawDataPoint != null
+						&& rawDataPoint.hasComment());
+			final double radius =
+				willPaintLargerDot ? HIGHLIGHTED_DOT_RADIUS : DOT_RADIUS;
+			drawing.drawFilledDot(x, y, radius);
 		}
 	}
 
@@ -29,7 +33,7 @@ public class DotRenderer extends AbstractPlotRenderer {
 			final double x,
 			final double y,
 			final PlottablePoint rawDataPoint) {
-		paintDot(drawing, x, y, rawDataPoint.hasComment());
+		paintDot(drawing, x, y, rawDataPoint.hasComment(), rawDataPoint);
 	}
 
 	@Override
@@ -38,7 +42,7 @@ public class DotRenderer extends AbstractPlotRenderer {
 			final double x,
 			final double y,
 			final PlottablePoint rawDataPoint) {
-		paintDot(drawing, x, y, rawDataPoint.hasComment());
+		paintDot(drawing, x, y, rawDataPoint.hasComment(), rawDataPoint);
 	}
 
 	@Override
@@ -46,6 +50,6 @@ public class DotRenderer extends AbstractPlotRenderer {
 			final double x,
 			final double y,
 			final PlottablePoint rawDataPoint) {
-		paintDot(drawing, x, y, true);
+		paintDot(drawing, x, y, true, null);
 	}
 }

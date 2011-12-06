@@ -25,12 +25,22 @@ public final class StyleDescription extends JavaScriptObject {
 		return this.bars;
 	}-*/;
 
+	public native CommentsDescription getComments() /*-{
+		return this.comments;
+	}-*/;
+
 	public native String getDeviceName() /*-{
 		return this.device_name;
 	}-*/;
 
 	public native String getChannelName() /*-{
 		return this.channel_name;
+	}-*/;
+
+	// TODO: Remove this function, since it is perfectly permissible
+	// for a style to have multiple types (bars and lines, for instance)
+	public native String getType() /*-{
+		return this.type;
 	}-*/;
 
 	/**
@@ -55,7 +65,7 @@ public final class StyleDescription extends JavaScriptObject {
 		protected LinesDescription() {}
 
 		public native boolean show() /*-{
-			return this.show;
+			return !!(this.show);
 		}-*/;
 
 		public native double getLineWidth() /*-{
@@ -63,7 +73,7 @@ public final class StyleDescription extends JavaScriptObject {
 		}-*/;
 
 		public native boolean fill() /*-{
-			return this.fill;
+			return !!(this.fill);
 		}-*/;
 
 		public native String getColorName() /*-{
@@ -76,7 +86,7 @@ public final class StyleDescription extends JavaScriptObject {
 		protected PointsDescription() {}
 
 		public native boolean show() /*-{
-			return this.show;
+			return !!(this.show);
 		}-*/;
 
 		public native double getLineWidth() /*-{
@@ -88,7 +98,7 @@ public final class StyleDescription extends JavaScriptObject {
 		}-*/;
 
 		public native boolean fill() /*-{
-			return this.fill;
+			return !!(this.fill);
 		}-*/;
 
 		public native String getColorName() /*-{
@@ -101,7 +111,7 @@ public final class StyleDescription extends JavaScriptObject {
 		protected BarsDescription() {}
 
 		public native boolean show() /*-{
-			return this.show;
+			return !!(this.show);
 		}-*/;
 
 		public native double getLineWidth() /*-{
@@ -113,11 +123,11 @@ public final class StyleDescription extends JavaScriptObject {
 		}-*/;
 
 		public native boolean fill() /*-{
-			return this.fill;
+			return !!(this.fill);
 		}-*/;
 
 		public native boolean hasColor() /*-{
-			return (!!this.fillColor);
+			return !!(this.fillColor);
 		}-*/;
 
 		public native boolean isSingleColor() /*-{
@@ -125,13 +135,13 @@ public final class StyleDescription extends JavaScriptObject {
 			// the ECMAScript standard at
 			// http://www.ecma-international.org/publications/files/ECMA-ST/Ecma-262.pdf
 			// on page 33
-			return (!!this.fillColor)
+			return !!(this.fillColor)
 				&& (Object.prototype.toString.call(this.fillColor) !== '[object Array]');
 		}-*/;
 
 		// Meaningless unless isSingleColor() returns true
 		public native String getColor() /*-{
-			return this.fillColor;
+			return !!(this.fillColor);
 		}-*/;
 
 		// Meaningless unless isSingleColor() returns false
@@ -141,5 +151,14 @@ public final class StyleDescription extends JavaScriptObject {
 
 		// TODO: Add a method convert the output of getRawColors() to
 		// something Java can use to draw bars
+	}
+
+	public static final class CommentsDescription extends JavaScriptObject {
+		// JavaScript overlay types always have protected, no-arg constructors
+		protected CommentsDescription() {}
+
+		public native boolean show() /*-{
+			return !!(this.show);
+		}-*/;
 	}
 }

@@ -97,6 +97,9 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
       previousHeight = 1e-10;
       previousWidth = 1e-10;
 
+      // TODO: instead of concrete classes, we should just have a general
+      // renderer that behaves differently based on the style...
+      // TODO: get whether to draw comments from the style
       this.renderer = new PhotoRenderer(true);
    }
 

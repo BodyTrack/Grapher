@@ -12,8 +12,9 @@ public class LollipopRenderer extends DotRenderer {
 	protected void paintDot(final BoundedDrawingBox drawing,
 			final double x,
 			final double y,
-			final boolean highlighted) {
-		super.paintDot(drawing, x, y, highlighted);
+			final boolean highlighted,
+			final PlottablePoint rawDataPoint) {
+		super.paintDot(drawing, x, y, highlighted, rawDataPoint);
 
 		final Canvas canvas = drawing.getCanvas();
 		final Surface surface = canvas.getSurface();

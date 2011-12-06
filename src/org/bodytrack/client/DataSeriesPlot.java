@@ -4,6 +4,8 @@ import gwt.g2d.client.math.Vector2;
 
 import java.util.List;
 
+import org.bodytrack.client.StyleDescription.CommentsDescription;
+
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.i18n.client.NumberFormat;
 
@@ -81,12 +83,32 @@ public class DataSeriesPlot extends BaseSeriesPlot {
 
       // TODO: instead of concrete classes, we should just have a general
       // renderer that behaves differently based on the style...
-      this.renderer = new LineRenderer(true);
+      boolean willShowComments = true;
+      if (styleJson != null) {
+         // get whether to draw comments from the style
+         final CommentsDescription commentsValue = style.getComments();
+         if (commentsValue != null) {
+            willShowComments = commentsValue.show();
+         }
+
+         // choose the appropriate renderer based on the type
+         final String type = style.getType();
+         if (ChartType.DOT.getName().equalsIgnoreCase(type)) {
+            this.renderer = new DotRenderer(willShowComments);
+         } else if (ChartType.LOLLIPOP.getName().equalsIgnoreCase(type)) {
+            this.renderer = new LollipopRenderer(willShowComments);
+         } else {
+            this.renderer = new LineRenderer(willShowComments);
+         }
+      } else {
+         this.renderer = new LineRenderer(willShowComments);
+      }
    }
 
    @Override
    protected void beforeRender(final Canvas canvas, final BoundedDrawingBox drawing) {
       canvas.getSurface().setStrokeStyle(style.getColor(Canvas.DEFAULT_COLOR));
+      canvas.getSurface().setFillStyle(style.getColor(Canvas.DEFAULT_COLOR));
    }
 
    @Override
@@ -98,6 +120,7 @@ public class DataSeriesPlot extends BaseSeriesPlot {
    protected void afterRender(final Canvas canvas, final BoundedDrawingBox drawing) {
       // Clean up after ourselves
       canvas.getSurface().setStrokeStyle(Canvas.DEFAULT_COLOR);
+      canvas.getSurface().setFillStyle(Canvas.DEFAULT_COLOR);
    }
 
    /**

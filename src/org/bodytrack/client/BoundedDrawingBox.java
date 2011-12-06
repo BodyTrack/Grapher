@@ -1,8 +1,12 @@
 package org.bodytrack.client;
 
+import gwt.g2d.client.graphics.*;
+import gwt.g2d.client.graphics.Color;
 import gwt.g2d.client.graphics.canvas.Context;
+import gwt.g2d.client.graphics.shapes.CircleShape;
 import gwt.g2d.client.math.Vector2;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -157,6 +161,17 @@ public final class BoundedDrawingBox {
 	public void drawDot(double x, double y, double radius) {
 		if (contains(x, y))
 			getCanvas().getRenderer().drawCircle(x, y, radius);
+	}
+
+   public void drawFilledDot(final double x,
+                             final double y,
+                             final double radius) {
+		if (contains(x, y)) {
+         final Context ctx = canvas.getSurface().getContext();
+         ctx.moveTo(x, y );
+         ctx.arc(x,y,radius,0,360,false);
+         ctx.fill();
+      }
 	}
 
 	/**
