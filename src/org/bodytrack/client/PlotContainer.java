@@ -1,5 +1,14 @@
 package org.bodytrack.client;
 
+import com.google.gwt.event.dom.client.MouseDownEvent;
+import com.google.gwt.event.dom.client.MouseDownHandler;
+import com.google.gwt.event.dom.client.MouseMoveEvent;
+import com.google.gwt.event.dom.client.MouseMoveHandler;
+import com.google.gwt.event.dom.client.MouseOutEvent;
+import com.google.gwt.event.dom.client.MouseOutHandler;
+import com.google.gwt.event.dom.client.MouseUpEvent;
+import com.google.gwt.event.dom.client.MouseUpHandler;
+import com.google.gwt.user.client.ui.RootPanel;
 import gwt.g2d.client.graphics.Color;
 import gwt.g2d.client.graphics.Surface;
 import gwt.g2d.client.graphics.TextAlign;
@@ -10,17 +19,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-
-import com.google.gwt.event.dom.client.MouseDownEvent;
-import com.google.gwt.event.dom.client.MouseDownHandler;
-import com.google.gwt.event.dom.client.MouseMoveEvent;
-import com.google.gwt.event.dom.client.MouseMoveHandler;
-import com.google.gwt.event.dom.client.MouseOutEvent;
-import com.google.gwt.event.dom.client.MouseOutHandler;
-import com.google.gwt.event.dom.client.MouseUpEvent;
-import com.google.gwt.event.dom.client.MouseUpHandler;
-import com.google.gwt.event.dom.client.MouseWheelEvent;
-import com.google.gwt.user.client.ui.RootPanel;
 
 public class PlotContainer {
    /**
@@ -80,17 +78,19 @@ public class PlotContainer {
    private Vector2 mouseDragLastPos;
 
    private String previousPaintEventId = null;
+   private final String placeholderElementId;
 
-   public PlotContainer(final String placeholder) {
-      drawing = new Surface(width, height);
-      if (placeholder != null) {
-         RootPanel.get(placeholder).add(drawing);
-         this.width = RootPanel.get(placeholder).getOffsetWidth();
-         this.height = RootPanel.get(placeholder).getOffsetHeight();
-         drawing.setSize(this.width, this.height);
-
-         // TODO: Add handler to auto-resize on DOM changes
+   public PlotContainer(final String placeholderElementId) {
+      if (placeholderElementId == null) {
+         throw new NullPointerException("The placeholder element ID cannot be null");
       }
+      this.placeholderElementId = placeholderElementId;
+
+      final RootPanel placeholderElement = RootPanel.get(placeholderElementId);
+      this.width = placeholderElement.getElement().getClientWidth();
+      this.height = placeholderElement.getElement().getClientHeight();
+      drawing = new Surface(width, height);
+      placeholderElement.add(drawing);
 
       nextLoadingMessageId = INITIAL_MESSAGE_ID;
       loadingMessages = new ArrayList<DisplayMessage>();
@@ -232,23 +232,18 @@ public class PlotContainer {
       }
    }
 
-   public void setSize(final int width, final int height) {
-      drawing.setSize(width, height);
-      this.width = width;
-      this.height = height;
-      paint();
-   }
+   public void onResize() {
+      Log.debug("PlotContainer.onResize(): div ID = " + placeholderElementId);
 
-   public int getHeight() {
-      return height;
-   }
+      final Set<GraphAxis> axes = new HashSet<GraphAxis>();
+      for (final Plot plot : containedPlots) {
+         axes.add(plot.getXAxis());
+         axes.add(plot.getYAxis());
+      }
 
-   public int getWidth() {
-      return width;
-   }
-
-   public Surface getSurface() {
-      return drawing;
+      for (final GraphAxis axis : axes) {
+         axis.onResize();
+      }
    }
 
    public void paint() {

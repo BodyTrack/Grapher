@@ -286,6 +286,9 @@ public final class NativeInterface {
 				}
 				this.__backingPlotContainer.@org.bodytrack.client.PlotContainer::removePlot(Lorg/bodytrack/client/Plot;)(plot.__backingPlot);
 			};
+         this.onResize = function() {
+            this.__backingPlotContainer.@org.bodytrack.client.PlotContainer::onResize()();
+         };
 			this.id = __getNextID();
 		};
 

@@ -75,7 +75,7 @@ public class GraphAxis {
    // For determining whether to highlight this GraphAxis
    private PlottablePoint highlightedPoint; // null if this isn't highlighted
 
-   private final String divName;
+   private final String placeholderElementId;
 
    private final Set<EventListener> eventListeners = new HashSet<EventListener>();
 
@@ -83,13 +83,13 @@ public class GraphAxis {
 
    private String previousPaintEventId = null;
 
-   public GraphAxis(final String divName,
+   public GraphAxis(final String placeholderElementId,
                     final double min,
                     final double max,
                     final Basis basis,
                     final double width,
                     final boolean isXAxis) {
-      this.divName = divName;
+      this.placeholderElementId = placeholderElementId;
       if (basis == null) {
          throw new NullPointerException("Null basis");
       }
@@ -97,10 +97,10 @@ public class GraphAxis {
          throw new IllegalArgumentException("Axis min is greater than max");
       }
 
-      if (divName != null) {
-         final RootPanel div = RootPanel.get(divName);
-         final Surface drawingSurface = new Surface(div.getOffsetWidth(), div.getOffsetHeight());
-         div.add(drawingSurface);
+      if (placeholderElementId != null) {
+         final RootPanel placeholderElement = RootPanel.get(placeholderElementId);
+         final Surface drawingSurface = new Surface(placeholderElement.getOffsetWidth(), placeholderElement.getOffsetHeight());
+         placeholderElement.add(drawingSurface);
 
          drawingSurface.addMouseWheelHandler(new BaseMouseWheelHandler() {
             @Override
@@ -191,6 +191,10 @@ public class GraphAxis {
       if (listener != null) {
          eventListeners.remove(listener);
       }
+   }
+
+   public void onResize() {
+//      Log.debug("GraphAxis.onResize(): div ID = " + placeholderElementId);
    }
 
    public void layout() {
