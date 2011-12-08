@@ -98,13 +98,6 @@ public class PlotContainer {
       nextValueMessageId = INITIAL_MESSAGE_ID;
       valueMessages = new ArrayList<DisplayMessage>();
 
-      drawing.addMouseWheelHandler(new BaseMouseWheelHandler() {
-         @Override
-         protected void handleMouseWheelEvent(final MouseWheelEvent event) {
-            PlotContainer.this.handleMouseWheelEvent(event, getMouseWheelZoomRate());
-         }
-      });
-
       drawing.addMouseDownHandler(new MouseDownHandler() {
          @Override
          public void onMouseDown(final MouseDownEvent event) {
@@ -132,43 +125,6 @@ public class PlotContainer {
             handleMouseOutEvent(event);
          }
       });
-   }
-
-   private void handleMouseWheelEvent(final MouseWheelEvent event, final double mouseWheelZoomRate) {
-      final Vector2 pos = new Vector2(event.getX(), event.getY());
-      final double zoomFactor = Math.pow(mouseWheelZoomRate, event.getDeltaY());
-
-      // The mouse is over the viewing window
-      final Set<Plot> highlightedPlots = new HashSet<Plot>();
-      for (final Plot plot : containedPlots) {
-         if (plot.isHighlighted()) {
-            highlightedPlots.add(plot);
-         }
-      }
-
-      if (highlightedPlots.size() > 0) {
-         // We are zooming at least one plot, so we zoom
-         // the associated Y-axes
-
-         final Set<GraphAxis> highlightedYAxes = new HashSet<GraphAxis>();
-         for (final Plot plot : highlightedPlots) {
-            highlightedYAxes.add(plot.getYAxis());
-         }
-         for (final GraphAxis yAxis : highlightedYAxes) {
-            yAxis.zoom(zoomFactor, yAxis.unproject(pos), UUID.uuid());
-         }
-      } else {
-         // We are not highlighting any plots, so we
-         // zoom all Y-axes
-
-         final Set<GraphAxis> yAxes = new HashSet<GraphAxis>();
-         for (final Plot plot : containedPlots) {
-            yAxes.add(plot.getYAxis());
-         }
-         for (final GraphAxis yAxis : yAxes) {
-            yAxis.zoom(zoomFactor, yAxis.unproject(pos), UUID.uuid());
-         }
-      }
    }
 
    private void handleMouseDownEvent(final MouseDownEvent event) {
