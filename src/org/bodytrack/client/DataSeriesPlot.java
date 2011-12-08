@@ -98,8 +98,8 @@ public class DataSeriesPlot extends BaseSeriesPlot {
       return dynPlot.get("__backingPlot");
    }
 
-   private final SeriesPlotRenderer renderer;
-   private final StyleDescription style;
+   private SeriesPlotRenderer renderer;
+   private StyleDescription style;
 
    /**
     * Main constructor for the DataSeriesPlot object.
@@ -133,34 +133,51 @@ public class DataSeriesPlot extends BaseSeriesPlot {
       if (styleJson == null) {
          throw new NullPointerException("Cannot have a null style");
       }
+      setStyle(styleJson, false);
+   }
 
-      this.style = styleJson.cast();
+   /**
+    * Sets the style for this {@link DataSeriesPlot}, and causes a repaint of the plot's {@link PlotContainer}.  Does
+    * nothing if the given <code>newStyleJson</code> is <code>null</code>.
+    */
+   public void setStyle(final JavaScriptObject newStyleJson) {
+      setStyle(newStyleJson, true);
+   }
 
-      // TODO: instead of concrete classes, we should just have a general
-      // renderer that behaves differently based on the style...
-      boolean willShowComments = true;
-      
-      // get whether to draw comments from the style
-      final CommentsDescription commentsValue = style.getComments();
-      if (commentsValue != null) {
-         willShowComments = commentsValue.show();
-      }
+   private void setStyle(final JavaScriptObject styleJson, final boolean shouldRepaint) {
+      if (styleJson != null) {
+         this.style = styleJson.cast();
 
-      // choose the appropriate renderer based on the type
-      final Type type = Type.findByName(style.getType());
-      switch (type) {
-         case DOT:
-            this.renderer = new DotRenderer(willShowComments);
-            break;
-         case LOLLIPOP:
-            this.renderer = new LollipopRenderer(willShowComments);
-            break;
-         case ZEO:
-            this.renderer = new ZeoRenderer(willShowComments);
-            break;
-         case PLOT:
-         default:
-            this.renderer = new LineRenderer(willShowComments);
+         boolean willShowComments = true;
+
+         // get whether to draw comments from the style
+         final CommentsDescription commentsValue = style.getComments();
+         if (commentsValue != null) {
+            willShowComments = commentsValue.show();
+         }
+
+         // TODO: instead of concrete classes, we should just have a general
+         // renderer that behaves differently based on the style...
+         // choose the appropriate renderer based on the type
+         final Type type = Type.findByName(style.getType());
+         switch (type) {
+            case DOT:
+               this.renderer = new DotRenderer(willShowComments);
+               break;
+            case LOLLIPOP:
+               this.renderer = new LollipopRenderer(willShowComments);
+               break;
+            case ZEO:
+               this.renderer = new ZeoRenderer(willShowComments);
+               break;
+            case PLOT:
+            default:
+               this.renderer = new LineRenderer(willShowComments);
+         }
+
+         if (shouldRepaint) {
+            signalRepaintOfPlotContainer();
+         }
       }
    }
 

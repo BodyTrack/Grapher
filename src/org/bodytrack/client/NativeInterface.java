@@ -203,10 +203,14 @@ public final class NativeInterface {
 				return this.__backingPlot.@org.bodytrack.client.DataSeriesPlot::getNativeYAxis()();
 			};
 			this.style = style;
-			this.getStyle = function() { return this.style; };
+			this.getStyle = function() {
+            // stringify and then parse the style so that we return
+            // a COPY of the style, so the user can't mutate the one we store
+            return JSON.parse(JSON.stringify(this.style));
+         };
 			this.setStyle = function(new_style) {
-				// TODO: Support changing the plot style
 				this.style = new_style;
+            this.__backingPlot.@org.bodytrack.client.DataSeriesPlot::setStyle(Lcom/google/gwt/core/client/JavaScriptObject;)(new_style);
 			};
 			this.id = __getNextID();
 		};
