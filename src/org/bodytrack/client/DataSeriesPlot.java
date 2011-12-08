@@ -2,7 +2,10 @@ package org.bodytrack.client;
 
 import gwt.g2d.client.math.Vector2;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.bodytrack.client.StyleDescription.CommentsDescription;
 
@@ -36,9 +39,61 @@ import com.google.gwt.i18n.client.NumberFormat;
  * them.</p>
  */
 public class DataSeriesPlot extends BaseSeriesPlot {
-   private static final double HIGHLIGHT_DISTANCE_THRESHOLD = 5;
 
+   /** Enumeration defining the various types of {@link DataSeriesPlot}s. */
+   public static enum Type {
+
+      DOT("dot"),
+      LOLLIPOP("lollipop"),
+      PLOT("plot"),
+      ZEO("zeo");
+
+      private static final Map<String, Type> NAME_TO_TYPE_MAP;
+
+      public static final Type DEFAULT_DATA_SERIES_PLOT_TYPE = PLOT;
+
+      static {
+         final Map<String, Type> nameToTypeMap = new HashMap<String, Type>(Type.values().length);
+         for (final Type dataSeriesPlotType : Type.values()) {
+            nameToTypeMap.put(dataSeriesPlotType.getName(), dataSeriesPlotType);
+         }
+         NAME_TO_TYPE_MAP = Collections.unmodifiableMap(nameToTypeMap);
+      }
+
+      /**
+       * Returns the <code>Type</code> associated with the given <code>name</code> (case insensitive), or
+       * {@link #DEFAULT_DATA_SERIES_PLOT_TYPE} if no such type exists. Guaranteed to never return <code>null</code>.
+       */
+      public static Type findByName(final String name) {
+         if (name != null) {
+            final String lowercaseName = name.toLowerCase();
+            if (NAME_TO_TYPE_MAP.containsKey(lowercaseName)) {
+               return NAME_TO_TYPE_MAP.get(lowercaseName);
+            }
+         }
+         return DEFAULT_DATA_SERIES_PLOT_TYPE;
+      }
+
+      private final String name;
+
+      private Type(final String name) {
+         this.name = name.toLowerCase();  // force all names to be lowercase so that we can do a case-insensitive search in findByName()
+      }
+
+      public String getName() {
+         return name;
+      }
+
+      @Override
+      public String toString() {
+         return getName();
+      }
+   }
+
+   private static final double HIGHLIGHT_DISTANCE_THRESHOLD = 5;
+   
    public static DataSeriesPlot getDataSeriesPlot(final JavaScriptObject nativePlot) {
+
       final Dynamic dynPlot = nativePlot.cast();
       return dynPlot.get("__backingPlot");
    }
@@ -84,24 +139,28 @@ public class DataSeriesPlot extends BaseSeriesPlot {
       // TODO: instead of concrete classes, we should just have a general
       // renderer that behaves differently based on the style...
       boolean willShowComments = true;
-      if (styleJson != null) {
-         // get whether to draw comments from the style
-         final CommentsDescription commentsValue = style.getComments();
-         if (commentsValue != null) {
-            willShowComments = commentsValue.show();
-         }
+      
+      // get whether to draw comments from the style
+      final CommentsDescription commentsValue = style.getComments();
+      if (commentsValue != null) {
+         willShowComments = commentsValue.show();
+      }
 
-         // choose the appropriate renderer based on the type
-         final String type = style.getType();
-         if (ChartType.DOT.getName().equalsIgnoreCase(type)) {
+      // choose the appropriate renderer based on the type
+      final Type type = Type.findByName(style.getType());
+      switch (type) {
+         case DOT:
             this.renderer = new DotRenderer(willShowComments);
-         } else if (ChartType.LOLLIPOP.getName().equalsIgnoreCase(type)) {
+            break;
+         case LOLLIPOP:
             this.renderer = new LollipopRenderer(willShowComments);
-         } else {
+            break;
+         case ZEO:
+            this.renderer = new ZeoRenderer(willShowComments);
+            break;
+         case PLOT:
+         default:
             this.renderer = new LineRenderer(willShowComments);
-         }
-      } else {
-         this.renderer = new LineRenderer(willShowComments);
       }
    }
 
