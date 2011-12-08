@@ -90,7 +90,7 @@ public class ZeoRenderer extends AbstractPlotRenderer {
 		final double bottomY = minDrawY;
 		final double topY = y;
 
-		final boolean highlighted = isHighlighted();
+		final boolean highlighted = isAnyPointHighlighted();
 
 		// Draw the Zeo plot with the specified color
 		surface.setGlobalAlpha(highlighted ? HIGHLIGHTED_ALPHA : NORMAL_ALPHA);

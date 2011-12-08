@@ -53,7 +53,7 @@ public abstract class AbstractPlotRenderer implements SeriesPlotRenderer {
 	// Three temporary fields that can be used by subclasses in paint*
 	private GraphAxis xAxis;
 	private GraphAxis yAxis;
-	private boolean highlighted;
+	private boolean isAnyPointHighlighted;
 
 	/**
 	 * Creates a new AbstractPlotRenderer object
@@ -78,8 +78,8 @@ public abstract class AbstractPlotRenderer implements SeriesPlotRenderer {
 		return yAxis;
 	}
 
-	protected final boolean isHighlighted() {
-		return highlighted;
+	protected final boolean isAnyPointHighlighted() {
+		return isAnyPointHighlighted;
 	}
 
 	@Override
@@ -88,8 +88,10 @@ public abstract class AbstractPlotRenderer implements SeriesPlotRenderer {
 			final GraphAxis xAxis,
 			final GraphAxis yAxis,
 			final PlottablePoint highlightedPoint) {
-		highlighted = highlightedPoint != null;
-		drawing.getCanvas().getSurface().setLineWidth(highlighted
+      this.xAxis = xAxis;
+      this.yAxis = yAxis;
+		isAnyPointHighlighted = highlightedPoint != null;
+		drawing.getCanvas().getSurface().setLineWidth(isAnyPointHighlighted
 				? HIGHLIGHT_STROKE_WIDTH
 						: NORMAL_STROKE_WIDTH);
 
@@ -143,7 +145,7 @@ public abstract class AbstractPlotRenderer implements SeriesPlotRenderer {
 		drawing.strokeClippedPath();
 
 		hideComment();
-		if (highlighted) {
+		if (isAnyPointHighlighted) {
 			drawing.beginClippedPath();
 			paintHighlightedPoint(drawing,
 					xAxis.project2D(highlightedPoint.getDate()).getX(),

@@ -12,9 +12,9 @@ public class LollipopRenderer extends DotRenderer {
 	protected void paintDot(final BoundedDrawingBox drawing,
 			final double x,
 			final double y,
-			final boolean highlighted,
+			final boolean isThisPointHighlighted,
 			final PlottablePoint rawDataPoint) {
-		super.paintDot(drawing, x, y, highlighted, rawDataPoint);
+		super.paintDot(drawing, x, y, isThisPointHighlighted, rawDataPoint);
 
 		final Canvas canvas = drawing.getCanvas();
 		final Surface surface = canvas.getSurface();
@@ -25,7 +25,7 @@ public class LollipopRenderer extends DotRenderer {
 
 		// Draw a line
 		final double oldLineWidth = surface.getLineWidth();
-		surface.setLineWidth(isHighlighted()
+		surface.setLineWidth(isAnyPointHighlighted()
 				? AbstractPlotRenderer.HIGHLIGHT_STROKE_WIDTH
 				: AbstractPlotRenderer.NORMAL_STROKE_WIDTH);
 

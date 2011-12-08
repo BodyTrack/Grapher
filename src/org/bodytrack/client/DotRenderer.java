@@ -11,11 +11,11 @@ public class DotRenderer extends AbstractPlotRenderer {
 	protected void paintDot(final BoundedDrawingBox drawing,
 			final double x,
 			final double y,
-			final boolean highlighted,
+			final boolean isThisPointHighlighted,
 			final PlottablePoint rawDataPoint) {
 		if (drawing.contains(x, y)) {
 			final boolean willPaintLargerDot =
-				highlighted
+				isThisPointHighlighted
 				|| (isDrawingComments()
 						&& rawDataPoint != null
 						&& rawDataPoint.hasComment());
@@ -33,7 +33,7 @@ public class DotRenderer extends AbstractPlotRenderer {
 			final double x,
 			final double y,
 			final PlottablePoint rawDataPoint) {
-		paintDot(drawing, x, y, rawDataPoint.hasComment(), rawDataPoint);
+      paintDot(drawing, x, y, false, rawDataPoint);
 	}
 
 	@Override
@@ -42,7 +42,7 @@ public class DotRenderer extends AbstractPlotRenderer {
 			final double x,
 			final double y,
 			final PlottablePoint rawDataPoint) {
-		paintDot(drawing, x, y, rawDataPoint.hasComment(), rawDataPoint);
+      paintDot(drawing, x, y, false, rawDataPoint);
 	}
 
 	@Override
