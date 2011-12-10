@@ -100,17 +100,22 @@
       <property name="build-java-is-complete" value="true"/>
    </target>
 
-   <target name="build-gwt" depends="clean-gwt, build-java" description="GWT compile to JavaScript (production mode)" unless="build-gwt-is-complete">
+   <target name="build-gwt" depends="clean-gwt, build-java"
+                            description="GWT compile to JavaScript (production mode)"
+                            unless="build-gwt-is-complete">
       <compile-gwt gwt-module-name="${gwt.module}">
          <extra-compiler-arguments>
             <arg line="-localWorkers ${gwt.localWorkers}"/>
          </extra-compiler-arguments>
       </compile-gwt>
 
+      <copy-css-standard/>
+
       <property name="build-gwt-is-complete" value="true"/>
    </target>
 
-   <target name="build-gwt-fast" depends="clean-gwt, build-java" description="Fast GWT compile to JavaScript, only for development--supports only default locale and WebKit/Firefox browsers" unless="build-gwt-fast-is-complete">
+   <target name="build-gwt-fast" depends="clean-gwt, build-java"
+           description="Fast GWT compile to JavaScript, only for development--supports only default locale and WebKit/Firefox browsers" unless="build-gwt-fast-is-complete">
       <compile-gwt gwt-module-name="org.bodytrack.Grapher2Fast">
          <extra-compiler-arguments>
             <arg line="-optimize 0"/>
@@ -118,6 +123,8 @@
             <arg line="-localWorkers ${gwt.localWorkers}"/>
          </extra-compiler-arguments>
       </compile-gwt>
+
+      <copy-css-standard/>
 
       <property name="build-gwt-fast-is-complete" value="true"/>
    </target>
@@ -139,6 +146,9 @@
          <arg line="${gwt.devmode.args}"/>
          <arg value="${gwt.module}"/>
       </java>
+
+      <copy-css-standard/>
+
    </target>
 
    <!-- ============================================================================================================ -->
@@ -202,6 +212,13 @@
             <arg line="${gwt.build.args}"/>
             <arg value="@{gwt-module-name}"/>
          </java>
+      </sequential>
+   </macrodef>
+
+   <macrodef name="copy-css-standard">
+      <sequential>
+         <copy file="${war.dir}/${include.css.standard}"
+               tofile="${gwt.module.dir}/${include.css.standard}"/>
       </sequential>
    </macrodef>
 

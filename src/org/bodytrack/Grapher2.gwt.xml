@@ -9,9 +9,13 @@
   <!-- Inherit the default GWT style sheet.  You can change       -->
   <!-- the theme of your GWT application by uncommenting          -->
   <!-- any one of the following lines.                            -->
-  <inherits name='com.google.gwt.user.theme.standard.Standard'/>
+  <inherits name='com.google.gwt.user.theme.standard.StandardResources'/>
   <!-- <inherits name='com.google.gwt.user.theme.chrome.Chrome'/> -->
   <!-- <inherits name='com.google.gwt.user.theme.dark.Dark'/>     -->
+
+  <!-- Set the style for this application, since StandardResources does
+       not include a stylesheet by default -->
+  <stylesheet src="gwt_standard.css"/>
 
   <!-- Other module inherits                                      -->
   <inherits name="com.google.gwt.http.HTTP" />
