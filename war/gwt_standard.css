@@ -28,9 +28,6 @@ body {
   background: #fff;
   direction: ltr;
 }
-a, a:visited, a:hover {
-  color: #0000AA;
-}
 
 /**
  * The reference theme can be used to determine when this style sheet has
