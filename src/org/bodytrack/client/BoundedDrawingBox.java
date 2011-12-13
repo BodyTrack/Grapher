@@ -1,12 +1,8 @@
 package org.bodytrack.client;
 
-import gwt.g2d.client.graphics.*;
-import gwt.g2d.client.graphics.Color;
 import gwt.g2d.client.graphics.canvas.Context;
-import gwt.g2d.client.graphics.shapes.CircleShape;
 import gwt.g2d.client.math.Vector2;
 
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
