@@ -204,13 +204,13 @@ public final class NativeInterface {
 			};
 			this.style = style;
 			this.getStyle = function() {
-            // stringify and then parse the style so that we return
-            // a COPY of the style, so the user can't mutate the one we store
-            return JSON.parse(JSON.stringify(this.style));
-         };
+				// stringify and then parse the style so that we return
+				// a COPY of the style, so the user can't mutate the one we store
+				return JSON.parse(JSON.stringify(this.style));
+			};
 			this.setStyle = function(new_style) {
 				this.style = new_style;
-            this.__backingPlot.@org.bodytrack.client.DataSeriesPlot::setStyle(Lcom/google/gwt/core/client/JavaScriptObject;)(new_style);
+				this.__backingPlot.@org.bodytrack.client.DataSeriesPlot::setStyle(Lcom/google/gwt/core/client/JavaScriptObject;)(new_style);
 			};
 			this.id = __getNextID();
 		};
@@ -236,7 +236,6 @@ public final class NativeInterface {
 			this.getDatasource = function() { return datasource; };
 			this.__backingPlot = (function() {
 				var MIN_LEVEL = -20; // TODO: Offer control to the plot creator?
-
 				return @org.bodytrack.client.PhotoSeriesPlot::new(Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/core/client/JavaScriptObject;II)(datasource, horizontalAxis, verticalAxis, MIN_LEVEL, userId);
 			})();
 			this.getHorizontalAxis = function() {
@@ -286,9 +285,9 @@ public final class NativeInterface {
 				}
 				this.__backingPlotContainer.@org.bodytrack.client.PlotContainer::removePlot(Lorg/bodytrack/client/Plot;)(plot.__backingPlot);
 			};
-         this.onResize = function() {
-            this.__backingPlotContainer.@org.bodytrack.client.PlotContainer::onResize()();
-         };
+			this.onResize = function() {
+				this.__backingPlotContainer.@org.bodytrack.client.PlotContainer::onResize()();
+			};
 			this.id = __getNextID();
 		};
 
