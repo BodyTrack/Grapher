@@ -441,46 +441,7 @@ public class DataSeriesPlot extends BaseSeriesPlot {
    @Override
    public boolean highlightIfNear(final Vector2 pos) {
       setHighlightedPoint(closest(pos, HIGHLIGHT_DISTANCE_THRESHOLD));
+      publishHighlightedValue();
       return isHighlighted();
-   }
-
-   /**
-    * Returns a label for the specified point.
-    *
-    * <p>This implementation takes the value of p out to three
-    * significant digits and returns that value.  However, subclass
-    * implementations might behave differently.</p>
-    *
-    * <p>This is designed to be overridden by subclasses that wish
-    * to change the default behavior.  However, there are a few
-    * requirements for subclass implementations, which unfortunately
-    * cannot be expressed in code.  A subclass implementation of
-    * this method must always return a non-<tt>null</tt> label in
-    * finite (preferably very short) time, and must never throw
-    * an exception.</p>
-    *
-    * @param p
-    * 		the point for which to return a data label
-    * @return
-    * 		a data label to be displayed for p
-    */
-   protected String getDataLabel(final PlottablePoint p) {
-      final double value = p.getValue();
-      final double absValue = Math.abs(value);
-
-      final String timeString = getTimeString(p.getDate()) + "   ";
-
-      if (absValue == 0.0) // Rare, but possible
-      {
-         return timeString + "0.0";
-      }
-
-      if (absValue < 1e-3 || absValue > 1e7) {
-         return timeString
-                + NumberFormat.getScientificFormat().format(value);
-      }
-
-      return timeString
-             + NumberFormat.getFormat("###,##0.0##").format(value);
    }
 }
