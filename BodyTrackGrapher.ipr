@@ -503,6 +503,9 @@
         <inspection_tool class="PublicConstructorInNonPublicClass" enabled="true" level="WARNING" enabled_by_default="true" />
         <inspection_tool class="PublicField" enabled="true" level="WARNING" enabled_by_default="true">
           <option name="ignoreEnums" value="false" />
+          <option name="ignorableAnnotations">
+            <value />
+          </option>
         </inspection_tool>
         <inspection_tool class="PublicFieldAccessedInSynchronizedContext" enabled="true" level="WARNING" enabled_by_default="true" />
         <inspection_tool class="PublicStaticArrayField" enabled="true" level="WARNING" enabled_by_default="true" />
@@ -814,6 +817,13 @@
         <ADDITIONAL_INDENT_OPTIONS fileType="yml">
           <option name="INDENT_SIZE" value="2" />
         </ADDITIONAL_INDENT_OPTIONS>
+        <codeStyleSettings language="CSS">
+          <indentOptions>
+            <option name="INDENT_SIZE" value="3" />
+            <option name="CONTINUATION_INDENT_SIZE" value="6" />
+            <option name="TAB_SIZE" value="3" />
+          </indentOptions>
+        </codeStyleSettings>
         <codeStyleSettings language="JAVA">
           <option name="KEEP_FIRST_COLUMN_COMMENT" value="false" />
           <option name="KEEP_CONTROL_STATEMENT_IN_ONE_LINE" value="false" />
@@ -838,6 +848,11 @@
           <option name="WHILE_BRACE_FORCE" value="3" />
           <option name="FOR_BRACE_FORCE" value="3" />
           <option name="PARENT_SETTINGS_INSTALLED" value="true" />
+          <indentOptions>
+            <option name="INDENT_SIZE" value="3" />
+            <option name="CONTINUATION_INDENT_SIZE" value="6" />
+            <option name="TAB_SIZE" value="3" />
+          </indentOptions>
         </codeStyleSettings>
         <codeStyleSettings language="JavaScript">
           <option name="KEEP_FIRST_COLUMN_COMMENT" value="false" />
@@ -855,6 +870,11 @@
           <option name="WHILE_BRACE_FORCE" value="3" />
           <option name="FOR_BRACE_FORCE" value="3" />
           <option name="PARENT_SETTINGS_INSTALLED" value="true" />
+          <indentOptions>
+            <option name="INDENT_SIZE" value="3" />
+            <option name="CONTINUATION_INDENT_SIZE" value="6" />
+            <option name="TAB_SIZE" value="3" />
+          </indentOptions>
         </codeStyleSettings>
         <codeStyleSettings language="PHP">
           <option name="KEEP_FIRST_COLUMN_COMMENT" value="false" />
@@ -877,6 +897,20 @@
           <option name="WHILE_BRACE_FORCE" value="3" />
           <option name="FOR_BRACE_FORCE" value="3" />
           <option name="PARENT_SETTINGS_INSTALLED" value="true" />
+        </codeStyleSettings>
+        <codeStyleSettings language="SQL">
+          <indentOptions>
+            <option name="INDENT_SIZE" value="3" />
+            <option name="CONTINUATION_INDENT_SIZE" value="6" />
+            <option name="TAB_SIZE" value="3" />
+          </indentOptions>
+        </codeStyleSettings>
+        <codeStyleSettings language="XML">
+          <indentOptions>
+            <option name="INDENT_SIZE" value="3" />
+            <option name="CONTINUATION_INDENT_SIZE" value="6" />
+            <option name="TAB_SIZE" value="3" />
+          </indentOptions>
         </codeStyleSettings>
       </value>
     </option>
@@ -940,6 +974,7 @@
       </CLASSES>
       <JAVADOC>
         <root url="jar://$PROJECT_DIR$/lib/gwt-2.3.0/doc/javadoc.zip!/" />
+        <root url="http://google-web-toolkit.googlecode.com/svn/javadoc/latest/" />
       </JAVADOC>
       <SOURCES>
         <root url="jar://$PROJECT_DIR$/lib/gwt-2.3.0/gwt-dev.jar!/" />
@@ -971,6 +1006,7 @@
       </CLASSES>
       <JAVADOC>
         <root url="jar://$PROJECT_DIR$/lib/gwt-2.3.0/doc/javadoc.zip!/" />
+        <root url="http://google-web-toolkit.googlecode.com/svn/javadoc/latest/" />
       </JAVADOC>
       <SOURCES>
         <root url="jar://$PROJECT_DIR$/lib/gwt-2.3.0/gwt-user.jar!/" />
