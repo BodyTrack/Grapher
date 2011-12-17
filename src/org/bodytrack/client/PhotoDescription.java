@@ -78,6 +78,23 @@ public final class PhotoDescription extends JavaScriptObject {
 	}-*/;
 
 	/**
+	 * Returns the count field from this photo, or 1 if there is
+	 * no count tag.
+	 *
+	 * @return
+	 * 		the count field from this photo if such a field exists,
+	 * 		or 1 otherwise
+	 * @return
+	 */
+	public native int getCount() /*-{
+		if (!this.count) {
+			return 1;
+		}
+
+		return this.count;
+	}-*/;
+
+	/**
 	 * Returns the tags for this <tt>PhotoDescription</tt>.
 	 *
 	 * @return
@@ -96,6 +113,6 @@ public final class PhotoDescription extends JavaScriptObject {
 	 * 		if that flag is not present
 	 */
 	public native boolean isNsfw() /*-{
-		return !! this.nsfw;
+		return !!(this.nsfw);
 	}-*/;
 }

@@ -714,8 +714,7 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
    }
 
    /**
-    * An {@link Alertable} implementation
-    * that is specific to photo loading.
+    * An {@link Alertable} implementation that is specific to photo loading.
     */
    public final class PhotoAlertable implements Alertable<PhotoGetter> {
       /**
