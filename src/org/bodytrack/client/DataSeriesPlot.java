@@ -10,7 +10,6 @@ import java.util.Map;
 import org.bodytrack.client.StyleDescription.CommentsDescription;
 
 import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.i18n.client.NumberFormat;
 
 /**
  * Represents a single set of data, along with references to its

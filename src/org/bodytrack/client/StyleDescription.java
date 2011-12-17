@@ -149,7 +149,7 @@ public final class StyleDescription extends JavaScriptObject {
 			return this.fillColor;
 		}-*/;
 
-		// TODO: Add a method convert the output of getRawColors() to
+		// TODO: Add a method to convert the output of getRawColors() to
 		// something Java can use to draw bars
 	}
 
