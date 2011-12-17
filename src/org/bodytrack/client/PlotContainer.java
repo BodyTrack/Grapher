@@ -172,10 +172,10 @@ public class PlotContainer {
 
          final Set<Plot> highlightedPlots = new HashSet<Plot>();
          for (final Plot plot : containedPlots) {
-            plot.unhighlight();
-
             if (plot.highlightIfNear(pos)) {
                highlightedPlots.add(plot);
+            } else {
+               plot.unhighlight();
             }
          }
 

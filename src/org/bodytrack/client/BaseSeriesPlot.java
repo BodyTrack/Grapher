@@ -3,8 +3,11 @@ package org.bodytrack.client;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.i18n.client.NumberFormat;
 
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * <p>
@@ -39,6 +42,9 @@ public abstract class BaseSeriesPlot implements Plot {
    private final GraphAxis xAxis;
    private final GraphAxis yAxis;
    private final TileLoader tileLoader;
+
+   private String publishedValue = null;
+   private final Set<ValueListener> valueListeners = new HashSet<ValueListener>();
 
    // If highlightedPoint is null, then this should not be highlighted.
    // Otherwise, this is the point to highlight on the axes
@@ -109,6 +115,82 @@ public abstract class BaseSeriesPlot implements Plot {
       // register self as an event listener to the axes...
       registerGraphAxisEventListener(getXAxis());
       registerGraphAxisEventListener(getYAxis());
+   }
+
+   public final void addValueListener(final JavaScriptObject listener) {
+      if (listener != null) {
+         valueListeners.add(listener.<ValueListener>cast());
+      }
+   }
+
+   public final void removeValueListener(final JavaScriptObject listener) {
+      if (listener != null) {
+         valueListeners.remove(listener.<ValueListener>cast());
+      }
+   }
+
+   protected final void publishHighlightedValue() {
+      boolean willPublish = false;
+      if (isHighlighted()) {
+         final String newValue = getDataLabel(highlightedPoint);
+         willPublish = (publishedValue == null && newValue != null) ||
+                       (publishedValue != null && !publishedValue.equals(newValue));
+         publishedValue = newValue;
+      } else {
+         if (publishedValue != null) {
+            willPublish = true;
+         }
+         publishedValue = null;
+      }
+
+      if (willPublish) {
+         for (final ValueListener listener : valueListeners) {
+            listener.handleValueUpdate(publishedValue);
+         }
+      }
+   }
+
+   /**
+    * Returns a label for the specified point.
+    *
+    * <p>This default implementation takes the value of p out to three
+    * significant digits and returns that value.  However, subclass
+    * implementations might behave differently.</p>
+    *
+    * <p>This is designed to be overridden by subclasses that wish
+    * to change the default behavior.  However, there are a few
+    * requirements for subclass implementations, which unfortunately
+    * cannot be expressed in code.  A subclass implementation of
+    * this method must always return a non-<tt>null</tt> label in
+    * finite (preferably very short) time, and must never throw
+    * an exception.</p>
+    *
+    * @param p
+    * 		the point for which to return a data label
+    * @return
+    * 		a data label to be displayed for p
+    */
+   protected String getDataLabel(final PlottablePoint p) {
+      if (p != null) {
+         final double value = p.getValue();
+         final double absValue = Math.abs(value);
+
+         final String timeString = getTimeString(p.getDate()) + "   ";
+
+         if (absValue == 0.0) // Rare, but possible
+         {
+            return timeString + "0.0";
+         }
+
+         if (absValue < 1e-3 || absValue > 1e7) {
+            return timeString
+                   + NumberFormat.getScientificFormat().format(value);
+         }
+
+         return timeString
+                + NumberFormat.getFormat("###,##0.0##").format(value);
+      }
+      return "";
    }
 
    private void registerGraphAxisEventListener(final GraphAxis axis) {
@@ -206,7 +288,7 @@ public abstract class BaseSeriesPlot implements Plot {
    protected abstract void afterRender(final Canvas canvas, final BoundedDrawingBox drawing);
 
    /** Causes the containing {@link PlotContainer} to paint itself. */
-   protected final void signalRepaintOfPlotContainer(){
+   protected final void signalRepaintOfPlotContainer() {
       if (plotContainer != null) {
          plotContainer.paint();
       }
@@ -290,6 +372,7 @@ public abstract class BaseSeriesPlot implements Plot {
    @Override
    public final void unhighlight() {
       highlightedPoint = null;
+      publishHighlightedValue();
    }
 
    /**
@@ -400,8 +483,7 @@ public abstract class BaseSeriesPlot implements Plot {
       return 3; // We can't get better than millisecond precision
    }
 
-   protected final GrapherTile getBestResolutionTileAt(final double time){
+   protected final GrapherTile getBestResolutionTileAt(final double time) {
       return tileLoader.getBestResolutionTileAt(time, computeCurrentLevel());
    }
-
 }
