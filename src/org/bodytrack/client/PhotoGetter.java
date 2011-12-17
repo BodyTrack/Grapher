@@ -53,7 +53,7 @@ public final class PhotoGetter extends JavaScriptObject {
 	// know how JSNI could handle it otherwise, because it wouldn't compile
 	// when I tried to use Alertable in JSNI
 	public native static PhotoGetter buildPhotoGetter(int userId,
-			int imageId, double time, PhotoAlertable callback) /*-{
+			int imageId, double time, int count, PhotoAlertable callback) /*-{
 		// Declare this constant, and these functions, inside this
 		// function so we don't pollute the global namespace
 
@@ -73,6 +73,7 @@ public final class PhotoGetter extends JavaScriptObject {
 		getter.userId = userId;
 		getter.imageId = imageId;
 		getter.time = time;
+		getter.count = count;
 		getter.callback = callback;
 		getter.imageLoaded = false;
 		getter.loadFailed = false;
@@ -147,8 +148,21 @@ public final class PhotoGetter extends JavaScriptObject {
 	}-*/;
 
 	/**
+	 * Returns the count field passed whenever this PhotoGetter
+	 * was built.
+	 *
+	 * @return
+	 * 		the count field passed to
+	 * 		{@link #buildPhotoGetter(int, int, double, int, PhotoAlertable)}
+	 * 		when this object was created
+	 */
+	public native int getCount() /*-{
+		return this.count;
+	}-*/;
+
+	/**
 	 * Returns the URL built up from the userId and imageId parameters
-	 * to {@link #buildPhotoGetter(int, int, PhotoAlertable)}.
+	 * to {@link #buildPhotoGetter(int, int, double, int, PhotoAlertable)}.
 	 *
 	 * @return
 	 * 		the URL this <tt>PhotoGetter</tt> uses to request its image

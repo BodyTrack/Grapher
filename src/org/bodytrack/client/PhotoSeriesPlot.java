@@ -114,13 +114,21 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
     * @param time
     * 		the timestamp on the photo, which is used to decide where to
     * 		put it on the X-axis
+    * @param count
+    *		the count of photos at this time, as specified by the server
     * @return
     * 		the {@link PhotoGetter}
     * 		that can be used to draw the photo we just requested
     */
-   private PhotoGetter loadPhoto(final int userId, final int photoId, final double time) {
+   private PhotoGetter loadPhoto(final int userId,
+                                 final int photoId,
+                                 final double time,
+                                 final int count) {
       final PhotoGetter photo = PhotoGetter.buildPhotoGetter(userId,
-                                                             photoId, time, loadListener);
+                                                             photoId,
+                                                             time,
+                                                             count,
+                                                             loadListener);
 
       // TODO: Put loading text back on?
       // loadingText.put(photo,
@@ -212,7 +220,6 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
       canvas.getSurface().setStrokeStyle(Canvas.DEFAULT_COLOR);
    }
 
-
    /**
     * Returns the points that will form the centers of the images.
     *
@@ -257,12 +264,17 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
             }
 
             if (!haveDesc) {
-               value.add(loadPhoto(userId, desc.getId(),
-                                   desc.getBeginDate()));
+               value.add(loadPhoto(userId,
+                                   desc.getId(),
+                                   desc.getBeginDate(),
+                                   desc.getCount()));
             }
          } else {
             final Set<PhotoGetter> newValue = new HashSet<PhotoGetter>();
-            final PhotoGetter photoGetter = loadPhoto(userId, desc.getId(), desc.getBeginDate());
+            final PhotoGetter photoGetter = loadPhoto(userId,
+                                                      desc.getId(),
+                                                      desc.getBeginDate(),
+                                                      desc.getCount());
             newValue.add(photoGetter);
             images.put(pos, newValue);
          }
@@ -285,7 +297,9 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
     * @param y
     * 		ignored
     */
-   private void drawAllImagesAtPoint(final BoundedDrawingBox drawing, final double x, final double y) {
+   private void drawAllImagesAtPoint(final BoundedDrawingBox drawing,
+                                     final double x,
+                                     final double y) {
       // We stored data in images under the logical X-value (time), not
       // under a pixel value
       final double photoTime = getXAxis().unproject(new Vector2(x, y));

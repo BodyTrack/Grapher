@@ -54,7 +54,7 @@ public final class PhotoDescription extends JavaScriptObject {
 	 * 		description, or a negative number if the field is not present
 	 */
 	public native int getId() /*-{
-		if (! this.id)
+		if (!this.id)
 			return -1;
 
 		return this.id;
@@ -71,7 +71,7 @@ public final class PhotoDescription extends JavaScriptObject {
 	 * 		the value -1e300 if this field is not present
 	 */
 	public native double getBeginDate() /*-{
-		if (! this.begin_d)
+		if (!this.begin_d)
 			return -1e308;
 
 		return this.begin_d;
