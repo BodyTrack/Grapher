@@ -46,8 +46,6 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
    private final Map<PlottablePoint, Set<PhotoGetter>> images;
 
    private final PhotoAlertable loadListener;
-   // TODO: Add this back in?
-   // private final Map<PhotoGetter, Integer> loadingText;
 
    private Set<PhotoGetter> highlightedImages;
 
@@ -130,10 +128,6 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
                                                              count,
                                                              loadListener);
 
-      // TODO: Put loading text back on?
-      // loadingText.put(photo,
-      // 	getContainer().addLoadingMessage(photo.getUrl()));
-
       addOverlaps(photo, getPhotoHeight());
 
       return photo;
@@ -175,33 +169,6 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
             }
          }
       }
-   }
-
-   /**
-    * Removes loading text for the photo from the container
-    * in which this draws itself.
-    *
-    * @param photo
-    * 		the photo that has just loaded (or failed)
-    * @return
-    * 		<tt>true</tt> if we actually remove text from the
-    * 		container, <tt>false</tt> if there was no text to
-    * 		begin with for this particular image
-    */
-   private boolean removePhotoLoadingText(final PhotoGetter photo) {
-      // TODO: Add this back in?
-      /*
-        boolean contains = loadingText.containsKey(photo);
-
-        if (contains) {
-           int msgId = loadingText.get(photo);
-           getContainer().removeLoadingMessage(msgId);
-           loadingText.remove(photo);
-        }
-
-        return contains;
-        */
-      return true;
    }
 
    @Override
@@ -740,8 +707,6 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
        */
       @Override
       public void onSuccess(final PhotoGetter photo) {
-         removePhotoLoadingText(photo);
-
          signalRepaintOfPlotContainer();
       }
 
@@ -762,8 +727,6 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
          if (photo.imageLoaded()) {
             return;
          }
-
-         removePhotoLoadingText(photo);
 
          signalRepaintOfPlotContainer();
       }
