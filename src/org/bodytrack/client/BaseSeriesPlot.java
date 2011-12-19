@@ -1,11 +1,7 @@
 package org.bodytrack.client;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.i18n.client.DateTimeFormat;
-import com.google.gwt.i18n.client.NumberFormat;
 
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -43,8 +39,8 @@ public abstract class BaseSeriesPlot implements Plot {
    private final GraphAxis yAxis;
    private final TileLoader tileLoader;
 
-   private String publishedValue = null;
-   private final Set<ValueListener> valueListeners = new HashSet<ValueListener>();
+   private PlottablePoint publishedPoint = null;
+   private final Set<DataPointListener> dataPointListeners = new HashSet<DataPointListener>();
 
    // If highlightedPoint is null, then this should not be highlighted.
    // Otherwise, this is the point to highlight on the axes
@@ -117,80 +113,38 @@ public abstract class BaseSeriesPlot implements Plot {
       registerGraphAxisEventListener(getYAxis());
    }
 
-   public final void addValueListener(final JavaScriptObject listener) {
+   public final void addDataPointListener(final JavaScriptObject listener) {
       if (listener != null) {
-         valueListeners.add(listener.<ValueListener>cast());
+         dataPointListeners.add(listener.<DataPointListener>cast());
       }
    }
 
-   public final void removeValueListener(final JavaScriptObject listener) {
+   public final void removeDataPointListener(final JavaScriptObject listener) {
       if (listener != null) {
-         valueListeners.remove(listener.<ValueListener>cast());
+         dataPointListeners.remove(listener.<DataPointListener>cast());
       }
    }
 
    protected final void publishHighlightedValue() {
       boolean willPublish = false;
+
       if (isHighlighted()) {
-         final String newValue = getDataLabel(highlightedPoint);
-         willPublish = (publishedValue == null && newValue != null) ||
-                       (publishedValue != null && !publishedValue.equals(newValue));
-         publishedValue = newValue;
+         final PlottablePoint newPublishedPoint = highlightedPoint;
+         willPublish = (publishedPoint == null && newPublishedPoint != null) ||
+                       (publishedPoint != null && !publishedPoint.equals(newPublishedPoint));
+         publishedPoint = newPublishedPoint;
       } else {
-         if (publishedValue != null) {
+         if (publishedPoint != null) {
             willPublish = true;
          }
-         publishedValue = null;
+         publishedPoint = null;
       }
 
       if (willPublish) {
-         for (final ValueListener listener : valueListeners) {
-            listener.handleValueUpdate(publishedValue);
+         for (final DataPointListener listener : dataPointListeners) {
+            listener.handleDataPointUpdate(publishedPoint);
          }
       }
-   }
-
-   /**
-    * Returns a label for the specified point.
-    *
-    * <p>This default implementation takes the value of p out to three
-    * significant digits and returns that value.  However, subclass
-    * implementations might behave differently.</p>
-    *
-    * <p>This is designed to be overridden by subclasses that wish
-    * to change the default behavior.  However, there are a few
-    * requirements for subclass implementations, which unfortunately
-    * cannot be expressed in code.  A subclass implementation of
-    * this method must always return a non-<tt>null</tt> label in
-    * finite (preferably very short) time, and must never throw
-    * an exception.</p>
-    *
-    * @param p
-    * 		the point for which to return a data label
-    * @return
-    * 		a data label to be displayed for p
-    */
-   protected String getDataLabel(final PlottablePoint p) {
-      if (p != null) {
-         final double value = p.getValue();
-         final double absValue = Math.abs(value);
-
-         final String timeString = getTimeString(p.getDate()) + "   ";
-
-         if (absValue == 0.0) // Rare, but possible
-         {
-            return timeString + "0.0";
-         }
-
-         if (absValue < 1e-3 || absValue > 1e7) {
-            return timeString
-                   + NumberFormat.getScientificFormat().format(value);
-         }
-
-         return timeString
-                + NumberFormat.getFormat("###,##0.0##").format(value);
-      }
-      return "";
    }
 
    private void registerGraphAxisEventListener(final GraphAxis axis) {
@@ -401,86 +355,6 @@ public abstract class BaseSeriesPlot implements Plot {
       final double dataPointWidth = xAxisWidth / GrapherTile.TILE_WIDTH;
 
       return log2(dataPointWidth);
-   }
-
-   /**
-    * Returns a time string representing the specified time.
-    *
-    * <p>A caveat: time should be the number of <em>seconds</em>,
-    * since the epoch.
-    *
-    * @param secondsSinceEpoch
-    * 		the number of seconds since the epoch
-    * @return
-    * 		a string representation of time
-    */
-   protected final String getTimeString(final double secondsSinceEpoch) {
-      return getTimeString((long)(secondsSinceEpoch * 1000));
-   }
-
-   /**
-    * Returns a time string representing the specified time.
-    *
-    * <p>A caveat: time should be the number of <em>milliseconds</em>,
-    * not seconds, since the epoch.  If a caller forgets to multiply
-    * a time by 1000, wrong date strings (usually something
-    * involving January 15, 1970) will come back.</p>
-    *
-    * @param time
-    * 		the number of milliseconds since the epoch
-    * @return
-    * 		a string representation of time
-    */
-   private String getTimeString(final long time) {
-      String formatString = "EEE MMM dd yyyy, HH:mm:ss";
-      final int fractionalSecondDigits = getFractionalSecondDigits();
-
-      // We know that fractionalSecondDigits will always be 0, 1, 2, or 3
-      switch (fractionalSecondDigits) {
-         case 0:
-            break;
-         case 1:
-            formatString += ".S";
-            break;
-         case 2:
-            formatString += ".SS";
-            break;
-         case 3:
-            formatString += ".SSS";
-            break;
-         default:
-            GWT.log("BaseSeriesPlot.getTimeString(): Unexpected number of "
-                    + "fractionalSecondDigits: " + fractionalSecondDigits);
-      }
-
-      final DateTimeFormat format = DateTimeFormat.getFormat(formatString);
-      return format.format(new Date(time));
-   }
-
-   /**
-    * Computes the number of fractional second digits that should
-    * appear in a displayed time string, based on the current level.
-    *
-    * <p>This <em>always</em> returns a nonnegative integer less than
-    * or equal to 3.</p>
-    *
-    * @return
-    * 		the number of fractional second digits that should appear
-    * 		in a displayed times string
-    */
-   private int getFractionalSecondDigits() {
-      final int level = computeCurrentLevel();
-      if (level > 1) {
-         return 0;
-      }
-      if (level == 1) {
-         return 1;
-      }
-      if (level > -2) // 0 or -1
-      {
-         return 2;
-      }
-      return 3; // We can't get better than millisecond precision
    }
 
    protected final GrapherTile getBestResolutionTileAt(final double time) {

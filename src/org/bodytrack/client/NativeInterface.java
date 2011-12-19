@@ -212,11 +212,11 @@ public final class NativeInterface {
 				this.style = new_style;
             this.__backingPlot.@org.bodytrack.client.DataSeriesPlot::setStyle(Lcom/google/gwt/core/client/JavaScriptObject;)(new_style);
 			};
-         this.addValueListener = function(listenerFunction) {
-            return this.__backingPlot.@org.bodytrack.client.DataSeriesPlot::addValueListener(Lcom/google/gwt/core/client/JavaScriptObject;)(listenerFunction);
+         this.addDataPointListener = function(listenerFunction) {
+            return this.__backingPlot.@org.bodytrack.client.DataSeriesPlot::addDataPointListener(Lcom/google/gwt/core/client/JavaScriptObject;)(listenerFunction);
          };
-         this.removeValueListener = function(listenerFunction) {
-            return this.__backingPlot.@org.bodytrack.client.DataSeriesPlot::removeValueListener(Lcom/google/gwt/core/client/JavaScriptObject;)(listenerFunction);
+         this.removeDataPointListener = function(listenerFunction) {
+            return this.__backingPlot.@org.bodytrack.client.DataSeriesPlot::removeDataPointListener(Lcom/google/gwt/core/client/JavaScriptObject;)(listenerFunction);
          };
 			this.id = __getNextID();
 		};
@@ -251,11 +251,11 @@ public final class NativeInterface {
 			this.getVerticalAxis = function() {
 				return this.__backingPlot.@org.bodytrack.client.PhotoSeriesPlot::getNativeYAxis()();
 			};
-         this.addValueListener = function(listenerFunction) {
-            return this.__backingPlot.@org.bodytrack.client.PhotoSeriesPlot::addValueListener(Lcom/google/gwt/core/client/JavaScriptObject;)(listenerFunction);
+         this.addDataPointListener = function(listenerFunction) {
+            return this.__backingPlot.@org.bodytrack.client.PhotoSeriesPlot::addDataPointListener(Lcom/google/gwt/core/client/JavaScriptObject;)(listenerFunction);
          };
-         this.removeValueListener = function(listenerFunction) {
-            return this.__backingPlot.@org.bodytrack.client.PhotoSeriesPlot::removeValueListener(Lcom/google/gwt/core/client/JavaScriptObject;)(listenerFunction);
+         this.removeDataPointListener = function(listenerFunction) {
+            return this.__backingPlot.@org.bodytrack.client.PhotoSeriesPlot::removeDataPointListener(Lcom/google/gwt/core/client/JavaScriptObject;)(listenerFunction);
          };
 			this.id = __getNextID();
 		};
