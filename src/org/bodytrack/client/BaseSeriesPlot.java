@@ -59,6 +59,7 @@ public abstract class BaseSeriesPlot implements Plot {
 
    /**
     *
+    *
     * @param datasource
     * 		a native JavaScript function which can be used to retrieve tiles
     * @param nativeXAxis
@@ -178,24 +179,22 @@ public abstract class BaseSeriesPlot implements Plot {
       }
    }
 
-   /**
-    * Called before the {@link #paint(Canvas, String)} method calls
-    * {@link SeriesPlotRenderer#render(BoundedDrawingBox, Iterable, GraphAxis, GraphAxis, PlottablePoint)},
-    * to allow implementations to prepare for rendering.
-    *
-    * @param canvas
-    *    The canvas upon which rendering will take place.
-    * @param drawing
-    * 	The {@link BoundedDrawingBox} that should constrain the drawing.
-    * 	Forwarding graphics calls through drawing will ensure that everything
-    * 	draws up to the edge of the viewing window but no farther
-    */
-   protected abstract void beforeRender(final Canvas canvas, final BoundedDrawingBox drawing);
+   protected abstract SeriesPlotRenderer getRenderer();
 
    /**
-    * Get the renderer required for painting.
+    * Sets the style for this {@link Plot}, and causes a repaint of the plot's {@link PlotContainer}.  Does
+    * nothing if the given <code>newStyleJson</code> is <code>null</code>.
     */
-   protected abstract SeriesPlotRenderer getRenderer();
+   public final void setStyle(final JavaScriptObject newStyleJson) {
+      if (newStyleJson != null) {
+         final SeriesPlotRenderer renderer = getRenderer();
+         if (renderer != null) {
+            renderer.setStyleDescription(newStyleJson.<StyleDescription>cast());
+
+            signalRepaintOfPlotContainer();
+         }
+      }
+   }
 
    /**
     * Paints this plot in its {@link PlotContainer}.
@@ -204,42 +203,24 @@ public abstract class BaseSeriesPlot implements Plot {
     */
    @Override
    public final void paint(final Canvas canvas, final String newPaintEventId) {
-      // guard against redundant paints
-      if (previousPaintEventId == null || !previousPaintEventId.equals(newPaintEventId)) {
-         previousPaintEventId = newPaintEventId;
+      final SeriesPlotRenderer renderer = getRenderer();
+      if (renderer != null) {
+         // guard against redundant paints
+         if (previousPaintEventId == null || !previousPaintEventId.equals(newPaintEventId)) {
+            previousPaintEventId = newPaintEventId;
 
-         final BoundedDrawingBox drawing = getDrawingBounds(canvas);
+            renderer.render(canvas,
+                            getDrawingBounds(canvas),
+                            tileLoader.getBestResolutionTiles(computeCurrentLevel()),
+                            getXAxis(),
+                            getYAxis(),
+                            getHighlightedPoint());
 
-         beforeRender(canvas, drawing);
-
-         final SeriesPlotRenderer renderer = getRenderer();
-         renderer.render(drawing,
-                         tileLoader.getBestResolutionTiles(computeCurrentLevel()),
-                         getXAxis(),
-                         getYAxis(),
-                         getHighlightedPoint());
-
-         // Clean up after ourselves
-         afterRender(canvas, drawing);
-
-         // Make sure we shouldn't get any more info from the server
-         tileLoader.checkForFetch(computeCurrentLevel());
+            // Make sure we shouldn't get any more info from the server
+            tileLoader.checkForFetch(computeCurrentLevel());
+         }
       }
    }
-
-   /**
-    * Called after the {@link #paint(Canvas, String)} method calls
-    * {@link SeriesPlotRenderer#render(BoundedDrawingBox, Iterable, GraphAxis, GraphAxis, PlottablePoint)},
-    * to allow implementations to clean up after rendering.
-    *
-    * @param canvas
-    *    The canvas upon which rendering took place.
-    * @param drawing
-    * 	The {@link BoundedDrawingBox} that should constrain the drawing.
-    * 	Forwarding graphics calls through drawing will ensure that everything
-    * 	draws up to the edge of the viewing window but no farther
-    */
-   protected abstract void afterRender(final Canvas canvas, final BoundedDrawingBox drawing);
 
    /** Causes the containing {@link PlotContainer} to paint itself. */
    protected final void signalRepaintOfPlotContainer() {

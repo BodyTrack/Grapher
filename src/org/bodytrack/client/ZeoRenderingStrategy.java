@@ -8,13 +8,13 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ZeoRenderer extends AbstractPlotRenderer {
-   
+public class ZeoRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy {
+
    /** Enumeration defining the various Zeo states. */
    private static enum ZeoState {
-      NO_DATA(0, "No Data", new Color(0,0,0)),
+      NO_DATA(0, "No Data", new Color(0, 0, 0)),
       DEEP(1, "Deep", new Color(0x00, 0x66, 0x00)),
-      LIGHT(2, "Light", new Color(0x99,0x99,0x99)),
+      LIGHT(2, "Light", new Color(0x99, 0x99, 0x99)),
       REM(3, "REM", new Color(0x00, 0xCC, 0x00)),
       WAKE(4, "Wake", new Color(0xFF, 0x66, 0x33));
 
@@ -81,27 +81,34 @@ public class ZeoRenderer extends AbstractPlotRenderer {
    //private static final double HIGHLIGHTED_ALPHA = 0.5;
    private static final double HIGHLIGHTED_ALPHA = 1.0;
 
-   public ZeoRenderer(boolean drawComments) {
-      super(drawComments);
+   public ZeoRenderingStrategy(final StyleDescription.StyleType styleType,
+                               final boolean willShowComments) {
+      super(styleType, willShowComments);
    }
 
    @Override
-   protected void paintDataPoint(final BoundedDrawingBox drawing,
-                                 final GrapherTile tile,
-                                 final double prevX,
-                                 final double prevY,
-                                 final double x,
-                                 final double y,
-                                 final PlottablePoint rawDataPoint) {
-      paintEdgePoint(drawing, tile, x, y, rawDataPoint);
+   public final void paintDataPoint(final BoundedDrawingBox drawing,
+                                    final GrapherTile tile,
+                                    final GraphAxis xAxis,
+                                    final GraphAxis yAxis,
+                                    final boolean isAnyPointHighlighted,
+                                    final double prevX,
+                                    final double prevY,
+                                    final double x,
+                                    final double y,
+                                    final PlottablePoint rawDataPoint) {
+      paintEdgePoint(drawing, tile, xAxis, yAxis, isAnyPointHighlighted, x, y, rawDataPoint);
    }
 
    @Override
-   protected void paintEdgePoint(final BoundedDrawingBox drawing,
-                                 final GrapherTile tile,
-                                 final double x,
-                                 final double y,
-                                 final PlottablePoint rawDataPoint) {
+   public final void paintEdgePoint(final BoundedDrawingBox drawing,
+                                    final GrapherTile tile,
+                                    final GraphAxis xAxis,
+                                    final GraphAxis yAxis,
+                                    final boolean isAnyPointHighlighted,
+                                    final double x,
+                                    final double y,
+                                    final PlottablePoint rawDataPoint) {
       // get the ZeoState
       final int val = (int)Math.round(rawDataPoint.getValue());
       final ZeoState zeoState = ZeoState.findByValue(val);
@@ -109,36 +116,19 @@ public class ZeoRenderer extends AbstractPlotRenderer {
       // use the sample width to compute the left and right x values for the bar (we want the data point to be in the
       // center of the bar)
       final double sampleHalfWidth = tile.getPlottableTile().getSampleWidth() / 2;
-      final double leftX = getXAxis().project2D(rawDataPoint.getDate() - sampleHalfWidth).getX();
-      final double rightX = getXAxis().project2D(rawDataPoint.getDate() + sampleHalfWidth).getX();
+      final double leftX = xAxis.project2D(rawDataPoint.getDate() - sampleHalfWidth).getX();
+      final double rightX = xAxis.project2D(rawDataPoint.getDate() + sampleHalfWidth).getX();
 
       // draw the rectangle
-      drawRectangle(drawing.getCanvas(), zeoState, leftX, rightX, y);
-   }
-
-   @Override
-   protected void paintHighlightedPoint(final BoundedDrawingBox drawing,
-                                        final double x,
-                                        final double y,
-                                        final PlottablePoint rawDataPoint) {
-      // Don't need to do anything extra for a highlighted point
+      drawRectangle(drawing.getCanvas(), yAxis, isAnyPointHighlighted, zeoState, leftX, rightX, y);
    }
 
    /**
-    * Draws a rectangle with the specified corners, stretching down
-    * to 0.
-    *
-    * @param zeoState
-    * 		the ZeoState for the data point we're rendering.  If the state
-    * 		is <code>null</code> this method does nothing
-    * @param x
-    * 		the X-value (in pixels) for the right edge of the rectangle
-    * @param y
-    * 		the Y-value (in pixels) for the top edge of the rectangle
-    * @param rectHalfWidth
-    * 		the half-width (in pixels) of the rectangle to be drawn
+    * Draws a rectangle with the specified corners, stretching down to 0.
     */
    private void drawRectangle(final Canvas canvas,
+                              final GraphAxis yAxis,
+                              final boolean isAnyPointHighlighted,
                               final ZeoState zeoState,
                               final double leftX,
                               final double rightX,
@@ -146,8 +136,6 @@ public class ZeoRenderer extends AbstractPlotRenderer {
       if (zeoState == null) {
          return;
       }
-
-      final GraphAxis yAxis = getYAxis();
 
       final Surface surface = canvas.getSurface();
       final DirectShapeRenderer renderer = canvas.getRenderer();
@@ -167,10 +155,8 @@ public class ZeoRenderer extends AbstractPlotRenderer {
       final double bottomY = minDrawY;
       final double topY = y;
 
-      final boolean highlighted = isAnyPointHighlighted();
-
       // Draw the Zeo plot with the specified color
-      surface.setGlobalAlpha(highlighted ? HIGHLIGHTED_ALPHA : NORMAL_ALPHA);
+      surface.setGlobalAlpha(isAnyPointHighlighted ? HIGHLIGHTED_ALPHA : NORMAL_ALPHA);
       surface.setFillStyle(zeoState.getColor());
 
       final boolean isNoDataState = ZeoState.NO_DATA.equals(zeoState);
@@ -178,9 +164,9 @@ public class ZeoRenderer extends AbstractPlotRenderer {
       if (isNoDataState) {
          // Draw a line
          final double oldLineWidth = surface.getLineWidth();
-         surface.setLineWidth(highlighted
-                              ? AbstractPlotRenderer.HIGHLIGHT_STROKE_WIDTH
-                              : AbstractPlotRenderer.NORMAL_STROKE_WIDTH);
+         surface.setLineWidth(isAnyPointHighlighted
+                              ? SeriesPlotRenderingStrategy.HIGHLIGHT_STROKE_WIDTH
+                              : SeriesPlotRenderingStrategy.NORMAL_STROKE_WIDTH);
 
          renderer.beginPath();
          renderer.moveTo(leftX, bottomY);
@@ -209,9 +195,9 @@ public class ZeoRenderer extends AbstractPlotRenderer {
          surface.setFillStyle(Canvas.DEFAULT_COLOR);
 
          final double oldLineWidth = surface.getLineWidth();
-         surface.setLineWidth(highlighted
-                              ? AbstractPlotRenderer.HIGHLIGHT_STROKE_WIDTH
-                              : AbstractPlotRenderer.NORMAL_STROKE_WIDTH);
+         surface.setLineWidth(isAnyPointHighlighted
+                              ? SeriesPlotRenderingStrategy.HIGHLIGHT_STROKE_WIDTH
+                              : SeriesPlotRenderingStrategy.NORMAL_STROKE_WIDTH);
 
          // Stroke the outside of the rectangle
          // Round to nearest pixels so we draw the line in such a way that

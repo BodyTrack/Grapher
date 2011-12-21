@@ -60,7 +60,7 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
    private double previousWidth;
    // Since overlap is only valid at a X-axis width (in seconds)
 
-   private final PhotoRenderer renderer;
+   private final SeriesPlotRenderer renderer;
 
    /**
     * Initializes a new PhotoSeriesPlot.
@@ -76,6 +76,8 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
     * 		the minimum level to which the user will be allowed to zoom
     * @param userId
     * 		the user ID of the current user
+    * @param styleJson
+    * 		the JSON style
     * @throws NullPointerException
     * 		if any parameter is <tt>null</tt>
     */
@@ -83,9 +85,9 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
                           final JavaScriptObject nativeXAxis,
                           final JavaScriptObject nativeYAxis,
                           final int minLevel,
-                          final int userId) {
+                          final int userId,
+                          final JavaScriptObject styleJson) {
       super(datasource, nativeXAxis, nativeYAxis, minLevel);
-
       this.userId = userId;
 
       images = new HashMap<PlottablePoint, Set<PhotoGetter>>();
@@ -97,10 +99,12 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
       previousHeight = 1e-10;
       previousWidth = 1e-10;
 
-      // TODO: instead of concrete classes, we should just have a general
-      // renderer that behaves differently based on the style...
-      // TODO: get whether to draw comments from the style
-      this.renderer = new PhotoRenderer(true);
+      this.renderer = new PhotoRenderer(styleJson.<StyleDescription>cast());
+   }
+
+   @Override
+   protected SeriesPlotRenderer getRenderer() {
+      return renderer;
    }
 
    /**
@@ -195,23 +199,6 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
         */
       return true;
    }
-
-   @Override
-   protected void beforeRender(final Canvas canvas, final BoundedDrawingBox drawing) {
-      canvas.getSurface().setStrokeStyle(Canvas.DEFAULT_COLOR);
-   }
-
-   @Override
-   protected SeriesPlotRenderer getRenderer() {
-      return renderer;
-   }
-
-   @Override
-   protected void afterRender(final Canvas canvas, final BoundedDrawingBox drawing) {
-      // Clean up after ourselves
-      canvas.getSurface().setStrokeStyle(Canvas.DEFAULT_COLOR);
-   }
-
 
    /**
     * Returns the points that will form the centers of the images.
@@ -631,80 +618,57 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
       return result;
    }
 
-   private final class PhotoRenderer extends AbstractPlotRenderer {
-      private PhotoRenderer(final boolean drawComments) {
-         super(drawComments);
+   private class PhotoRenderingStrategy implements SeriesPlotRenderingStrategy {
+
+      @Override
+      public void beforeRender(final Canvas canvas, final boolean isAnyPointHighlighted) {
+         canvas.getSurface().setStrokeStyle(Canvas.DEFAULT_COLOR);
       }
 
-      /**
-       * Draws the images at the specified point.
-       *
-       * <p>Although we handle edge points and regular points in the same way in this class, we still need to draw all the
-       * images, so this does exactly the same thing that
-       * {@link PhotoRenderer#paintDataPoint(BoundedDrawingBox, double, double, double, double, PlottablePoint)}
-       * does.</p>
-       *
-       * @param drawing
-       * 		the bounding box that constrains where photos will draw
-       * @param tile
-       *       the tile from which the data point to be drawn was obtained
-       * @param x
-       * 		the X-value (in pixels) at which we draw the image
-       * @param y
-       * 		ignored
-       * @param rawDataPoint
-       * 		the raw {@link PlottablePoint}
-       */
       @Override
-      protected void paintEdgePoint(final BoundedDrawingBox drawing,
-                                    final GrapherTile tile,
-                                    final double x,
-                                    final double y,
-                                    final PlottablePoint rawDataPoint) {
+      public final void paintEdgePoint(final BoundedDrawingBox drawing,
+                                       final GrapherTile tile,
+                                       final GraphAxis xAxis,
+                                       final GraphAxis yAxis,
+                                       final boolean isAnyPointHighlighted,
+                                       final double x,
+                                       final double y,
+                                       final PlottablePoint rawDataPoint) {
          drawAllImagesAtPoint(drawing, x, y);
       }
 
-      /**
-       * Draws the images that are matched with x.
-       *
-       * <p>This does nothing except draw the images matched with x, ignoring
-       * all other parameters, since the Y-values on our points are just
-       * dummy values anyway, and since we don't draw lines between successive
-       * points.</p>
-       *
-       * @param drawing
-       * 		the bounding box that constrains where photos will draw
-       * @param prevX
-       * 		ignored
-       * @param prevY
-       * 		ignored
-       * @param x
-       * 		the X-value (in pixels) at which we draw the image
-       * @param y
-       * 		ignored
-       * @param rawDataPoint
-       * 		the raw {@link PlottablePoint}
-       */
       @Override
-      protected void paintDataPoint(final BoundedDrawingBox drawing,
-                                    final GrapherTile tile,
-                                    final double prevX,
-                                    final double prevY,
-                                    final double x,
-                                    final double y,
-                                    final PlottablePoint rawDataPoint) {
+      public final void paintDataPoint(final BoundedDrawingBox drawing,
+                                       final GrapherTile tile,
+                                       final GraphAxis xAxis,
+                                       final GraphAxis yAxis,
+                                       final boolean isAnyPointHighlighted,
+                                       final double prevX,
+                                       final double prevY,
+                                       final double x,
+                                       final double y,
+                                       final PlottablePoint rawDataPoint) {
          drawAllImagesAtPoint(drawing, x, y);
       }
 
-      /**
-       * Implemented here as a no-op, since we don't need highlighted points to look different.
-       */
       @Override
-      protected void paintHighlightedPoint(final BoundedDrawingBox drawing,
-                                           final double x,
-                                           final double y,
-                                           final PlottablePoint rawDataPoint) {
-         // no need to do anything
+      public void afterRender(final Canvas canvas) {
+         canvas.getSurface().setStrokeStyle(Canvas.DEFAULT_COLOR);
+      }
+   }
+
+   private final class PhotoRenderer extends BaseSeriesPlotRenderer {
+
+      private PhotoRenderer(final StyleDescription styleDescription) {
+         super(styleDescription);
+      }
+
+      @Override
+      protected List<SeriesPlotRenderingStrategy> buildRenderingStrategies(final StyleDescription styleDescription) {
+         // TODO: honor the style...
+         final List<SeriesPlotRenderingStrategy> renderingStrategies = new ArrayList<SeriesPlotRenderingStrategy>();
+         renderingStrategies.add(new PhotoRenderingStrategy());
+         return renderingStrategies;
       }
 
       @Override
