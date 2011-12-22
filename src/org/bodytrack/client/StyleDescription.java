@@ -1,164 +1,129 @@
 package org.bodytrack.client;
 
+import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.JsArray;
 import gwt.g2d.client.graphics.Color;
 
-import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.core.client.JsArrayMixed;
-
 public final class StyleDescription extends JavaScriptObject {
-	// JavaScript overlay types always have protected, no-arg constructors
-	protected StyleDescription() {}
+   // JavaScript overlay types always have protected, no-arg constructors
+   protected StyleDescription() {
+   }
 
-	public native String getColorName() /*-{
-		return this.color;
-	}-*/;
+   public native JsArray<StyleType> getStyleTypes() /*-{
+      return this['style-types'];
+   }-*/;
 
-	public native LinesDescription getLines() /*-{
-		return this.lines;
-	}-*/;
+   public native CommentsDescription getComments() /*-{
+      return this['comments'];
+   }-*/;
 
-	public native PointsDescription getPoints() /*-{
-		return this.points;
-	}-*/;
+   public boolean willShowComments() {
+      final CommentsDescription commentsDescription = getComments();
+      return commentsDescription != null && commentsDescription.willShow();
+   }
 
-	public native BarsDescription getBars() /*-{
-		return this.bars;
-	}-*/;
+   public static final class StyleType extends JavaScriptObject {
+      // JavaScript overlay types always have protected, no-arg constructors
+      protected StyleType() {
+      }
 
-	public native CommentsDescription getComments() /*-{
-		return this.comments;
-	}-*/;
+      public native String getType() /*-{
+         return this['type'];
+      }-*/;
 
-	public native String getDeviceName() /*-{
-		return this.device_name;
-	}-*/;
+      public native boolean willShow() /*-{
+         // default to true if undefined
+         return (typeof this['show'] === 'undefined') || !!(this['show']);
+      }-*/;
 
-	public native String getChannelName() /*-{
-		return this.channel_name;
-	}-*/;
+      /**
+       * Returns a {@link Color} built from the value of the <code>color</code>
+       * field, if one exists and its value is parseable.
+       *
+       * @param defaultColor
+       * 	The color to return if this style has no <code>color</code> field or
+       * 	the field has a value that can't be parsed by
+       * 	{@link ColorUtils#buildColor(String)}
+       * @return
+       * 	The {@link Color} object that this style's <code>color</code> field holds,
+       * 	if such a field exists, or <code>defaultColor</code> if this style either has no
+       * 	such field or has a color that {@link ColorUtils#buildColor(String)}
+       * 	can't parse.
+       */
+      public Color getColor(final Color defaultColor) {
+         return getColorField("color", defaultColor);
+      }
 
-	// TODO: Remove this function, since it is perfectly permissible
-	// for a style to have multiple types (bars and lines, for instance)
-	public native String getType() /*-{
-		return this.type;
-	}-*/;
+      /**
+       * Returns a {@link Color} built from the value of the <code>fillColor</code>
+       * field, if one exists and its value is parseable.
+       *
+       * @param defaultColor
+       * 	The color to return if this style has no <code>fillColor</code> field or
+       * 	the field has a value that can't be parsed by
+       * 	{@link ColorUtils#buildColor(String)}
+       * @return
+       * 	The {@link Color} object that this style's <code>fillColor</code> field holds,
+       * 	if such a field exists, or <code>defaultColor</code> if this style either has no
+       * 	such field or has a color that {@link ColorUtils#buildColor(String)}
+       * 	can't parse.
+       */
+      public Color getFillColor(final Color defaultColor) {
+         return getColorField("fillColor", defaultColor);
+      }
 
-	/**
-	 * Builds up an actual {@link Color} object from the return value
-	 * of {@link #getColorName()}
-	 *
-	 * @param defaultColor
-	 * 	The color to return if this style has no color or has a color that
-	 * 	can't be parsed by {@link ColorUtils#buildColor(String)}
-	 * @return
-	 * 	The {@link Color} object that this style holds, if there is
-	 * 	such a color, or defaultColor if this style either has no
-	 * 	color or has a color that {@link ColorUtils#buildColor(String)}
-	 * 	can't parse
-	 */
-	public Color getColor(Color defaultColor) {
-		return ColorUtils.getColor(getColorName(), defaultColor);
-	}
+      /**
+       * Returns a {@link Color} built from the value of the field specified
+       * by the <code>fieldName</code> parameter, if such a field exists and its
+       * value is parseable.
+       *
+       * @param defaultColor
+       * 	The color to return if this style does not have a field with
+       * 	a name matching the value of the <code>fieldName</code> parameter	or
+       * 	the field has a value that can't be parsed by
+       * 	{@link ColorUtils#buildColor(String)}
+       * @return
+       * 	The {@link Color} object held by the field specified by the
+       * 	<code>fieldName</code> parameter, if such a field exists, or
+       * 	<code>defaultColor</code> if this style either has no
+       * 	such field or has a color that {@link ColorUtils#buildColor(String)}
+       * 	can't parse.
+       */
+      public Color getColorField(final String fieldName, final Color defaultColor) {
+         final Color color = ColorUtils.getColor(this.<String>getValue(fieldName), defaultColor);
+         return color;
+      }
 
-	public static final class LinesDescription extends JavaScriptObject {
-		// JavaScript overlay types always have protected, no-arg constructors
-		protected LinesDescription() {}
+      /**
+       * Returns the value of the <code>lineWidth</code> field, if such
+       * a field exists, otherwise returns the given <code>defaultLineWidth</code>.
+       */
+      public double getLineWidth(final double defaultLineWidth) {
+         return getDoubleValue("lineWidth", defaultLineWidth);
+      }
 
-		public native boolean show() /*-{
-			return !!(this.show);
-		}-*/;
+      public native boolean willFill() /*-{
+         // default to true if undefined
+         return (typeof this['fill'] === 'undefined') || !!(this['fill']);
+      }-*/;
 
-		public native double getLineWidth() /*-{
-			return this.lineWidth;
-		}-*/;
+      public native <T> T getValue(final String fieldName) /*-{
+         return this[fieldName];
+      }-*/;
 
-		public native boolean fill() /*-{
-			return !!(this.fill);
-		}-*/;
+      public native double getDoubleValue(final String fieldName, final double defaultValue) /*-{
+         return (typeof this[fieldName] === 'undefined') ? defaultValue : this[fieldName];
+      }-*/;
+   }
 
-		public native String getColorName() /*-{
-			return this.fillColor;
-		}-*/;
-	}
+   public static final class CommentsDescription extends JavaScriptObject {
+      // JavaScript overlay types always have protected, no-arg constructors
+      protected CommentsDescription() {
+      }
 
-	public static final class PointsDescription extends JavaScriptObject {
-		// JavaScript overlay types always have protected, no-arg constructors
-		protected PointsDescription() {}
-
-		public native boolean show() /*-{
-			return !!(this.show);
-		}-*/;
-
-		public native double getLineWidth() /*-{
-			return this.lineWidth;
-		}-*/;
-
-		public native double getRadius() /*-{
-			return this.radius;
-		}-*/;
-
-		public native boolean fill() /*-{
-			return !!(this.fill);
-		}-*/;
-
-		public native String getColorName() /*-{
-			return this.fillColor;
-		}-*/;
-	}
-
-	public static final class BarsDescription extends JavaScriptObject {
-		// JavaScript overlay types always have protected, no-arg constructors
-		protected BarsDescription() {}
-
-		public native boolean show() /*-{
-			return !!(this.show);
-		}-*/;
-
-		public native double getLineWidth() /*-{
-			return this.lineWidth;
-		}-*/;
-
-		public native double getRadius() /*-{
-			return this.radius;
-		}-*/;
-
-		public native boolean fill() /*-{
-			return !!(this.fill);
-		}-*/;
-
-		public native boolean hasColor() /*-{
-			return !!(this.fillColor);
-		}-*/;
-
-		public native boolean isSingleColor() /*-{
-			// For information on how to test object type, see
-			// the ECMAScript standard at
-			// http://www.ecma-international.org/publications/files/ECMA-ST/Ecma-262.pdf
-			// on page 33
-			return !!(this.fillColor)
-				&& (Object.prototype.toString.call(this.fillColor) !== '[object Array]');
-		}-*/;
-
-		// Meaningless unless isSingleColor() returns true
-		public native String getColor() /*-{
-			return !!(this.fillColor);
-		}-*/;
-
-		// Meaningless unless isSingleColor() returns false
-		public native JsArrayMixed getRawColors() /*-{
-			return this.fillColor;
-		}-*/;
-
-		// TODO: Add a method to convert the output of getRawColors() to
-		// something Java can use to draw bars
-	}
-
-	public static final class CommentsDescription extends JavaScriptObject {
-		// JavaScript overlay types always have protected, no-arg constructors
-		protected CommentsDescription() {}
-
-		public native boolean show() /*-{
-			return !!(this.show);
-		}-*/;
-	}
+      public native boolean willShow() /*-{
+         // default to true if undefined
+         return (typeof this['show'] === 'undefined') || !!(this['show']);
+      }-*/;
+   }
 }

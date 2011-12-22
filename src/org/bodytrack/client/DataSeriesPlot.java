@@ -1,15 +1,9 @@
 package org.bodytrack.client;
 
+import com.google.gwt.core.client.JavaScriptObject;
 import gwt.g2d.client.math.Vector2;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
-import org.bodytrack.client.StyleDescription.CommentsDescription;
-
-import com.google.gwt.core.client.JavaScriptObject;
 
 /**
  * Represents a single set of data, along with references to its
@@ -39,66 +33,14 @@ import com.google.gwt.core.client.JavaScriptObject;
  */
 public class DataSeriesPlot extends BaseSeriesPlot {
 
-   /** Enumeration defining the various types of {@link DataSeriesPlot}s. */
-   public static enum Type {
-
-      DOT("dot"),
-      LOLLIPOP("lollipop"),
-      PLOT("plot"),
-      ZEO("zeo");
-
-      private static final Map<String, Type> NAME_TO_TYPE_MAP;
-
-      public static final Type DEFAULT_DATA_SERIES_PLOT_TYPE = PLOT;
-
-      static {
-         final Map<String, Type> nameToTypeMap = new HashMap<String, Type>(Type.values().length);
-         for (final Type dataSeriesPlotType : Type.values()) {
-            nameToTypeMap.put(dataSeriesPlotType.getName(), dataSeriesPlotType);
-         }
-         NAME_TO_TYPE_MAP = Collections.unmodifiableMap(nameToTypeMap);
-      }
-
-      /**
-       * Returns the <code>Type</code> associated with the given <code>name</code> (case insensitive), or
-       * {@link #DEFAULT_DATA_SERIES_PLOT_TYPE} if no such type exists. Guaranteed to never return <code>null</code>.
-       */
-      public static Type findByName(final String name) {
-         if (name != null) {
-            final String lowercaseName = name.toLowerCase();
-            if (NAME_TO_TYPE_MAP.containsKey(lowercaseName)) {
-               return NAME_TO_TYPE_MAP.get(lowercaseName);
-            }
-         }
-         return DEFAULT_DATA_SERIES_PLOT_TYPE;
-      }
-
-      private final String name;
-
-      private Type(final String name) {
-         this.name = name.toLowerCase();  // force all names to be lowercase so that we can do a case-insensitive search in findByName()
-      }
-
-      public String getName() {
-         return name;
-      }
-
-      @Override
-      public String toString() {
-         return getName();
-      }
-   }
-
    private static final double HIGHLIGHT_DISTANCE_THRESHOLD = 5;
-   
+   private final SeriesPlotRenderer renderer;
+
    public static DataSeriesPlot getDataSeriesPlot(final JavaScriptObject nativePlot) {
 
       final Dynamic dynPlot = nativePlot.cast();
       return dynPlot.get("__backingPlot");
    }
-
-   private SeriesPlotRenderer renderer;
-   private StyleDescription style;
 
    /**
     * Main constructor for the DataSeriesPlot object.
@@ -110,18 +52,13 @@ public class DataSeriesPlot extends BaseSeriesPlot {
     * 		the Y-axis along which this data set will be aligned when drawn
     * @param minLevel
     * 		the minimum level to which the user will be allowed to zoom
+    * @param styleJson
+    * 		the JSON style
     * @throws NullPointerException
-    * 		if datasource, nativeXAxis, nativeYAxis, or color is <tt>null</tt>
+    * 		if datasource, nativeXAxis, nativeYAxis, or styleJson is <tt>null</tt>
     * @throws IllegalArgumentException
     * 		if xAxis is really a Y-axis, or if yAxis is really an X-axis
     */
-   public DataSeriesPlot(final JavaScriptObject datasource,
-                         final JavaScriptObject nativeXAxis,
-                         final JavaScriptObject nativeYAxis,
-                         final int minLevel) {
-      this(datasource, nativeXAxis, nativeYAxis, minLevel, null);
-   }
-
    public DataSeriesPlot(final JavaScriptObject datasource,
                          final JavaScriptObject nativeXAxis,
                          final JavaScriptObject nativeYAxis,
@@ -129,73 +66,12 @@ public class DataSeriesPlot extends BaseSeriesPlot {
                          final JavaScriptObject styleJson) {
       // The superclass constructor checks for null in its parameters
       super(datasource, nativeXAxis, nativeYAxis, minLevel);
-      if (styleJson == null) {
-         throw new NullPointerException("Cannot have a null style");
-      }
-      setStyle(styleJson, false);
-   }
-
-   /**
-    * Sets the style for this {@link DataSeriesPlot}, and causes a repaint of the plot's {@link PlotContainer}.  Does
-    * nothing if the given <code>newStyleJson</code> is <code>null</code>.
-    */
-   public void setStyle(final JavaScriptObject newStyleJson) {
-      setStyle(newStyleJson, true);
-   }
-
-   private void setStyle(final JavaScriptObject styleJson, final boolean shouldRepaint) {
-      if (styleJson != null) {
-         this.style = styleJson.cast();
-
-         boolean willShowComments = true;
-
-         // get whether to draw comments from the style
-         final CommentsDescription commentsValue = style.getComments();
-         if (commentsValue != null) {
-            willShowComments = commentsValue.show();
-         }
-
-         // TODO: instead of concrete classes, we should just have a general
-         // renderer that behaves differently based on the style...
-         // choose the appropriate renderer based on the type
-         final Type type = Type.findByName(style.getType());
-         switch (type) {
-            case DOT:
-               this.renderer = new DotRenderer(willShowComments);
-               break;
-            case LOLLIPOP:
-               this.renderer = new LollipopRenderer(willShowComments);
-               break;
-            case ZEO:
-               this.renderer = new ZeoRenderer(willShowComments);
-               break;
-            case PLOT:
-            default:
-               this.renderer = new LineRenderer(willShowComments);
-         }
-
-         if (shouldRepaint) {
-            signalRepaintOfPlotContainer();
-         }
-      }
-   }
-
-   @Override
-   protected void beforeRender(final Canvas canvas, final BoundedDrawingBox drawing) {
-      canvas.getSurface().setStrokeStyle(style.getColor(Canvas.DEFAULT_COLOR));
-      canvas.getSurface().setFillStyle(style.getColor(Canvas.DEFAULT_COLOR));
+      this.renderer = new DataSeriesPlotRenderer(styleJson.<StyleDescription>cast());
    }
 
    @Override
    protected SeriesPlotRenderer getRenderer() {
       return renderer;
-   }
-
-   @Override
-   protected void afterRender(final Canvas canvas, final BoundedDrawingBox drawing) {
-      // Clean up after ourselves
-      canvas.getSurface().setStrokeStyle(Canvas.DEFAULT_COLOR);
-      canvas.getSurface().setFillStyle(Canvas.DEFAULT_COLOR);
    }
 
    /**
