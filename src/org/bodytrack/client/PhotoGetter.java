@@ -59,15 +59,8 @@ public final class PhotoGetter extends JavaScriptObject {
 
 		var DEFAULT_WIDTH = 150;
 
-		// TODO: Possibly inline these functions for speed, since
-		// the inlining is trivial here
-		var getBaseUrl = function() {
-			return "/users/" + userId + "/logphotos/" + imageId + ".";
-		}
-
-		var getUrl = function(baseUrl) {
-			return baseUrl + DEFAULT_WIDTH + ".jpg";
-		}
+		var baseUrl = "/users/" + userId + "/logphotos/" + imageId + ".";
+		var url = baseUrl + DEFAULT_WIDTH + ".jpg";
 
 		var getter = {};
 		getter.userId = userId;
@@ -77,8 +70,8 @@ public final class PhotoGetter extends JavaScriptObject {
 		getter.callback = callback;
 		getter.imageLoaded = false;
 		getter.loadFailed = false;
-		getter.baseUrl = getBaseUrl();
-		getter.url = getUrl(getter.baseUrl);
+		getter.baseUrl = baseUrl;
+		getter.url = url;
 		getter.originalImgWidth = -1;
 		getter.originalImgHeight = -1;
 

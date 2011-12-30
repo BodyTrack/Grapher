@@ -328,10 +328,10 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
     */
    private double getHeight(final PhotoGetter photo) {
       double height = getPhotoHeight();
-      if (highlightedImages.contains(photo)) // Handle highlighting
-      {
-         height *= HIGHLIGHTED_SIZE_RATIO;
-      }
+
+      // Handle highlighting
+      if (highlightedImages.contains(photo))
+         return height * HIGHLIGHTED_SIZE_RATIO;
 
       return height;
    }
