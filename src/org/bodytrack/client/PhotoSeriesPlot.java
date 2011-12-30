@@ -260,9 +260,7 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
       final double photoTime = getXAxis().unproject(new Vector2(x, y));
 
       final Set<PhotoGetter> photos = images.get(new PlottablePoint(photoTime, IMAGE_Y_VALUE));
-      if (photos == null) {
-         return; // This shouldn't ever occur
-      }
+      assert(photos != null);
 
       for (final PhotoGetter photo : photos) {
          drawPhoto(drawing, x, y, photo);
@@ -295,23 +293,26 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
                           final double x,
                           final double y,
                           final PhotoGetter photo) {
-      // Get the correct dimensions for image
-      double height = getHeight(photo);
-
-      double photoY = y;
-      if (overlap.get(photo).size() > 0) {
-         // There is overlap, so we draw photos with even IDs on
-         // top and photos with odd IDs on the bottom
-
-         // TODO: Possibly rename getPhotoHeight() to
-         // getFullPhotoHeight(), and change getPhotoHeight() to
-         // return the height of the shrunken photo
-         photoY = getPhotoY(photo);
-         height /= 2.0;
-      }
-
+      final double height = getHeight(photo);
       final double width = getWidth(photo, height);
-      renderPhoto(drawing, x, photoY, width, height, photo);
+
+      // Now draw the image itself, not allowing it to overflow onto
+      // the axes
+      photo.drawImageBounded(drawing.getCanvas().getNativeCanvasElement(),
+                             x, y, width, height, drawing);
+
+      // Note that the borders are drawn after the image is, so the image
+      // doesn't obscure the borders
+      final double xMin = x - (width / 2.0);
+      final double xMax = x + (width / 2.0);
+      final double yMin = y - (height / 2.0);
+      final double yMax = y + (height / 2.0);
+
+      // Draw a border around the image
+      drawing.drawLineSegment(xMin, yMin, xMin, yMax);
+      drawing.drawLineSegment(xMin, yMax, xMax, yMax);
+      drawing.drawLineSegment(xMax, yMax, xMax, yMin);
+      drawing.drawLineSegment(xMax, yMin, xMin, yMin);
    }
 
    /**
@@ -431,52 +432,6 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
       }
 
       return y;
-   }
-
-   /**
-    * Actually draws the specified photo to the canvas, without
-    * worrying about fit.
-    *
-    * @param drawing
-    * 		the <tt>BoundedDrawingBox</tt> we use to draw only in
-    * 		bounds
-    * @param x
-    * 		the X-value (in pixels) at which the center of the image
-    * 		will be drawn
-    * @param y
-    * 		the Y-value (in pixels) at which the center of the image
-    * 		will be drawn
-    * @param width
-    * 		the width (in pixels) at which the image will be drawn
-    * @param height
-    * 		the height (in pixels) at which the image will be drawn
-    * @param photo
-    * 		the photo to draw at point (x, y)
-    */
-   private void renderPhoto(final BoundedDrawingBox drawing,
-                            final double x,
-                            final double y,
-                            final double width,
-                            final double height,
-                            final PhotoGetter photo) {
-      // Now draw the image itself, not allowing it to overflow onto
-      // the axes
-      photo.drawImageBounded(drawing.getCanvas().getNativeCanvasElement(),
-                             x, y, width, height, drawing);
-
-      // Note that the borders are drawn after the image is, so the image
-      // doesn't obscure the borders
-
-      final double xMin = x - (width / 2.0);
-      final double xMax = x + (width / 2.0);
-      final double yMin = y - (height / 2.0);
-      final double yMax = y + (height / 2.0);
-
-      // Draw a border around the image
-      drawing.drawLineSegment(xMin, yMin, xMin, yMax);
-      drawing.drawLineSegment(xMin, yMax, xMax, yMax);
-      drawing.drawLineSegment(xMax, yMax, xMax, yMin);
-      drawing.drawLineSegment(xMax, yMin, xMin, yMin);
    }
 
    /**

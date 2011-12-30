@@ -16,20 +16,14 @@ import com.google.gwt.user.client.Element;
  * multiple photo sizes, and automatically decide, when asked for
  * a photo of a certain size, whether to download a new photo or
  * simply to scale the current photo.  To implement this, we will
- * need to change img from a single <tt>Image</tt> object to a list
- * of <tt>Image</tt> objects.  For now, though, this just
+ * need to change img from a single JavaScript Image object to a
+ * list of Image objects.  For now, though, this just
  * handles single photo downloads.</p>
  *
  * <p>This class also maintains the logic for building photo
  * download URLs, given the appropriate information.</p>
  */
 public final class PhotoGetter extends JavaScriptObject {
-	/**
-	 * At least for now, we always download images at size
-	 * DEFAULT_WIDTH and do not use other image sizes.
-	 */
-	public static final int DEFAULT_WIDTH = 150;
-
 	/* Overlay types always have protected zero-arg constructors. */
 	protected PhotoGetter() { }
 
@@ -287,13 +281,12 @@ public final class PhotoGetter extends JavaScriptObject {
 	public boolean drawImageBounded(Element canvas, double x, double y,
 			double width, double height, BoundedDrawingBox bounds) {
 		Vector2 topLeft = bounds.getTopLeft();
-		Vector2 bottomRight = bounds.getBottomRight();
 
 		return drawImageBounded(canvas, x, y, width, height,
 			topLeft.getX(),
 			topLeft.getY(),
-			bottomRight.getX() - topLeft.getX(),
-			bottomRight.getY() - topLeft.getY());
+			bounds.getWidth(),
+			bounds.getHeight());
 	}
 
 	/**
@@ -340,26 +333,51 @@ public final class PhotoGetter extends JavaScriptObject {
 			double width, double height, double minX, double minY,
 			double boundsWidth, double boundsHeight) /*-{
 		// Same as drawImage, except with clipping also enabled
-		if (! this.imageLoaded) return false;
-		if (! (canvas && canvas.getContext)) return false;
+		if (!this.imageLoaded) return false;
+		if (!(canvas && canvas.getContext)) return false;
 
 		var ctx = canvas.getContext('2d');
-		if (! ctx) return false;
+		if (!ctx) return false;
 
-		ctx.stroke();
+		console.log("drawImageBounded(" + this.imageId
+			+ ", " + x + ", " + y + ", " + width + ", " + height
+			+ ", " + minX + ", " + minY + ", " + boundsWidth
+			+ ", " + boundsHeight + ")");
 
-		// Begin of save/restore block
-		ctx.save();
-		ctx.beginPath();
-		ctx.rect(minX, minY, boundsWidth, boundsHeight);
-		ctx.clip();
+		var maxX = minX + boundsWidth;
+		var maxY = minY + boundsHeight;
 
-		ctx.drawImage(this.img, x - width / 2, y - height / 2, width, height);
+		var destX = x - width / 2;
+		var destY = y - height / 2;
+		var sourceX = (destX < minX) ? (minX - destX) : 0;
+		var sourceY = (destY < minY) ? (minY - destY) : 0;
 
-		ctx.restore();
-		// End of save/restore block
+		var destWidth = width;
+		if (destX < minX) {
+			destWidth = width - sourceX;
+		}
+		if (destX + width > maxX) {
+			destWidth = destWidth - (destX + width - maxX);
+		}
 
-		ctx.beginPath();
+		var destHeight = height;
+		if (destY < minY) {
+			destHeight = height - sourceY;
+		}
+		if (destY + height > maxY) {
+			destHeight = destHeight - (destY + height - maxY);
+		}
+
+		// Maintain the image's aspect ratio
+		var sourceWidth = destWidth;
+		var sourceHeight = destHeight;
+
+		console.log("ctx.drawImage(" + this.imageId + ", " + sourceX
+			+ ", " + sourceY + ", " + sourceWidth + ", " + sourceHeight
+			+ ", " + destX + ", " + destY + ", " + destWidth
+			+ ", " + destHeight + ")");
+		ctx.drawImage(this.img, sourceX, sourceY, sourceWidth, sourceHeight,
+			destX, destY, destWidth, destHeight);
 
 		return true;
 	}-*/;

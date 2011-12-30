@@ -308,7 +308,7 @@ public final class ColorUtils {
 		if (namedColor != null)
 			return namedColor;
 
-		name = name.toUpperCase(); // Important for both method calls
+		name = name.toUpperCase();
 
 		if (name.startsWith("#"))
 			return parseHexColor(name);
