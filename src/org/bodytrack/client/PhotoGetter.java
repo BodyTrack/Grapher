@@ -1,8 +1,11 @@
 package org.bodytrack.client;
 
+import java.util.Comparator;
+
 import gwt.g2d.client.math.Vector2;
 
 import org.bodytrack.client.PhotoSeriesPlot.PhotoAlertable;
+import org.bodytrack.client.PlottablePoint.DateComparator;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.user.client.Element;
@@ -23,31 +26,54 @@ import com.google.gwt.user.client.Element;
  * <p>This class also maintains the logic for building photo
  * download URLs, given the appropriate information.</p>
  */
-public final class PhotoGetter extends JavaScriptObject {
+
+// TODO: Add a PhotoManager class to ensure that no photo is ever downloaded
+// twice, with some logic for dropping photos from the cache after the cache
+// is too full (possibly use reference counting to make sure that the cache
+// doesn't drop photos that someone is using)
+
+public final class PhotoGetter extends JavaScriptObject implements Comparable<PhotoGetter> {
+	private static final int DUMMY_IMAGE_ID = -1;
+	private static final Comparator<Double> DATE_COMPARATOR = new DateComparator();
+
 	/* Overlay types always have protected zero-arg constructors. */
 	protected PhotoGetter() { }
 
+	public static PhotoGetter buildDummyPhotoGetter(final int userId,
+			final PhotoDescription desc) {
+		return buildPhotoGetter(userId, DUMMY_IMAGE_ID, desc.getBeginDate(), null);
+	}
+
+	public static PhotoGetter buildPhotoGetter(final int userId,
+			final PhotoDescription desc,
+			final PhotoAlertable callback) {
+		return buildPhotoGetter(userId, desc.getId(), desc.getBeginDate(),
+				callback);
+	}
+
 	/**
-	 * Creates a new PhotoGetter.
+	 * Creates a new PhotoGetter
 	 *
 	 * @param userId
-	 * 		the ID of the user who owns the specified image
+	 * 	The ID of the user who owns the specified image
 	 * @param imageId
-	 * 		the ID of the specified image
+	 * 	The ID of the specified image.  If this is negative, the PhotoGetter
+	 * 	is created normally except that no image is actually loaded from
+	 * 	the server, meaning that callback is never called
 	 * @param time
-	 * 		the time at which this image should appear
+	 * 	The time at which this image should appear
 	 * @param callback
-	 * 		the object that will get a callback whenever the photo loads
-	 * 		or an error occurs.  If this is <tt>null</tt>, no exception
-	 * 		will occur, and callback will simply be ignored.
+	 * 	The object that will get a callback whenever the photo loads
+	 * 	or an error occurs.  If this is <tt>null</tt>, no exception
+	 * 	will occur, and callback will simply be ignored.
 	 * @return
-	 * 		a new PhotoGetter that will get the specified image
+	 * 	A new PhotoGetter that will get the specified image
 	 */
 	// TODO: Don't really want to pass in a PhotoAlertable, but I don't
 	// know how JSNI could handle it otherwise, because it wouldn't compile
 	// when I tried to use Alertable in JSNI
 	public native static PhotoGetter buildPhotoGetter(int userId,
-			int imageId, double time, int count, PhotoAlertable callback) /*-{
+			int imageId, double time, PhotoAlertable callback) /*-{
 		// Declare this constant, and these functions, inside this
 		// function so we don't pollute the global namespace
 
@@ -60,7 +86,6 @@ public final class PhotoGetter extends JavaScriptObject {
 		getter.userId = userId;
 		getter.imageId = imageId;
 		getter.time = time;
-		getter.count = count;
 		getter.callback = callback;
 		getter.imageLoaded = false;
 		getter.loadFailed = false;
@@ -86,7 +111,7 @@ public final class PhotoGetter extends JavaScriptObject {
 				getter.callback.@org.bodytrack.client.PhotoSeriesPlot.PhotoAlertable::onSuccess(Lorg/bodytrack/client/PhotoGetter;)(getter);
 		}
 		getter.img.onerror = function() {
-			if (! getter.imageLoaded)
+			if (!getter.imageLoaded)
 				getter.loadFailed = true;
 
 			if (getter.callback)
@@ -95,8 +120,10 @@ public final class PhotoGetter extends JavaScriptObject {
 				getter.callback.@org.bodytrack.client.PhotoSeriesPlot.PhotoAlertable::onFailure(Lorg/bodytrack/client/PhotoGetter;)(getter);
 		}
 
-		// Actually request that the browser load the image
-		getter.img.src = getter.url;
+		if (imageId >= 0) {
+			// Actually request that the browser load the image
+			getter.img.src = getter.url;
+		}
 
 		return getter;
 	}-*/;
@@ -132,19 +159,6 @@ public final class PhotoGetter extends JavaScriptObject {
 	 */
 	public native double getTime() /*-{
 		return this.time;
-	}-*/;
-
-	/**
-	 * Returns the count field passed whenever this PhotoGetter
-	 * was built.
-	 *
-	 * @return
-	 * 		the count field passed to
-	 * 		{@link #buildPhotoGetter(int, int, double, int, PhotoAlertable)}
-	 * 		when this object was created
-	 */
-	public native int getCount() /*-{
-		return this.count;
 	}-*/;
 
 	/**
@@ -283,10 +297,10 @@ public final class PhotoGetter extends JavaScriptObject {
 		Vector2 topLeft = bounds.getTopLeft();
 
 		return drawImageBounded(canvas, x, y, width, height,
-			topLeft.getX(),
-			topLeft.getY(),
-			bounds.getWidth(),
-			bounds.getHeight());
+				topLeft.getX(),
+				topLeft.getY(),
+				bounds.getWidth(),
+				bounds.getHeight());
 	}
 
 	/**
@@ -381,4 +395,12 @@ public final class PhotoGetter extends JavaScriptObject {
 
 		return true;
 	}-*/;
+
+	@Override
+	public int compareTo(PhotoGetter other) {
+		if (other == null)
+			return 1;
+
+		return DATE_COMPARATOR.compare(getTime(), other.getTime());
+	}
 }
