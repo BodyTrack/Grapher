@@ -1,9 +1,10 @@
 package org.bodytrack.client;
 
+import java.util.Comparator;
+import java.util.Date;
+
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.NumberFormat;
-
-import java.util.Date;
 
 /**
  * A class holding a date and value, which makes the value easy to graph.
@@ -15,14 +16,20 @@ import java.util.Date;
  * subject to change if an attacker can exploit a cross-site scripting
  * vulnerability.</p>
  */
-public final class PlottablePoint {
+public final class PlottablePoint implements Comparable<PlottablePoint> {
 
-   public static final String DATE_TIME_FORMAT_STRING = "EEE MMM dd yyyy, HH:mm:ss.SSS";
-   private static final DateTimeFormat DATE_TIME_FORMAT = DateTimeFormat.getFormat(DATE_TIME_FORMAT_STRING);
+   public static final String DATE_TIME_FORMAT_STRING =
+	   "EEE MMM dd yyyy, HH:mm:ss.SSS";
+   private static final DateTimeFormat DATE_TIME_FORMAT =
+	   DateTimeFormat.getFormat(DATE_TIME_FORMAT_STRING);
 
    private static final String ZERO_VALUE_STRING = "0.0";
-   private static final NumberFormat SCIENTIFIC_VALUE_FORMAT = NumberFormat.getScientificFormat();
-   private static final NumberFormat DEFAULT_VALUE_FORMAT = NumberFormat.getFormat("###,##0.0##");
+   private static final NumberFormat SCIENTIFIC_VALUE_FORMAT =
+	   NumberFormat.getScientificFormat();
+   private static final NumberFormat DEFAULT_VALUE_FORMAT =
+	   NumberFormat.getFormat("###,##0.0##");
+
+   private static final Comparator<Double> DATE_COMPARATOR = new DateComparator();
 
    private double myDate;
    private double myValue;
@@ -122,6 +129,14 @@ public final class PlottablePoint {
       return comment;
    }
 
+   @Override
+   public int compareTo(PlottablePoint other) {
+      if (other == null)
+         return 1;
+
+      return DATE_COMPARATOR.compare(myDate, other.myDate);
+   }
+
    /**
     * Returns a hashcode based on the date of this <tt>PlottablePoint</tt>.
     */
@@ -169,5 +184,22 @@ public final class PlottablePoint {
       sb.append(", comment='").append(comment).append('\'');
       sb.append('}');
       return sb.toString();
+   }
+
+   public static class DateComparator implements Comparator<Double> {
+      @Override
+      public int compare(Double o1, Double o2) {
+         if (o1 == o2) // Also includes the (null, null) case
+            return 0;
+         if (o1 == null)
+            return -1;
+         if (o2 == null)
+            return 1;
+
+         Integer date1 = Integer.valueOf((int)Math.floor(o1.doubleValue()));
+         Integer date2 = Integer.valueOf((int)(Math.floor(o2.doubleValue())));
+
+         return date1.compareTo(date2);
+      }
    }
 }
