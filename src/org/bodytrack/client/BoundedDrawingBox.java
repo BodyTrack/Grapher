@@ -8,8 +8,7 @@ import java.util.List;
 
 /**
  * Provides a way for a class to ensure that it is drawing within
- * previously specified bounds, without dealing directly with checking
- * bounds.
+ * previously specified bounds, without directly checking bounds
  *
  * <p>Objects of this class are immutable, and thus can be shared freely.</p>
  *
@@ -23,14 +22,14 @@ import java.util.List;
  * is up the the caller to call these methods.</p>
  */
 public final class BoundedDrawingBox {
-	private Canvas canvas;
-	private double xMin;
-	private double yMin;
-	private double xMax;
-	private double yMax;
+	private final Canvas canvas;
+	private final double xMin;
+	private final double yMin;
+	private final double xMax;
+	private final double yMax;
 
 	// General tolerance for double equality
-	private static final Double TOLERANCE = 1e-6;
+	private static final double TOLERANCE = 1e-6;
 
 	/**
 	 * Creates a new BoundedDrawingBox.
@@ -68,10 +67,10 @@ public final class BoundedDrawingBox {
 	}
 
 	/**
-	 * Returns the Canvas used to construct this object.
+	 * Returns the Canvas used to construct this object
 	 *
 	 * @return
-	 * 		the Canvas used to construct this object
+	 * 	The Canvas used to construct this object
 	 */
 	public Canvas getCanvas() {
 		return canvas;
@@ -79,11 +78,10 @@ public final class BoundedDrawingBox {
 
 	/**
 	 * Returns a {@link Vector2} representing the top left corner of the
-	 * region this encloses.
+	 * region this encloses
 	 *
 	 * @return
-	 * 		a <tt>Vector2</tt> with components <tt>(minX, minY)</tt>,
-	 * 		as taken from the construction of this <tt>BoundedDrawingBox</tt>
+	 * 	A {@link Vector2} with components (minX, minY)
 	 */
 	public Vector2 getTopLeft() {
 		return new Vector2(xMin, yMin);
@@ -91,36 +89,35 @@ public final class BoundedDrawingBox {
 
 	/**
 	 * Returns a {@link Vector2} representing the bottom right corner of the
-	 * region this encloses.
+	 * region this encloses
 	 *
 	 * @return
-	 * 		a <tt>Vector2</tt> with components <tt>(maxX, maxY)</tt>,
-	 * 		as taken from the construction of this <tt>BoundedDrawingBox</tt>
+	 * 	A {@link Vector2} with components (maxX, maxY)
 	 */
 	public Vector2 getBottomRight() {
 		return new Vector2(xMax, yMax);
 	}
 
-   /** Returns the width of the <code>BoundedDrawingBox</code>. */
-   public double getWidth() {
-      return xMax - xMin;
-   }
+	/** Returns the width of the <code>BoundedDrawingBox</code>. */
+	public double getWidth() {
+		return xMax - xMin;
+	}
 
-   /** Returns the height of the <code>BoundedDrawingBox</code>. */
-   public double getHeight() {
-      return yMax - yMin;
-   }
+	/** Returns the height of the <code>BoundedDrawingBox</code>. */
+	public double getHeight() {
+		return yMax - yMin;
+	}
 
 	/**
 	 * Draws a circle with the specified values and radius,
 	 * if and only if all parts of the circle are in bounds.
 	 *
 	 * @param x
-	 * 		the X-value at the center of the circle
+	 * 	The X-value at the center of the circle
 	 * @param y
-	 * 		the Y-value at the center of the circle
+	 * 	The Y-value at the center of the circle
 	 * @param radius
-	 * 		the radius of the circle
+	 * 	The radius of the circle
 	 */
 	public void drawCircle(double x, double y, double radius) {
 		if (contains(x - radius, y - radius)
@@ -141,30 +138,30 @@ public final class BoundedDrawingBox {
 	 * which the edges and center are very close together.</p>
 	 *
 	 * @param x
-	 * 		the X-value at the center of the circle
+	 * 	The X-value at the center of the circle
 	 * @param y
-	 * 		the Y-value at the center of the circle
+	 * 	The Y-value at the center of the circle
 	 * @param radius
-	 * 		the radius of the circle
+	 * 	The radius of the circle
 	 */
 	public void drawDot(double x, double y, double radius) {
 		if (contains(x, y))
 			getCanvas().getRenderer().drawCircle(x, y, radius);
 	}
 
-   public void drawFilledDot(final double x,
-                             final double y,
-                             final double radius) {
+	public void drawFilledDot(final double x,
+			final double y,
+			final double radius) {
 		if (contains(x, y)) {
-         final Context ctx = canvas.getSurface().getContext();
-         ctx.moveTo(x, y );
-         ctx.arc(x,y,radius,0,360,false);
-         ctx.fill();
-      }
+			final Context ctx = canvas.getSurface().getContext();
+			ctx.moveTo(x, y);
+			ctx.arc(x, y, radius, 0, 360, false);
+			ctx.fill();
+		}
 	}
 
 	/**
-	 * Sets up clipping on the canvas, then calls beginPath.
+	 * Sets up clipping on the canvas, then calls beginPath
 	 *
 	 * <p>This replaces any other call to beginPath on the canvas.</p>
 	 *
@@ -185,7 +182,7 @@ public final class BoundedDrawingBox {
 
 	/**
 	 * Draws a line segment from (x1, y1) to (x2, y2), or at least as
-	 * much of the line segment as is in bounds.
+	 * much of the line segment as is in bounds
 	 *
 	 * <p>Note that this method will draw a partial line segment if part
 	 * of the line segment is out of bounds.  More importantly, note
@@ -195,17 +192,17 @@ public final class BoundedDrawingBox {
 	 * may result.</p>
 	 *
 	 * @param x1
-	 * 		the X-coordinate of the first point (out of the two connected
-	 * 		by the line segment we are to draw)
+	 * 	The X-coordinate of the first point (out of the two connected
+	 * 	by the line segment we are to draw)
 	 * @param y1
-	 * 		the Y-coordinate of the first point (out of the two connected
-	 * 		by the line segment we are to draw)
+	 * 	The Y-coordinate of the first point (out of the two connected
+	 * 	by the line segment we are to draw)
 	 * @param x2
-	 * 		the X-coordinate of the second point (out of the two connected
-	 * 		by the line segment we are to draw)
+	 * 	The X-coordinate of the second point (out of the two connected
+	 * 	by the line segment we are to draw)
 	 * @param y2
-	 * 	 	the Y-coordinate of the second point (out of the two connected
-	 * 		by the line segment we are to draw)
+	 * 	The Y-coordinate of the second point (out of the two connected
+	 * 	by the line segment we are to draw)
 	 */
 	public void drawLineSegment(double x1, double y1, double x2, double y2) {
 		Context ctx = canvas.getSurface().getContext();
@@ -215,7 +212,7 @@ public final class BoundedDrawingBox {
 	}
 
 	/**
-	 * Strokes the path and removes clipping from the canvas.
+	 * Strokes the path and removes clipping from the canvas
 	 *
 	 * <p>This replaces any other call to stroke on the canvas.  Note
 	 * that at no time may we ever have more calls to this method
@@ -233,7 +230,7 @@ public final class BoundedDrawingBox {
 
 	/**
 	 * Draws a line segment from (x1, y1) to (x2, y2), or at least as
-	 * much of the line segment as is in bounds.
+	 * much of the line segment as is in bounds
 	 *
 	 * <p>Note that this method will draw a partial line segment if part
 	 * of the line segment is out of bounds.</p>
@@ -247,17 +244,17 @@ public final class BoundedDrawingBox {
 	 * rather between regular beginPath and stroke calls.</p>
 	 *
 	 * @param x1
-	 * 		the X-coordinate of the first point (out of the two connected
-	 * 		by the line segment we are to draw)
+	 * 	The X-coordinate of the first point (out of the two connected
+	 * 	by the line segment we are to draw)
 	 * @param y1
-	 * 		the Y-coordinate of the first point (out of the two connected
-	 * 		by the line segment we are to draw)
+	 * 	The Y-coordinate of the first point (out of the two connected
+	 * 	by the line segment we are to draw)
 	 * @param x2
-	 * 		the X-coordinate of the second point (out of the two connected
-	 * 		by the line segment we are to draw)
+	 * 	The X-coordinate of the second point (out of the two connected
+	 * 	by the line segment we are to draw)
 	 * @param y2
-	 * 	 	the Y-coordinate of the second point (out of the two connected
-	 * 		by the line segment we are to draw)
+	 * 	The Y-coordinate of the second point (out of the two connected
+	 * 	by the line segment we are to draw)
 	 */
 	public void drawLineSegmentSoftwareClip(double x1, double y1, double x2,
 			double y2) {
@@ -277,7 +274,7 @@ public final class BoundedDrawingBox {
 			// Now we have a pair (x1, y1), (x2, y2) where both points are
 			// in bounds
 			getCanvas().getRenderer().drawLineSegment(x1, y1,
-				secondEndpoint.getX(), secondEndpoint.getY());
+					secondEndpoint.getX(), secondEndpoint.getY());
 
 			return;
 		}
@@ -297,21 +294,21 @@ public final class BoundedDrawingBox {
 
 	/**
 	 * Calculates the correct (x2, y2) to use, given that (x1, y1) is
-	 * in bounds and (x2, y2) is out of bounds.
+	 * in bounds and (x2, y2) is out of bounds
 	 *
 	 * @param x1
-	 * 		the X-coordinate of the first point
+	 * 	The X-coordinate of the first point
 	 * @param y1
-	 * 		the Y-coordinate of the first point
+	 * 	The Y-coordinate of the first point
 	 * @param x2
-	 * 		the X-coordinate of the second point
+	 * 	The X-coordinate of the second point
 	 * @param y2
-	 * 		the Y-coordinate of the second point
+	 * 	The Y-coordinate of the second point
 	 * @return
-	 * 		a Vector2 with the new (x2, y2) to use, on the line between
-	 * 		(x1, y1) and (x2, y2)
+	 * 	A Vector2 with the new (x2, y2) to use, on the line between
+	 * 	(x1, y1) and (x2, y2)
 	 * @throws IllegalArgumentException
-	 * 		unless (x1, y1) is in bounds and (x2, y2) is out of bounds
+	 * 	Unless (x1, y1) is in bounds and (x2, y2) is out of bounds
 	 */
 	private Vector2 getSecondEndpoint(double x1, double y1, double x2,
 			double y2) {
@@ -355,7 +352,7 @@ public final class BoundedDrawingBox {
 	/**
 	 * Finds the correct second point to use when (x1, y1) is in bounds,
 	 * (x2, y2) is out of bounds, and the line between them is neither
-	 * horizontal nor vertical.
+	 * horizontal nor vertical
 	 *
 	 * <p>This assumes that the aforementioned preconditions hold, and
 	 * will not work properly otherwise.  Since this is a private method,
@@ -364,32 +361,32 @@ public final class BoundedDrawingBox {
 	 * check the preconditions.</p>
 	 *
 	 * @param x1
-	 * 		the X-coordinate of the point that is in bounds
+	 * 	The X-coordinate of the point that is in bounds
 	 * @param y1
-	 * 		the Y-coordinate of the point that is in bounds
+	 * 	The Y-coordinate of the point that is in bounds
 	 * @param x2
-	 * 		the X-coordinate of the point that is out of bounds
+	 * 	The X-coordinate of the point that is out of bounds
 	 * @param y2
-	 * 		the Y-coordinate of the point that is out of bounds
+	 * 	The Y-coordinate of the point that is out of bounds
 	 * @return
-	 * 		the point at which the line between the two points
-	 * 		crosses a boundary line
+	 * 	The point at which the line between the two points
+	 * 	crosses a boundary line
 	 */
 	private Vector2 chooseIntercept(double x1, double y1, double x2, double y2) {
 		double slope = (y2 - y1) / (x2 - x1);
 
 		Vector2 rightIntercept = getIntersection(
-			new Vector2(x1, y1), slope,
-			new Vector2(xMax, 0.0), Double.POSITIVE_INFINITY);
+				new Vector2(x1, y1), slope,
+				new Vector2(xMax, 0.0), Double.POSITIVE_INFINITY);
 		Vector2 topIntercept = getIntersection(
-			new Vector2(x1, y1), slope,
-			new Vector2(0.0, yMax), 0.0);
+				new Vector2(x1, y1), slope,
+				new Vector2(0.0, yMax), 0.0);
 		Vector2 leftIntercept = getIntersection(
-			new Vector2(x1, y1), slope,
-			new Vector2(xMin, 0.0), Double.POSITIVE_INFINITY);
+				new Vector2(x1, y1), slope,
+				new Vector2(xMin, 0.0), Double.POSITIVE_INFINITY);
 		Vector2 bottomIntercept = getIntersection(
-			new Vector2(x1, y1), slope,
-			new Vector2(0.0, yMin), 0.0);
+				new Vector2(x1, y1), slope,
+				new Vector2(0.0, yMin), 0.0);
 
 		// Now 4 cases on the sign of slope and the relative values of
 		// x2 and x1.  All comments we make use directions from an abstract
@@ -399,10 +396,12 @@ public final class BoundedDrawingBox {
 		if (slope > 0 && x2 > x1) {
 			// Upward-sloping line, goes off right or top side
 			return contains(rightIntercept) ? rightIntercept : topIntercept;
-		} else if (slope > 0) {
+		}
+		if (slope > 0) {
 			// Upward-sloping line, goes off left or bottom side
 			return contains(leftIntercept) ? leftIntercept : bottomIntercept;
-		} else if (x2 > x1) {
+		}
+		if (x2 > x1) {
 			// Downward-sloping line, goes off right or bottom side
 			return contains(rightIntercept) ? rightIntercept : bottomIntercept;
 		}
@@ -414,18 +413,18 @@ public final class BoundedDrawingBox {
 
 	/**
 	 * Draws whichever line segment is necessary, given that points
-	 * (x1, y1) and (x2, y2) are both out of bounds.
+	 * (x1, y1) and (x2, y2) are both out of bounds
 	 *
 	 * @param x1
-	 * 		the X-coordinate of the first point
+	 * 	The X-coordinate of the first point
 	 * @param y1
-	 * 		the Y-coordinate of the first point
+	 * 	The Y-coordinate of the first point
 	 * @param x2
-	 * 		the X-coordinate of the second point
+	 * 	The X-coordinate of the second point
 	 * @param y2
-	 * 		the Y-coordinate of the second point
+	 * 	The Y-coordinate of the second point
 	 * @throws IllegalArgumentException
-	 * 		if either (x1, y1) or (x2, y2) is in bounds
+	 * 	If either (x1, y1) or (x2, y2) is in bounds
 	 */
 	private void drawLineOutOfBounds(double x1, double y1, double x2, double y2) {
 		if (contains(x1, y1) || contains(x2, y2))
@@ -451,21 +450,21 @@ public final class BoundedDrawingBox {
 		}
 
 		Vector2 topIntercept = getIntersection(
-			new Vector2(x1, y1), slope,
-			new Vector2(0.0, yMax), 0.0);
+				new Vector2(x1, y1), slope,
+				new Vector2(0.0, yMax), 0.0);
 		Vector2 rightIntercept = getIntersection(
-			new Vector2(x1, y1), slope,
-			new Vector2(xMax, 0.0), Double.POSITIVE_INFINITY);
+				new Vector2(x1, y1), slope,
+				new Vector2(xMax, 0.0), Double.POSITIVE_INFINITY);
 		Vector2 bottomIntercept = getIntersection(
-			new Vector2(x1, y1), slope,
-			new Vector2(0.0, yMin), 0.0);
+				new Vector2(x1, y1), slope,
+				new Vector2(0.0, yMin), 0.0);
 		Vector2 leftIntercept = getIntersection(
-			new Vector2(x1, y1), slope,
-			new Vector2(xMin, 0.0), Double.POSITIVE_INFINITY);
+				new Vector2(x1, y1), slope,
+				new Vector2(xMin, 0.0), Double.POSITIVE_INFINITY);
 
 		List<Vector2> inBoundsIntercepts = getInBoundsPoints(
-			topIntercept, rightIntercept, leftIntercept,
-			bottomIntercept);
+				topIntercept, rightIntercept, leftIntercept,
+				bottomIntercept);
 
 		// Don't draw a line unless there are two points to draw
 		if (inBoundsIntercepts.size() < 2)
@@ -476,11 +475,11 @@ public final class BoundedDrawingBox {
 			// closest together
 
 			double distSq01 = inBoundsIntercepts.get(0).distanceSquared(
-				inBoundsIntercepts.get(1));
+					inBoundsIntercepts.get(1));
 			double distSq02 = inBoundsIntercepts.get(0).distanceSquared(
-				inBoundsIntercepts.get(2));
+					inBoundsIntercepts.get(2));
 			double distSq12 = inBoundsIntercepts.get(1).distanceSquared(
-				inBoundsIntercepts.get(2));
+					inBoundsIntercepts.get(2));
 
 			// Always remove the unique point that is involved in
 			// the two smallest of the three distances
@@ -508,31 +507,31 @@ public final class BoundedDrawingBox {
 
 		// Now we have the line to draw across the box
 		getCanvas().getRenderer().drawLineSegment(
-			inBoundsIntercepts.get(0),
-			inBoundsIntercepts.get(1));
+				inBoundsIntercepts.get(0),
+				inBoundsIntercepts.get(1));
 	}
 
 	/**
-	 * Returns <tt>true</tt> if the line from (x1, y1) to (x2, y2)
-	 * could cross through this bounding box.
+	 * Returns <code>true</code> if the line from (x1, y1) to (x2, y2)
+	 * could cross through this bounding box
 	 *
 	 * <p>In practical terms, this means returning <tt>false</tt> if
 	 * both points are on the same side of one of the boundaries, and
-	 * <tt>true</tt> otherwise.  This method is just intended as a very
-	 * quick way to rule out a lot of possible lines without having
+	 * <code>true</code> otherwise.  This method is just intended as a
+	 * very quick way to rule out a lot of possible lines without having
 	 * to do more complicated (and definitive) checks.</p>
 	 *
 	 * @param x1
-	 * 		the X-coordinate of the first point
+	 * 	The X-coordinate of the first point
 	 * @param y1
-	 * 		the Y-coordinate of the first point
+	 * 	The Y-coordinate of the first point
 	 * @param x2
-	 * 		the X-coordinate of the second point
+	 * 	The X-coordinate of the second point
 	 * @param y2
-	 * 		the Y-coordinate of the second point
+	 * 	The Y-coordinate of the second point
 	 * @return
-	 * 		<tt>true</tt> if the line from (x1, y1) to
-	 * 		(x2, y2) could cross through this bounding box
+	 * 	<code>true</code> if the line from (x1, y1) to
+	 * 	(x2, y2) could cross through this bounding box
 	 */
 	private boolean lineCouldCrossBounds(double x1, double y1, double x2,
 			double y2) {
@@ -552,29 +551,29 @@ public final class BoundedDrawingBox {
 	}
 
 	/**
-	 * Finds the intercept between the two lines.
+	 * Finds the intercept between the two lines
 	 *
-	 * <p>If the two lines are parallel, returns <tt>null</tt> to
+	 * <p>If the two lines are parallel, returns <code>null</code> to
 	 * signal parallel lines.  A calling method should be prepared
-	 * for a <tt>null</tt> return, for this reason.</p>
+	 * for a <code>null</code> return, for this reason.</p>
 	 *
 	 * <p>Note that this method does not take into account whether or
 	 * not these lines are in bounds, or if the intercept point is in
 	 * bounds.</p>
 	 *
 	 * @param point1
-	 * 		any point on the first line
+	 * 	Any point on the first line
 	 * @param slope1
-	 * 		the slope of the first line.  May be Double.POSITIVE_INFINITY
-	 * 		or Double.NEGATIVE_INFINITY to signal a vertical line.
+	 * 	The slope of the first line.  May be Double.POSITIVE_INFINITY
+	 * 	or Double.NEGATIVE_INFINITY to signal a vertical line
 	 * @param point2
-	 * 		any point on the second line
+	 * 	Any point on the second line
 	 * @param slope2
-	 * 	 	the slope of the second line.  May be Double.POSITIVE_INFINITY
-	 * 		or Double.NEGATIVE_INFINITY to signal a vertical line.
+	 * 	The slope of the second line.  May be Double.POSITIVE_INFINITY
+	 * 	or Double.NEGATIVE_INFINITY to signal a vertical line
 	 * @return
-	 * 		the unique point of intersection between the two lines, or
-	 * 		<tt>null</tt> if the lines are parallel.
+	 * 	The unique point of intersection between the two lines, or
+	 * 	<code>null</code> if the lines are parallel
 	 */
 	private Vector2 getIntersection(Vector2 point1, double slope1,
 			Vector2 point2, double slope2) {
@@ -614,16 +613,16 @@ public final class BoundedDrawingBox {
 	}
 
 	/**
-	 * Returns <tt>true</tt> if and only if the point (x, y) is
+	 * Returns <code>true</code> if and only if the point (x, y) is
 	 * contained in the rectangle determined by (minX, minY) and
-	 * (maxX, maxY).
+	 * (maxX, maxY)
 	 *
 	 * @param x
-	 * 		the X-value of the point to check
+	 * 	The X-value of the point to check
 	 * @param y
-	 * 		the Y-value of the point to check
+	 * 	The Y-value of the point to check
 	 * @return
-	 * 		<tt>true</tt> if and only if (x, y) is in bounds
+	 * 	<code>true</code> if and only if (x, y) is in bounds
 	 */
 	public boolean contains(double x, double y) {
 		return x >= xMin && x <= xMax && y >= yMin && y <= yMax;
@@ -631,14 +630,13 @@ public final class BoundedDrawingBox {
 
 	/**
 	 * Exactly the same as calling
-	 * {@code contains(point.getX(), point.getY())}.
+	 * {@code contains(point.getX(), point.getY())}
 	 *
 	 * @param point
-	 * 		the (x, y) point to check for bounds
+	 * 	The (x, y) point to check for bounds
 	 * @return
-	 * 		<tt>true</tt> if and only if (x, y) is in bounds.
-	 * 		Note that this returns <tt>false</tt> if point is
-	 * 		<tt>null</tt>.
+	 * 	<code>true</code> if and only if (x, y) is in bounds.  This returns
+	 * 	<code>false</code> if point is <code>null</code>
 	 */
 	public boolean contains(Vector2 point) {
 		if (point == null)
@@ -648,7 +646,7 @@ public final class BoundedDrawingBox {
 	}
 
 	/**
-	 * Tells if a and b are equal, within TOLERANCE.
+	 * Tells if a and b are equal, within {@link #TOLERANCE}
 	 *
 	 * <p>Note that this does not really define an equality
 	 * relationship, since it is not transitive.  It is possible
@@ -658,12 +656,12 @@ public final class BoundedDrawingBox {
 	 * this method should be used with care.</p>
 	 *
 	 * @param a
-	 * 		some double value to be compared
+	 * 	Some double value to be compared
 	 * @param b
-	 * 		some other double value to be compared
+	 * 	Some other double value to be compared
 	 * @return
-	 * 		<tt>true</tt> if and only if a and b are within
-	 * 		TOLERANCE of each other, as a proportion of a
+	 * 	<code>true</code> if and only if a and b are within
+	 * 	{@link #TOLERANCE} of each other
 	 * @see #TOLERANCE
 	 */
 	private static boolean doubleEquals(double a, double b) {
@@ -672,15 +670,14 @@ public final class BoundedDrawingBox {
 
 	/**
 	 * Performs a filter operation on points, keeping only those points
-	 * which are in bounds.
+	 * which are in bounds
 	 *
 	 * @param points
-	 * 		the point on which we will filter
+	 * 	The point on which we will filter
 	 * @return
-	 * 		a list of points that are in bounds.  It is guaranteed that
-	 * 		the returned list will include all in-bounds points (as
-	 * 		determined by {@link #contains(Vector2)}), in the same
-	 * 		order in which they were passed to this method.
+	 * 	A list of points that are in bounds.  The returned list includes
+	 * 	all in-bounds points (as determined by {@link #contains(Vector2)}),
+	 * 	in the same order in which they were passed to this method
 	 */
 	private List<Vector2> getInBoundsPoints(Vector2... points) {
 		List<Vector2> result = new ArrayList<Vector2>();
