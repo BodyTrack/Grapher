@@ -51,6 +51,11 @@ public final class PhotoGetter extends JavaScriptObject implements Comparable<Ph
 				callback);
 	}
 
+	public static PhotoGetter buildPhotoGetter(int userId,
+			int imageId, double time, PhotoAlertable callback) {
+		return buildPhotoGetter(userId, imageId, time, 1, callback);
+	}
+
 	/**
 	 * Creates a new PhotoGetter
 	 *
@@ -62,6 +67,9 @@ public final class PhotoGetter extends JavaScriptObject implements Comparable<Ph
 	 * 	the server, meaning that callback is never called
 	 * @param time
 	 * 	The time at which this image should appear
+	 * @param count
+	 * 	The count field to store on the newly created object.  The count
+	 * 	field does not in any way affect how the photo is downloaded or drawn
 	 * @param callback
 	 * 	The object that will get a callback whenever the photo loads
 	 * 	or an error occurs.  If this is <code>null</code>, no exception
@@ -73,7 +81,7 @@ public final class PhotoGetter extends JavaScriptObject implements Comparable<Ph
 	// know how JSNI could handle it otherwise, because it wouldn't compile
 	// when I tried to use Alertable in JSNI
 	public native static PhotoGetter buildPhotoGetter(int userId,
-			int imageId, double time, PhotoAlertable callback) /*-{
+			int imageId, double time, int count, PhotoAlertable callback) /*-{
 		// Declare this constant, and these functions, inside this
 		// function so we don't pollute the global namespace
 
@@ -86,6 +94,7 @@ public final class PhotoGetter extends JavaScriptObject implements Comparable<Ph
 		getter.userId = userId;
 		getter.imageId = imageId;
 		getter.time = time;
+		getter.count = count;
 		getter.callback = callback;
 		getter.imageLoaded = false;
 		getter.loadFailed = false;
@@ -162,8 +171,19 @@ public final class PhotoGetter extends JavaScriptObject implements Comparable<Ph
 	}-*/;
 
 	/**
+	 * Returns the count parameter used to initialize this {@link PhotoGetter}
+	 *
+	 * @return
+	 * 	The count parameter passed to the factory method when this
+	 * 	{@link PhotoGetter} was created
+	 */
+	public native int getCount() /*-{
+		return this.count;
+	}-*/;
+
+	/**
 	 * Returns the URL built up from the userId and imageId parameters
-	 * to {@link #buildPhotoGetter(int, int, double, int, PhotoAlertable)}.
+	 * to the factory method that created this {@link PhotoGetter}
 	 *
 	 * @return
 	 * 	The URL this {@link PhotoGetter} uses to request its image
