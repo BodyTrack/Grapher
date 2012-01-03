@@ -221,42 +221,7 @@ public final class PhotoGetter extends JavaScriptObject implements Comparable<Ph
 	}-*/;
 
 	/**
-	 * Draws the image with the specified <strong>center</strong> location
-	 * and dimensions.
-	 *
-	 * @param canvas
-	 * 		the canvas on which we should draw the image
-	 * @param x
-	 * 		the X-position of the <em>center</em> of the image, in pixels
-	 * 		from the left edge of the canvas
-	 * @param y
-	 * 		the Y-position of the <em>center</em> of the image, in pixels
-	 * 		from the top edge of the canvas
-	 * @param width
-	 * 		the width of the image
-	 * @param height
-	 * 		the height of the image
-	 * @return
-	 * 		<tt>true</tt> if and only if the image was successfully drawn,
-	 * 		meaning that {@link #imageLoaded()} is <tt>true</tt> and that
-	 * 		canvas is a valid HTML canvas
-	 */
-	public native boolean drawImage(Element canvas, double x, double y,
-			double width, double height) /*-{
-		if (! this.imageLoaded) return false;
-		if (! (canvas && canvas.getContext)) return false;
-
-		var ctx = canvas.getContext('2d');
-		if (! ctx) return false;
-
-		ctx.drawImage(this.img, x - width / 2, y - height / 2, width, height);
-		return true;
-	}-*/;
-
-	/**
-	 * A handy shortcut to the native
-	 * {@link #drawImageBounded(String, double, double, double, double,
-	 * double, double, double, double) drawImageBounded} method.
+	 * A handy shortcut to the native drawImageBounded method
 	 *
 	 * <p>This gets the position, width, and height of bounds, and uses
 	 * that information to call the other
