@@ -176,6 +176,19 @@ public final class Canvas {
 	}
 
 	/**
+	 * Is exactly equivalent to a call to getSurface().setFillStyle(color)
+	 *
+	 * @param color
+	 * 		the color that will be used to fill future drawing on the
+	 * 		surface
+	 * @return
+	 * 		the Surface used for the setFillStyle call
+	 */
+	public Surface setFillStyle(Color color) {
+		return surface.setFillStyle(color);
+	}
+
+	/**
 	 * Is exactly equivalent to a call to getSurface().save()
 	 *
 	 * @return
