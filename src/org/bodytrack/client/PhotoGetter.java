@@ -336,6 +336,7 @@ public final class PhotoGetter extends JavaScriptObject implements Comparable<Ph
 		ctx.save();
 		ctx.beginPath();
 		ctx.rect(minX, minY, boundsWidth, boundsHeight);
+		ctx.closePath();
 		ctx.clip();
 
 		ctx.drawImage(this.img, x - width / 2, y - height / 2, width, height);
