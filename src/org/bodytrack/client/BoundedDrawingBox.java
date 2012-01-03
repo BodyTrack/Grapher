@@ -11,17 +11,10 @@ import java.util.List;
  * previously specified bounds, without dealing directly with checking
  * bounds.
  *
- * <p>Objects of this class are immutable, and thus can be shared
- * freely, and are thread-safe as well (although, since JavaScript is
- * single-threaded, this is not much use).</p>
+ * <p>Objects of this class are immutable, and thus can be shared freely.</p>
  *
- * <p>There is some inconsistency in this class: some methods are
- * all-or-nothing, drawing nothing if part of a structure is out of
- * bounds, and some methods will draw part of a structure if the
- * rest is out of bounds.  Each method documents its way of handling
- * a partially out of bounds structure, and all methods act exactly
- * the same as their DirectShapeRenderer counterparts if all parts of
- * a structure are in bounds.</p>
+ * <p>All methods act exactly the same as their DirectShapeRenderer
+ * counterparts if all parts of a structure are in bounds.</p>
  *
  * <p>Also note that none of these methods calls
  * {@link org.bodytrack.client.Canvas#beginPath() beginPath()} or
@@ -183,10 +176,7 @@ public final class BoundedDrawingBox {
 		ctx.save();
 		// Set up the path for clipping
 		ctx.beginPath();
-		ctx.moveTo(xMin, yMin);
-		ctx.lineTo(xMax, yMin);
-		ctx.lineTo(xMax, yMax);
-		ctx.lineTo(xMin, yMax);
+		ctx.rect(xMin, yMin, getWidth(), getHeight());
 		ctx.closePath();
 		ctx.clip();
 
