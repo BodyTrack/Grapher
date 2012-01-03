@@ -84,7 +84,7 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 	 *
 	 * <p>This returns one point per photo.  Even though the rendering
 	 * strategy ignores the actual coordinates of the points, this
-	 * ensures that one call to {@link #drawPhoto(BoundedDrawingBox, int, PhotoGetter)}
+	 * ensures that one call to {@link #drawPhoto(BoundedDrawingBox, int, PhotoGetter, Reference)}
 	 * is made for each photo in the tile.</p>
 	 */
 	private List<PlottablePoint> getDataPoints(final GrapherTile tile) {
@@ -124,15 +124,18 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 	}
 
 	private PhotoGetter drawPhoto(final BoundedDrawingBox drawing, final int idx,
-			final PhotoGetter lastPhoto) {
+			final PhotoGetter lastPhoto, final Reference<Integer> currentCount) {
 		if (idx < 0 || idx > images.size())
 			return lastPhoto;
 
 		PhotoGetter photo = images.get(idx);
 		if (lastPhoto == null || !overlaps(photo, lastPhoto)) {
 			drawPhoto(drawing, getPhotoX(photo), getPhotoY(), photo);
+			currentCount.set(photo.getCount());
 			return photo;
 		}
+
+		currentCount.set(currentCount.get() + photo.getCount());
 
 		return lastPhoto;
 	}
@@ -320,7 +323,7 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 		final double xAxisMaxValue = getXAxis().getMax();
 		final double thresholdSq = threshold * threshold;
 
-		for (final PhotoGetter photo : images) {
+		for (final PhotoGetter photo: images) {
 			final double time = photo.getTime();
 
 			// Don't bother with photos that are out of bounds
@@ -346,6 +349,7 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 
 		private int photoIndex = NOT_RENDERING;
 		private PhotoGetter lastPhoto = null;
+		private int currentCount = NOT_RENDERING;
 
 		@Override
 		public void beforeRender(final Canvas canvas,
@@ -353,6 +357,7 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 			canvas.getSurface().setStrokeStyle(Canvas.DEFAULT_COLOR);
 			photoIndex = 0;
 			lastPhoto = null;
+			currentCount = 0;
 		}
 
 		@Override
@@ -364,8 +369,7 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 				final double x,
 				final double y,
 				final PlottablePoint rawDataPoint) {
-			lastPhoto = drawPhoto(drawing, photoIndex, lastPhoto);
-			photoIndex++;
+			drawNextPhoto(drawing);
 		}
 
 		@Override
@@ -379,7 +383,13 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 				final double x,
 				final double y,
 				final PlottablePoint rawDataPoint) {
-			lastPhoto = drawPhoto(drawing, photoIndex, lastPhoto);
+			drawNextPhoto(drawing);
+		}
+
+		private void drawNextPhoto(final BoundedDrawingBox drawing) {
+			Reference<Integer> refCount = new Reference<Integer>(currentCount);
+			lastPhoto = drawPhoto(drawing, photoIndex, lastPhoto, refCount);
+			currentCount = refCount.get();
 			photoIndex++;
 		}
 
@@ -388,6 +398,7 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 			canvas.getSurface().setStrokeStyle(Canvas.DEFAULT_COLOR);
 			photoIndex = NOT_RENDERING;
 			lastPhoto = null;
+			currentCount = NOT_RENDERING;
 		}
 	}
 
