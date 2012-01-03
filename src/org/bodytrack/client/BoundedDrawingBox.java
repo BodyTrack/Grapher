@@ -137,11 +137,12 @@ public final class BoundedDrawingBox {
 	public void drawFilledDot(final double x,
 			final double y,
 			final double radius) {
+		// TODO: This is the only BoundedDrawingBox method that actually
+		// strokes or fills its target.  Need to move the fill() call to
+		// the rendering strategy
 		if (contains(x, y)) {
-			final Context ctx = canvas.getSurface().getContext();
-			ctx.moveTo(x, y);
-			ctx.arc(x, y, radius, 0, 360, false);
-			ctx.fill();
+			canvas.getRenderer().drawCircle(x, y, radius);
+			canvas.fill();
 		}
 	}
 
@@ -210,6 +211,24 @@ public final class BoundedDrawingBox {
 		Context ctx = canvas.getSurface().getContext();
 
 		ctx.stroke();
+		ctx.restore();
+	}
+
+	/**
+	 * Fills the path and removes clipping from the canvas
+	 *
+	 * <p>This replaces any other call to fill on the canvas.  Note
+	 * that at no time may we ever have more calls to this method
+	 * than to {@link #beginClippedPath()}.  If this is so,
+	 * undefined behavior will result.</p>
+	 *
+	 * @see #beginClippedPath()
+	 * @see #strokeClippedPath
+	 */
+	public void fillClippedPath() {
+		Context ctx = canvas.getSurface().getContext();
+
+		ctx.fill();
 		ctx.restore();
 	}
 
