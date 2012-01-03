@@ -313,35 +313,34 @@ public final class PhotoGetter extends JavaScriptObject implements Comparable<Ph
 	 * where we might draw the image.</p>
 	 *
 	 * @param canvas
-	 * 		the canvas we should use to draw the image
+	 * 	The canvas we should use to draw the image
 	 * @param x
-	 * 		the X-position of the <em>center</em> of the image, in pixels
-	 * 		from the left edge of the canvas
+	 * 	The X-position of the <em>center</em> of the image, in pixels
+	 * 	from the left edge of the canvas
 	 * @param y
-	 * 		the Y-position of the <em>center</em> of the image, in pixels
-	 * 		from the top edge of the canvas
+	 * 	The Y-position of the <em>center</em> of the image, in pixels
+	 * 	from the top edge of the canvas
 	 * @param width
-	 * 		the width of the image
+	 * 	The width of the image
 	 * @param height
-	 * 		the height of the image
+	 * 	The height of the image
 	 * @param minX
-	 * 		the minimum X-value that is within the bounds
+	 * 	The minimum X-value that is within the bounds
 	 * @param minY
-	 * 		the minimum Y-value that is within the bounds
+	 * 	The minimum Y-value that is within the bounds
 	 * @param boundsWidth
-	 * 		the width of the clipping region i.e. the width of the region
-	 * 		in which we will draw an image
+	 * 	The width of the clipping region i.e. the width of the region
+	 * 	in which we will draw an image
 	 * @param boundsHeight
-	 * 		the height of the clipping region i.e. the height of the
-	 * 		region in which we will draw an image
+	 * 	The height of the clipping region i.e. the height of the
+	 * 	region in which we will draw an image
 	 * @return
-	 * 		<tt>true</tt> if and only if the image was successfully drawn,
-	 * 		meaning that {@link #imageLoaded() imageLoaded} returns
-	 * 		<tt>true</tt> and that canvasId is a valid HTML canvas.  Note
-	 * 		that this does <em>not</em> return <tt>false</tt> if everything
-	 * 		else is fine but the image is outside the bounding box; a caller
-	 * 		can check for that using arithmetic, so we do not alert a caller
-	 * 		to that event
+	 * 	<code>true</code> if and only if the image was successfully drawn,
+	 * 	meaning that {@link #imageLoaded()} returns <code>true</code> and
+	 * 	that canvas is a valid HTML canvas.  Note that this does <em>not</em>
+	 * 	return <code>false</code> if everything else is fine but the image
+	 * 	is outside the bounding box; a caller can check for that using
+	 * 	arithmetic, so this method does not alert a caller to that event
 	 */
 	public native boolean drawImageBounded(Element canvas, double x, double y,
 			double width, double height, double minX, double minY,
@@ -353,45 +352,14 @@ public final class PhotoGetter extends JavaScriptObject implements Comparable<Ph
 		var ctx = canvas.getContext('2d');
 		if (!ctx) return false;
 
-		console.log("drawImageBounded(" + this.imageId
-			+ ", " + x + ", " + y + ", " + width + ", " + height
-			+ ", " + minX + ", " + minY + ", " + boundsWidth
-			+ ", " + boundsHeight + ")");
+		ctx.save();
+		ctx.beginPath();
+		ctx.rect(minX, minY, boundsWidth, boundsHeight);
+		ctx.clip();
 
-		var maxX = minX + boundsWidth;
-		var maxY = minY + boundsHeight;
+		ctx.drawImage(this.img, x - width / 2, y - height / 2, width, height);
 
-		var destX = x - width / 2;
-		var destY = y - height / 2;
-		var sourceX = (destX < minX) ? (minX - destX) : 0;
-		var sourceY = (destY < minY) ? (minY - destY) : 0;
-
-		var destWidth = width;
-		if (destX < minX) {
-			destWidth = width - sourceX;
-		}
-		if (destX + width > maxX) {
-			destWidth = destWidth - (destX + width - maxX);
-		}
-
-		var destHeight = height;
-		if (destY < minY) {
-			destHeight = height - sourceY;
-		}
-		if (destY + height > maxY) {
-			destHeight = destHeight - (destY + height - maxY);
-		}
-
-		// Maintain the image's aspect ratio
-		var sourceWidth = destWidth;
-		var sourceHeight = destHeight;
-
-		console.log("ctx.drawImage(" + this.imageId + ", " + sourceX
-			+ ", " + sourceY + ", " + sourceWidth + ", " + sourceHeight
-			+ ", " + destX + ", " + destY + ", " + destWidth
-			+ ", " + destHeight + ")");
-		ctx.drawImage(this.img, sourceX, sourceY, sourceWidth, sourceHeight,
-			destX, destY, destWidth, destHeight);
+		ctx.restore();
 
 		return true;
 	}-*/;
