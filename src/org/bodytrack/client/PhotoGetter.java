@@ -64,7 +64,7 @@ public final class PhotoGetter extends JavaScriptObject implements Comparable<Ph
 	 * 	The time at which this image should appear
 	 * @param callback
 	 * 	The object that will get a callback whenever the photo loads
-	 * 	or an error occurs.  If this is <tt>null</tt>, no exception
+	 * 	or an error occurs.  If this is <code>null</code>, no exception
 	 * 	will occur, and callback will simply be ignored.
 	 * @return
 	 * 	A new PhotoGetter that will get the specified image
@@ -129,33 +129,33 @@ public final class PhotoGetter extends JavaScriptObject implements Comparable<Ph
 	}-*/;
 
 	/**
-	 * Returns the user ID used to initialize this <tt>PhotoGetter</tt>.
+	 * Returns the user ID used to initialize this {@link PhotoGetter}
 	 *
 	 * @return
-	 * 		the user ID passed to the factory method when this
-	 * 		<tt>PhotoGetter</tt> was created
+	 * 	The user ID passed to the factory method when this {@link PhotoGetter}
+	 * 	was created
 	 */
 	public native int getUserId() /*-{
 		return this.userId;
 	}-*/;
 
 	/**
-	 * Returns the image ID used to initialize this <tt>PhotoGetter</tt>.
+	 * Returns the image ID used to initialize this {@link PhotoGetter}
 	 *
 	 * @return
-	 * 		the image ID passed to the factory method when this
-	 * 		<tt>PhotoGetter</tt> was created
+	 * 	The image ID passed to the factory method when this {@link PhotoGetter}
+	 * 	was created
 	 */
 	public native int getImageId() /*-{
 		return this.imageId;
 	}-*/;
 
 	/**
-	 * Returns the time parameter used to initialize this <tt>PhotoGetter</tt>.
+	 * Returns the time parameter used to initialize this {@link PhotoGetter}
 	 *
 	 * @return
-	 * 		the time parameter passed to the factory method when this
-	 * 		<tt>PhotoGetter</tt> was created
+	 * 	The time parameter passed to the factory method when this
+	 * 	{@link PhotoGetter} was created
 	 */
 	public native double getTime() /*-{
 		return this.time;
@@ -166,32 +166,31 @@ public final class PhotoGetter extends JavaScriptObject implements Comparable<Ph
 	 * to {@link #buildPhotoGetter(int, int, double, int, PhotoAlertable)}.
 	 *
 	 * @return
-	 * 		the URL this <tt>PhotoGetter</tt> uses to request its image
+	 * 	The URL this {@link PhotoGetter} uses to request its image
 	 */
 	public native String getUrl() /*-{
 		return this.url;
 	}-*/;
 
 	/**
-	 * Returns <tt>true</tt> if the requested image has loaded,
-	 * <tt>false</tt> otherwise.
+	 * Returns <code>true</code> if the requested image has loaded,
+	 * <code>false</code> otherwise
 	 *
 	 * @return
-	 * 		<tt>true</tt> if and only if the requested image
-	 * 		has loaded
+	 * 	<code>true</code> if and only if the requested image has loaded
 	 */
 	public native boolean imageLoaded() /*-{
 		return this.imageLoaded;
 	}-*/;
 
 	/**
-	 * Returns <tt>true</tt> if and only if the attempt to load the
-	 * image failed.
+	 * Returns <code>true</code> if and only if the attempt to load the
+	 * image failed
 	 *
 	 * @return
-	 * 		<tt>true</tt> if the image load encountered an error, and
-	 * 		the image has failed to load.  If the image loads despite
-	 * 		an error, this will return <tt>false</tt>
+	 * 	<code>true</code> if the image load encountered an error, and
+	 * 	the image has failed to load.  If the image loads despite
+	 * 	an error, this will return <code>false</code>
 	 */
 	public native boolean loadFailed() /*-{
 		return this.loadFailed;
@@ -199,11 +198,11 @@ public final class PhotoGetter extends JavaScriptObject implements Comparable<Ph
 
 	/**
 	 * Returns the width at which the image was sent over the wire, or a
-	 * negative value if the image hasn't loaded.
+	 * negative value if the image hasn't loaded
 	 *
 	 * @return
-	 * 		the width of the image, if it has loaded (i.e. if
-	 * 		{@link #imageLoaded()} returns <tt>true</tt>
+	 * 	The width of the image, if it has loaded (i.e. if
+	 * 	{@link #imageLoaded()} returns <code>true</code>
 	 */
 	public native double getOriginalWidth() /*-{
 		return this.originalImgWidth;
@@ -211,11 +210,11 @@ public final class PhotoGetter extends JavaScriptObject implements Comparable<Ph
 
 	/**
 	 * Returns the height at which the image was sent over the wire, or a
-	 * negative value if the image hasn't loaded.
+	 * negative value if the image hasn't loaded
 	 *
 	 * @return
-	 * 		the height of the image, if it has loaded (i.e. if
-	 * 		{@link #imageLoaded()} returns <tt>true</tt>
+	 * 	The height of the image, if it has loaded (i.e. if
+	 * 	{@link #imageLoaded()} returns <code>true</code>
 	 */
 	public native double getOriginalHeight() /*-{
 		return this.originalImgHeight;
@@ -266,31 +265,28 @@ public final class PhotoGetter extends JavaScriptObject implements Comparable<Ph
 	 * parameters.</p>
 	 *
 	 * @param canvas
-	 * 		the canvas we should use to draw the image
+	 * 	The canvas we should use to draw the image
 	 * @param x
-	 * 		the X-position of the <em>center</em> of the image, in pixels
-	 * 		from the left edge of the canvas
+	 * 	The X-position of the <em>center</em> of the image, in pixels
+	 * 	from the left edge of the canvas
 	 * @param y
-	 * 		the Y-position of the <em>center</em> of the image, in pixels
-	 * 		from the top edge of the canvas
+	 * 	The Y-position of the <em>center</em> of the image, in pixels
+	 * 	from the top edge of the canvas
 	 * @param width
-	 * 		the width of the image
+	 * 	The width of the image
 	 * @param height
-	 * 		the height of the image
+	 * 	The height of the image
 	 * @param bounds
-	 * 		a {@link org.bodytrack.client.BoundedDrawingBox
-	 * 		BoundedDrawingBox} with the same bounds that we should use to
-	 * 		constrain the image drawing
+	 * 	A {@link BoundedDrawingBox} with the bounds that we should
+	 * 	use to constrain the image drawing
 	 * @return
-	 * 		<tt>true</tt> if and only if the image was successfully drawn,
-	 * 		meaning that {@link #imageLoaded() imageLoaded} returns
-	 * 		<tt>true</tt> and that canvas is a valid HTML canvas.  Note that
-	 * 		this does <em>not</em> return <tt>false</tt> if everything else
-	 * 		is fine but the image is outside the bounding box; a caller can
-	 * 		check for this using arithmetic, so we do not alert a caller to
-	 * 		that event
-	 * @see #drawImageBounded(String, double, double, double, double,
-	 * double, double, double, double)
+	 * 	<code>true</code> if and only if the image was successfully drawn,
+	 * 	meaning that {@link #imageLoaded() imageLoaded} returns
+	 * 	<code>true</code> and that canvas is a valid HTML canvas.  Note that
+	 * 	this does <em>not</em> return <tt>false</tt> if everything else
+	 * 	is fine but the image is outside the bounding box; a caller can
+	 * 	check for this using arithmetic, so we do not alert a caller to
+	 * 	that event
 	 */
 	public boolean drawImageBounded(Element canvas, double x, double y,
 			double width, double height, BoundedDrawingBox bounds) {
