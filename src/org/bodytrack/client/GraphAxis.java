@@ -14,6 +14,7 @@ import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.ui.RootPanel;
 import gwt.g2d.client.graphics.Color;
 import gwt.g2d.client.graphics.DirectShapeRenderer;
+import gwt.g2d.client.graphics.KnownColor;
 import gwt.g2d.client.graphics.Surface;
 import gwt.g2d.client.graphics.TextAlign;
 import gwt.g2d.client.graphics.TextBaseline;
@@ -37,9 +38,9 @@ public class GraphAxis {
     */
    public static final PlottablePoint DARKEN_AXIS_ONLY = new PlottablePoint(Long.MIN_VALUE, Long.MIN_VALUE);
 
-   protected static final Color NORMAL_COLOR = Canvas.DARK_GRAY;
-   protected static final Color HIGHLIGHTED_COLOR = Canvas.BLACK;
-   protected static final Color HIGHLIGHTED_POINT_COLOR = Canvas.RED;
+   protected static final Color NORMAL_COLOR = KnownColor.DARK_GRAY;
+   protected static final Color HIGHLIGHTED_COLOR = ColorUtils.BLACK;
+   protected static final Color HIGHLIGHTED_POINT_COLOR = ColorUtils.RED;
    protected static final double HIGHLIGHTED_POINT_LINE_WIDTH = 3;
    protected static final double HIGHLIGHTED_POINT_LINE_LENGTH = 15;
 

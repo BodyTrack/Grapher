@@ -1,16 +1,13 @@
 package org.bodytrack.client;
 
-import java.util.HashMap;
-import java.util.Map;
+import gwt.g2d.client.graphics.Color;
+import gwt.g2d.client.graphics.DirectShapeRenderer;
+import gwt.g2d.client.graphics.Surface;
 
 import org.bodytrack.client.InstanceController.InstanceProducer;
 
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
-
-import gwt.g2d.client.graphics.Color;
-import gwt.g2d.client.graphics.DirectShapeRenderer;
-import gwt.g2d.client.graphics.Surface;
 
 /**
  * Wrapper for a G2D Surface/DirectShapeRenderer pair.
@@ -27,40 +24,14 @@ import gwt.g2d.client.graphics.Surface;
  * <p>This class is instance-controlled for efficiency: under this
  * system, only one DirectShapeRenderer is created per Surface.</p>
  */
-// TODO: Use the colors out of ColorUtils
 public final class Canvas {
-	/*
-	 * All the following colors should have exactly the same values as
-	 * their CSS counterparts by the same (lowercase) name.
-	 */
-
-	public static final Color BLACK = new Color(0x00, 0x00, 0x00);
-	public static final Color DARK_GRAY = new Color(0xA9, 0xA9, 0xA9);
-	public static final Color GRAY = new Color(0x80, 0x80, 0x80);
-	public static final Color RED = new Color(0xFF, 0x00, 0x00);
-	public static final Color GREEN = new Color(0x00, 0x80, 0x00);
-	public static final Color BLUE = new Color(0x00, 0x00, 0xFF);
-	public static final Color YELLOW = new Color(0xFF, 0xFF, 0x00);
-
-	private static final Map<Color, String> colorsToNames =
-		new HashMap<Color, String>();
-
-	static {
-		colorsToNames.put(BLACK, "black");
-		colorsToNames.put(DARK_GRAY, "darkgray");
-		colorsToNames.put(GRAY, "gray");
-		colorsToNames.put(RED, "red");
-		colorsToNames.put(GREEN, "green");
-		colorsToNames.put(BLUE, "blue");
-		colorsToNames.put(YELLOW, "yellow");
-	}
 
 	/**
 	 * The default color, which classes should set as the stroke color
 	 * if wishing to &quot;clean up after themselves&quot; when done
 	 * changing colors and drawing.
 	 */
-	public static final Color DEFAULT_COLOR = BLACK;
+	public static final Color DEFAULT_COLOR = ColorUtils.BLACK;
 
 	/**
 	 * The default alpha value, which classes should <em>always</em>
@@ -153,27 +124,6 @@ public final class Canvas {
 	 */
 	public static Canvas buildCanvas(Surface s) {
 		return instances.newInstance(s);
-	}
-
-	/**
-	 * Converts color to a human-readable string if color is one
-	 * of the constants defined by this class, and converts color
-	 * to a color code otherwise.
-	 *
-	 * <p>Regardless, returns a string that can be used by a
-	 * browser as a color specification.</p>
-	 *
-	 * @param color
-	 * 		the Color object we want to examine
-	 * @return
-	 * 		a code representing color, hopefully in a human-readable
-	 * 		form
-	 */
-	public static String friendlyName(Color color) {
-		if (colorsToNames.containsKey(color))
-			return colorsToNames.get(color);
-
-		return color.getColorCode();
 	}
 
 	/**

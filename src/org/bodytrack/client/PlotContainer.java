@@ -10,6 +10,7 @@ import com.google.gwt.event.dom.client.MouseUpEvent;
 import com.google.gwt.event.dom.client.MouseUpHandler;
 import com.google.gwt.user.client.ui.RootPanel;
 import gwt.g2d.client.graphics.Color;
+import gwt.g2d.client.graphics.KnownColor;
 import gwt.g2d.client.graphics.Surface;
 import gwt.g2d.client.graphics.TextAlign;
 import gwt.g2d.client.math.Vector2;
@@ -44,7 +45,7 @@ public class PlotContainer {
    public static final int VALUE_MESSAGES_CAPACITY = 4;
 
    private static final int INITIAL_MESSAGE_ID = 1;
-   private static final Color LOADING_MSG_COLOR = Canvas.DARK_GRAY;
+   private static final Color LOADING_MSG_COLOR = KnownColor.DARK_GRAY;
    private static final double LOADING_MSG_X_MARGIN = 5;
    private static final double LOADING_MSG_Y_MARGIN = 3;
    private static final double VALUE_MSG_X_MARGIN = 5;

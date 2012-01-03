@@ -20,10 +20,10 @@ public interface SeriesPlotRenderingStrategy {
    double HIGHLIGHTED_DOT_RADIUS = 4;
 
    /** Default {@link Color} for lines and strokes. */
-   Color DEFAULT_STROKE_COLOR = Canvas.BLACK;
+   Color DEFAULT_STROKE_COLOR = Canvas.DEFAULT_COLOR;
 
    /** Default {@link Color} for filled areas. */
-   Color DEFAULT_FILL_COLOR = Canvas.BLACK;
+   Color DEFAULT_FILL_COLOR = Canvas.DEFAULT_COLOR;
 
    /**
     * Called by {@link SeriesPlotRenderer#render(Canvas, BoundedDrawingBox, Iterable, GraphAxis, GraphAxis, PlottablePoint)}
