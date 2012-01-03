@@ -98,38 +98,23 @@ public final class BoundedDrawingBox {
 		return new Vector2(xMax, yMax);
 	}
 
-	/** Returns the width of the <code>BoundedDrawingBox</code>. */
+	/**
+	 * Returns the width of the <code>BoundedDrawingBox</code>
+	 */
 	public double getWidth() {
 		return xMax - xMin;
 	}
 
-	/** Returns the height of the <code>BoundedDrawingBox</code>. */
+	/**
+	 * Returns the height of the <code>BoundedDrawingBox</code>
+	 */
 	public double getHeight() {
 		return yMax - yMin;
 	}
 
 	/**
 	 * Draws a circle with the specified values and radius,
-	 * if and only if all parts of the circle are in bounds.
-	 *
-	 * @param x
-	 * 	The X-value at the center of the circle
-	 * @param y
-	 * 	The Y-value at the center of the circle
-	 * @param radius
-	 * 	The radius of the circle
-	 */
-	public void drawCircle(double x, double y, double radius) {
-		if (contains(x - radius, y - radius)
-				&& contains(x - radius, y + radius)
-				&& contains(x + radius, y - radius)
-				&& contains(x + radius, y + radius))
-			getCanvas().getRenderer().drawCircle(x, y, radius);
-	}
-
-	/**
-	 * Draws a circle with the specified values and radius,
-	 * if and only if the center of the circle is in bounds.
+	 * if and only if the center of the circle is in bounds
 	 *
 	 * <p>Unlike {@link #drawCircle(double, double, double)},
 	 * this only checks whether the circle's center is in
