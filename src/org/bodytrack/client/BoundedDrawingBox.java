@@ -154,7 +154,7 @@ public final class BoundedDrawingBox {
 	 * @see #strokeClippedPath()
 	 */
 	public void beginClippedPath() {
-		Context ctx = canvas.getSurface().getContext();
+		Context ctx = canvas.getContext();
 
 		ctx.save();
 		// Set up the path for clipping

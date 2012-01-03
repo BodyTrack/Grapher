@@ -3,6 +3,7 @@ package org.bodytrack.client;
 import gwt.g2d.client.graphics.Color;
 import gwt.g2d.client.graphics.DirectShapeRenderer;
 import gwt.g2d.client.graphics.Surface;
+import gwt.g2d.client.graphics.canvas.Context;
 
 import org.bodytrack.client.InstanceController.InstanceProducer;
 
@@ -156,6 +157,16 @@ public final class Canvas {
 	 */
 	public Element getNativeCanvasElement() {
 		return nativeCanvasElement;
+	}
+
+	/**
+	 * Returns the Context returned by {@code getSurface().getContext()}
+	 *
+	 * @return
+	 * 		the context for this canvas
+	 */
+	public Context getContext() {
+		return surface.getContext();
 	}
 
 	// --------------------------------------------------------------
