@@ -223,12 +223,22 @@ public final class Canvas {
 	}
 
 	/**
-	 * Is exactly equivalent to a call to getRenderer().stroke().
+	 * Is exactly equivalent to a call to getRenderer().stroke()
 	 *
 	 * @return
 	 * 		the DirectShapeRenderer used for the stroke call
 	 */
 	public DirectShapeRenderer stroke() {
 		return renderer.stroke();
+	}
+
+	/**
+	 * Is exactly equivalent to a call to getRenderer().fill()
+	 *
+	 * @return
+	 * 		the DirectShapeRenderer used for the fill call
+	 */
+	public DirectShapeRenderer fill() {
+		return renderer.fill();
 	}
 }
