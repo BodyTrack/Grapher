@@ -21,9 +21,15 @@ public class DotRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy {
       final boolean willPaintLargerDot = (willShowComments() &&
                                           rawDataPoint != null &&
                                           rawDataPoint.hasComment());
-      drawing.drawFilledDot(x, y, willPaintLargerDot ?
-                                  HIGHLIGHTED_DOT_RADIUS :
-                                  radius);
+
+      final double desiredRadius = willPaintLargerDot ?
+                                   HIGHLIGHTED_DOT_RADIUS :
+                                   radius;
+      if (willFill()) {
+         drawing.drawFilledDot(x, y, desiredRadius);
+      } else {
+         drawing.drawDot(x, y, desiredRadius);
+      }
    }
 
    @Override
