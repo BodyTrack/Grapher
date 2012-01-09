@@ -1,5 +1,6 @@
 package org.bodytrack.client;
 
+import gwt.g2d.client.graphics.Color;
 import gwt.g2d.client.graphics.canvas.Context;
 import gwt.g2d.client.math.Vector2;
 
@@ -144,14 +145,23 @@ public final class BoundedDrawingBox {
 	public void fillCircle(final double x, final double y, final double radius) {
 		canvas.getRenderer().drawCircle(x, y, radius);
 
-		// TODO: This (and by extension drawFilledDot) is the only BoundedDrawingBox
-		// method that actually strokes or fills its target.  Need to move the fill()
-		// call to the rendering strategy
+		// TODO: This (and by extension drawFilledDot) is one of the only
+		// BoundedDrawingBox methods that actually strokes or fills its target.
+		// Need to move the fill() call to the rendering strategy
 		canvas.fill();
 	}
 
 	public void fillText(final String text, final double x, final double y) {
+		// TODO: Same issue as fillCircle
 		canvas.getSurface().fillText(text, x, y);
+	}
+
+	public void setStrokeStyle(final Color color) {
+		canvas.setStrokeStyle(color);
+	}
+
+	public void setFillStyle(final Color color) {
+		canvas.setFillStyle(color);
 	}
 
 	/**
