@@ -158,7 +158,7 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 		final double height = getPhotoHeight();
 
 		// Center the red circle on the top right corner of the photo
-		final double circleX = getPhotoX(photo) + getWidth(photo, height) / 2.0;
+		final double circleX = getPhotoX(photo) + getPhotoWidth(photo, height) / 2.0;
 		final double circleY = getPhotoY() - getPhotoHeight() / 2.0;
 
 		drawing.setFillStyle(KnownColor.RED);
@@ -194,7 +194,7 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 			final double y,
 			final PhotoGetter photo) {
 		final double height = getHeight(photo);
-		final double width = getWidth(photo, height);
+		final double width = getPhotoWidth(photo, height);
 
 		final double xMin = x - (width / 2.0);
 		final double xMax = x + (width / 2.0);
@@ -239,18 +239,18 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 	}
 
 	/**
-	 * Finds the width at which photo should be drawn, if we are working
-	 * at the specified height.
+	 * Finds the width at which the photo should be drawn, given its height
 	 *
 	 * @param photo
-	 * 		the photo for which we want the width
+	 * 	The photo for which we want the width
 	 * @param height
-	 * 		the height at which photo will be drawn
+	 * 	The height at which photo will be drawn
 	 * @return
-	 * 		the width at which photo should be drawn, maintaining the
-	 * 		aspect ratio of photo
+	 * 	The width at which photo should be drawn, maintaining the
+	 * 	aspect ratio of photo
 	 */
-	private double getWidth(final PhotoGetter photo, final double height) {
+	private double getPhotoWidth(final PhotoGetter photo,
+			final double height) {
 		final double originalWidth = photo.getOriginalWidth();
 		final double originalHeight = photo.getOriginalHeight();
 
@@ -279,8 +279,8 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 			final PhotoGetter photo2) {
 		final double height = getPhotoHeight();
 
-		final double width1 = getWidth(photo1, height);
-		final double width2 = getWidth(photo2, height);
+		final double width1 = getPhotoWidth(photo1, height);
+		final double width2 = getPhotoWidth(photo2, height);
 
 		final double x1 = getPhotoX(photo1);
 		final double x2 = getPhotoX(photo2);
