@@ -668,6 +668,32 @@ public final class BoundedDrawingBox {
 	}
 
 	/**
+	 * Returns <code>true</code> iff any part of the rectangle
+	 * described by (x, y, width, height) is part of this drawing box
+	 *
+	 * @param x
+	 * 	The X-coordinate of the top left corner of the rectangle
+	 * @param y
+	 * 	The Y-coordinate of the top left corner of the rectangle
+	 * @param width
+	 * 	The width of the rectangle
+	 * @param height
+	 * 	The width of the rectangle
+	 * @return
+	 * 	<code>true</code> iff any part of the rectangle described
+	 * 	by (x, y, width, height) is part of this drawing box
+	 */
+	public boolean containsRectanglePart(final double x,
+			final double y,
+			final double width,
+			final double height) {
+		return (x + width >= xMin)
+			&& (x < xMax)
+			&& (y + height >= yMin)
+			&& (y < yMax);
+	}
+
+	/**
 	 * Tells if a and b are equal, within {@link #TOLERANCE}
 	 *
 	 * <p>Note that this does not really define an equality
