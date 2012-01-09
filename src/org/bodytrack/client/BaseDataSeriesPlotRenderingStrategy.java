@@ -101,8 +101,9 @@ public abstract class BaseDataSeriesPlotRenderingStrategy implements SeriesPlotR
    }
 
    /**
-    * Sets the stroke and fill style on the {@link Canvas} back to the {@link Canvas#DEFAULT_COLOR default color} and
-    * sets the line width to {@link SeriesPlotRenderingStrategy#NORMAL_STROKE_WIDTH normal stroke width}.
+    * Sets the stroke style back to {@link SeriesPlotRenderingStrategy#DEFAULT_STROKE_COLOR}, sets the fill style back
+    * to {@link SeriesPlotRenderingStrategy#DEFAULT_FILL_COLOR}, and sets the line width to
+    * {@link SeriesPlotRenderingStrategy#NORMAL_STROKE_WIDTH normal stroke width}.
     */
    @Override
    public void afterRender(final Canvas canvas) {
