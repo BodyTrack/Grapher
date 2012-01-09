@@ -137,13 +137,21 @@ public final class BoundedDrawingBox {
 	public void drawFilledDot(final double x,
 			final double y,
 			final double radius) {
-		// TODO: This is the only BoundedDrawingBox method that actually
-		// strokes or fills its target.  Need to move the fill() call to
-		// the rendering strategy
-		if (contains(x, y)) {
-			canvas.getRenderer().drawCircle(x, y, radius);
-			canvas.fill();
-		}
+		if (contains(x, y))
+			fillCircle(x, y, radius);
+	}
+
+	public void fillCircle(final double x, final double y, final double radius) {
+		canvas.getRenderer().drawCircle(x, y, radius);
+
+		// TODO: This (and by extension drawFilledDot) is the only BoundedDrawingBox
+		// method that actually strokes or fills its target.  Need to move the fill()
+		// call to the rendering strategy
+		canvas.fill();
+	}
+
+	public void fillText(final String text, final double x, final double y) {
+		canvas.getSurface().fillText(text, x, y);
 	}
 
 	/**
