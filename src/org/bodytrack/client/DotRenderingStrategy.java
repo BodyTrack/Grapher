@@ -11,6 +11,14 @@ public class DotRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy {
       radius = styleType.getDoubleValue("radius", DEFAULT_DOT_RADIUS);
    }
 
+   protected final double getDesiredDotRadius(final PlottablePoint rawDataPoint) {
+      final boolean willPaintLargerDot = (willShowComments() &&
+                                          rawDataPoint != null &&
+                                          rawDataPoint.hasComment());
+
+      return willPaintLargerDot ? HIGHLIGHTED_DOT_RADIUS : radius;
+   }
+
    protected void paintDot(final BoundedDrawingBox drawing,
                            final GraphAxis xAxis,
                            final GraphAxis yAxis,
@@ -18,17 +26,11 @@ public class DotRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy {
                            final double x,
                            final double y,
                            final PlottablePoint rawDataPoint) {
-      final boolean willPaintLargerDot = (willShowComments() &&
-                                          rawDataPoint != null &&
-                                          rawDataPoint.hasComment());
-
-      final double desiredRadius = willPaintLargerDot ?
-                                   HIGHLIGHTED_DOT_RADIUS :
-                                   radius;
+      final double desiredRadius = getDesiredDotRadius(rawDataPoint);
       if (willFill()) {
-         drawing.drawFilledDot(x, y, desiredRadius);
+         drawing.drawFilledCircle(x, y, desiredRadius);
       } else {
-         drawing.drawDot(x, y, desiredRadius);
+         drawing.drawCircle(x, y, desiredRadius);
       }
    }
 

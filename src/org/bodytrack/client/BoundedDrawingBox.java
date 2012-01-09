@@ -1,5 +1,6 @@
 package org.bodytrack.client;
 
+import gwt.g2d.client.graphics.Surface;
 import gwt.g2d.client.graphics.canvas.Context;
 import gwt.g2d.client.math.Vector2;
 
@@ -35,6 +36,8 @@ public final class BoundedDrawingBox {
 	private double yMin;
 	private double xMax;
 	private double yMax;
+
+   private static final double TWO_PI = 2 * Math.PI;
 
 	// General tolerance for double equality
 	private static final Double TOLERANCE = 1e-6;
@@ -118,59 +121,66 @@ public final class BoundedDrawingBox {
       return yMax - yMin;
    }
 
-	/**
-	 * Draws a circle with the specified values and radius,
-	 * if and only if all parts of the circle are in bounds.
-	 *
-	 * @param x
-	 * 		the X-value at the center of the circle
-	 * @param y
-	 * 		the Y-value at the center of the circle
-	 * @param radius
-	 * 		the radius of the circle
-	 */
-	public void drawCircle(double x, double y, double radius) {
-		if (contains(x - radius, y - radius)
-				&& contains(x - radius, y + radius)
-				&& contains(x + radius, y - radius)
-				&& contains(x + radius, y + radius))
-			getCanvas().getRenderer().drawCircle(x, y, radius);
-	}
+   /**
+    * Draws a circle with the specified values and radius,
+    * if and only if the center of the circle is in bounds.
+    *
+    * <p>This method checks whether the circle's center is in
+    * bounds, not whether the whole circle is in bounds.</p>
+    *
+    * @param x
+    * 		the X-value at the center of the circle
+    * @param y
+    * 		the Y-value at the center of the circle
+    * @param radius
+    * 		the radius of the circle
+    */
+   public void drawCircle(final double x,
+                          final double y,
+                          final double radius) {
+      if (contains(x, y)) {
+         final Context ctx = drawCircleNoStrokeOrFill(x, y, radius);
+         ctx.stroke();
+      }
+   }
 
-	/**
-	 * Draws a circle with the specified values and radius,
-	 * if and only if the center of the circle is in bounds.
-	 *
-	 * <p>Unlike {@link #drawCircle(double, double, double)},
-	 * this only checks whether the circle's center is in
-	 * bounds, not whether the whole circle is in bounds.  This
-	 * method is much more appropriate for small circles, in
-	 * which the edges and center are very close together.</p>
-	 *
-	 * @param x
-	 * 		the X-value at the center of the circle
-	 * @param y
-	 * 		the Y-value at the center of the circle
-	 * @param radius
-	 * 		the radius of the circle
-	 */
-	public void drawDot(double x, double y, double radius) {
-		if (contains(x, y))
-			getCanvas().getRenderer().drawCircle(x, y, radius);
-	}
-
-   public void drawFilledDot(final double x,
-                             final double y,
-                             final double radius) {
-		if (contains(x, y)) {
-         final Context ctx = canvas.getSurface().getContext();
-         ctx.moveTo(x, y );
-         ctx.arc(x,y,radius,0,360,false);
+   /**
+    * Draws a filled circle with the specified values and radius,
+    * if and only if the center of the circle is in bounds.
+    *
+    * <p>This method checks whether the circle's center is in
+    * bounds, not whether the whole circle is in bounds.</p>
+    *
+    * @param x
+    * 		the X-value at the center of the circle
+    * @param y
+    * 		the Y-value at the center of the circle
+    * @param radius
+    * 		the radius of the circle
+    */
+   public void drawFilledCircle(final double x,
+                                final double y,
+                                final double radius) {
+      if (contains(x, y)) {
+         final Context ctx = drawCircleNoStrokeOrFill(x, y, radius);
          ctx.fill();
       }
-	}
+   }
 
-	/**
+   /**
+    * Gets the {@link Surface}'s {@link Context} and then draws a circle on it, but does not stroke or fill the circle.
+    * No bounds checking is done, either.
+    */
+   private Context drawCircleNoStrokeOrFill(final double x,
+                                            final double y,
+                                            final double radius) {
+      final Context ctx = canvas.getSurface().getContext();
+      ctx.moveTo(x + radius, y);
+      ctx.arc(x, y, radius, 0, TWO_PI, false);
+      return ctx;
+   }
+
+   /**
 	 * Sets up clipping on the canvas, then calls beginPath.
 	 *
 	 * <p>This replaces any other call to beginPath on the canvas.</p>

@@ -16,7 +16,7 @@ public class LineRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy {
                                     final double x,
                                     final double y,
                                     final PlottablePoint rawDataPoint) {
-      drawing.drawDot(x, y, DOT_RADIUS);
+      drawing.drawCircle(x, y, DOT_RADIUS);
 
       drawCommentDot(drawing, x, y, rawDataPoint);
    }
@@ -42,7 +42,7 @@ public class LineRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy {
                                final double y,
                                final PlottablePoint rawDataPoint) {
       if (willShowComments() && rawDataPoint.hasComment()) {
-         drawing.drawFilledDot(x, y, HIGHLIGHTED_DOT_RADIUS);
+         drawing.drawFilledCircle(x, y, HIGHLIGHTED_DOT_RADIUS);
       }
    }
 }
