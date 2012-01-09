@@ -1,5 +1,6 @@
 package org.bodytrack.client;
 
+import gwt.g2d.client.graphics.KnownColor;
 import gwt.g2d.client.math.Vector2;
 
 import java.util.ArrayList;
@@ -17,8 +18,10 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 	private static final double IMAGE_Y_VALUE =
 		PhotoGraphAxis.PHOTO_CENTER_LOCATION;
 
+	private static final double COUNT_CIRCLE_SIZE = 20;
+
 	/**
-	 * Ratio of heights between highlighted image and regular image.
+	 * Ratio of heights between highlighted image and regular image
 	 */
 	private static final double HIGHLIGHTED_SIZE_RATIO = 1.2;
 
@@ -84,8 +87,9 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 	 *
 	 * <p>This returns one point per photo.  Even though the rendering
 	 * strategy ignores the actual coordinates of the points, this
-	 * ensures that one call to {@link #drawPhoto(BoundedDrawingBox, int, PhotoGetter, Reference)}
-	 * is made for each photo in the tile.</p>
+	 * ensures that one call to
+	 * {@link #drawPhoto(BoundedDrawingBox, int, PhotoGetter, Reference)}
+	 * is made for each photo in the images list.</p>
 	 */
 	private List<PlottablePoint> getDataPoints(final GrapherTile tile) {
 		if (tile.getPhotoDescriptions() != null)
@@ -130,6 +134,7 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 
 		PhotoGetter photo = images.get(idx);
 		if (lastPhoto == null || !overlaps(photo, lastPhoto)) {
+			drawCount(drawing, lastPhoto, currentCount.get());
 			drawPhoto(drawing, getPhotoX(photo), getPhotoY(), photo);
 			currentCount.set(photo.getCount());
 			return photo;
@@ -138,6 +143,31 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 		currentCount.set(currentCount.get() + photo.getCount());
 
 		return lastPhoto;
+	}
+
+	private void drawCount(final BoundedDrawingBox drawing,
+			final PhotoGetter photo,
+			final int count) {
+		if (count <= 1)
+			return;
+
+		// Finish out other drawing before filling a circle and text
+		drawing.strokeClippedPath();
+		drawing.beginClippedPath();
+
+		final double height = getPhotoHeight();
+
+		// Center the red circle on the top right corner of the photo
+		final double circleX = getPhotoX(photo) + getWidth(photo, height) / 2.0;
+		final double circleY = getPhotoY() - getPhotoHeight() / 2.0;
+
+		drawing.setFillStyle(KnownColor.RED);
+		drawing.fillCircle(circleX, circleY, COUNT_CIRCLE_SIZE / 2.0);
+		drawing.setFillStyle(KnownColor.GRAY);
+		// TODO: Center the text.  Possibly the following line in the beforeRender?
+		// drawing.getCanvas().getSurface().setTextAlign(TextAlign.CENTER);
+		drawing.fillText("" + count, circleX, circleY);
+		drawing.setFillStyle(Canvas.DEFAULT_COLOR);
 	}
 
 	/**
@@ -166,6 +196,15 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 		final double height = getHeight(photo);
 		final double width = getWidth(photo, height);
 
+		final double xMin = x - (width / 2.0);
+		final double xMax = x + (width / 2.0);
+		final double yMin = y - (height / 2.0);
+		final double yMax = y + (height / 2.0);
+
+		// TODO: Add this line for efficiency
+		// if (!drawing.containsRectanglePart(xMin, yMin, width, height))
+		//	return;
+
 		// Now draw the image itself, not allowing it to overflow onto
 		// the axes
 		photo.drawImageBounded(drawing.getCanvas().getNativeCanvasElement(),
@@ -173,16 +212,10 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 
 		// Note that the borders are drawn after the image is, so the image
 		// doesn't obscure the borders
-		final double xMin = x - (width / 2.0);
-		final double xMax = x + (width / 2.0);
-		final double yMin = y - (height / 2.0);
-		final double yMax = y + (height / 2.0);
-
-		// Draw a border around the image
-		drawing.drawLineSegment(xMin, yMin, xMin, yMax);
-		drawing.drawLineSegment(xMin, yMax, xMax, yMax);
-		drawing.drawLineSegment(xMax, yMax, xMax, yMin);
-		drawing.drawLineSegment(xMax, yMin, xMin, yMin);
+		drawing.drawLineSegment(xMin, yMin, xMin, yMax); // Left edge
+		drawing.drawLineSegment(xMin, yMax, xMax, yMax); // Bottom edge
+		drawing.drawLineSegment(xMax, yMax, xMax, yMin); // Right edge
+		drawing.drawLineSegment(xMax, yMin, xMin, yMin); // Top edge
 	}
 
 	/**
@@ -293,6 +326,7 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 			- yAxis.project2D(PhotoGraphAxis.PHOTO_HEIGHT).getY();
 	}
 
+	// TODO: FIX HIGHLIGHTING
 	@Override
 	public boolean highlightIfNear(final Vector2 pos) {
 		highlightedImages = getCloseImages(pos,
@@ -354,7 +388,7 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 		@Override
 		public void beforeRender(final Canvas canvas,
 				final boolean isAnyPointHighlighted) {
-			canvas.getSurface().setStrokeStyle(Canvas.DEFAULT_COLOR);
+			canvas.setStrokeStyle(Canvas.DEFAULT_COLOR);
 			photoIndex = 0;
 			lastPhoto = null;
 			currentCount = 0;
@@ -395,7 +429,7 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 
 		@Override
 		public void afterRender(final Canvas canvas) {
-			canvas.getSurface().setStrokeStyle(Canvas.DEFAULT_COLOR);
+			canvas.setStrokeStyle(Canvas.DEFAULT_COLOR);
 			photoIndex = NOT_RENDERING;
 			lastPhoto = null;
 			currentCount = NOT_RENDERING;
