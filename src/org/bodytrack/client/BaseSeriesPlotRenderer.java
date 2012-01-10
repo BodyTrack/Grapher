@@ -24,9 +24,9 @@ import java.util.List;
 public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
 
    /**
-    * The radius to use when drawing a highlighted dot on the grapher.
+    * The default vertical distance between a data point and the comment container.
     */
-   public static final double HIGHLIGHTED_DOT_RADIUS = 4;   // todo: this should come from the highlight style
+   private static final double DEFAULT_COMMENT_VERTICAL_MARGIN = 4;
 
    /**
     * The preferred width in pixels of a comment popup panel. The comment
@@ -37,6 +37,7 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
 
    private PopupPanel commentPanel;
    private boolean willShowComments = false;
+   private double commentVerticalMargin = DEFAULT_COMMENT_VERTICAL_MARGIN;
    private final List<SeriesPlotRenderingStrategy> plotRenderingStrategies = new ArrayList<SeriesPlotRenderingStrategy>();
    private final List<PointRenderingStrategy> highlightRenderingStrategies = new ArrayList<PointRenderingStrategy>();
    private final List<PointRenderingStrategy> commentRenderingStrategies = new ArrayList<PointRenderingStrategy>();
@@ -52,6 +53,7 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
 
    public final void setStyleDescription(final StyleDescription styleDescription) {
       willShowComments = false;
+      commentVerticalMargin = DEFAULT_COMMENT_VERTICAL_MARGIN;
       plotRenderingStrategies.clear();
       highlightRenderingStrategies.clear();
       commentRenderingStrategies.clear();
@@ -76,6 +78,7 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
 
          final StyleDescription.CommentsDescription commentsDescription = styleDescription.getCommentsDescription();
          if (commentsDescription != null) {
+            commentVerticalMargin = commentsDescription.getVerticalMargin(DEFAULT_COMMENT_VERTICAL_MARGIN);
             final List<PointRenderingStrategy> newCommentRenderingStrategies = buildPointRenderingStrategies(commentsDescription.getStyleTypes(), highlightLineWidth);
             if (newCommentRenderingStrategies != null) {
                commentRenderingStrategies.addAll(newCommentRenderingStrategies);
@@ -281,11 +284,11 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
 
          final int actualPanelTop;
          final int desiredPanelTop =
-               (int)(iy - actualPanelHeight - HIGHLIGHTED_DOT_RADIUS);
+               (int)(iy - actualPanelHeight - commentVerticalMargin);
          if (desiredPanelTop < drawing.getTopLeft().getIntY()) {
             // place the panel below the point since there's not
             // enough room to place it above
-            actualPanelTop = (int)(iy + HIGHLIGHTED_DOT_RADIUS);
+            actualPanelTop = (int)(iy + commentVerticalMargin);
          } else {
             actualPanelTop = desiredPanelTop;
          }

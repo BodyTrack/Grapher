@@ -130,6 +130,25 @@ public final class StyleDescription extends JavaScriptObject {
          return (typeof this['show'] === 'undefined') || !!(this['show']);
       }-*/;
 
+      /**
+       * Returns the CSS class name applied to comment container elements.  If not defined, returns <code>null</code>.
+       */
+      public native String getCssClass() /*-{
+         return (typeof this['cssClass'] === 'undefined') ? null : this['cssClass'];
+      }-*/;
+
+      /**
+       * Returns the value of the <code>verticalMargin</code> field, if such
+       * a field exists, otherwise returns the given <code>defaultVerticalMargin</code>.
+       */
+      public double getVerticalMargin(final double defaultVerticalMargin) {
+         return getDoubleValue("verticalMargin", defaultVerticalMargin);
+      }
+
+      private native double getDoubleValue(final String fieldName, final double defaultValue) /*-{
+         return (typeof this[fieldName] === 'undefined') ? defaultValue : this[fieldName];
+      }-*/;
+
       public native JsArray<StyleType> getStyleTypes() /*-{
          return this['styles'];
       }-*/;
