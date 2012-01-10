@@ -200,6 +200,50 @@ public final class Canvas {
 	}
 
 	/**
+	 * Is exactly equivalent to a call to getSurface().getLineWidth()
+	 *
+	 * @return
+	 * 	The line width for this canvas
+	 */
+	public double getLineWidth() {
+		return surface.getLineWidth();
+	}
+
+	/**
+	 * Is exactly equivalent to a call to getSurface().setLineWidth(width)
+	 *
+	 * @param width
+	 * 	The new width for lines on the surface
+	 * @return
+	 * 	The Surface used for the setLineWidth call
+	 */
+	public Surface setLineWidth(double width) {
+		return surface.setLineWidth(width);
+	}
+
+	/**
+	 * Is exactly equivalent to a call to getSurface().getGlobalAlpha()
+	 *
+	 * @return
+	 * 	The global alpha for this canvas
+	 */
+	public double getGlobalAlpha() {
+		return surface.getGlobalAlpha();
+	}
+
+	/**
+	 * Is exactly equivalent to a call to getSurface().setGlobalAlpha(alpha)
+	 *
+	 * @param alpha
+	 * 	The new alpha for the canvas
+	 * @return
+	 * 	The Surface used for the setGlobalAlpha call
+	 */
+	public Surface setGlobalAlpha(double alpha) {
+		return surface.setGlobalAlpha(alpha);
+	}
+
+	/**
 	 * Is exactly equivalent to a call to getSurface().save()
 	 *
 	 * @return
@@ -217,6 +261,46 @@ public final class Canvas {
 	 */
 	public Surface restore() {
 		return surface.restore();
+	}
+
+	/**
+	 * Is exactly equivalent to a call to
+	 * getSurface().strokeRectangle(x, y, width, height)
+	 *
+	 * @param x
+	 * 	The X-coordinate of the top left of the rectangle
+	 * @param y
+	 * 	The Y-coordinate of the top left of the rectangle
+	 * @param width
+	 * 	The width of the rectangle
+	 * @param height
+	 * 	The height of the rectangle
+	 * @return
+	 * 	The Surface used for the strokeRectangle call
+	 */
+	public Surface strokeRectangle(double x,
+			double y, double width, double height) {
+		return surface.strokeRectangle(x, y, width, height);
+	}
+
+	/**
+	 * Is exactly equivalent to a call to
+	 * getSurface().fillRectangle(x, y, width, height)
+	 *
+	 * @param x
+	 * 	The X-coordinate of the top left of the rectangle
+	 * @param y
+	 * 	The Y-coordinate of the top left of the rectangle
+	 * @param width
+	 * 	The width of the rectangle
+	 * @param height
+	 * 	The height of the rectangle
+	 * @return
+	 * 	The Surface used for the fillRectangle call
+	 */
+	public Surface fillRectangle(double x,
+			double y, double width, double height) {
+		return surface.fillRectangle(x, y, width, height);
 	}
 
 	// --------------------------------------------------------------

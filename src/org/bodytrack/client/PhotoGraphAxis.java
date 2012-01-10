@@ -105,9 +105,9 @@ public class PhotoGraphAxis extends GraphAxis {
 
          // Pick the color to use, based on highlighting status
          if (isHighlighted()) {
-            canvas.getSurface().setStrokeStyle(HIGHLIGHTED_COLOR);
+            canvas.setStrokeStyle(HIGHLIGHTED_COLOR);
          } else {
-            canvas.getSurface().setStrokeStyle(NORMAL_COLOR);
+            canvas.setStrokeStyle(NORMAL_COLOR);
          }
 
          final double x = project2D(INITIAL_MIN).getX();
@@ -149,7 +149,7 @@ public class PhotoGraphAxis extends GraphAxis {
          canvas.stroke();
 
          // Clean up after ourselves
-         canvas.getSurface().setStrokeStyle(Canvas.DEFAULT_COLOR);
+         canvas.setStrokeStyle(Canvas.DEFAULT_COLOR);
       }
    }
 

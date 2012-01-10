@@ -322,9 +322,9 @@ public class GraphAxis {
 
          // Pick the color to use, based on highlighting status
          if (isHighlighted()) {
-            drawingCanvas.getSurface().setStrokeStyle(HIGHLIGHTED_COLOR);
+            drawingCanvas.setStrokeStyle(HIGHLIGHTED_COLOR);
          } else {
-            drawingCanvas.getSurface().setStrokeStyle(NORMAL_COLOR);
+            drawingCanvas.setStrokeStyle(NORMAL_COLOR);
          }
 
          drawingCanvas.getRenderer().beginPath();
@@ -342,7 +342,7 @@ public class GraphAxis {
          renderHighlight(drawingCanvas, highlightedPoint);
 
          // Clean up after ourselves
-         drawingCanvas.getSurface().setStrokeStyle(Canvas.DEFAULT_COLOR);
+         drawingCanvas.setStrokeStyle(Canvas.DEFAULT_COLOR);
       }
    }
 

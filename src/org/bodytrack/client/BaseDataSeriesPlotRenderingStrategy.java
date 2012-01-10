@@ -1,7 +1,6 @@
 package org.bodytrack.client;
 
 import gwt.g2d.client.graphics.Color;
-import gwt.g2d.client.graphics.Surface;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -94,10 +93,9 @@ public abstract class BaseDataSeriesPlotRenderingStrategy implements SeriesPlotR
     */
    @Override
    public void beforeRender(final Canvas canvas, final boolean isAnyPointHighlighted) {
-      final Surface surface = canvas.getSurface();
-      surface.setLineWidth(isAnyPointHighlighted ? HIGHLIGHT_STROKE_WIDTH : lineWidth);
-      surface.setStrokeStyle(strokeColor);
-      surface.setFillStyle(fillColor);
+      canvas.setLineWidth(isAnyPointHighlighted ? HIGHLIGHT_STROKE_WIDTH : lineWidth);
+      canvas.setStrokeStyle(strokeColor);
+      canvas.setFillStyle(fillColor);
    }
 
    /**
@@ -107,10 +105,9 @@ public abstract class BaseDataSeriesPlotRenderingStrategy implements SeriesPlotR
    @Override
    public void afterRender(final Canvas canvas) {
       // Clean up after ourselves
-      final Surface surface = canvas.getSurface();
-      surface.setLineWidth(NORMAL_STROKE_WIDTH);
-      surface.setStrokeStyle(DEFAULT_STROKE_COLOR);
-      surface.setFillStyle(DEFAULT_FILL_COLOR);
+      canvas.setLineWidth(NORMAL_STROKE_WIDTH);
+      canvas.setStrokeStyle(DEFAULT_STROKE_COLOR);
+      canvas.setFillStyle(DEFAULT_FILL_COLOR);
    }
 
    /** Enumeration defining the various types of data series plot style types. */

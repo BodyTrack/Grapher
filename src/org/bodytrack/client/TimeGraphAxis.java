@@ -315,9 +315,9 @@ public class TimeGraphAxis extends GraphAxis {
       
 		// Pick the color to use, based on highlighting status
 		if (isHighlighted())
-			canvas.getSurface().setStrokeStyle(HIGHLIGHTED_COLOR);
+			canvas.setStrokeStyle(HIGHLIGHTED_COLOR);
 		else
-			canvas.getSurface().setStrokeStyle(NORMAL_COLOR);
+			canvas.setStrokeStyle(NORMAL_COLOR);
 
 		canvas.getRenderer().beginPath();
 		canvas.getRenderer().drawLineSegment(
@@ -433,7 +433,7 @@ public class TimeGraphAxis extends GraphAxis {
 		renderHighlight(canvas, getHighlightedPoint());
 
 		// Clean up after ourselves
-		canvas.getSurface().setStrokeStyle(Canvas.DEFAULT_COLOR);
+		canvas.setStrokeStyle(Canvas.DEFAULT_COLOR);
 	}
 }
 

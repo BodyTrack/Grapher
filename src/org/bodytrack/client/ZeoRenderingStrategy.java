@@ -1,8 +1,6 @@
 package org.bodytrack.client;
 
 import gwt.g2d.client.graphics.Color;
-import gwt.g2d.client.graphics.DirectShapeRenderer;
-import gwt.g2d.client.graphics.Surface;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -137,9 +135,6 @@ public class ZeoRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy {
          return;
       }
 
-      final Surface surface = canvas.getSurface();
-      final DirectShapeRenderer renderer = canvas.getRenderer();
-
       // The Y-value in units on the Y-axis corresponding to the lowest
       // point to draw on the rectangle
       final double minDrawUnits = Math.max(0.0, yAxis.getMin());
@@ -156,58 +151,58 @@ public class ZeoRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy {
       final double topY = y;
 
       // Draw the Zeo plot with the specified color
-      surface.setGlobalAlpha(isAnyPointHighlighted ? HIGHLIGHTED_ALPHA : NORMAL_ALPHA);
-      surface.setFillStyle(zeoState.getColor());
+      canvas.setGlobalAlpha(isAnyPointHighlighted ? HIGHLIGHTED_ALPHA : NORMAL_ALPHA);
+      canvas.setFillStyle(zeoState.getColor());
 
       final boolean isNoDataState = ZeoState.NO_DATA.equals(zeoState);
 
       if (isNoDataState) {
          // Draw a line
-         final double oldLineWidth = surface.getLineWidth();
-         surface.setLineWidth(isAnyPointHighlighted
-                              ? SeriesPlotRenderingStrategy.HIGHLIGHT_STROKE_WIDTH
-                              : SeriesPlotRenderingStrategy.NORMAL_STROKE_WIDTH);
+         final double oldLineWidth = canvas.getLineWidth();
+         canvas.setLineWidth(isAnyPointHighlighted
+                             ? SeriesPlotRenderingStrategy.HIGHLIGHT_STROKE_WIDTH
+                             : SeriesPlotRenderingStrategy.NORMAL_STROKE_WIDTH);
 
-         renderer.beginPath();
-         renderer.moveTo(leftX, bottomY);
-         renderer.drawLineTo(rightX, bottomY);
-         renderer.closePath();
+         canvas.beginPath()
+            .moveTo(leftX, bottomY)
+            .drawLineTo(rightX, bottomY)
+            .closePath();
 
-         renderer.stroke();
-         surface.setLineWidth(oldLineWidth);
+         canvas.stroke();
+         canvas.setLineWidth(oldLineWidth);
       } else {
          // Fill rectangle, without outline. Round to nearest pixels and
          // offset by half a pixel, so that we're always completely
          // filling pixels. Otherwise antialiasing will cause us to
          // paint partial pixels, which will make the graph fade on the
          // edges of the rectangles.
-         surface.fillRectangle(Math.round(leftX) + .5,
-                               Math.round(topY) + .5,
-                               Math.round(rightX) - Math.round(leftX),
-                               Math.round(bottomY) - Math.round(topY));
+         canvas.fillRectangle(Math.round(leftX) + .5,
+                              Math.round(topY) + .5,
+                              Math.round(rightX) - Math.round(leftX),
+                              Math.round(bottomY) - Math.round(topY));
       }
 
       // Draw lines around rectangles, but only if the width in pixels is large
       // enough and it's not the NO_DATA state
       final int widthInPixels = (int)Math.round(rightX - leftX);
       if (!isNoDataState && widthInPixels > 6) {
-         surface.setGlobalAlpha(Canvas.DEFAULT_ALPHA);
-         surface.setFillStyle(Canvas.DEFAULT_COLOR);
+         canvas.setGlobalAlpha(Canvas.DEFAULT_ALPHA);
+         canvas.setFillStyle(Canvas.DEFAULT_COLOR);
 
-         final double oldLineWidth = surface.getLineWidth();
-         surface.setLineWidth(isAnyPointHighlighted
-                              ? SeriesPlotRenderingStrategy.HIGHLIGHT_STROKE_WIDTH
-                              : SeriesPlotRenderingStrategy.NORMAL_STROKE_WIDTH);
+         final double oldLineWidth = canvas.getLineWidth();
+         canvas.setLineWidth(isAnyPointHighlighted
+                             ? SeriesPlotRenderingStrategy.HIGHLIGHT_STROKE_WIDTH
+                             : SeriesPlotRenderingStrategy.NORMAL_STROKE_WIDTH);
 
          // Stroke the outside of the rectangle
          // Round to nearest pixels so we draw the line in such a way that
          // it completely fills pixels.  Otherwise a 1-pixel line turns into
          // a 2-pixel grey blurry line.
-         surface.strokeRectangle(Math.round(leftX),
-                                 Math.round(topY),
-                                 Math.round(rightX) - Math.round(leftX),
-                                 Math.round(bottomY) - Math.round(topY));
-         surface.setLineWidth(oldLineWidth);
+         canvas.strokeRectangle(Math.round(leftX),
+                                Math.round(topY),
+                                Math.round(rightX) - Math.round(leftX),
+                                Math.round(bottomY) - Math.round(topY));
+         canvas.setLineWidth(oldLineWidth);
       }
    }
 }
