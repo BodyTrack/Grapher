@@ -4,6 +4,7 @@ import gwt.g2d.client.graphics.Color;
 import gwt.g2d.client.graphics.DirectShapeRenderer;
 import gwt.g2d.client.graphics.Surface;
 import gwt.g2d.client.graphics.TextAlign;
+import gwt.g2d.client.graphics.TextBaseline;
 import gwt.g2d.client.graphics.canvas.Context;
 
 import org.bodytrack.client.InstanceController.InstanceProducer;
@@ -264,6 +265,29 @@ public final class Canvas {
 	 */
 	public Surface setTextAlign(TextAlign textAlign) {
 		return surface.setTextAlign(textAlign);
+	}
+
+	/**
+	 * Is exactly equivalent to a call to getSurface().getTextBaseline()
+	 *
+	 * @return
+	 * 	The text baseline for this canvas
+	 */
+	public TextBaseline getTextBaseline() {
+		return surface.getTextBaseline();
+	}
+
+	/**
+	 * Is exactly equivalent to a call to
+	 * getSurface().setTextBaseline(textBaseline)
+	 *
+	 * @param textBaseline
+	 * 	The new baseline to use for text on the canvas
+	 * @return
+	 * 	The Surface used for the setTextBaseline call
+	 */
+	public Surface setTextBaseline(TextBaseline textBaseline) {
+		return surface.setTextBaseline(textBaseline);
 	}
 
 	/**

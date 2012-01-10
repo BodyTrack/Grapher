@@ -2,6 +2,7 @@ package org.bodytrack.client;
 
 import gwt.g2d.client.graphics.KnownColor;
 import gwt.g2d.client.graphics.TextAlign;
+import gwt.g2d.client.graphics.TextBaseline;
 import gwt.g2d.client.math.Vector2;
 
 import java.util.ArrayList;
@@ -115,6 +116,7 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 		return result;
 	}
 
+	// TODO: Don't download all the photos
 	private void loadPhotos(final List<PhotoDescription> descs) {
 		for (final PhotoDescription desc: descs) {
 			// This depends on the fact that equality of PlottablePoint
@@ -146,9 +148,12 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 		return lastPhoto;
 	}
 
+	// Assumes that drawing has text alignment equal to TextAlignment.CENTER,
+	// and text baseline equal to TextBaseline.MIDDLE
 	private void drawCount(final BoundedDrawingBox drawing,
 			final PhotoGetter photo,
 			final int count) {
+		// TODO: Maybe draw shadow whenever count > 1
 		if (drawing == null || photo == null || count <= 1)
 			return;
 
@@ -381,6 +386,7 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 		private static final int NOT_RENDERING = -1;
 
 		private TextAlign oldTextAlign;
+		private TextBaseline oldTextBaseline;
 
 		private int photoIndex = NOT_RENDERING;
 		private PhotoGetter lastPhoto;
@@ -391,9 +397,11 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 		public void beforeRender(final Canvas canvas,
 				final boolean isAnyPointHighlighted) {
 			oldTextAlign = canvas.getTextAlign();
+			oldTextBaseline = canvas.getTextBaseline();
 
 			canvas.setStrokeStyle(Canvas.DEFAULT_COLOR);
 			canvas.setTextAlign(TextAlign.CENTER);
+			canvas.setTextBaseline(TextBaseline.MIDDLE);
 
 			photoIndex = 0;
 			lastPhoto = null;
@@ -439,8 +447,9 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 			// only draws the count for earlier photos
 			drawCount(savedDrawing, lastPhoto, currentCount.get());
 
-			canvas.setStrokeStyle(Canvas.DEFAULT_COLOR);
+			canvas.setTextBaseline(oldTextBaseline);
 			canvas.setTextAlign(oldTextAlign);
+			canvas.setStrokeStyle(Canvas.DEFAULT_COLOR);
 
 			photoIndex = NOT_RENDERING;
 			lastPhoto = null;
