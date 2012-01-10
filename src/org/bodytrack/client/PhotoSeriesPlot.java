@@ -1,6 +1,7 @@
 package org.bodytrack.client;
 
 import gwt.g2d.client.graphics.KnownColor;
+import gwt.g2d.client.graphics.TextAlign;
 import gwt.g2d.client.math.Vector2;
 
 import java.util.ArrayList;
@@ -163,9 +164,7 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 
 		drawing.setFillStyle(KnownColor.RED);
 		drawing.fillCircle(circleX, circleY, COUNT_CIRCLE_SIZE / 2.0);
-		drawing.setFillStyle(KnownColor.GRAY);
-		// TODO: Center the text.  Possibly the following line in the beforeRender?
-		// drawing.getCanvas().getSurface().setTextAlign(TextAlign.CENTER);
+		drawing.setFillStyle(KnownColor.WHITE);
 		drawing.fillText("" + count, circleX, circleY);
 		drawing.setFillStyle(Canvas.DEFAULT_COLOR);
 	}
@@ -381,15 +380,21 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 	private class PhotoRenderingStrategy implements SeriesPlotRenderingStrategy {
 		private static final int NOT_RENDERING = -1;
 
+		private TextAlign oldTextAlign;
+
 		private int photoIndex = NOT_RENDERING;
-		private PhotoGetter lastPhoto = null;
-		private Reference<Integer> currentCount = null;
-		private BoundedDrawingBox savedDrawing = null;
+		private PhotoGetter lastPhoto;
+		private Reference<Integer> currentCount;
+		private BoundedDrawingBox savedDrawing;
 
 		@Override
 		public void beforeRender(final Canvas canvas,
 				final boolean isAnyPointHighlighted) {
+			oldTextAlign = canvas.getTextAlign();
+
 			canvas.setStrokeStyle(Canvas.DEFAULT_COLOR);
+			canvas.setTextAlign(TextAlign.CENTER);
+
 			photoIndex = 0;
 			lastPhoto = null;
 			currentCount = new Reference<Integer>(0);
@@ -435,6 +440,8 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 			drawCount(savedDrawing, lastPhoto, currentCount.get());
 
 			canvas.setStrokeStyle(Canvas.DEFAULT_COLOR);
+			canvas.setTextAlign(oldTextAlign);
+
 			photoIndex = NOT_RENDERING;
 			lastPhoto = null;
 			currentCount = null;

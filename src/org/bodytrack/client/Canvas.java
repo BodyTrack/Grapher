@@ -3,6 +3,7 @@ package org.bodytrack.client;
 import gwt.g2d.client.graphics.Color;
 import gwt.g2d.client.graphics.DirectShapeRenderer;
 import gwt.g2d.client.graphics.Surface;
+import gwt.g2d.client.graphics.TextAlign;
 import gwt.g2d.client.graphics.canvas.Context;
 
 import org.bodytrack.client.InstanceController.InstanceProducer;
@@ -241,6 +242,28 @@ public final class Canvas {
 	 */
 	public Surface setGlobalAlpha(double alpha) {
 		return surface.setGlobalAlpha(alpha);
+	}
+
+	/**
+	 * Is exactly equivalent to a call to getSurface().getTextAlign()
+	 *
+	 * @return
+	 * 	The text alignment for this canvas
+	 */
+	public TextAlign getTextAlign() {
+		return surface.getTextAlign();
+	}
+
+	/**
+	 * Is exactly equivalent to a call to getSurface().setTextAlign(textAlign)
+	 *
+	 * @param textAlign
+	 * 	The new alignment to use for text on the canvas
+	 * @return
+	 * 	The Surface used for the setTextAlign call
+	 */
+	public Surface setTextAlign(TextAlign textAlign) {
+		return surface.setTextAlign(textAlign);
 	}
 
 	/**
