@@ -26,7 +26,7 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
    /**
     * The radius to use when drawing a highlighted dot on the grapher.
     */
-   public static final double HIGHLIGHTED_DOT_RADIUS = 4;
+   public static final double HIGHLIGHTED_DOT_RADIUS = 4;   // todo: this should come from the highlight style
 
    /**
     * The preferred width in pixels of a comment popup panel. The comment
@@ -59,14 +59,16 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
       if (styleDescription != null) {
          willShowComments = styleDescription.willShowComments();
 
-         final List<SeriesPlotRenderingStrategy> newPlotRenderingStrategies = buildSeriesPlotRenderingStrategies(styleDescription.getStyleTypes());
+         final StyleDescription.HighlightDescription highlightDescription = styleDescription.getHighlightDescription();
+         final Double highlightLineWidth = (highlightDescription == null) ? null : highlightDescription.getLineWidth();
+
+         final List<SeriesPlotRenderingStrategy> newPlotRenderingStrategies = buildSeriesPlotRenderingStrategies(styleDescription.getStyleTypes(), highlightLineWidth);
          if (newPlotRenderingStrategies != null) {
             plotRenderingStrategies.addAll(newPlotRenderingStrategies);
          }
 
-         final StyleDescription.HighlightDescription highlightDescription = styleDescription.getHighlightDescription();
          if (highlightDescription != null) {
-            final List<PointRenderingStrategy> newHighlightRenderingStrategies = buildPointRenderingStrategies(highlightDescription.getStyleTypes());
+            final List<PointRenderingStrategy> newHighlightRenderingStrategies = buildPointRenderingStrategies(highlightDescription.getStyleTypes(), highlightLineWidth);
             if (newHighlightRenderingStrategies != null) {
                highlightRenderingStrategies.addAll(newHighlightRenderingStrategies);
             }
@@ -74,7 +76,7 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
 
          final StyleDescription.CommentsDescription commentsDescription = styleDescription.getCommentsDescription();
          if (commentsDescription != null) {
-            final List<PointRenderingStrategy> newCommentRenderingStrategies = buildPointRenderingStrategies(commentsDescription.getStyleTypes());
+            final List<PointRenderingStrategy> newCommentRenderingStrategies = buildPointRenderingStrategies(commentsDescription.getStyleTypes(), highlightLineWidth);
             if (newCommentRenderingStrategies != null) {
                commentRenderingStrategies.addAll(newCommentRenderingStrategies);
             }
@@ -82,9 +84,11 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
       }
    }
 
-   protected abstract List<SeriesPlotRenderingStrategy> buildSeriesPlotRenderingStrategies(final JsArray<StyleDescription.StyleType> styleTypes);
+   protected abstract List<SeriesPlotRenderingStrategy> buildSeriesPlotRenderingStrategies(final JsArray<StyleDescription.StyleType> styleTypes,
+                                                                                           final Double highlightLineWidth);
 
-   protected abstract List<PointRenderingStrategy> buildPointRenderingStrategies(final JsArray<StyleDescription.StyleType> styleTypes);
+   protected abstract List<PointRenderingStrategy> buildPointRenderingStrategies(final JsArray<StyleDescription.StyleType> styleTypes,
+                                                                                 final Double highlightLineWidth);
 
    @Override
    public final void render(final Canvas canvas,
@@ -101,7 +105,7 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
          if (dataPoints == null) {
             continue;
          }
-         
+
          for (final SeriesPlotRenderingStrategy renderingStrategy : plotRenderingStrategies) {
             renderingStrategy.beforeRender(canvas, isAnyPointHighlighted);
 
@@ -149,7 +153,7 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
 
             renderingStrategy.afterRender(canvas);
          }
-         
+
          // now render the points having comments
          for (final PlottablePoint point : dataPoints) {
             if (point.hasComment()) {

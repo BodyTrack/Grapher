@@ -141,18 +141,20 @@ public final class StyleDescription extends JavaScriptObject {
       }
 
       /**
-       * Returns the value of the <code>lineWidth</code> field, if such
-       * a field exists, otherwise returns the given <code>defaultLineWidth</code>.
+       * Returns the value of the <code>lineWidth</code> field, if defined, otherwise returns <code>null</code>.
        */
-      public double getLineWidth(final double defaultLineWidth) {
-         return getDoubleValue("lineWidth", defaultLineWidth);
+      public Double getLineWidth() {
+         if (isLineWidthDefined()) {
+            return getDoubleValue("lineWidth");
+         }
+         return null;
       }
 
-      public native double getDoubleValue(final String fieldName, final double defaultValue) /*-{
-         return (typeof this[fieldName] === 'undefined') ? defaultValue : this[fieldName];
+      private native double getDoubleValue(final String fieldName) /*-{
+         return this[fieldName];
       }-*/;
 
-      public native boolean isLineWidthDefined() /*-{
+      private native boolean isLineWidthDefined() /*-{
          return (typeof this["lineWidth"] !== 'undefined');
       }-*/;
 

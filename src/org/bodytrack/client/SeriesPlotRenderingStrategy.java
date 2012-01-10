@@ -5,12 +5,6 @@ package org.bodytrack.client;
  */
 public interface SeriesPlotRenderingStrategy extends RenderingStrategy {
 
-   /** The width at which a highlighted line is drawn. */
-   int HIGHLIGHT_STROKE_WIDTH = 3;     // TODO: move this elsewhere once highlight styles are supported
-
-   /** The radius to use when drawing a highlighted dot on the grapher. */
-   double HIGHLIGHTED_DOT_RADIUS = 4;  // TODO: move this elsewhere once highlight styles are supported
-
    /** The radius to use when drawing a dot on the grapher. */
    double DOT_RADIUS = 0.5;
 

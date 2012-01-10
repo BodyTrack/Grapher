@@ -14,16 +14,18 @@ import gwt.g2d.client.graphics.Surface;
 public abstract class BaseDataSeriesPlotRenderingStrategy implements SeriesPlotRenderingStrategy {
    private StyleDescription.StyleType styleType;
    private final double lineWidth;
+   private final double highlightLineWidth;
    private final Color strokeColor;
    private final boolean willFill;
    private final Color fillColor;
 
-   protected BaseDataSeriesPlotRenderingStrategy(final StyleDescription.StyleType styleType) {
+   protected BaseDataSeriesPlotRenderingStrategy(final StyleDescription.StyleType styleType, final Double theHighlightLineWidth) {
       this.styleType = styleType;
       lineWidth = getStyleType().getLineWidth(DEFAULT_STROKE_WIDTH);
       strokeColor = getStyleType().getColor(DEFAULT_STROKE_COLOR);
       willFill = getStyleType().willFill();
       fillColor = getStyleType().getFillColor(DEFAULT_FILL_COLOR);
+      highlightLineWidth = (theHighlightLineWidth == null) ? lineWidth : theHighlightLineWidth;
    }
 
    protected final StyleDescription.StyleType getStyleType() {
@@ -32,6 +34,10 @@ public abstract class BaseDataSeriesPlotRenderingStrategy implements SeriesPlotR
 
    protected final double getLineWidth() {
       return lineWidth;
+   }
+
+   protected final double getHighlightLineWidth() {
+      return highlightLineWidth;
    }
 
    protected final Color getStrokeColor() {
@@ -50,9 +56,9 @@ public abstract class BaseDataSeriesPlotRenderingStrategy implements SeriesPlotR
     * <p>Sets the line width, stroke color, and fill color.</p>
     *
     * <p>If the {@link StyleDescription.StyleType StyleType} has a "lineWidth" field, then the line width is set to
-    * either the that width or the {@link SeriesPlotRenderingStrategy#HIGHLIGHT_STROKE_WIDTH highlighted stroke width},
-    * depending on the value of <code>isAnyPointHighlighted</code>.  If there is no <code>lineWidth</code> field,
-    * the line width is set to {@link SeriesPlotRenderingStrategy#DEFAULT_STROKE_WIDTH}.</p>
+    * either the that width or the highlighted line width (if defined), depending on the value of 
+    * <code>isAnyPointHighlighted</code>.  If there is no <code>lineWidth</code> field, the line width is set to 
+    * {@link SeriesPlotRenderingStrategy#DEFAULT_STROKE_WIDTH}.</p>
     *
     * <p>If the {@link StyleDescription.StyleType StyleType} has a "color" field, then the stroke color is set to
     * either the that color or the {@link SeriesPlotRenderingStrategy#DEFAULT_STROKE_COLOR} if no such field exists.</p>
@@ -63,7 +69,8 @@ public abstract class BaseDataSeriesPlotRenderingStrategy implements SeriesPlotR
    @Override
    public void beforeRender(final Canvas canvas, final boolean isAnyPointHighlighted) {
       final Surface surface = canvas.getSurface();
-      surface.setLineWidth(isAnyPointHighlighted ? HIGHLIGHT_STROKE_WIDTH : lineWidth);
+      final double actualLineWidth = isAnyPointHighlighted ? highlightLineWidth : lineWidth;
+      surface.setLineWidth(actualLineWidth);
       surface.setStrokeStyle(strokeColor);
       surface.setFillStyle(fillColor);
    }

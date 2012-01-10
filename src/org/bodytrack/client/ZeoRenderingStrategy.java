@@ -81,8 +81,9 @@ public class ZeoRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy {
    //private static final double HIGHLIGHTED_ALPHA = 0.5;
    private static final double HIGHLIGHTED_ALPHA = 1.0;
 
-   public ZeoRenderingStrategy(final StyleDescription.StyleType styleType) {
-      super(styleType);
+   public ZeoRenderingStrategy(final StyleDescription.StyleType styleType,
+                               final Double highlightLineWidth) {
+      super(styleType, highlightLineWidth);
    }
 
    @Override
@@ -162,18 +163,12 @@ public class ZeoRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy {
 
       if (isNoDataState) {
          // Draw a line
-         final double oldLineWidth = surface.getLineWidth();
-         surface.setLineWidth(isAnyPointHighlighted
-                              ? SeriesPlotRenderingStrategy.HIGHLIGHT_STROKE_WIDTH
-                              : RenderingStrategy.DEFAULT_STROKE_WIDTH);
-
          renderer.beginPath();
          renderer.moveTo(leftX, bottomY);
          renderer.drawLineTo(rightX, bottomY);
          renderer.closePath();
 
          renderer.stroke();
-         surface.setLineWidth(oldLineWidth);
       } else {
          // Fill rectangle, without outline. Round to nearest pixels and
          // offset by half a pixel, so that we're always completely
@@ -193,11 +188,6 @@ public class ZeoRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy {
          surface.setGlobalAlpha(Canvas.DEFAULT_ALPHA);
          surface.setFillStyle(Canvas.DEFAULT_COLOR);
 
-         final double oldLineWidth = surface.getLineWidth();
-         surface.setLineWidth(isAnyPointHighlighted
-                              ? SeriesPlotRenderingStrategy.HIGHLIGHT_STROKE_WIDTH
-                              : RenderingStrategy.DEFAULT_STROKE_WIDTH);
-
          // Stroke the outside of the rectangle
          // Round to nearest pixels so we draw the line in such a way that
          // it completely fills pixels.  Otherwise a 1-pixel line turns into
@@ -206,7 +196,6 @@ public class ZeoRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy {
                                  Math.round(topY),
                                  Math.round(rightX) - Math.round(leftX),
                                  Math.round(bottomY) - Math.round(topY));
-         surface.setLineWidth(oldLineWidth);
       }
    }
 }

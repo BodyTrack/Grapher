@@ -665,7 +665,8 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
       }
 
       @Override
-      protected List<SeriesPlotRenderingStrategy> buildSeriesPlotRenderingStrategies(final JsArray<StyleDescription.StyleType> styleTypes) {
+      protected List<SeriesPlotRenderingStrategy> buildSeriesPlotRenderingStrategies(final JsArray<StyleDescription.StyleType> styleTypes,
+                                                                                     final Double highlightLineWidth) {
          // TODO: honor the style...
          final List<SeriesPlotRenderingStrategy> renderingStrategies = new ArrayList<SeriesPlotRenderingStrategy>();
          renderingStrategies.add(new PhotoRenderingStrategy());
@@ -673,7 +674,8 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
       }
 
       @Override
-      protected List<PointRenderingStrategy> buildPointRenderingStrategies(final JsArray<StyleDescription.StyleType> styleTypes) {
+      protected List<PointRenderingStrategy> buildPointRenderingStrategies(final JsArray<StyleDescription.StyleType> styleTypes,
+                                                                           final Double highlightLineWidth) {
          // TODO: honor the style...
          return null;
       }

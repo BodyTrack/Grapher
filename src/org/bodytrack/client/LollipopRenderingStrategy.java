@@ -1,8 +1,9 @@
 package org.bodytrack.client;
 
 public class LollipopRenderingStrategy extends DotRenderingStrategy {
-   public LollipopRenderingStrategy(final StyleDescription.StyleType styleType) {
-      super(styleType);
+   public LollipopRenderingStrategy(final StyleDescription.StyleType styleType,
+                                    final Double highlightLineWidth) {
+      super(styleType, highlightLineWidth);
    }
 
    @Override

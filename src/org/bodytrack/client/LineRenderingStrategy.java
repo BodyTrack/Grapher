@@ -2,8 +2,9 @@ package org.bodytrack.client;
 
 public class LineRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy {
 
-   public LineRenderingStrategy(final StyleDescription.StyleType styleType) {
-      super(styleType);
+   public LineRenderingStrategy(final StyleDescription.StyleType styleType,
+                                final Double highlightLineWidth) {
+      super(styleType, highlightLineWidth);
    }
 
    @Override

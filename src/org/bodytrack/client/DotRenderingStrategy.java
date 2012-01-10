@@ -5,8 +5,9 @@ public class DotRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy im
 
    private final double radius;
 
-   public DotRenderingStrategy(final StyleDescription.StyleType styleType) {
-      super(styleType);
+   public DotRenderingStrategy(final StyleDescription.StyleType styleType,
+                               final Double highlightLineWidth) {
+      super(styleType, highlightLineWidth);
       radius = styleType.getDoubleValue("radius", DEFAULT_DOT_RADIUS);
    }
 

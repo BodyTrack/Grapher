@@ -23,7 +23,8 @@ public final class DataSeriesPlotRenderer extends BaseSeriesPlotRenderer {
    }
 
    @Override
-   protected List<SeriesPlotRenderingStrategy> buildSeriesPlotRenderingStrategies(final JsArray<StyleDescription.StyleType> styleTypes) {
+   protected List<SeriesPlotRenderingStrategy> buildSeriesPlotRenderingStrategies(final JsArray<StyleDescription.StyleType> styleTypes,
+                                                                                  final Double highlightLineWidth) {
       final List<SeriesPlotRenderingStrategy> renderingStrategies = new ArrayList<SeriesPlotRenderingStrategy>();
 
       if (styleTypes != null) {
@@ -34,7 +35,7 @@ public final class DataSeriesPlotRenderer extends BaseSeriesPlotRenderer {
 
             // don't bother creating a rendering strategy if the style type shouldn't be shown
             if (styleType != null && styleType.willShow()) {
-               final SeriesPlotRenderingStrategy renderingStrategy = createPlotRenderingStrategy(styleType);
+               final SeriesPlotRenderingStrategy renderingStrategy = createPlotRenderingStrategy(styleType, highlightLineWidth);
                if (renderingStrategy != null) {
                   renderingStrategies.add(renderingStrategy);
                }
@@ -46,7 +47,8 @@ public final class DataSeriesPlotRenderer extends BaseSeriesPlotRenderer {
    }
 
    @Override
-   protected List<PointRenderingStrategy> buildPointRenderingStrategies(final JsArray<StyleDescription.StyleType> styleTypes) {
+   protected List<PointRenderingStrategy> buildPointRenderingStrategies(final JsArray<StyleDescription.StyleType> styleTypes,
+                                                                        final Double highlightLineWidth) {
       final List<PointRenderingStrategy> renderingStrategies = new ArrayList<PointRenderingStrategy>();
 
       if (styleTypes != null) {
@@ -57,7 +59,7 @@ public final class DataSeriesPlotRenderer extends BaseSeriesPlotRenderer {
 
             // don't bother creating a rendering strategy if the style type shouldn't be shown
             if (styleType != null && styleType.willShow()) {
-               final PointRenderingStrategy renderingStrategy = createPointRenderingStrategy(styleType);
+               final PointRenderingStrategy renderingStrategy = createPointRenderingStrategy(styleType, highlightLineWidth);
                if (renderingStrategy != null) {
                   renderingStrategies.add(renderingStrategy);
                }
@@ -68,19 +70,21 @@ public final class DataSeriesPlotRenderer extends BaseSeriesPlotRenderer {
       return renderingStrategies;
    }
 
-   private SeriesPlotRenderingStrategy createPlotRenderingStrategy(final StyleDescription.StyleType styleType) {
+   private SeriesPlotRenderingStrategy createPlotRenderingStrategy(final StyleDescription.StyleType styleType,
+                                                                   final Double highlightLineWidth) {
 
       if (styleType != null) {
          final Type type = Type.findByName(styleType.getType());
-         return type.createRenderingStrategy(styleType);
+         return type.createRenderingStrategy(styleType, highlightLineWidth);
       }
 
       return null;
    }
 
-   private PointRenderingStrategy createPointRenderingStrategy(final StyleDescription.StyleType styleType) {
+   private PointRenderingStrategy createPointRenderingStrategy(final StyleDescription.StyleType styleType,
+                                                               final Double highlightLineWidth) {
 
-      final SeriesPlotRenderingStrategy renderingStrategy = createPlotRenderingStrategy(styleType);
+      final SeriesPlotRenderingStrategy renderingStrategy = createPlotRenderingStrategy(styleType, highlightLineWidth);
 
       if (renderingStrategy != null && renderingStrategy instanceof PointRenderingStrategy) {
          return (PointRenderingStrategy)renderingStrategy;
@@ -94,31 +98,36 @@ public final class DataSeriesPlotRenderer extends BaseSeriesPlotRenderer {
 
       POINT("point", new SeriesPlotRenderingStrategyFactory() {
          @Override
-         public SeriesPlotRenderingStrategy create(final StyleDescription.StyleType styleType) {
-            return new DotRenderingStrategy(styleType);
+         public SeriesPlotRenderingStrategy create(final StyleDescription.StyleType styleType,
+                                                   final Double highlightLineWidth) {
+            return new DotRenderingStrategy(styleType, highlightLineWidth);
          }
       }),
       LOLLIPOP("lollipop", new SeriesPlotRenderingStrategyFactory() {
          @Override
-         public SeriesPlotRenderingStrategy create(final StyleDescription.StyleType styleType) {
-            return new LollipopRenderingStrategy(styleType);
+         public SeriesPlotRenderingStrategy create(final StyleDescription.StyleType styleType,
+                                                   final Double highlightLineWidth) {
+            return new LollipopRenderingStrategy(styleType, highlightLineWidth);
          }
       }),
       LINE("line", new SeriesPlotRenderingStrategyFactory() {
          @Override
-         public SeriesPlotRenderingStrategy create(final StyleDescription.StyleType styleType) {
-            return new LineRenderingStrategy(styleType);
+         public SeriesPlotRenderingStrategy create(final StyleDescription.StyleType styleType,
+                                                   final Double highlightLineWidth) {
+            return new LineRenderingStrategy(styleType, highlightLineWidth);
          }
       }),
       ZEO("zeo", new SeriesPlotRenderingStrategyFactory() {
          @Override
-         public SeriesPlotRenderingStrategy create(final StyleDescription.StyleType styleType) {
-            return new ZeoRenderingStrategy(styleType);
+         public SeriesPlotRenderingStrategy create(final StyleDescription.StyleType styleType,
+                                                   final Double highlightLineWidth) {
+            return new ZeoRenderingStrategy(styleType, highlightLineWidth);
          }
       });
 
       private interface SeriesPlotRenderingStrategyFactory extends Serializable {
-         SeriesPlotRenderingStrategy create(final StyleDescription.StyleType styleType);
+         SeriesPlotRenderingStrategy create(final StyleDescription.StyleType styleType,
+                                            final Double highlightLineWidth);
       }
 
       private static final Map<String, Type> NAME_TO_TYPE_MAP;
@@ -159,8 +168,9 @@ public final class DataSeriesPlotRenderer extends BaseSeriesPlotRenderer {
          return name;
       }
 
-      public SeriesPlotRenderingStrategy createRenderingStrategy(final StyleDescription.StyleType styleType) {
-         return seriesPlotRenderingStrategyFactory.create(styleType);
+      public SeriesPlotRenderingStrategy createRenderingStrategy(final StyleDescription.StyleType styleType,
+                                                                 final Double highlightLineWidth) {
+         return seriesPlotRenderingStrategyFactory.create(styleType, highlightLineWidth);
       }
 
       @Override
