@@ -101,7 +101,7 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
          if (dataPoints == null) {
             continue;
          }
-
+         
          for (final SeriesPlotRenderingStrategy renderingStrategy : plotRenderingStrategies) {
             renderingStrategy.beforeRender(canvas, isAnyPointHighlighted);
 
@@ -149,10 +149,32 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
 
             renderingStrategy.afterRender(canvas);
          }
+         
+         // now render the points having comments
+         for (final PlottablePoint point : dataPoints) {
+            if (point.hasComment()) {
+               for (final PointRenderingStrategy renderingStrategy : commentRenderingStrategies) {
+                  renderingStrategy.beforeRender(canvas, isAnyPointHighlighted);
+                  drawing.beginClippedPath();
+                  renderingStrategy.paintPoint(drawing,
+                                               xAxis,
+                                               yAxis,
+                                               xAxis.project2D(point.getDate()).getX(),
+                                               yAxis.project2D(point.getValue()).getY(),
+                                               highlightedPoint);
+                  drawing.strokeClippedPath();
+                  renderingStrategy.afterRender(canvas);
+               }
+            }
+         }
       }
 
       hideComment();
+
+      // if there's a highlighted point, then we should render it as such and, if it has a comment, also
+      // render the comment
       if (isAnyPointHighlighted) {
+         // render highlight
          for (final PointRenderingStrategy renderingStrategy : highlightRenderingStrategies) {
             renderingStrategy.beforeRender(canvas, isAnyPointHighlighted);
             drawing.beginClippedPath();
@@ -165,6 +187,8 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
             drawing.strokeClippedPath();
             renderingStrategy.afterRender(canvas);
          }
+
+         // finally, render the comment
          if (highlightedPoint.hasComment()) {
             paintComment(drawing, highlightedPoint,
                          xAxis.project2D(highlightedPoint.getDate()).getX(),
