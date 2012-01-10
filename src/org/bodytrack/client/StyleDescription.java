@@ -133,8 +133,22 @@ public final class StyleDescription extends JavaScriptObject {
       /**
        * Returns the CSS class name applied to comment container elements.  If not defined, returns <code>null</code>.
        */
-      public native String getCssClass() /*-{
-         return (typeof this['cssClass'] === 'undefined') ? null : this['cssClass'];
+      public String getCommentContainerCssClass() {
+         return getStringValue("commentContainerCssClass");
+      }
+
+      /**
+       * Returns the CSS class name applied to comment elements.  If not defined, returns <code>null</code>.
+       */
+      public String getCommentCssClass() {
+         return getStringValue("commentContainerCssClass");
+      }
+
+      /**
+       * Returns the value of the given <code>fieldName</code>.  If not defined, returns <code>null</code>.
+       */
+      private native String getStringValue(final String fieldName) /*-{
+         return (typeof this[fieldName] === 'undefined') ? null : this[fieldName];
       }-*/;
 
       /**

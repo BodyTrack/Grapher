@@ -38,6 +38,8 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
    private PopupPanel commentPanel;
    private boolean willShowComments = false;
    private double commentVerticalMargin = DEFAULT_COMMENT_VERTICAL_MARGIN;
+   private String commentContainerCssClass = null;
+   private String commentCssClass = null;
    private final List<SeriesPlotRenderingStrategy> plotRenderingStrategies = new ArrayList<SeriesPlotRenderingStrategy>();
    private final List<PointRenderingStrategy> highlightRenderingStrategies = new ArrayList<PointRenderingStrategy>();
    private final List<PointRenderingStrategy> commentRenderingStrategies = new ArrayList<PointRenderingStrategy>();
@@ -54,6 +56,8 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
    public final void setStyleDescription(final StyleDescription styleDescription) {
       willShowComments = false;
       commentVerticalMargin = DEFAULT_COMMENT_VERTICAL_MARGIN;
+      commentContainerCssClass = null;
+      commentCssClass = null;
       plotRenderingStrategies.clear();
       highlightRenderingStrategies.clear();
       commentRenderingStrategies.clear();
@@ -79,6 +83,8 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
          final StyleDescription.CommentsDescription commentsDescription = styleDescription.getCommentsDescription();
          if (commentsDescription != null) {
             commentVerticalMargin = commentsDescription.getVerticalMargin(DEFAULT_COMMENT_VERTICAL_MARGIN);
+            commentContainerCssClass = commentsDescription.getCommentContainerCssClass();
+            commentCssClass = commentsDescription.getCommentCssClass();
             final List<PointRenderingStrategy> newCommentRenderingStrategies = buildPointRenderingStrategies(commentsDescription.getStyleTypes(), highlightLineWidth);
             if (newCommentRenderingStrategies != null) {
                commentRenderingStrategies.addAll(newCommentRenderingStrategies);
@@ -219,7 +225,14 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
          // create the panel, but display it offscreen so we can measure
          // its preferred width
          commentPanel = new PopupPanel();
-         commentPanel.add(new Label(highlightedPoint.getComment()));
+         final Label label = new Label(highlightedPoint.getComment());
+         if (commentCssClass != null) {
+            label.setStylePrimaryName(commentCssClass);
+         }
+         if (commentContainerCssClass != null) {
+            commentPanel.setStylePrimaryName(commentContainerCssClass);
+         }
+         commentPanel.add(label);
          commentPanel.setPopupPosition(-10000, -10000);
          commentPanel.show();
          final int preferredCommentPanelWidth = commentPanel.getOffsetWidth();
@@ -235,7 +248,9 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
 
          // set the panel to the corrected width
          final int actualPanelWidth;
-         if (desiredPanelWidth != preferredCommentPanelWidth) {
+         if (desiredPanelWidth == preferredCommentPanelWidth) {
+            actualPanelWidth = preferredCommentPanelWidth;
+         } else {
             commentPanel.setWidth(String.valueOf(desiredPanelWidth) + "px");
             commentPanel.show();
 
@@ -251,8 +266,6 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
             commentPanel.show();
 
             actualPanelWidth = commentPanel.getOffsetWidth();
-         } else {
-            actualPanelWidth = preferredCommentPanelWidth;
          }
 
          // now, if the actual panel width is less than the comment panel's
