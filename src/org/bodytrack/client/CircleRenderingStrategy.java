@@ -1,14 +1,14 @@
 package org.bodytrack.client;
 
-public class DotRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy implements PointRenderingStrategy {
-   private static final int DEFAULT_DOT_RADIUS = 3;
+public class CircleRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy implements PointRenderingStrategy {
+   private static final int DEFAULT_RADIUS = 3;
 
    private final double radius;
 
-   public DotRenderingStrategy(final StyleDescription.StyleType styleType,
-                               final Double highlightLineWidth) {
+   public CircleRenderingStrategy(final StyleDescription.StyleType styleType,
+                                  final Double highlightLineWidth) {
       super(styleType, highlightLineWidth);
-      radius = styleType.getDoubleValue("radius", DEFAULT_DOT_RADIUS);
+      radius = styleType.getDoubleValue("radius", DEFAULT_RADIUS);
    }
 
    @Override

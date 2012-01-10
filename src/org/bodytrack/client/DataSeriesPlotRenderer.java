@@ -100,7 +100,14 @@ public final class DataSeriesPlotRenderer extends BaseSeriesPlotRenderer {
          @Override
          public SeriesPlotRenderingStrategy create(final StyleDescription.StyleType styleType,
                                                    final Double highlightLineWidth) {
-            return new DotRenderingStrategy(styleType, highlightLineWidth);
+            return new CircleRenderingStrategy(styleType, highlightLineWidth);
+         }
+      }),
+      CIRCLE("circle", new SeriesPlotRenderingStrategyFactory() {
+         @Override
+         public SeriesPlotRenderingStrategy create(final StyleDescription.StyleType styleType,
+                                                   final Double highlightLineWidth) {
+            return new CircleRenderingStrategy(styleType, highlightLineWidth);
          }
       }),
       LOLLIPOP("lollipop", new SeriesPlotRenderingStrategyFactory() {
@@ -108,6 +115,27 @@ public final class DataSeriesPlotRenderer extends BaseSeriesPlotRenderer {
          public SeriesPlotRenderingStrategy create(final StyleDescription.StyleType styleType,
                                                    final Double highlightLineWidth) {
             return new LollipopRenderingStrategy(styleType, highlightLineWidth);
+         }
+      }),
+      CROSS("cross", new SeriesPlotRenderingStrategyFactory() {
+         @Override
+         public SeriesPlotRenderingStrategy create(final StyleDescription.StyleType styleType,
+                                                   final Double highlightLineWidth) {
+            return new CrossRenderingStrategy(styleType, highlightLineWidth);
+         }
+      }),
+      PLUS("plus", new SeriesPlotRenderingStrategyFactory() {
+         @Override
+         public SeriesPlotRenderingStrategy create(final StyleDescription.StyleType styleType,
+                                                   final Double highlightLineWidth) {
+            return new PlusRenderingStrategy(styleType, highlightLineWidth);
+         }
+      }),
+      SQUARE("square", new SeriesPlotRenderingStrategyFactory() {
+         @Override
+         public SeriesPlotRenderingStrategy create(final StyleDescription.StyleType styleType,
+                                                   final Double highlightLineWidth) {
+            return new SquareRenderingStrategy(styleType, highlightLineWidth);
          }
       }),
       LINE("line", new SeriesPlotRenderingStrategyFactory() {

@@ -1,6 +1,6 @@
 package org.bodytrack.client;
 
-public class LollipopRenderingStrategy extends DotRenderingStrategy {
+public class LollipopRenderingStrategy extends CircleRenderingStrategy {
    public LollipopRenderingStrategy(final StyleDescription.StyleType styleType,
                                     final Double highlightLineWidth) {
       super(styleType, highlightLineWidth);
