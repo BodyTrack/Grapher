@@ -1,5 +1,6 @@
 package org.bodytrack.client;
 
+import com.google.gwt.core.client.JsArray;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PopupPanel;
@@ -23,9 +24,9 @@ import java.util.List;
 public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
 
    /**
-    * The radius to use when drawing a highlighted dot on the grapher.
+    * The default vertical distance between a data point and the comment container.
     */
-   public static final double HIGHLIGHTED_DOT_RADIUS = 4;
+   private static final double DEFAULT_COMMENT_VERTICAL_MARGIN = 4;
 
    /**
     * The preferred width in pixels of a comment popup panel. The comment
@@ -36,7 +37,12 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
 
    private PopupPanel commentPanel;
    private boolean willShowComments = false;
-   private final List<SeriesPlotRenderingStrategy> renderingStrategies = new ArrayList<SeriesPlotRenderingStrategy>();
+   private double commentVerticalMargin = DEFAULT_COMMENT_VERTICAL_MARGIN;
+   private String commentContainerCssClass = null;
+   private String commentCssClass = null;
+   private final List<SeriesPlotRenderingStrategy> plotRenderingStrategies = new ArrayList<SeriesPlotRenderingStrategy>();
+   private final List<PointRenderingStrategy> highlightRenderingStrategies = new ArrayList<PointRenderingStrategy>();
+   private final List<PointRenderingStrategy> commentRenderingStrategies = new ArrayList<PointRenderingStrategy>();
 
    /**
     * Creates a new BaseSeriesPlotRenderer object
@@ -49,19 +55,49 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
 
    public final void setStyleDescription(final StyleDescription styleDescription) {
       willShowComments = false;
-      renderingStrategies.clear();
+      commentVerticalMargin = DEFAULT_COMMENT_VERTICAL_MARGIN;
+      commentContainerCssClass = null;
+      commentCssClass = null;
+      plotRenderingStrategies.clear();
+      highlightRenderingStrategies.clear();
+      commentRenderingStrategies.clear();
 
       if (styleDescription != null) {
          willShowComments = styleDescription.willShowComments();
 
-         final List<SeriesPlotRenderingStrategy> newRenderingStrategies = buildRenderingStrategies(styleDescription);
-         if (newRenderingStrategies != null) {
-            renderingStrategies.addAll(newRenderingStrategies);
+         final StyleDescription.HighlightDescription highlightDescription = styleDescription.getHighlightDescription();
+         final Double highlightLineWidth = (highlightDescription == null) ? null : highlightDescription.getLineWidth();
+
+         final List<SeriesPlotRenderingStrategy> newPlotRenderingStrategies = buildSeriesPlotRenderingStrategies(styleDescription.getStyleTypes(), highlightLineWidth);
+         if (newPlotRenderingStrategies != null) {
+            plotRenderingStrategies.addAll(newPlotRenderingStrategies);
+         }
+
+         if (highlightDescription != null) {
+            final List<PointRenderingStrategy> newHighlightRenderingStrategies = buildPointRenderingStrategies(highlightDescription.getStyleTypes(), highlightLineWidth);
+            if (newHighlightRenderingStrategies != null) {
+               highlightRenderingStrategies.addAll(newHighlightRenderingStrategies);
+            }
+         }
+
+         final StyleDescription.CommentsDescription commentsDescription = styleDescription.getCommentsDescription();
+         if (commentsDescription != null) {
+            commentVerticalMargin = commentsDescription.getVerticalMargin(DEFAULT_COMMENT_VERTICAL_MARGIN);
+            commentContainerCssClass = commentsDescription.getCommentContainerCssClass();
+            commentCssClass = commentsDescription.getCommentCssClass();
+            final List<PointRenderingStrategy> newCommentRenderingStrategies = buildPointRenderingStrategies(commentsDescription.getStyleTypes(), highlightLineWidth);
+            if (newCommentRenderingStrategies != null) {
+               commentRenderingStrategies.addAll(newCommentRenderingStrategies);
+            }
          }
       }
    }
 
-   protected abstract List<SeriesPlotRenderingStrategy> buildRenderingStrategies(final StyleDescription styleDescription);
+   protected abstract List<SeriesPlotRenderingStrategy> buildSeriesPlotRenderingStrategies(final JsArray<StyleDescription.StyleType> styleTypes,
+                                                                                           final Double highlightLineWidth);
+
+   protected abstract List<PointRenderingStrategy> buildPointRenderingStrategies(final JsArray<StyleDescription.StyleType> styleTypes,
+                                                                                 final Double highlightLineWidth);
 
    @Override
    public final void render(final Canvas canvas,
@@ -79,7 +115,7 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
             continue;
          }
 
-         for (final SeriesPlotRenderingStrategy renderingStrategy : renderingStrategies) {
+         for (final SeriesPlotRenderingStrategy renderingStrategy : plotRenderingStrategies) {
             renderingStrategy.beforeRender(canvas, isAnyPointHighlighted);
 
             drawing.beginClippedPath();
@@ -128,16 +164,46 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
 
             renderingStrategy.afterRender(canvas);
          }
+
+         // now render the points having comments
+         for (final PlottablePoint point : dataPoints) {
+            if (point.hasComment()) {
+               for (final PointRenderingStrategy renderingStrategy : commentRenderingStrategies) {
+                  renderingStrategy.beforeRender(canvas, isAnyPointHighlighted);
+                  drawing.beginClippedPath();
+                  renderingStrategy.paintPoint(drawing,
+                                               xAxis,
+                                               yAxis,
+                                               xAxis.project2D(point.getDate()).getX(),
+                                               yAxis.project2D(point.getValue()).getY(),
+                                               highlightedPoint);
+                  drawing.strokeClippedPath();
+                  renderingStrategy.afterRender(canvas);
+               }
+            }
+         }
       }
 
       hideComment();
+
+      // if there's a highlighted point, then we should render it as such and, if it has a comment, also
+      // render the comment
       if (isAnyPointHighlighted) {
-         drawing.beginClippedPath();
-         paintHighlightedPoint(drawing,
-                               xAxis.project2D(highlightedPoint.getDate()).getX(),
-                               yAxis.project2D(highlightedPoint.getValue()).getY(),
-                               highlightedPoint);
-         drawing.strokeClippedPath();
+         // render highlight
+         for (final PointRenderingStrategy renderingStrategy : highlightRenderingStrategies) {
+            renderingStrategy.beforeRender(canvas, isAnyPointHighlighted);
+            drawing.beginClippedPath();
+            renderingStrategy.paintPoint(drawing,
+                                         xAxis,
+                                         yAxis,
+                                         xAxis.project2D(highlightedPoint.getDate()).getX(),
+                                         yAxis.project2D(highlightedPoint.getValue()).getY(),
+                                         highlightedPoint);
+            drawing.strokeClippedPath();
+            renderingStrategy.afterRender(canvas);
+         }
+
+         // finally, render the comment
          if (highlightedPoint.hasComment()) {
             paintComment(drawing, highlightedPoint,
                          xAxis.project2D(highlightedPoint.getDate()).getX(),
@@ -148,37 +214,6 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
 
    protected List<PlottablePoint> getDataPoints(final GrapherTile tile) {
       return tile.getDataPoints();
-   }
-
-   /**
-    * Draws a single point on the graph, in highlighted style.
-    *
-    * <p>This is called by {@link #paint()} after all data points have been
-    * painted, and the parameter is the data point closest to the mouse.
-    * Note that this means that, by the time this method is called, point
-    * has already been drawn.</p>
-    *
-    * <p>This draws a larger dot at point, although of course a subclass
-    * implementation does not have to follow that lead.</p>
-    *
-    * @param drawing
-    * 	The {@link BoundedDrawingBox BoundedDrawingBox} that should constrain
-    * 	the drawing.  Forwarding graphics calls through drawing will ensure
-    * 	that everything draws up to the edge of the viewing window but no
-    * 	farther
-    * @param x
-    * 	The X-position of the point to draw, in screen pixels
-    * @param y
-    * 	The Y-position of the point to draw, in screen pixels
-    * @param rawDataPoint
-    * 	The raw {@link PlottablePoint}
-    */
-   private void paintHighlightedPoint(final BoundedDrawingBox drawing,
-                                      final double x,
-                                      final double y,
-                                      final PlottablePoint rawDataPoint) {
-      // TODO:
-      Log.debug("BaseSeriesPlotRenderer.paintHighlightedPoint(): NOT YET IMPLEMENTED!");
    }
 
    private void paintComment(final BoundedDrawingBox drawing,
@@ -192,7 +227,14 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
          // create the panel, but display it offscreen so we can measure
          // its preferred width
          commentPanel = new PopupPanel();
-         commentPanel.add(new Label(highlightedPoint.getComment()));
+         final Label label = new Label(highlightedPoint.getComment());
+         if (commentCssClass != null) {
+            label.setStylePrimaryName(commentCssClass);
+         }
+         if (commentContainerCssClass != null) {
+            commentPanel.setStylePrimaryName(commentContainerCssClass);
+         }
+         commentPanel.add(label);
          commentPanel.setPopupPosition(-10000, -10000);
          commentPanel.show();
          final int preferredCommentPanelWidth = commentPanel.getOffsetWidth();
@@ -208,7 +250,9 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
 
          // set the panel to the corrected width
          final int actualPanelWidth;
-         if (desiredPanelWidth != preferredCommentPanelWidth) {
+         if (desiredPanelWidth == preferredCommentPanelWidth) {
+            actualPanelWidth = preferredCommentPanelWidth;
+         } else {
             commentPanel.setWidth(String.valueOf(desiredPanelWidth) + "px");
             commentPanel.show();
 
@@ -224,8 +268,6 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
             commentPanel.show();
 
             actualPanelWidth = commentPanel.getOffsetWidth();
-         } else {
-            actualPanelWidth = preferredCommentPanelWidth;
          }
 
          // now, if the actual panel width is less than the comment panel's
@@ -257,11 +299,11 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
 
          final int actualPanelTop;
          final int desiredPanelTop =
-               (int)(iy - actualPanelHeight - HIGHLIGHTED_DOT_RADIUS);
+               (int)(iy - actualPanelHeight - commentVerticalMargin);
          if (desiredPanelTop < drawing.getTopLeft().getIntY()) {
             // place the panel below the point since there's not
             // enough room to place it above
-            actualPanelTop = (int)(iy + HIGHLIGHTED_DOT_RADIUS);
+            actualPanelTop = (int)(iy + commentVerticalMargin);
          } else {
             actualPanelTop = desiredPanelTop;
          }

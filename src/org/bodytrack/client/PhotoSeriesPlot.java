@@ -3,6 +3,8 @@ package org.bodytrack.client;
 import gwt.g2d.client.graphics.KnownColor;
 import gwt.g2d.client.graphics.TextAlign;
 import gwt.g2d.client.graphics.TextBaseline;
+import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.JsArray;
 import gwt.g2d.client.math.Vector2;
 
 import java.util.ArrayList;
@@ -11,7 +13,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.google.gwt.core.client.JavaScriptObject;
+import org.bodytrack.client.StyleDescription.StyleType;
 
 /**
  * A class to show photos on a {@link PlotContainer}
@@ -472,13 +474,21 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 		}
 
 		@Override
-		protected List<SeriesPlotRenderingStrategy> buildRenderingStrategies(
-				final StyleDescription styleDescription) {
+		protected List<SeriesPlotRenderingStrategy> buildSeriesPlotRenderingStrategies(
+				JsArray<StyleType> styleTypes, Double highlightLineWidth) {
 			// TODO: honor the style...
 			final List<SeriesPlotRenderingStrategy> renderingStrategies =
 				new ArrayList<SeriesPlotRenderingStrategy>();
 			renderingStrategies.add(new PhotoRenderingStrategy());
 			return renderingStrategies;
+		}
+
+		@Override
+		protected List<PointRenderingStrategy> buildPointRenderingStrategies(
+				final JsArray<StyleDescription.StyleType> styleTypes,
+				final Double highlightLineWidth) {
+			// TODO: honor the style...
+			return null;
 		}
 
 		@Override

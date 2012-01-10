@@ -1,10 +1,14 @@
 package org.bodytrack.client;
 
-public class LineRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy {
+public class CircleRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy implements PointRenderingStrategy {
+   private static final int DEFAULT_RADIUS = 3;
 
-   public LineRenderingStrategy(final StyleDescription.StyleType styleType,
-                                final Double highlightLineWidth) {
+   private final double radius;
+
+   public CircleRenderingStrategy(final StyleDescription.StyleType styleType,
+                                  final Double highlightLineWidth) {
       super(styleType, highlightLineWidth);
+      radius = styleType.getDoubleValue("radius", DEFAULT_RADIUS);
    }
 
    @Override
@@ -16,7 +20,7 @@ public class LineRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy {
                                     final double x,
                                     final double y,
                                     final PlottablePoint rawDataPoint) {
-      drawing.drawDot(x, y, DOT_RADIUS);
+      paintPoint(drawing, xAxis, yAxis, x, y, rawDataPoint);
    }
 
    @Override
@@ -30,6 +34,25 @@ public class LineRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy {
                                     final double x,
                                     final double y,
                                     final PlottablePoint rawDataPoint) {
-      drawing.drawLineSegment(prevX, prevY, x, y);
+      paintPoint(drawing, xAxis, yAxis, x, y, rawDataPoint);
+   }
+
+   @Override
+   public void paintPoint(final BoundedDrawingBox drawing,
+                          final GraphAxis xAxis,
+                          final GraphAxis yAxis,
+                          final double x,
+                          final double y,
+                          final PlottablePoint rawDataPoint) {
+      if (willFill()) {
+         drawing.drawFilledDot(x, y, radius);
+      } else {
+         drawing.drawDot(x, y, radius);
+      }
+   }
+
+   /** Returns the radius of the dot. */
+   protected final double getRadius() {
+      return radius;
    }
 }

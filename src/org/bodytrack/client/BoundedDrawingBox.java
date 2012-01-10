@@ -1,6 +1,7 @@
 package org.bodytrack.client;
 
 import gwt.g2d.client.graphics.Color;
+import gwt.g2d.client.graphics.Surface;
 import gwt.g2d.client.graphics.canvas.Context;
 import gwt.g2d.client.math.Vector2;
 
@@ -28,6 +29,8 @@ public final class BoundedDrawingBox {
 	private final double yMin;
 	private final double xMax;
 	private final double yMax;
+
+	private static final double TWO_PI = 2 * Math.PI;
 
 	// General tolerance for double equality
 	private static final double TOLERANCE = 1e-6;
@@ -131,24 +134,106 @@ public final class BoundedDrawingBox {
 	 * 	The radius of the circle
 	 */
 	public void drawDot(double x, double y, double radius) {
-		if (contains(x, y))
-			getCanvas().getRenderer().drawCircle(x, y, radius);
+		if (contains(x, y)) {
+			final Context ctx = drawCircleNoStrokeOrFill(x, y, radius);
+			ctx.stroke();
+		}
 	}
+
 
 	public void drawFilledDot(final double x,
 			final double y,
 			final double radius) {
-		if (contains(x, y))
-			fillCircle(x, y, radius);
+		if (contains(x, y)) {
+			final Context ctx = drawCircleNoStrokeOrFill(x, y, radius);
+			ctx.fill();
+		}
+	}
+
+	/**
+	 * Gets the {@link Surface}'s {@link Context} and then draws a circle on it,
+	 * but does not stroke or fill the circle
+	 *
+	 * <p>Does not bounds check the drawing action.</p>
+	 */
+	private Context drawCircleNoStrokeOrFill(final double x,
+			final double y,
+			final double radius) {
+		final Context ctx = canvas.getSurface().getContext();
+		ctx.moveTo(x + radius, y);
+		ctx.arc(x, y, radius, 0, TWO_PI, false);
+		return ctx;
 	}
 
 	public void fillCircle(final double x, final double y, final double radius) {
 		canvas.getRenderer().drawCircle(x, y, radius);
 
-		// TODO: This (and by extension drawFilledDot) is one of the only
-		// BoundedDrawingBox methods that actually strokes or fills its target.
+		// TODO: This and other BoundedDrawingBox methods should not stroke
+		// or fill directly
 		// Need to move the fill() call to the rendering strategy
 		canvas.fill();
+	}
+
+	/**
+	 * Draws a square with the specified values and radius,
+	 * if and only if the center is in bounds
+	 *
+	 * <p>This method checks whether the square's center is in
+	 * bounds, not whether the whole square is in bounds.</p>
+	 *
+	 * @param x
+	 * 	The X-value at the center of the square
+	 * @param y
+	 * 	The Y-value at the center of the square
+	 * @param sideLength
+	 * 	The length of each side of the square
+	 */
+	public void drawSmallSquare(final double x,
+			final double y,
+			final double sideLength) {
+		if (contains(x, y)) {
+			final Context ctx = drawSquareNoStrokeOrFill(x, y, sideLength);
+			ctx.stroke();
+		}
+	}
+
+	/**
+	 * Draws a filled square with the specified values and radius,
+	 * if and only if the center of the square is in bounds.
+	 *
+	 * <p>This method checks whether the square's center is in
+	 * bounds, not whether the whole square is in bounds.</p>
+	 *
+	 * @param x
+	 * 	The X-value at the center of the square
+	 * @param y
+	 * 	The Y-value at the center of the square
+	 * @param sideLength
+	 * 	The side length of the square
+	 */
+	public void drawFilledSmallSquare(final double x,
+			final double y,
+			final double sideLength) {
+		if (contains(x, y)) {
+			final Context ctx = drawSquareNoStrokeOrFill(x, y, sideLength);
+			ctx.fill();
+		}
+	}
+
+	/**
+	 * Gets the {@link Surface}'s {@link Context} and then draws a square on it,
+	 * but does not stroke or fill the square.  No bounds checking is done, either.
+	 */
+	private Context drawSquareNoStrokeOrFill(final double x,
+			final double y,
+			final double sideLength) {
+		final Context ctx = canvas.getSurface().getContext();
+		ctx.moveTo(x - sideLength, y - sideLength);
+		ctx.rect(x - sideLength / 2.0,
+				y - sideLength / 2.0,
+				sideLength,
+				sideLength);
+		return ctx;
 	}
 
 	public void fillText(final String text, final double x, final double y) {
@@ -431,7 +516,6 @@ public final class BoundedDrawingBox {
 		// Downward-sloping line, goes off left or top side
 		return contains(leftIntercept) ? leftIntercept : topIntercept;
 	}
-
 
 	/**
 	 * Draws whichever line segment is necessary, given that points

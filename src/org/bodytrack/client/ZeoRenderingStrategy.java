@@ -80,8 +80,8 @@ public class ZeoRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy {
    private static final double HIGHLIGHTED_ALPHA = 1.0;
 
    public ZeoRenderingStrategy(final StyleDescription.StyleType styleType,
-                               final boolean willShowComments) {
-      super(styleType, willShowComments);
+                               final Double highlightLineWidth) {
+      super(styleType, highlightLineWidth);
    }
 
    @Override
@@ -158,18 +158,12 @@ public class ZeoRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy {
 
       if (isNoDataState) {
          // Draw a line
-         final double oldLineWidth = canvas.getLineWidth();
-         canvas.setLineWidth(isAnyPointHighlighted
-                             ? SeriesPlotRenderingStrategy.HIGHLIGHT_STROKE_WIDTH
-                             : SeriesPlotRenderingStrategy.NORMAL_STROKE_WIDTH);
-
          canvas.beginPath()
             .moveTo(leftX, bottomY)
             .drawLineTo(rightX, bottomY)
             .closePath();
 
          canvas.stroke();
-         canvas.setLineWidth(oldLineWidth);
       } else {
          // Fill rectangle, without outline. Round to nearest pixels and
          // offset by half a pixel, so that we're always completely
@@ -189,11 +183,6 @@ public class ZeoRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy {
          canvas.setGlobalAlpha(Canvas.DEFAULT_ALPHA);
          canvas.setFillStyle(Canvas.DEFAULT_COLOR);
 
-         final double oldLineWidth = canvas.getLineWidth();
-         canvas.setLineWidth(isAnyPointHighlighted
-                             ? SeriesPlotRenderingStrategy.HIGHLIGHT_STROKE_WIDTH
-                             : SeriesPlotRenderingStrategy.NORMAL_STROKE_WIDTH);
-
          // Stroke the outside of the rectangle
          // Round to nearest pixels so we draw the line in such a way that
          // it completely fills pixels.  Otherwise a 1-pixel line turns into
@@ -202,7 +191,6 @@ public class ZeoRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy {
                                 Math.round(topY),
                                 Math.round(rightX) - Math.round(leftX),
                                 Math.round(bottomY) - Math.round(topY));
-         canvas.setLineWidth(oldLineWidth);
       }
    }
 }
