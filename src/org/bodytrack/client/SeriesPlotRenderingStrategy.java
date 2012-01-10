@@ -1,40 +1,18 @@
 package org.bodytrack.client;
 
-import gwt.g2d.client.graphics.Color;
-
 /**
  * @author Chris Bartley (bartley@cmu.edu)
  */
-public interface SeriesPlotRenderingStrategy {
-
-   /** The width at which a normal line is drawn. */
-   int NORMAL_STROKE_WIDTH = 1;
+public interface SeriesPlotRenderingStrategy extends RenderingStrategy {
 
    /** The width at which a highlighted line is drawn. */
-   int HIGHLIGHT_STROKE_WIDTH = 3;
+   int HIGHLIGHT_STROKE_WIDTH = 3;     // TODO: move this elsewhere once highlight styles are supported
+
+   /** The radius to use when drawing a highlighted dot on the grapher. */
+   double HIGHLIGHTED_DOT_RADIUS = 4;  // TODO: move this elsewhere once highlight styles are supported
 
    /** The radius to use when drawing a dot on the grapher. */
    double DOT_RADIUS = 0.5;
-
-   /** The radius to use when drawing a highlighted dot on the grapher. */
-   double HIGHLIGHTED_DOT_RADIUS = 4;
-
-   /** Default {@link Color} for lines and strokes. */
-   Color DEFAULT_STROKE_COLOR = Canvas.BLACK;
-
-   /** Default {@link Color} for filled areas. */
-   Color DEFAULT_FILL_COLOR = Canvas.BLACK;
-
-   /**
-    * Called by {@link SeriesPlotRenderer#render(Canvas, BoundedDrawingBox, Iterable, GraphAxis, GraphAxis, PlottablePoint)}
-    * immediately before rendering of a style begins, to allow implementations to prepare for rendering.
-    *
-    * @param canvas
-    *    The canvas upon which rendering will take place.
-    * @param isAnyPointHighlighted
-    *    whether any point is currently highlighted
-    */
-   void beforeRender(Canvas canvas, boolean isAnyPointHighlighted);
 
    /**
     * Paints a left edge point for a segment of the plot
@@ -112,13 +90,4 @@ public interface SeriesPlotRenderingStrategy {
                        double x,
                        double y,
                        PlottablePoint rawDataPoint);
-
-   /**
-    * Called by {@link SeriesPlotRenderer#render(Canvas, BoundedDrawingBox, Iterable, GraphAxis, GraphAxis, PlottablePoint)}
-    * immediately after rendering of a style begins, to allow implementations to clean up after rendering.
-    *
-    * @param canvas
-    *    The canvas upon which rendering will take place.
-    */
-   void afterRender(Canvas canvas);
 }

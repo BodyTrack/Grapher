@@ -241,7 +241,7 @@ public final class NativeInterface {
 
          // create a default style until we support photo styles specified by the page
          var style = {
-            "style-types":[
+            "styles":[
                {"type":"photo"}
             ],
             "comments":{"show":true}

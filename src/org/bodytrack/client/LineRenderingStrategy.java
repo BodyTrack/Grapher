@@ -2,9 +2,8 @@ package org.bodytrack.client;
 
 public class LineRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy {
 
-   public LineRenderingStrategy(final StyleDescription.StyleType styleType,
-                                final boolean willShowComments) {
-      super(styleType, willShowComments);
+   public LineRenderingStrategy(final StyleDescription.StyleType styleType) {
+      super(styleType);
    }
 
    @Override
@@ -17,8 +16,6 @@ public class LineRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy {
                                     final double y,
                                     final PlottablePoint rawDataPoint) {
       drawing.drawCircle(x, y, DOT_RADIUS);
-
-      drawCommentDot(drawing, x, y, rawDataPoint);
    }
 
    @Override
@@ -33,16 +30,5 @@ public class LineRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy {
                                     final double y,
                                     final PlottablePoint rawDataPoint) {
       drawing.drawLineSegment(prevX, prevY, x, y);
-
-      drawCommentDot(drawing, x, y, rawDataPoint);
-   }
-
-   private void drawCommentDot(final BoundedDrawingBox drawing,
-                               final double x,
-                               final double y,
-                               final PlottablePoint rawDataPoint) {
-      if (willShowComments() && rawDataPoint.hasComment()) {
-         drawing.drawFilledCircle(x, y, HIGHLIGHTED_DOT_RADIUS);
-      }
    }
 }

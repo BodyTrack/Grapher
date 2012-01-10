@@ -1,6 +1,7 @@
 package org.bodytrack.client;
 
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.JsArray;
 import gwt.g2d.client.math.Vector2;
 
 import java.util.ArrayList;
@@ -664,11 +665,17 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
       }
 
       @Override
-      protected List<SeriesPlotRenderingStrategy> buildRenderingStrategies(final StyleDescription styleDescription) {
+      protected List<SeriesPlotRenderingStrategy> buildSeriesPlotRenderingStrategies(final JsArray<StyleDescription.StyleType> styleTypes) {
          // TODO: honor the style...
          final List<SeriesPlotRenderingStrategy> renderingStrategies = new ArrayList<SeriesPlotRenderingStrategy>();
          renderingStrategies.add(new PhotoRenderingStrategy());
          return renderingStrategies;
+      }
+
+      @Override
+      protected List<PointRenderingStrategy> buildPointRenderingStrategies(final JsArray<StyleDescription.StyleType> styleTypes) {
+         // TODO: honor the style...
+         return null;
       }
 
       @Override

@@ -1,5 +1,6 @@
 package org.bodytrack.client;
 
+import com.google.gwt.core.client.JsArray;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PopupPanel;
@@ -36,7 +37,9 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
 
    private PopupPanel commentPanel;
    private boolean willShowComments = false;
-   private final List<SeriesPlotRenderingStrategy> renderingStrategies = new ArrayList<SeriesPlotRenderingStrategy>();
+   private final List<SeriesPlotRenderingStrategy> plotRenderingStrategies = new ArrayList<SeriesPlotRenderingStrategy>();
+   private final List<PointRenderingStrategy> highlightRenderingStrategies = new ArrayList<PointRenderingStrategy>();
+   private final List<PointRenderingStrategy> commentRenderingStrategies = new ArrayList<PointRenderingStrategy>();
 
    /**
     * Creates a new BaseSeriesPlotRenderer object
@@ -49,19 +52,39 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
 
    public final void setStyleDescription(final StyleDescription styleDescription) {
       willShowComments = false;
-      renderingStrategies.clear();
+      plotRenderingStrategies.clear();
+      highlightRenderingStrategies.clear();
+      commentRenderingStrategies.clear();
 
       if (styleDescription != null) {
          willShowComments = styleDescription.willShowComments();
 
-         final List<SeriesPlotRenderingStrategy> newRenderingStrategies = buildRenderingStrategies(styleDescription);
-         if (newRenderingStrategies != null) {
-            renderingStrategies.addAll(newRenderingStrategies);
+         final List<SeriesPlotRenderingStrategy> newPlotRenderingStrategies = buildSeriesPlotRenderingStrategies(styleDescription.getStyleTypes());
+         if (newPlotRenderingStrategies != null) {
+            plotRenderingStrategies.addAll(newPlotRenderingStrategies);
+         }
+
+         final StyleDescription.HighlightDescription highlightDescription = styleDescription.getHighlightDescription();
+         if (highlightDescription != null) {
+            final List<PointRenderingStrategy> newHighlightRenderingStrategies = buildPointRenderingStrategies(highlightDescription.getStyleTypes());
+            if (newHighlightRenderingStrategies != null) {
+               highlightRenderingStrategies.addAll(newHighlightRenderingStrategies);
+            }
+         }
+
+         final StyleDescription.CommentsDescription commentsDescription = styleDescription.getCommentsDescription();
+         if (commentsDescription != null) {
+            final List<PointRenderingStrategy> newCommentRenderingStrategies = buildPointRenderingStrategies(commentsDescription.getStyleTypes());
+            if (newCommentRenderingStrategies != null) {
+               commentRenderingStrategies.addAll(newCommentRenderingStrategies);
+            }
          }
       }
    }
 
-   protected abstract List<SeriesPlotRenderingStrategy> buildRenderingStrategies(final StyleDescription styleDescription);
+   protected abstract List<SeriesPlotRenderingStrategy> buildSeriesPlotRenderingStrategies(final JsArray<StyleDescription.StyleType> styleTypes);
+
+   protected abstract List<PointRenderingStrategy> buildPointRenderingStrategies(final JsArray<StyleDescription.StyleType> styleTypes);
 
    @Override
    public final void render(final Canvas canvas,
@@ -79,7 +102,7 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
             continue;
          }
 
-         for (final SeriesPlotRenderingStrategy renderingStrategy : renderingStrategies) {
+         for (final SeriesPlotRenderingStrategy renderingStrategy : plotRenderingStrategies) {
             renderingStrategy.beforeRender(canvas, isAnyPointHighlighted);
 
             drawing.beginClippedPath();
@@ -130,12 +153,18 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
 
       hideComment();
       if (isAnyPointHighlighted) {
-         drawing.beginClippedPath();
-         paintHighlightedPoint(drawing,
-                               xAxis.project2D(highlightedPoint.getDate()).getX(),
-                               yAxis.project2D(highlightedPoint.getValue()).getY(),
-                               highlightedPoint);
-         drawing.strokeClippedPath();
+         for (final PointRenderingStrategy renderingStrategy : highlightRenderingStrategies) {
+            renderingStrategy.beforeRender(canvas, isAnyPointHighlighted);
+            drawing.beginClippedPath();
+            renderingStrategy.paintPoint(drawing,
+                                         xAxis,
+                                         yAxis,
+                                         xAxis.project2D(highlightedPoint.getDate()).getX(),
+                                         yAxis.project2D(highlightedPoint.getValue()).getY(),
+                                         highlightedPoint);
+            drawing.strokeClippedPath();
+            renderingStrategy.afterRender(canvas);
+         }
          if (highlightedPoint.hasComment()) {
             paintComment(drawing, highlightedPoint,
                          xAxis.project2D(highlightedPoint.getDate()).getX(),
@@ -146,37 +175,6 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
 
    protected List<PlottablePoint> getDataPoints(final GrapherTile tile) {
       return tile.getDataPoints();
-   }
-
-   /**
-    * Draws a single point on the graph, in highlighted style.
-    *
-    * <p>This is called by {@link #paint()} after all data points have been
-    * painted, and the parameter is the data point closest to the mouse.
-    * Note that this means that, by the time this method is called, point
-    * has already been drawn.</p>
-    *
-    * <p>This draws a larger dot at point, although of course a subclass
-    * implementation does not have to follow that lead.</p>
-    *
-    * @param drawing
-    * 	The {@link BoundedDrawingBox BoundedDrawingBox} that should constrain
-    * 	the drawing.  Forwarding graphics calls through drawing will ensure
-    * 	that everything draws up to the edge of the viewing window but no
-    * 	farther
-    * @param x
-    * 	The X-position of the point to draw, in screen pixels
-    * @param y
-    * 	The Y-position of the point to draw, in screen pixels
-    * @param rawDataPoint
-    * 	The raw {@link PlottablePoint}
-    */
-   private void paintHighlightedPoint(final BoundedDrawingBox drawing,
-                                      final double x,
-                                      final double y,
-                                      final PlottablePoint rawDataPoint) {
-      // TODO:
-      Log.debug("BaseSeriesPlotRenderer.paintHighlightedPoint(): NOT YET IMPLEMENTED!");
    }
 
    private void paintComment(final BoundedDrawingBox drawing,

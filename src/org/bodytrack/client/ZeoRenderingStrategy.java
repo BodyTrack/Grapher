@@ -81,9 +81,8 @@ public class ZeoRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy {
    //private static final double HIGHLIGHTED_ALPHA = 0.5;
    private static final double HIGHLIGHTED_ALPHA = 1.0;
 
-   public ZeoRenderingStrategy(final StyleDescription.StyleType styleType,
-                               final boolean willShowComments) {
-      super(styleType, willShowComments);
+   public ZeoRenderingStrategy(final StyleDescription.StyleType styleType) {
+      super(styleType);
    }
 
    @Override
@@ -166,7 +165,7 @@ public class ZeoRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy {
          final double oldLineWidth = surface.getLineWidth();
          surface.setLineWidth(isAnyPointHighlighted
                               ? SeriesPlotRenderingStrategy.HIGHLIGHT_STROKE_WIDTH
-                              : SeriesPlotRenderingStrategy.NORMAL_STROKE_WIDTH);
+                              : RenderingStrategy.DEFAULT_STROKE_WIDTH);
 
          renderer.beginPath();
          renderer.moveTo(leftX, bottomY);
@@ -197,7 +196,7 @@ public class ZeoRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy {
          final double oldLineWidth = surface.getLineWidth();
          surface.setLineWidth(isAnyPointHighlighted
                               ? SeriesPlotRenderingStrategy.HIGHLIGHT_STROKE_WIDTH
-                              : SeriesPlotRenderingStrategy.NORMAL_STROKE_WIDTH);
+                              : RenderingStrategy.DEFAULT_STROKE_WIDTH);
 
          // Stroke the outside of the rectangle
          // Round to nearest pixels so we draw the line in such a way that

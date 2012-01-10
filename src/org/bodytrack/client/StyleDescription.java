@@ -10,15 +10,19 @@ public final class StyleDescription extends JavaScriptObject {
    }
 
    public native JsArray<StyleType> getStyleTypes() /*-{
-      return this['style-types'];
+      return this['styles'];
    }-*/;
 
-   public native CommentsDescription getComments() /*-{
+   public native CommentsDescription getCommentsDescription() /*-{
       return this['comments'];
    }-*/;
 
+   public native HighlightDescription getHighlightDescription() /*-{
+      return this['highlight'];
+   }-*/;
+
    public boolean willShowComments() {
-      final CommentsDescription commentsDescription = getComments();
+      final CommentsDescription commentsDescription = getCommentsDescription();
       return commentsDescription != null && commentsDescription.willShow();
    }
 
@@ -124,6 +128,36 @@ public final class StyleDescription extends JavaScriptObject {
       public native boolean willShow() /*-{
          // default to true if undefined
          return (typeof this['show'] === 'undefined') || !!(this['show']);
+      }-*/;
+
+      public native JsArray<StyleType> getStyleTypes() /*-{
+         return this['styles'];
+      }-*/;
+   }
+
+   public static final class HighlightDescription extends JavaScriptObject {
+      // JavaScript overlay types always have protected, no-arg constructors
+      protected HighlightDescription() {
+      }
+
+      /**
+       * Returns the value of the <code>lineWidth</code> field, if such
+       * a field exists, otherwise returns the given <code>defaultLineWidth</code>.
+       */
+      public double getLineWidth(final double defaultLineWidth) {
+         return getDoubleValue("lineWidth", defaultLineWidth);
+      }
+
+      public native double getDoubleValue(final String fieldName, final double defaultValue) /*-{
+         return (typeof this[fieldName] === 'undefined') ? defaultValue : this[fieldName];
+      }-*/;
+
+      public native boolean isLineWidthDefined() /*-{
+         return (typeof this["lineWidth"] !== 'undefined');
+      }-*/;
+
+      public native JsArray<StyleType> getStyleTypes() /*-{
+         return this['styles'];
       }-*/;
    }
 }

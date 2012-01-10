@@ -1,13 +1,12 @@
 package org.bodytrack.client;
 
-public class DotRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy {
+public class DotRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy implements PointRenderingStrategy {
    private static final int DEFAULT_DOT_RADIUS = 3;
 
    private final double radius;
 
-   public DotRenderingStrategy(final StyleDescription.StyleType styleType,
-                               final boolean willShowComments) {
-      super(styleType, willShowComments);
+   public DotRenderingStrategy(final StyleDescription.StyleType styleType) {
+      super(styleType);
       radius = styleType.getDoubleValue("radius", DEFAULT_DOT_RADIUS);
    }
 
@@ -20,7 +19,7 @@ public class DotRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy {
                                     final double x,
                                     final double y,
                                     final PlottablePoint rawDataPoint) {
-      paintDot(drawing, xAxis, yAxis, isAnyPointHighlighted, x, y, rawDataPoint);
+      paintPoint(drawing, xAxis, yAxis, x, y, rawDataPoint);
    }
 
    @Override
@@ -34,33 +33,25 @@ public class DotRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy {
                                     final double x,
                                     final double y,
                                     final PlottablePoint rawDataPoint) {
-      paintDot(drawing, xAxis, yAxis, isAnyPointHighlighted, x, y, rawDataPoint);
+      paintPoint(drawing, xAxis, yAxis, x, y, rawDataPoint);
    }
 
-   protected void paintDot(final BoundedDrawingBox drawing,
-                           final GraphAxis xAxis,
-                           final GraphAxis yAxis,
-                           final boolean isAnyPointHighlighted,
-                           final double x,
-                           final double y,
-                           final PlottablePoint rawDataPoint) {
-      final double desiredRadius = getDesiredDotRadius(rawDataPoint);
+   @Override
+   public void paintPoint(final BoundedDrawingBox drawing,
+                          final GraphAxis xAxis,
+                          final GraphAxis yAxis,
+                          final double x,
+                          final double y,
+                          final PlottablePoint rawDataPoint) {
       if (willFill()) {
-         drawing.drawFilledCircle(x, y, desiredRadius);
+         drawing.drawFilledCircle(x, y, radius);
       } else {
-         drawing.drawCircle(x, y, desiredRadius);
+         drawing.drawCircle(x, y, radius);
       }
    }
 
-   /**
-    * Returns the appropriate size for the radius of the dot, depending on whether the point is highlighted, has a
-    * comment, etc.
-    */
-   protected final double getDesiredDotRadius(final PlottablePoint rawDataPoint) {
-      final boolean willPaintLargerDot = (willShowComments() &&
-                                          rawDataPoint != null &&
-                                          rawDataPoint.hasComment());
-
-      return willPaintLargerDot ? HIGHLIGHTED_DOT_RADIUS : radius;
+   /** Returns the radius of the dot. */
+   protected final double getRadius() {
+      return radius;
    }
 }
