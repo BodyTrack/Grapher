@@ -141,7 +141,7 @@ public final class StyleDescription extends JavaScriptObject {
        * Returns the CSS class name applied to comment elements.  If not defined, returns <code>null</code>.
        */
       public String getCommentCssClass() {
-         return getStringValue("commentContainerCssClass");
+         return getStringValue("commentCssClass");
       }
 
       /**
