@@ -168,7 +168,7 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 		drawing.strokeClippedPath();
 		drawing.beginClippedPath();
 
-		final double height = getPhotoHeight();
+		final double height = getPhotoHeight(photo);
 
 		// Center the red circle on the top right corner of the photo
 		final double circleX = getPhotoX(photo) + getPhotoWidth(photo, height) / 2.0;
@@ -190,7 +190,7 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 	 * double, double, PhotoGetter)} to show the photo on the page.</p>
 	 *
 	 * @param drawing
-	 * 	The <tt>BoundedDrawingBox</tt> we use to draw only in bounds
+	 * 	The {@link BoundedDrawingBox} we use to draw only in bounds
 	 * @param x
 	 * 	The X-value (in pixels) at which the center of the image should
 	 * 	be drawn
@@ -204,7 +204,7 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 			final double x,
 			final double y,
 			final PhotoGetter photo) {
-		final double height = getHeight(photo);
+		final double height = getPhotoHeight(photo);
 		final double width = getPhotoWidth(photo, height);
 
 		final double xMin = x - (width / 2.0);
@@ -241,7 +241,7 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 	 * @return
 	 * 	The height at which photo should be drawn, if at full size
 	 */
-	private double getHeight(final PhotoGetter photo) {
+	private double getPhotoHeight(final PhotoGetter photo) {
 		double height = getPhotoHeight();
 
 		return highlightedImages.contains(photo)
