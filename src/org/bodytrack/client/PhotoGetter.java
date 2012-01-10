@@ -34,6 +34,7 @@ import com.google.gwt.user.client.Element;
 
 public final class PhotoGetter extends JavaScriptObject implements Comparable<PhotoGetter> {
 	private static final int DUMMY_IMAGE_ID = -1;
+	private static final int DEFAULT_COUNT = 1;
 	private static final Comparator<Double> DATE_COMPARATOR = new DateComparator();
 
 	/* Overlay types always have protected zero-arg constructors. */
@@ -41,19 +42,16 @@ public final class PhotoGetter extends JavaScriptObject implements Comparable<Ph
 
 	public static PhotoGetter buildDummyPhotoGetter(final int userId,
 			final PhotoDescription desc) {
-		return buildPhotoGetter(userId, DUMMY_IMAGE_ID, desc.getBeginDate(), null);
+		return buildPhotoGetter(userId, DUMMY_IMAGE_ID,
+				desc.getBeginDate(), DEFAULT_COUNT, null, false);
 	}
 
 	public static PhotoGetter buildPhotoGetter(final int userId,
 			final PhotoDescription desc,
-			final PhotoAlertable callback) {
+			final PhotoAlertable callback,
+			final boolean download) {
 		return buildPhotoGetter(userId, desc.getId(), desc.getBeginDate(),
-				callback);
-	}
-
-	public static PhotoGetter buildPhotoGetter(int userId,
-			int imageId, double time, PhotoAlertable callback) {
-		return buildPhotoGetter(userId, imageId, time, 1, callback);
+				DEFAULT_COUNT, callback, download);
 	}
 
 	/**
@@ -63,8 +61,8 @@ public final class PhotoGetter extends JavaScriptObject implements Comparable<Ph
 	 * 	The ID of the user who owns the specified image
 	 * @param imageId
 	 * 	The ID of the specified image.  If this is negative, the PhotoGetter
-	 * 	is created normally except that no image is actually loaded from
-	 * 	the server, meaning that callback is never called
+	 * 	is created normally except that no image will ever actually be loaded
+	 * 	from the server, meaning that callback is never called
 	 * @param time
 	 * 	The time at which this image should appear
 	 * @param count
@@ -73,15 +71,24 @@ public final class PhotoGetter extends JavaScriptObject implements Comparable<Ph
 	 * @param callback
 	 * 	The object that will get a callback whenever the photo loads
 	 * 	or an error occurs.  If this is <code>null</code>, no exception
-	 * 	will occur, and callback will simply be ignored.
+	 * 	will occur, and callback will simply be ignored
+	 * @param download
+	 * 	A boolean that is <code>true</code> if and only if the image should
+	 * 	be downloaded immediately.  If this is <code>false</code>, the image
+	 * 	can still be downloaded later by calling {@link #download()}
 	 * @return
-	 * 	A new PhotoGetter that will get the specified image
+	 * 	A new {@link PhotoGetter} that will download the specified image
+	 * 	iff imageId is nonnegative and download is <code>true</code>
 	 */
 	// TODO: Don't really want to pass in a PhotoAlertable, but I don't
 	// know how JSNI could handle it otherwise, because it wouldn't compile
 	// when I tried to use Alertable in JSNI
-	public native static PhotoGetter buildPhotoGetter(int userId,
-			int imageId, double time, int count, PhotoAlertable callback) /*-{
+	public native static PhotoGetter buildPhotoGetter(final int userId,
+			final int imageId,
+			final double time,
+			final int count,
+			final PhotoAlertable callback,
+			final boolean download) /*-{
 		// Declare this constant, and these functions, inside this
 		// function so we don't pollute the global namespace
 
@@ -96,6 +103,7 @@ public final class PhotoGetter extends JavaScriptObject implements Comparable<Ph
 		getter.time = time;
 		getter.count = count;
 		getter.callback = callback;
+		getter.loadStarted = download;
 		getter.imageLoaded = false;
 		getter.loadFailed = false;
 		getter.baseUrl = baseUrl;
@@ -104,6 +112,12 @@ public final class PhotoGetter extends JavaScriptObject implements Comparable<Ph
 		getter.originalImgHeight = -1;
 
 		getter.img = new Image();
+
+		if (imageId < 0) {
+			// No need to create extra closures that will never be called
+			return getter;
+		}
+
 		getter.img.onload = function() {
 			getter.imageLoaded = true;
 			getter.loadFailed = false;
@@ -114,7 +128,7 @@ public final class PhotoGetter extends JavaScriptObject implements Comparable<Ph
 			if (getter.img.height && getter.img.height > 0)
 				getter.originalImgHeight = getter.img.height;
 
-			if (getter.callback)
+			if (!!getter.callback)
 				// In Java-like style:
 				// getter.callback.onSuccess(getter);
 				getter.callback.@org.bodytrack.client.PhotoSeriesPlot.PhotoAlertable::onSuccess(Lorg/bodytrack/client/PhotoGetter;)(getter);
@@ -123,13 +137,13 @@ public final class PhotoGetter extends JavaScriptObject implements Comparable<Ph
 			if (!getter.imageLoaded)
 				getter.loadFailed = true;
 
-			if (getter.callback)
+			if (!!getter.callback)
 				// In Java-like style:
 				// getter.callback.onFailure(getter);
 				getter.callback.@org.bodytrack.client.PhotoSeriesPlot.PhotoAlertable::onFailure(Lorg/bodytrack/client/PhotoGetter;)(getter);
 		}
 
-		if (imageId >= 0) {
+		if (download) {
 			// Actually request that the browser load the image
 			getter.img.src = getter.url;
 		}
@@ -193,6 +207,18 @@ public final class PhotoGetter extends JavaScriptObject implements Comparable<Ph
 	}-*/;
 
 	/**
+	 * Returns <code>true</code> if and only if this {@link PhotoGetter} has
+	 * started loading an image
+	 *
+	 * @return
+	 * 	<code>true</code> if and only if this object has started loading an
+	 * 	image.  Says nothing about whether that load operation has completed
+	 */
+	public native boolean loadStarted() /*-{
+		return this.loadStarted;
+	}-*/;
+
+	/**
 	 * Returns <code>true</code> if the requested image has loaded,
 	 * <code>false</code> otherwise
 	 *
@@ -238,6 +264,25 @@ public final class PhotoGetter extends JavaScriptObject implements Comparable<Ph
 	 */
 	public native double getOriginalHeight() /*-{
 		return this.originalImgHeight;
+	}-*/;
+
+	/**
+	 * Begins downloading the image
+	 *
+	 * @return
+	 * 	<code>true</code> if and only if calling this method actually
+	 * 	started a download.  If this method call came to a {@link PhotoGetter}
+	 * 	that had already begun or finished a download, or had a negative
+	 * 	image ID, returns <code>false</code>
+	 */
+	public native boolean download() /*-{
+		if (this.imageId >= 0 && !this.loadStarted) {
+			this.loadStarted = true;
+			this.img.src = this.url;
+			return true;
+		}
+
+		return false;
 	}-*/;
 
 	/**

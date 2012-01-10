@@ -116,7 +116,6 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 		return result;
 	}
 
-	// TODO: Don't download all the photos
 	private void loadPhotos(final List<PhotoDescription> descs) {
 		for (final PhotoDescription desc: descs) {
 			// This depends on the fact that equality of PlottablePoint
@@ -124,8 +123,12 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 			// of the objects (this is robust to small variations)
 			if (Collections.binarySearch(images,
 					PhotoGetter.buildDummyPhotoGetter(userId, desc)) < 0) {
-				CollectionUtils.insertInOrder(images,
-						PhotoGetter.buildPhotoGetter(userId, desc, loadListener));
+				// Since the download parameter is false, the photo isn't
+				// downloaded until absolutely necessary
+				PhotoGetter getter =
+					PhotoGetter.buildPhotoGetter(userId, desc,
+							loadListener, false);
+				CollectionUtils.insertInOrder(images, getter);
 			}
 		}
 	}
@@ -137,6 +140,10 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 
 		PhotoGetter photo = images.get(idx);
 		if (lastPhoto == null || !overlaps(photo, lastPhoto)) {
+			// Actually load a photo that hasn't been downloaded yet
+			if (!photo.loadStarted())
+				photo.download();
+
 			drawCount(drawing, lastPhoto, currentCount.get());
 			drawPhoto(drawing, getPhotoX(photo), getPhotoY(), photo);
 			currentCount.set(photo.getCount());
