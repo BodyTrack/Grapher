@@ -148,7 +148,7 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 	private void drawCount(final BoundedDrawingBox drawing,
 			final PhotoGetter photo,
 			final int count) {
-		if (count <= 1)
+		if (drawing == null || photo == null || count <= 1)
 			return;
 
 		// Finish out other drawing before filling a circle and text
@@ -383,7 +383,8 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 
 		private int photoIndex = NOT_RENDERING;
 		private PhotoGetter lastPhoto = null;
-		private int currentCount = NOT_RENDERING;
+		private Reference<Integer> currentCount = null;
+		private BoundedDrawingBox savedDrawing = null;
 
 		@Override
 		public void beforeRender(final Canvas canvas,
@@ -391,7 +392,8 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 			canvas.setStrokeStyle(Canvas.DEFAULT_COLOR);
 			photoIndex = 0;
 			lastPhoto = null;
-			currentCount = 0;
+			currentCount = new Reference<Integer>(0);
+			savedDrawing = null;
 		}
 
 		@Override
@@ -421,18 +423,22 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 		}
 
 		private void drawNextPhoto(final BoundedDrawingBox drawing) {
-			Reference<Integer> refCount = new Reference<Integer>(currentCount);
-			lastPhoto = drawPhoto(drawing, photoIndex, lastPhoto, refCount);
-			currentCount = refCount.get();
+			lastPhoto = drawPhoto(drawing, photoIndex, lastPhoto, currentCount);
 			photoIndex++;
+			savedDrawing = drawing;
 		}
 
 		@Override
 		public void afterRender(final Canvas canvas) {
+			// One last count rendering before we finish, since drawPhoto
+			// only draws the count for earlier photos
+			drawCount(savedDrawing, lastPhoto, currentCount.get());
+
 			canvas.setStrokeStyle(Canvas.DEFAULT_COLOR);
 			photoIndex = NOT_RENDERING;
 			lastPhoto = null;
-			currentCount = NOT_RENDERING;
+			currentCount = null;
+			savedDrawing = null;
 		}
 	}
 
