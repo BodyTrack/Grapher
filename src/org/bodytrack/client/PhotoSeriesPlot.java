@@ -339,7 +339,6 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 			- yAxis.project2D(PhotoGraphAxis.PHOTO_HEIGHT).getY();
 	}
 
-	// TODO: FIX HIGHLIGHTING
 	@Override
 	public boolean highlightIfNear(final Vector2 pos) {
 		highlightedImages = getCloseImages(pos,
@@ -374,18 +373,12 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 			final double time = photo.getTime();
 
 			// Don't bother with photos that are out of bounds
-			if (time < xAxisMinValue || time > xAxisMaxValue) {
+			if (time < xAxisMinValue || time > xAxisMaxValue)
 				continue;
-			}
 
-			// Both these values are in pixels
-			final double photoX = getPhotoX(photo);
-			final double photoY = PhotoGraphAxis.PHOTO_CENTER_LOCATION;
-
-			final Vector2 photoPos = new Vector2(photoX, photoY);
-			if (pos.distanceSquared(photoPos) < thresholdSq) {
+			final Vector2 photoPos = new Vector2(getPhotoX(photo), getPhotoY());
+			if (pos.distanceSquared(photoPos) < thresholdSq)
 				result.add(photo);
-			}
 		}
 
 		return result;
