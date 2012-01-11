@@ -344,7 +344,15 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 		highlightedImages = getCloseImages(pos,
 				PHOTO_HIGHLIGHT_THRESHOLD_PROPORTION * getPhotoHeight());
 
-		return highlightedImages.size() > 0;
+		final PhotoGetter getter =
+			CollectionUtils.getFirst(highlightedImages);
+		if (getter != null)
+			setHighlightedPoint(
+					new PlottablePoint(getter.getTime(), IMAGE_Y_VALUE));
+		else
+			unhighlight();
+
+		return getter != null;
 	}
 
 	/**
