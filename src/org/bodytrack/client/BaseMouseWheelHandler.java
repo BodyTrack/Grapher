@@ -23,18 +23,18 @@ abstract class BaseMouseWheelHandler implements MouseWheelHandler {
    /**
     * Tells whether this application should use the Mac scroll wheel ratio.
     *
-    * <p>Checks the <tt>navigator.platform</tt> property in JavaScript to
-    * determine if this code is on a Mac or not, and returns <tt>true</tt>
+    * <p>Checks the navigator.platform property in JavaScript to
+    * determine if this code is on a Mac or not, and returns <code>true</code>
     * iff the best guess is Mac.  If this property cannot be read, returns
-    * <tt>false</tt>.</p>
+    * <code>false</code>.</p>
     *
     * <p>However, there is a twist: Google Chrome and Firefox seem to zoom
     * Windows-style, regardless of platform.  Thus, this checks for
-    * Safari, and only returns <tt>true</tt> if the browser appears to be
+    * Safari, and only returns <code>true</code> if the browser appears to be
     * Safari on the Mac.</p>
     *
     * @return
-    * 		<tt>true</tt> if and only if the grapher should zoom Mac-style
+    * 	<code>true</code> if and only if the grapher should zoom Mac-style
     */
    @SuppressWarnings({"NoopMethodInAbstractClass"})
    private static native boolean shouldZoomMac() /*-{
@@ -59,7 +59,8 @@ abstract class BaseMouseWheelHandler implements MouseWheelHandler {
    }-*/;
 
    /**
-    * Delegates to {@link #handleMouseWheelEvent(MouseWheelEvent)} and then stops event propagation.
+    * Delegates to {@link #handleMouseWheelEvent(MouseWheelEvent)} and then
+    * stops event propagation
     */
    @Override
    public final void onMouseWheel(final MouseWheelEvent event) {
