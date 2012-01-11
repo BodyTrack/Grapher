@@ -1,10 +1,16 @@
 package org.bodytrack.client;
 
-public class LineRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy {
+/**
+ * @author Chris Bartley (bartley@cmu.edu)
+ */
+public abstract class PointRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy implements DataPointRenderingStrategy {
+   private static final int DEFAULT_RADIUS = 3;
+   private final double radius;
 
-   public LineRenderingStrategy(final StyleDescription.StyleType styleType,
-                                final Double highlightLineWidth) {
-      super(styleType, highlightLineWidth);
+   public PointRenderingStrategy(final StyleDescription.StyleType styleType,
+                                 final Double theHighlightLineWidth) {
+      super(styleType, theHighlightLineWidth);
+      radius = styleType.getDoubleValue("radius", DEFAULT_RADIUS);
    }
 
    @Override
@@ -16,7 +22,7 @@ public class LineRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy {
                                     final double x,
                                     final double y,
                                     final PlottablePoint rawDataPoint) {
-      drawing.drawCircle(x, y, DOT_RADIUS);
+      paintPoint(drawing, xAxis, yAxis, x, y, rawDataPoint);
    }
 
    @Override
@@ -30,6 +36,11 @@ public class LineRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy {
                                     final double x,
                                     final double y,
                                     final PlottablePoint rawDataPoint) {
-      drawing.drawLineSegment(prevX, prevY, x, y);
+      paintPoint(drawing, xAxis, yAxis, x, y, rawDataPoint);
+   }
+
+   /** Returns the radius of the dot. */
+   protected final double getRadius() {
+      return radius;
    }
 }

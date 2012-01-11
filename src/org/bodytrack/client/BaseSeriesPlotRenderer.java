@@ -149,11 +149,9 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
                // Draw this part of the line
                if (prevX > MIN_DRAWABLE_VALUE
                    && prevY > MIN_DRAWABLE_VALUE) {
-                  renderingStrategy.paintDataPoint(drawing, tile, xAxis,
-                     yAxis, isAnyPointHighlighted, prevX, prevY, x, y, point);
+                  renderingStrategy.paintDataPoint(drawing, tile, xAxis, yAxis, isAnyPointHighlighted, prevX, prevY, x, y, point);
                } else {
-                  renderingStrategy.paintEdgePoint(drawing, tile, xAxis,
-                     yAxis, isAnyPointHighlighted, x, y, point);
+                  renderingStrategy.paintEdgePoint(drawing, tile, xAxis, yAxis, isAnyPointHighlighted, x, y, point);
                }
 
                prevX = x;

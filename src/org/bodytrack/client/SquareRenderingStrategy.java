@@ -3,7 +3,7 @@ package org.bodytrack.client;
 /**
  * @author Chris Bartley (bartley@cmu.edu)
  */
-public class SquareRenderingStrategy extends CircleRenderingStrategy {
+public class SquareRenderingStrategy extends PointRenderingStrategy {
    public SquareRenderingStrategy(final StyleDescription.StyleType styleType,
                                   final Double highlightLineWidth) {
       super(styleType, highlightLineWidth);
@@ -17,9 +17,9 @@ public class SquareRenderingStrategy extends CircleRenderingStrategy {
                           final double y,
                           final PlottablePoint rawDataPoint) {
       if (willFill()) {
-         drawing.drawFilledSmallSquare(x, y, getRadius() * 2);
+         drawing.drawFilledSquare(x, y, getRadius());
       } else {
-         drawing.drawSmallSquare(x, y, getRadius() * 2);
+         drawing.drawSquare(x, y, getRadius());
       }
    }
 }

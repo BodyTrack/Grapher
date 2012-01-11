@@ -145,6 +145,13 @@ public final class DataSeriesPlotRenderer extends BaseSeriesPlotRenderer {
             return new LineRenderingStrategy(styleType, highlightLineWidth);
          }
       }),
+      VALUE("value", new SeriesPlotRenderingStrategyFactory() {
+         @Override
+         public SeriesPlotRenderingStrategy create(final StyleDescription.StyleType styleType,
+                                                   final Double highlightLineWidth) {
+            return new ValueRenderingStrategy(styleType, highlightLineWidth);
+         }
+      }),
       ZEO("zeo", new SeriesPlotRenderingStrategyFactory() {
          @Override
          public SeriesPlotRenderingStrategy create(final StyleDescription.StyleType styleType,

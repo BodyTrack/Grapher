@@ -3,7 +3,7 @@ package org.bodytrack.client;
 /**
  * @author Chris Bartley (bartley@cmu.edu)
  */
-public class PlusRenderingStrategy extends CircleRenderingStrategy {
+public class PlusRenderingStrategy extends PointRenderingStrategy {
    public PlusRenderingStrategy(final StyleDescription.StyleType styleType,
                                 final Double highlightLineWidth) {
       super(styleType, highlightLineWidth);

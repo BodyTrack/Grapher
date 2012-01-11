@@ -3,7 +3,7 @@ package org.bodytrack.client;
 /**
  * @author Chris Bartley (bartley@cmu.edu)
  */
-public class CrossRenderingStrategy extends CircleRenderingStrategy {
+public class CrossRenderingStrategy extends PointRenderingStrategy {
    public CrossRenderingStrategy(final StyleDescription.StyleType styleType,
                                  final Double highlightLineWidth) {
       super(styleType, highlightLineWidth);

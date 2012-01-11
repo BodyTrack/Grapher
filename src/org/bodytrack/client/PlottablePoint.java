@@ -18,6 +18,7 @@ import com.google.gwt.i18n.client.NumberFormat;
  */
 public final class PlottablePoint implements Comparable<PlottablePoint> {
 
+   public static final String DEFAULT_VALUE_FORMAT_STRING = "###,##0.0##";
    public static final String DATE_TIME_FORMAT_STRING =
 	   "EEE MMM dd yyyy, HH:mm:ss.SSS";
    private static final DateTimeFormat DATE_TIME_FORMAT =
@@ -27,7 +28,7 @@ public final class PlottablePoint implements Comparable<PlottablePoint> {
    private static final NumberFormat SCIENTIFIC_VALUE_FORMAT =
 	   NumberFormat.getScientificFormat();
    private static final NumberFormat DEFAULT_VALUE_FORMAT =
-	   NumberFormat.getFormat("###,##0.0##");
+	   NumberFormat.getFormat(DEFAULT_VALUE_FORMAT_STRING);
 
    private static final Comparator<Double> DATE_COMPARATOR = new DateComparator();
 

@@ -1,40 +1,10 @@
 package org.bodytrack.client;
 
-public class CircleRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy implements DataPointRenderingStrategy {
-   private static final int DEFAULT_RADIUS = 3;
-
-   private final double radius;
+public class CircleRenderingStrategy extends PointRenderingStrategy {
 
    public CircleRenderingStrategy(final StyleDescription.StyleType styleType,
                                   final Double highlightLineWidth) {
       super(styleType, highlightLineWidth);
-      radius = styleType.getDoubleValue("radius", DEFAULT_RADIUS);
-   }
-
-   @Override
-   public final void paintEdgePoint(final BoundedDrawingBox drawing,
-                                    final GrapherTile tile,
-                                    final GraphAxis xAxis,
-                                    final GraphAxis yAxis,
-                                    final boolean isAnyPointHighlighted,
-                                    final double x,
-                                    final double y,
-                                    final PlottablePoint rawDataPoint) {
-      paintPoint(drawing, xAxis, yAxis, x, y, rawDataPoint);
-   }
-
-   @Override
-   public final void paintDataPoint(final BoundedDrawingBox drawing,
-                                    final GrapherTile tile,
-                                    final GraphAxis xAxis,
-                                    final GraphAxis yAxis,
-                                    final boolean isAnyPointHighlighted,
-                                    final double prevX,
-                                    final double prevY,
-                                    final double x,
-                                    final double y,
-                                    final PlottablePoint rawDataPoint) {
-      paintPoint(drawing, xAxis, yAxis, x, y, rawDataPoint);
    }
 
    @Override
@@ -45,14 +15,9 @@ public class CircleRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy
                           final double y,
                           final PlottablePoint rawDataPoint) {
       if (willFill()) {
-         drawing.drawFilledDot(x, y, radius);
+         drawing.drawFilledCircle(x, y, getRadius());
       } else {
-         drawing.drawDot(x, y, radius);
+         drawing.drawCircle(x, y, getRadius());
       }
-   }
-
-   /** Returns the radius of the dot. */
-   protected final double getRadius() {
-      return radius;
    }
 }
