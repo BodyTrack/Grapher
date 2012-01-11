@@ -174,7 +174,7 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 
 		// Center the red circle on the top right corner of the photo
 		final double circleX = getPhotoX(photo) + getPhotoWidth(photo, height) / 2.0;
-		final double circleY = getPhotoY() - getPhotoHeight() / 2.0;
+		final double circleY = getPhotoY() - height / 2.0;
 
 		drawing.setFillStyle(KnownColor.RED);
 		drawing.fillCircle(circleX, circleY, COUNT_CIRCLE_SIZE / 2.0);
