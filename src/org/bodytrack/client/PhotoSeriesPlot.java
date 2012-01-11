@@ -166,15 +166,21 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 		if (drawing == null || photo == null || count <= 1)
 			return;
 
-		// Finish out other drawing before filling a circle and text
-		drawing.strokeClippedPath();
-		drawing.beginClippedPath();
-
 		final double height = getPhotoHeight(photo);
 
 		// Center the red circle on the top right corner of the photo
 		final double circleX = getPhotoX(photo) + getPhotoWidth(photo, height) / 2.0;
 		final double circleY = getPhotoY() - height / 2.0;
+
+		if (!drawing.containsRectanglePart(circleX - COUNT_CIRCLE_SIZE / 2.0,
+				circleY - COUNT_CIRCLE_SIZE / 2.0,
+				COUNT_CIRCLE_SIZE,
+				COUNT_CIRCLE_SIZE))
+			return;
+
+		// Finish out other drawing before filling a circle and text
+		drawing.strokeClippedPath();
+		drawing.beginClippedPath();
 
 		drawing.setFillStyle(KnownColor.RED);
 		drawing.fillCircle(circleX, circleY, COUNT_CIRCLE_SIZE / 2.0);
@@ -214,9 +220,8 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 		final double yMin = y - (height / 2.0);
 		final double yMax = y + (height / 2.0);
 
-		// TODO: Add this line for efficiency
-		// if (!drawing.containsRectanglePart(xMin, yMin, width, height))
-		//	return;
+		if (!drawing.containsRectanglePart(xMin, yMin, width, height))
+			return;
 
 		// Now draw the image itself, not allowing it to overflow onto
 		// the axes
