@@ -3,7 +3,7 @@ package org.bodytrack.client;
 /**
  * @author Chris Bartley (bartley@cmu.edu)
  */
-public interface PointRenderingStrategy extends RenderingStrategy {
+public interface DataPointRenderingStrategy extends RenderingStrategy {
    /**
     * Paints a point.
     *

@@ -41,8 +41,8 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
    private String commentContainerCssClass = null;
    private String commentCssClass = null;
    private final List<SeriesPlotRenderingStrategy> plotRenderingStrategies = new ArrayList<SeriesPlotRenderingStrategy>();
-   private final List<PointRenderingStrategy> highlightRenderingStrategies = new ArrayList<PointRenderingStrategy>();
-   private final List<PointRenderingStrategy> commentRenderingStrategies = new ArrayList<PointRenderingStrategy>();
+   private final List<DataPointRenderingStrategy> highlightRenderingStrategies = new ArrayList<DataPointRenderingStrategy>();
+   private final List<DataPointRenderingStrategy> commentRenderingStrategies = new ArrayList<DataPointRenderingStrategy>();
 
    /**
     * Creates a new BaseSeriesPlotRenderer object
@@ -74,7 +74,7 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
          }
 
          if (highlightDescription != null) {
-            final List<PointRenderingStrategy> newHighlightRenderingStrategies = buildPointRenderingStrategies(highlightDescription.getStyleTypes(), highlightLineWidth);
+            final List<DataPointRenderingStrategy> newHighlightRenderingStrategies = buildPointRenderingStrategies(highlightDescription.getStyleTypes(), highlightLineWidth);
             if (newHighlightRenderingStrategies != null) {
                highlightRenderingStrategies.addAll(newHighlightRenderingStrategies);
             }
@@ -85,7 +85,7 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
             commentVerticalMargin = commentsDescription.getVerticalMargin(DEFAULT_COMMENT_VERTICAL_MARGIN);
             commentContainerCssClass = commentsDescription.getCommentContainerCssClass();
             commentCssClass = commentsDescription.getCommentCssClass();
-            final List<PointRenderingStrategy> newCommentRenderingStrategies = buildPointRenderingStrategies(commentsDescription.getStyleTypes(), highlightLineWidth);
+            final List<DataPointRenderingStrategy> newCommentRenderingStrategies = buildPointRenderingStrategies(commentsDescription.getStyleTypes(), highlightLineWidth);
             if (newCommentRenderingStrategies != null) {
                commentRenderingStrategies.addAll(newCommentRenderingStrategies);
             }
@@ -96,7 +96,7 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
    protected abstract List<SeriesPlotRenderingStrategy> buildSeriesPlotRenderingStrategies(final JsArray<StyleDescription.StyleType> styleTypes,
                                                                                            final Double highlightLineWidth);
 
-   protected abstract List<PointRenderingStrategy> buildPointRenderingStrategies(final JsArray<StyleDescription.StyleType> styleTypes,
+   protected abstract List<DataPointRenderingStrategy> buildPointRenderingStrategies(final JsArray<StyleDescription.StyleType> styleTypes,
                                                                                  final Double highlightLineWidth);
 
    @Override
@@ -168,7 +168,7 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
          // now render the points having comments
          for (final PlottablePoint point : dataPoints) {
             if (point.hasComment()) {
-               for (final PointRenderingStrategy renderingStrategy : commentRenderingStrategies) {
+               for (final DataPointRenderingStrategy renderingStrategy : commentRenderingStrategies) {
                   renderingStrategy.beforeRender(canvas, isAnyPointHighlighted);
                   drawing.beginClippedPath();
                   renderingStrategy.paintPoint(drawing,
@@ -190,7 +190,7 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
       // render the comment
       if (isAnyPointHighlighted) {
          // render highlight
-         for (final PointRenderingStrategy renderingStrategy : highlightRenderingStrategies) {
+         for (final DataPointRenderingStrategy renderingStrategy : highlightRenderingStrategies) {
             renderingStrategy.beforeRender(canvas, isAnyPointHighlighted);
             drawing.beginClippedPath();
             renderingStrategy.paintPoint(drawing,

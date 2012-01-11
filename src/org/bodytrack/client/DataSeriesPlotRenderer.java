@@ -47,9 +47,9 @@ public final class DataSeriesPlotRenderer extends BaseSeriesPlotRenderer {
    }
 
    @Override
-   protected List<PointRenderingStrategy> buildPointRenderingStrategies(final JsArray<StyleDescription.StyleType> styleTypes,
+   protected List<DataPointRenderingStrategy> buildPointRenderingStrategies(final JsArray<StyleDescription.StyleType> styleTypes,
                                                                         final Double highlightLineWidth) {
-      final List<PointRenderingStrategy> renderingStrategies = new ArrayList<PointRenderingStrategy>();
+      final List<DataPointRenderingStrategy> renderingStrategies = new ArrayList<DataPointRenderingStrategy>();
 
       if (styleTypes != null) {
 
@@ -59,7 +59,7 @@ public final class DataSeriesPlotRenderer extends BaseSeriesPlotRenderer {
 
             // don't bother creating a rendering strategy if the style type shouldn't be shown
             if (styleType != null && styleType.willShow()) {
-               final PointRenderingStrategy renderingStrategy = createPointRenderingStrategy(styleType, highlightLineWidth);
+               final DataPointRenderingStrategy renderingStrategy = createPointRenderingStrategy(styleType, highlightLineWidth);
                if (renderingStrategy != null) {
                   renderingStrategies.add(renderingStrategy);
                }
@@ -81,13 +81,13 @@ public final class DataSeriesPlotRenderer extends BaseSeriesPlotRenderer {
       return null;
    }
 
-   private PointRenderingStrategy createPointRenderingStrategy(final StyleDescription.StyleType styleType,
+   private DataPointRenderingStrategy createPointRenderingStrategy(final StyleDescription.StyleType styleType,
                                                                final Double highlightLineWidth) {
 
       final SeriesPlotRenderingStrategy renderingStrategy = createPlotRenderingStrategy(styleType, highlightLineWidth);
 
-      if (renderingStrategy != null && renderingStrategy instanceof PointRenderingStrategy) {
-         return (PointRenderingStrategy)renderingStrategy;
+      if (renderingStrategy != null && renderingStrategy instanceof DataPointRenderingStrategy) {
+         return (DataPointRenderingStrategy)renderingStrategy;
       }
 
       return null;

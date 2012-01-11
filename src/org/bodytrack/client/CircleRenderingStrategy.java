@@ -1,6 +1,6 @@
 package org.bodytrack.client;
 
-public class CircleRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy implements PointRenderingStrategy {
+public class CircleRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy implements DataPointRenderingStrategy {
    private static final int DEFAULT_RADIUS = 3;
 
    private final double radius;

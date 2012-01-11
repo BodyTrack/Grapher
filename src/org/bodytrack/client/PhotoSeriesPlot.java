@@ -490,7 +490,7 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 		}
 
 		@Override
-		protected List<PointRenderingStrategy> buildPointRenderingStrategies(
+		protected List<DataPointRenderingStrategy> buildPointRenderingStrategies(
 				final JsArray<StyleDescription.StyleType> styleTypes,
 				final Double highlightLineWidth) {
 			// TODO: honor the style...
