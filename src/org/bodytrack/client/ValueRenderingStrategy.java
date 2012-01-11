@@ -5,8 +5,8 @@ import gwt.g2d.client.graphics.canvas.Context;
 
 public class ValueRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy implements DataPointRenderingStrategy {
    private static final String DEFAULT_FONT = "7pt Helvetica,Arial,Verdana,sans-serif";
-   private static final double DEFAULT_VERTICAL_OFFSET = -3;
-   private static final int DEFAULT_RADIUS = 5;
+   private static final double DEFAULT_VERTICAL_OFFSET = 3;
+   private static final int DEFAULT_MARGIN_WIDTH = 5;
    private static final NumberFormat DEFAULT_VALUE_FORMAT = NumberFormat.getFormat(PlottablePoint.DEFAULT_VALUE_FORMAT_STRING);
    private final double marginWidth;
    private final String font;
@@ -19,7 +19,7 @@ public class ValueRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy 
       final String tempFont = styleType.getValue("font");
       font = (tempFont == null) ? DEFAULT_FONT : tempFont;
       verticalOffset = styleType.getDoubleValue("verticalOffset", DEFAULT_VERTICAL_OFFSET);
-      marginWidth = styleType.getDoubleValue("marginWidth", DEFAULT_RADIUS);
+      marginWidth = styleType.getDoubleValue("marginWidth", DEFAULT_MARGIN_WIDTH);
       final String numberFormatStr = styleType.getValue("numberFormat");
       if (numberFormatStr != null) {
          try {
