@@ -27,7 +27,7 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 	/**
 	 * Ratio of heights between highlighted image and regular image
 	 */
-	private static final double HIGHLIGHTED_SIZE_RATIO = 1.2;
+	private static final double HIGHLIGHTED_SIZE_RATIO = 2;
 
 	private static final double PHOTO_HIGHLIGHT_THRESHOLD_PROPORTION = 0.10;
 
@@ -274,11 +274,11 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 
 	/**
 	 * Tells whether the two photos overlap when drawn at full size
-	 * but not highlighted.
+	 * but not highlighted
 	 *
-	 * <p>It is not really overlapping if the only thing causing an
-	 * overlap is the highlighting, so this ignores highlighting when
-	 * calculating intersection.</p>
+	 * <p>This method computes overlap without taking highlighting into
+	 * account, so that layout doesn't change because the user highlights
+	 * a photo.</p>
 	 *
 	 * @param photo1
 	 * 	The first photo that may or may not overlap
