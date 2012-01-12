@@ -119,6 +119,9 @@ public final class BoundedDrawingBox {
    /**
     * Draws a circle with the specified values and radius,
     * if and only if the center of the circle is in bounds.
+    * This method merely draws the shape--it is up to the
+    * caller to call {@link #strokeClippedPath} and/or
+    * {@link #fillClippedPath()} afterwards.
     *
     * <p>This method checks whether the circle's center is in
     * bounds, not whether the whole circle is in bounds.</p>
@@ -134,48 +137,13 @@ public final class BoundedDrawingBox {
                           final double y,
                           final double radius) {
       if (contains(x, y)) {
-         final Context ctx = drawCircleNoStrokeOrFill(x, y, radius);
-         ctx.stroke();
+         final Context ctx1 = canvas.getSurface().getContext();
+         ctx1.moveTo(x + radius, y);
+         ctx1.arc(x, y, radius, 0, TWO_PI, false);
       }
    }
 
-   /**
-    * Draws a filled circle with the specified values and radius,
-    * if and only if the center of the circle is in bounds.
-    *
-    * <p>This method checks whether the circle's center is in
-    * bounds, not whether the whole circle is in bounds.</p>
-    *
-    * @param x
-    * 		the X-value at the center of the circle
-    * @param y
-    * 		the Y-value at the center of the circle
-    * @param radius
-    * 		the radius of the circle
-    */
-   public void drawFilledCircle(final double x,
-                                final double y,
-                                final double radius) {
-      if (contains(x, y)) {
-         final Context ctx = drawCircleNoStrokeOrFill(x, y, radius);
-         ctx.fill();
-      }
-   }
-
-   /**
-    * Gets the {@link Surface}'s {@link Context} and then draws a circle on it,
-    * but does not stroke or fill the circle. No bounds checking is done, either.
-    */
-   private Context drawCircleNoStrokeOrFill(final double x,
-                                            final double y,
-                                            final double radius) {
-      final Context ctx = canvas.getSurface().getContext();
-      ctx.moveTo(x + radius, y);
-      ctx.arc(x, y, radius, 0, TWO_PI, false);
-      return ctx;
-   }
-
-	public void fillCircle(final double x, final double y, final double radius) {
+   public void fillCircle(final double x, final double y, final double radius) {
 		canvas.getRenderer().drawCircle(x, y, radius);
 
 		// TODO: This and other BoundedDrawingBox methods should not stroke
@@ -187,6 +155,9 @@ public final class BoundedDrawingBox {
    /**
     * Draws a square with the specified values and radius,
     * if and only if the center of the square is in bounds.
+    * This method merely draws the shape--it is up to the
+    * caller to call {@link #strokeClippedPath} and/or
+    * {@link #fillClippedPath()} afterwards.
     *
     * <p>This method checks whether the square's center is in
     * bounds, not whether the whole square is in bounds.</p>
@@ -202,45 +173,10 @@ public final class BoundedDrawingBox {
                           final double y,
                           final double radius) {
       if (contains(x, y)) {
-         final Context ctx = drawSquareNoStrokeOrFill(x, y, radius);
-         ctx.stroke();
+         final Context ctx = canvas.getSurface().getContext();
+         ctx.moveTo(x - radius, y - radius);
+         ctx.rect(x - radius, y - radius, 2 * radius, 2 * radius);
       }
-   }
-
-   /**
-    * Draws a filled square with the specified values and radius,
-    * if and only if the center of the square is in bounds.
-    *
-    * <p>This method checks whether the square's center is in
-    * bounds, not whether the whole square is in bounds.</p>
-    *
-    * @param x
-    * 		the X-value at the center of the square
-    * @param y
-    * 		the Y-value at the center of the square
-    * @param radius
-    * 		the radius of the square (i.e. half the length of a side)
-    */
-   public void drawFilledSquare(final double x,
-                                final double y,
-                                final double radius) {
-      if (contains(x, y)) {
-         final Context ctx = drawSquareNoStrokeOrFill(x, y, radius);
-         ctx.fill();
-      }
-   }
-
-   /**
-    * Gets the {@link Surface}'s {@link Context} and then draws a square on it,
-    * but does not stroke or fill the square. No bounds checking is done, either.
-    */
-   private Context drawSquareNoStrokeOrFill(final double x,
-                                            final double y,
-                                            final double radius) {
-      final Context ctx = canvas.getSurface().getContext();
-      ctx.moveTo(x - radius, y - radius);
-      ctx.rect(x - radius, y - radius, 2 * radius, 2 * radius);
-      return ctx;
    }
 
 	public void fillText(final String text, final double x, final double y) {

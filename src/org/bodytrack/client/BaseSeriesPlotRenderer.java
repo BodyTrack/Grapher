@@ -116,9 +116,7 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
          }
 
          for (final SeriesPlotRenderingStrategy renderingStrategy : plotRenderingStrategies) {
-            renderingStrategy.beforeRender(canvas, isAnyPointHighlighted);
-
-            drawing.beginClippedPath();
+            renderingStrategy.beforeRender(canvas, drawing, isAnyPointHighlighted);
 
             // Putting these declarations outside the loop ensures
             // that no gaps appear between lines
@@ -158,25 +156,21 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
                prevY = y;
             }
 
-            drawing.strokeClippedPath();
-
-            renderingStrategy.afterRender(canvas);
+            renderingStrategy.afterRender(canvas, drawing);
          }
 
          // now render the points having comments
          for (final PlottablePoint point : dataPoints) {
             if (point.hasComment()) {
                for (final DataPointRenderingStrategy renderingStrategy : commentRenderingStrategies) {
-                  renderingStrategy.beforeRender(canvas, isAnyPointHighlighted);
-                  drawing.beginClippedPath();
+                  renderingStrategy.beforeRender(canvas, drawing, isAnyPointHighlighted);
                   renderingStrategy.paintPoint(drawing,
                                                xAxis,
                                                yAxis,
                                                xAxis.project2D(point.getDate()).getX(),
                                                yAxis.project2D(point.getValue()).getY(),
                                                highlightedPoint);
-                  drawing.strokeClippedPath();
-                  renderingStrategy.afterRender(canvas);
+                  renderingStrategy.afterRender(canvas, drawing);
                }
             }
          }
@@ -189,16 +183,14 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
       if (isAnyPointHighlighted) {
          // render highlight
          for (final DataPointRenderingStrategy renderingStrategy : highlightRenderingStrategies) {
-            renderingStrategy.beforeRender(canvas, isAnyPointHighlighted);
-            drawing.beginClippedPath();
+            renderingStrategy.beforeRender(canvas, drawing, isAnyPointHighlighted);
             renderingStrategy.paintPoint(drawing,
                                          xAxis,
                                          yAxis,
                                          xAxis.project2D(highlightedPoint.getDate()).getX(),
                                          yAxis.project2D(highlightedPoint.getValue()).getY(),
                                          highlightedPoint);
-            drawing.strokeClippedPath();
-            renderingStrategy.afterRender(canvas);
+            renderingStrategy.afterRender(canvas, drawing);
          }
 
          // finally, render the comment

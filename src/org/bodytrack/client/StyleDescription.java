@@ -106,6 +106,7 @@ public final class StyleDescription extends JavaScriptObject {
          return getDoubleValue("lineWidth", defaultLineWidth);
       }
 
+      /** Returns whether the style should be filled.  Defaults to <code>true</code> if undefined. */
       public native boolean willFill() /*-{
          // default to true if undefined
          return (typeof this['fill'] === 'undefined') || !!(this['fill']);

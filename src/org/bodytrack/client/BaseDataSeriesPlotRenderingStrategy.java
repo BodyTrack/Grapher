@@ -55,7 +55,9 @@ public abstract class BaseDataSeriesPlotRenderingStrategy
    }
 
    /**
-    * <p>Sets the line width, stroke color, and fill color.</p>
+    * <p>
+    * Sets the line width, stroke color, and fill color, and then calls {@link BoundedDrawingBox#beginClippedPath()}.
+    * </p>
     *
     * <p>If the {@link StyleDescription.StyleType StyleType} has a "lineWidth" field, then the line width is set to
     * either the that width or the highlighted line width (if defined), depending on the value of
@@ -69,19 +71,34 @@ public abstract class BaseDataSeriesPlotRenderingStrategy
     * either the that color or the {@link SeriesPlotRenderingStrategy#DEFAULT_FILL_COLOR} if no such field exists.</p>
     */
    @Override
-   public void beforeRender(final Canvas canvas, final boolean isAnyPointHighlighted) {
+   public void beforeRender(final Canvas canvas,
+                            final BoundedDrawingBox drawing,
+                            final boolean isAnyPointHighlighted) {
       canvas.setLineWidth(isAnyPointHighlighted ? highlightLineWidth : lineWidth);
       canvas.setStrokeStyle(strokeColor);
       canvas.setFillStyle(fillColor);
+
+      drawing.beginClippedPath();
+
    }
 
    /**
-    * Sets the stroke style back to {@link SeriesPlotRenderingStrategy#DEFAULT_STROKE_COLOR}, sets the fill style back
-    * to {@link SeriesPlotRenderingStrategy#DEFAULT_FILL_COLOR}, and sets the line width to
+    * First calls {@link BoundedDrawingBox#fillClippedPath()} if the style specifies that the strategy should fill, and
+    * then calls {@link BoundedDrawingBox#strokeClippedPath()}.  Finally, this method then sets the stroke style back to
+    * {@link SeriesPlotRenderingStrategy#DEFAULT_STROKE_COLOR}, sets the fill style back to
+    * {@link SeriesPlotRenderingStrategy#DEFAULT_FILL_COLOR}, and sets the line width to
     * {@link SeriesPlotRenderingStrategy#DEFAULT_STROKE_WIDTH normal stroke width}.
     */
    @Override
-   public void afterRender(final Canvas canvas) {
+   public void afterRender(final Canvas canvas,
+                           final BoundedDrawingBox drawing) {
+
+      if (willFill()) {
+         drawing.fillClippedPath();
+      }
+
+      drawing.strokeClippedPath();
+
       // Clean up after ourselves
       canvas.setLineWidth(DEFAULT_STROKE_WIDTH);
       canvas.setStrokeStyle(DEFAULT_STROKE_COLOR);

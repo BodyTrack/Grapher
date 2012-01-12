@@ -410,13 +410,16 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 
 		@Override
 		public void beforeRender(final Canvas canvas,
-				final boolean isAnyPointHighlighted) {
+                               final BoundedDrawingBox drawing,
+                               final boolean isAnyPointHighlighted) {
 			oldTextAlign = canvas.getTextAlign();
 			oldTextBaseline = canvas.getTextBaseline();
 
 			canvas.setStrokeStyle(Canvas.DEFAULT_COLOR);
 			canvas.setTextAlign(TextAlign.CENTER);
 			canvas.setTextBaseline(TextBaseline.MIDDLE);
+
+         drawing.beginClippedPath();
 
 			photoIndex = 0;
 			lastPhoto = null;
@@ -457,10 +460,12 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 		}
 
 		@Override
-		public void afterRender(final Canvas canvas) {
+		public void afterRender(final Canvas canvas, final BoundedDrawingBox drawing) {
 			// One last count rendering before we finish, since drawPhoto
 			// only draws the count for earlier photos
 			drawCount(savedDrawing, lastPhoto, currentCount.get());
+
+         drawing.strokeClippedPath();
 
 			canvas.setTextBaseline(oldTextBaseline);
 			canvas.setTextAlign(oldTextAlign);

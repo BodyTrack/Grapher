@@ -16,10 +16,6 @@ public class SquareRenderingStrategy extends PointRenderingStrategy {
                           final double x,
                           final double y,
                           final PlottablePoint rawDataPoint) {
-      if (willFill()) {
-         drawing.drawFilledSquare(x, y, getRadius());
-      } else {
-         drawing.drawSquare(x, y, getRadius());
-      }
+      drawing.drawSquare(x, y, getRadius());
    }
 }

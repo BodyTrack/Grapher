@@ -15,8 +15,8 @@ public interface SeriesPlotRenderer {
 
    /**
     * Draws the supplied tiles on a canvas.  This method calls
-    * {@link SeriesPlotRenderingStrategy#beforeRender(Canvas, boolean)} immediately before rendering of a style begins and
-    * {@link SeriesPlotRenderingStrategy#afterRender(Canvas)} immediately after rendering of a style ends.
+    * {@link RenderingStrategy#beforeRender(Canvas, BoundedDrawingBox, boolean)} immediately before rendering of a style begins and
+    * {@link RenderingStrategy#afterRender(Canvas, BoundedDrawingBox)} immediately after rendering of a style ends.
     *
     * @param canvas the {@link Canvas} upon which rendering will take place
     * @param drawing

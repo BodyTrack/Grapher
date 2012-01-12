@@ -14,10 +14,6 @@ public class CircleRenderingStrategy extends PointRenderingStrategy {
                           final double x,
                           final double y,
                           final PlottablePoint rawDataPoint) {
-      if (willFill()) {
-         drawing.drawFilledCircle(x, y, getRadius());
-      } else {
-         drawing.drawCircle(x, y, getRadius());
-      }
+      drawing.drawCircle(x, y, getRadius());
    }
 }
