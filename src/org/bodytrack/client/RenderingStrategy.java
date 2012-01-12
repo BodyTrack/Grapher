@@ -21,7 +21,9 @@ public interface RenderingStrategy {
     * @param canvas
     *    The canvas upon which rendering will take place.
     * @param drawing
+    *    The drawing upon which rendering took place.
     * @param isAnyPointHighlighted
+    *    Whether any point is currently highlighted.
     */
    void beforeRender(Canvas canvas, BoundedDrawingBox drawing, boolean isAnyPointHighlighted);
 
@@ -31,6 +33,7 @@ public interface RenderingStrategy {
     * @param canvas
     *    The canvas upon which rendering took place.
     * @param drawing
+    *    The drawing upon which rendering took place.
     */
    void afterRender(Canvas canvas, BoundedDrawingBox drawing);
 }
