@@ -239,15 +239,15 @@ public final class NativeInterface {
 				throw 'Must pass in both axes';
 			}
 
-         // create a default style until we support photo styles specified by the page
-         var style = {
-            "styles":[
-               {"type":"photo"}
-            ],
-            "comments":{"show":true}
-         };
+			// create a default style until we support photo styles specified by the page
+			var style = {
+				"styles": [
+					{"type":"photo"}
+				],
+				"comments":{"show":true}
+			};
 
-         this.getDatasource = function() { return datasource; };
+			this.getDatasource = function() { return datasource; };
 			this.__backingPlot = (function() {
 				var MIN_LEVEL = -20; // TODO: Offer control to the plot creator?
 				return @org.bodytrack.client.PhotoSeriesPlot::new(Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/core/client/JavaScriptObject;IILcom/google/gwt/core/client/JavaScriptObject;)(datasource, horizontalAxis, verticalAxis, MIN_LEVEL, userId, style);
