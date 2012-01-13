@@ -13,6 +13,7 @@ import gwt.g2d.client.graphics.Color;
 import gwt.g2d.client.graphics.KnownColor;
 import gwt.g2d.client.graphics.Surface;
 import gwt.g2d.client.graphics.TextAlign;
+import gwt.g2d.client.graphics.canvas.CanvasElement;
 import gwt.g2d.client.math.Vector2;
 
 import java.util.ArrayList;
@@ -21,7 +22,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-public class PlotContainer {
+public class PlotContainer implements Resizable {
    /**
     * The default loading message for this widget to show.  This class
     * never actually uses this value, but makes it available for classes
@@ -78,7 +79,7 @@ public class PlotContainer {
 
    private Vector2 mouseDragLastPos;
 
-   private String previousPaintEventId = null;
+   private int previousPaintEventId = 0;
    private final String placeholderElementId;
 
    public PlotContainer(final String placeholderElementId) {
@@ -163,7 +164,7 @@ public class PlotContainer {
 
          // drag the axes
          for (final GraphAxis axis : axes) {
-            axis.drag(mouseDragLastPos, pos, UUID.uuid());
+            axis.drag(mouseDragLastPos, pos, SequenceNumber.getNext());
          }
 
          mouseDragLastPos = pos;
@@ -233,27 +234,24 @@ public class PlotContainer {
       }
    }
 
-   public void onResize() {
-      Log.debug("PlotContainer.onResize(): div ID = " + placeholderElementId);
+   @Override
+   public void setSize(final int widthInPixels, final int heightInPixels, final int newPaintEventId) {
+      final CanvasElement canvas = drawing.getCanvas();
 
-      final Set<GraphAxis> axes = new HashSet<GraphAxis>();
-      for (final Plot plot : containedPlots) {
-         axes.add(plot.getXAxis());
-         axes.add(plot.getYAxis());
-      }
-
-      for (final GraphAxis axis : axes) {
-         axis.onResize();
+      if ((canvas.getClientWidth() != widthInPixels) ||
+          (canvas.getClientHeight() != heightInPixels)) {
+         drawing.setSize(widthInPixels, heightInPixels);
+         paint(newPaintEventId);
       }
    }
 
    public void paint() {
-      paint(UUID.uuid());
+      paint(SequenceNumber.getNext());
    }
 
-   public void paint(final String newPaintEventId) {
+   public void paint(final int newPaintEventId) {
       // guard against redundant paints
-      if (previousPaintEventId == null || !previousPaintEventId.equals(newPaintEventId)) {
+      if (previousPaintEventId != newPaintEventId) {
          previousPaintEventId = newPaintEventId;
 
          layout();

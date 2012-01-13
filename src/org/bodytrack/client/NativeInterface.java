@@ -122,7 +122,10 @@ public final class NativeInterface {
 					// Exceptions for illegal min and max values are handled in Java
 					this.__backingAxis.@org.bodytrack.client.GraphAxis::replaceBounds(DD)(min, max);
 				};
-				this.id = __getNextID();
+            this.setSize = function (widthInPixels, heightInPixels, eventId) {
+               this.__backingAxis.@org.bodytrack.client.GraphAxis::setSize(III)(widthInPixels, heightInPixels, eventId);
+            };
+            this.id = __getNextID();
 			};
 		};
 
@@ -267,6 +270,10 @@ public final class NativeInterface {
 			this.id = __getNextID();
 		};
 
+		/// Defines the SequenceNumber object
+		$wnd.SequenceNumber = function() {};
+      $wnd.SequenceNumber.getNext = function() { return @org.bodytrack.client.SequenceNumber::getNext()(); };
+
 		/// Initializes a new PlotContainer
 		///
 		/// @param placeholder
@@ -305,8 +312,8 @@ public final class NativeInterface {
 				}
 				this.__backingPlotContainer.@org.bodytrack.client.PlotContainer::removePlot(Lorg/bodytrack/client/Plot;)(plot.__backingPlot);
 			};
-			this.onResize = function() {
-				this.__backingPlotContainer.@org.bodytrack.client.PlotContainer::onResize()();
+			this.setSize = function(widthInPixels, heightInPixels, eventId) {
+            this.__backingPlotContainer.@org.bodytrack.client.PlotContainer::setSize(III)(widthInPixels, heightInPixels, eventId);
 			};
 			this.id = __getNextID();
 		};

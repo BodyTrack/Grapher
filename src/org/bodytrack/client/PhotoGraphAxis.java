@@ -36,7 +36,7 @@ public class PhotoGraphAxis extends GraphAxis {
     */
    public static final double PHOTO_HEIGHT = 0.35;
 
-   private String previousPaintEventId = null;
+   private int previousPaintEventId = 0;
 
    public PhotoGraphAxis(final String divName,
                          final double min,
@@ -91,9 +91,9 @@ public class PhotoGraphAxis extends GraphAxis {
     * Draws this axis.
     */
    @Override
-   public void paint(final String newPaintEventId) {
+   public void paint(final int newPaintEventId) {
       // guard against redundant paints
-      if (previousPaintEventId == null || !previousPaintEventId.equals(newPaintEventId)) {
+      if (previousPaintEventId != newPaintEventId) {
          previousPaintEventId = newPaintEventId;
 
          final Canvas canvas = getDrawingCanvas();

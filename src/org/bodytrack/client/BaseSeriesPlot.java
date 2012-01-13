@@ -48,14 +48,14 @@ public abstract class BaseSeriesPlot implements Plot {
 
    private final GraphAxis.EventListener graphAxisEventListener = new GraphAxis.EventListener() {
       @Override
-      public void onAxisChange(final String eventId) {
+      public void onAxisChange(final int eventId) {
          if (plotContainer != null) {
             plotContainer.paint(eventId);
          }
       }
    };
 
-   private String previousPaintEventId = null;
+   private int previousPaintEventId = 0;
 
    /**
     *
@@ -202,11 +202,11 @@ public abstract class BaseSeriesPlot implements Plot {
     * <p>Does not draw the axes associated with this plot.</p>
     */
    @Override
-   public final void paint(final Canvas canvas, final String newPaintEventId) {
+   public final void paint(final Canvas canvas, final int newPaintEventId) {
       final SeriesPlotRenderer renderer = getRenderer();
       if (renderer != null) {
          // guard against redundant paints
-         if (previousPaintEventId == null || !previousPaintEventId.equals(newPaintEventId)) {
+         if (previousPaintEventId != newPaintEventId) {
             previousPaintEventId = newPaintEventId;
 
             renderer.render(canvas,
