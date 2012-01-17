@@ -143,7 +143,7 @@ public abstract class BaseSeriesPlot implements Plot {
 
       if (willPublish) {
          for (final DataPointListener listener : dataPointListeners) {
-            listener.handleDataPointUpdate(publishedPoint);
+            listener.handleDataPointHighlight(publishedPoint);
          }
       }
    }
