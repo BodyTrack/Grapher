@@ -11,6 +11,7 @@ import com.google.gwt.event.dom.client.MouseUpEvent;
 import com.google.gwt.event.dom.client.MouseUpHandler;
 import com.google.gwt.event.dom.client.MouseWheelEvent;
 import com.google.gwt.i18n.client.NumberFormat;
+import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.RootPanel;
 import gwt.g2d.client.graphics.Color;
 import gwt.g2d.client.graphics.DirectShapeRenderer;
@@ -25,10 +26,10 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-public class GraphAxis {
+public class GraphAxis implements Resizable {
 
    public interface EventListener {
-      void onAxisChange(final String eventId);
+      void onAxisChange(final int eventId);
    }
 
    /**
@@ -82,7 +83,7 @@ public class GraphAxis {
 
    private Vector2 mouseDragLastPos;
 
-   private String previousPaintEventId = null;
+   private int previousPaintEventId = 0;
 
    public GraphAxis(final String placeholderElementId,
                     final double min,
@@ -100,55 +101,57 @@ public class GraphAxis {
 
       if (placeholderElementId != null) {
          final RootPanel placeholderElement = RootPanel.get(placeholderElementId);
-         final Surface drawingSurface = new Surface(placeholderElement.getOffsetWidth(), placeholderElement.getOffsetHeight());
-         placeholderElement.add(drawingSurface);
+         final int placeholderElementWidth = placeholderElement.getElement().getClientWidth();
+         final int placeholderElementHeight = placeholderElement.getElement().getClientHeight();
+         final Surface drawing = new Surface(placeholderElementWidth, placeholderElementHeight);
+         placeholderElement.add(drawing);
 
-         drawingSurface.addMouseWheelHandler(new BaseMouseWheelHandler() {
+         drawing.addMouseWheelHandler(new BaseMouseWheelHandler() {
             @Override
             protected void handleMouseWheelEvent(final MouseWheelEvent event) {
                final Vector2 pos = new Vector2(event.getX(), event.getY());
                final double zoomFactor = Math.pow(getMouseWheelZoomRate(), event.getDeltaY());
 
-               zoom(zoomFactor, unproject(pos), UUID.uuid());
+               zoom(zoomFactor, unproject(pos), SequenceNumber.getNext());
             }
          });
 
-         drawingSurface.addMouseDownHandler(new MouseDownHandler() {
+         drawing.addMouseDownHandler(new MouseDownHandler() {
             @Override
             public void onMouseDown(final MouseDownEvent event) {
                mouseDragLastPos = new Vector2(event.getX(), event.getY());
             }
          });
 
-         drawingSurface.addMouseMoveHandler(new MouseMoveHandler() {
+         drawing.addMouseMoveHandler(new MouseMoveHandler() {
             @Override
             public void onMouseMove(final MouseMoveEvent event) {
                // ignore mouse moves if the mouse button isn't being held down
                if (mouseDragLastPos != null) {
                   final Vector2 pos = new Vector2(event.getX(), event.getY());
-                  drag(mouseDragLastPos, pos, UUID.uuid());
+                  drag(mouseDragLastPos, pos, SequenceNumber.getNext());
                   mouseDragLastPos = pos;
                }
             }
          });
 
-         drawingSurface.addMouseUpHandler(new MouseUpHandler() {
+         drawing.addMouseUpHandler(new MouseUpHandler() {
             @Override
             public void onMouseUp(final MouseUpEvent event) {
                mouseDragLastPos = null;
             }
          });
 
-         drawingSurface.addMouseOutHandler(new MouseOutHandler() {
+         drawing.addMouseOutHandler(new MouseOutHandler() {
             @Override
             public void onMouseOut(final MouseOutEvent event) {
                mouseDragLastPos = null;
 
-               paint(UUID.uuid());
+               paint(SequenceNumber.getNext());
             }
          });
 
-         drawingCanvas = Canvas.buildCanvas(drawingSurface);
+         drawingCanvas = Canvas.buildCanvas(drawing);
       } else {
          drawingCanvas = null;
       }
@@ -194,8 +197,17 @@ public class GraphAxis {
       }
    }
 
-   public void onResize() {
-//      Log.debug("GraphAxis.onResize(): div ID = " + placeholderElementId);
+   public void setSize(final int widthInPixels, final int heightInPixels, final int newPaintEventId) {
+      final Element nativeCanvasElement = drawingCanvas.getNativeCanvasElement();
+
+      if ((nativeCanvasElement.getClientWidth() != widthInPixels) ||
+          (nativeCanvasElement.getClientHeight() != heightInPixels)) {
+         final Surface surface = drawingCanvas.getSurface();
+         surface.setSize(widthInPixels, heightInPixels);
+         layout();
+         paint(newPaintEventId);
+         publishAxisChangeEvent(newPaintEventId);
+      }
    }
 
    public void layout() {
@@ -309,9 +321,9 @@ public class GraphAxis {
       return highlightedPoint;
    }
 
-   public void paint(final String newPaintEventId) {
+   public void paint(final int newPaintEventId) {
       // guard against redundant paints
-      if (previousPaintEventId == null || !previousPaintEventId.equals(newPaintEventId)) {
+      if (previousPaintEventId != newPaintEventId) {
          previousPaintEventId = newPaintEventId;
 
          if (drawingCanvas == null) {
@@ -796,7 +808,7 @@ public class GraphAxis {
       }
    }
 
-   public void zoom(final double factor, final double about, final String eventId) {
+   public void zoom(final double factor, final double about, final int eventId) {
       this.min = about + factor * (this.min - about);
       this.max = about + factor * (this.max - about);
       clampToRange();
@@ -806,13 +818,13 @@ public class GraphAxis {
       publishAxisChangeEvent(eventId);
    }
 
-   private void publishAxisChangeEvent(final String eventId) {
+   private void publishAxisChangeEvent(final int eventId) {
       for (final EventListener listener : eventListeners) {
          listener.onAxisChange(eventId);
       }
    }
 
-   public void drag(final Vector2 from, final Vector2 to, final String eventId) {
+   public void drag(final Vector2 from, final Vector2 to, final int eventId) {
       final double motion = unproject(from) - unproject(to);
       uncheckedDrag(motion, eventId);
    }
@@ -826,7 +838,7 @@ public class GraphAxis {
     * 		for an axis representing time, other values for another
     * 		axis), not in screen pixels
     */
-   private void uncheckedDrag(final double motion, final String eventId) {
+   private void uncheckedDrag(final double motion, final int eventId) {
       uncheckedTranslate(motion);
       clampToRange();
       rescale();
@@ -853,7 +865,7 @@ public class GraphAxis {
       final double oldMin = getMin();
       final double oldMax = getMax();
 
-      final String eventId = UUID.uuid();
+      final int eventId = SequenceNumber.getNext();
 
       // Zoom in place to the right factor
       zoom((newMax - newMin) / (oldMax - oldMin), (oldMin + oldMax) / 2, eventId);

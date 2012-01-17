@@ -31,7 +31,7 @@ public class TimeGraphAxis extends GraphAxis {
 			{secondsInYear}                                            // 1 year
 	};
 
-   private String previousPaintEventId = null;
+   private int previousPaintEventId = 0;
 
 	public double computeTimeTickSize(double minPixels) {
 		//double minDelta = Math.max(minTickSize,
@@ -297,9 +297,9 @@ public class TimeGraphAxis extends GraphAxis {
 	}
 
    @Override
-   public void paint(final String newPaintEventId) {
+   public void paint(final int newPaintEventId) {
       // guard against redundant paints
-      if (previousPaintEventId == null || !previousPaintEventId.equals(newPaintEventId)) {
+      if (previousPaintEventId != newPaintEventId) {
          previousPaintEventId = newPaintEventId;
 
          paint();

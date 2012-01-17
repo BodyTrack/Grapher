@@ -23,7 +23,7 @@ public interface Plot {
     *
     * @see #registerPlotContainer(PlotContainer)
     */
-   void paint(Canvas canvas, String newPaintEventId);
+   void paint(Canvas canvas, int newPaintEventId);
 
    /**
     * Returns the X-Axis for this Plot.
