@@ -24,11 +24,6 @@ public final class DataPointListener extends JavaScriptObject {
 
 	protected DataPointListener() { }
 
-	public void handleDataPointUpdate(final PlottablePoint point,
-			final TriggerAction action) {
-		handleDataPointUpdate(point, action, null);
-	}
-
 	/**
 	 * Fires the callback with the specified information
 	 *
@@ -38,8 +33,8 @@ public final class DataPointListener extends JavaScriptObject {
 	 * @param action
 	 * 	The action that triggered this call
 	 * @param info
-	 * 	An JavaScript object that, if not null, gets passed in as part of
-	 * 	the target argument to the callback
+	 * 	An JavaScript object that, if not <code>null</code>, gets passed in
+	 * 	as part of the target argument to the callback
 	 * @throws NullPointerException
 	 * 	If action is <code>null</code>
 	 */

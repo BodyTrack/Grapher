@@ -152,9 +152,14 @@ public abstract class BaseSeriesPlot implements Plot {
 
    protected final void publishDataPoint(final PlottablePoint point,
                                          final TriggerAction action) {
-      for (final DataPointListener listener: dataPointListeners) {
-         listener.handleDataPointUpdate(point, action);
-      }
+      publishDataPoint(point, action, null);
+   }
+
+   protected final void publishDataPoint(final PlottablePoint point,
+                                         final TriggerAction action,
+                                         final JavaScriptObject info) {
+      for (final DataPointListener listener: dataPointListeners)
+         listener.handleDataPointUpdate(point, action, info);
    }
 
    private void registerGraphAxisEventListener(final GraphAxis axis) {
