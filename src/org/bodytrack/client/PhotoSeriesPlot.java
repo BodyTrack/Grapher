@@ -13,6 +13,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.bodytrack.client.DataPointListener.TriggerAction;
 import org.bodytrack.client.StyleDescription.StyleType;
 
 /**
@@ -359,6 +360,26 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 
 		return getter != null;
 	}
+
+	@Override
+	public void onClick(final Vector2 pos) {
+		final Set<PhotoGetter> closeImages = getCloseImages(pos,
+				PHOTO_HIGHLIGHT_THRESHOLD_PROPORTION * getPhotoHeight());
+
+		final PhotoGetter getter = CollectionUtils.getFirst(closeImages);
+		if (getter != null) {
+			publishDataPoint(new PlottablePoint(getter.getTime(), IMAGE_Y_VALUE),
+					TriggerAction.CLICK,
+					buildClickInfo(getter));
+		}
+	}
+
+	private static native JavaScriptObject buildClickInfo(final PhotoGetter getter) /*-{
+		return {
+			"userId": getter.userId,
+			"imageId": getter.imageId
+		};
+	}-*/;
 
 	/**
 	 * In much the same style as {@link DataSeriesPlot#closest(Vector2, double)},
