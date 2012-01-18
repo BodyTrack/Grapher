@@ -1,7 +1,6 @@
 package org.bodytrack.client;
 
 import gwt.g2d.client.graphics.Color;
-import gwt.g2d.client.graphics.Surface;
 import gwt.g2d.client.graphics.canvas.Context;
 import gwt.g2d.client.math.Vector2;
 
