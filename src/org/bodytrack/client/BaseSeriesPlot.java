@@ -2,8 +2,12 @@ package org.bodytrack.client;
 
 import com.google.gwt.core.client.JavaScriptObject;
 
+import gwt.g2d.client.math.Vector2;
+
 import java.util.HashSet;
 import java.util.Set;
+
+import org.bodytrack.client.DataPointListener.TriggerAction;
 
 /**
  * <p>
@@ -142,9 +146,14 @@ public abstract class BaseSeriesPlot implements Plot {
       }
 
       if (willPublish) {
-         for (final DataPointListener listener : dataPointListeners) {
-            listener.handleDataPointHighlight(publishedPoint);
-         }
+         publishDataPoint(publishedPoint, TriggerAction.HIGHLIGHT);
+      }
+   }
+
+   protected final void publishDataPoint(final PlottablePoint point,
+                                         final TriggerAction action) {
+      for (final DataPointListener listener: dataPointListeners) {
+         listener.handleDataPointUpdate(point, action);
       }
    }
 
@@ -282,13 +291,6 @@ public abstract class BaseSeriesPlot implements Plot {
       return yAxisNative;
    }
 
-   /**
-    * Returns the highlighted point maintained by this {@link Plot}.
-    *
-    * @return
-    * 		the highlighted point this {@link Plot} keeps, or
-    * 		<code>null</code> if there is no highlighted point
-    */
    @Override
    public final PlottablePoint getHighlightedPoint() {
       return highlightedPoint;
@@ -324,6 +326,11 @@ public abstract class BaseSeriesPlot implements Plot {
    public final boolean isHighlighted() {
       return highlightedPoint != null;
    }
+
+   // Do-nothing implementation so subclasses don't have to worry about
+   // handling this specialized event
+   @Override
+   public void onClick(final Vector2 pos) { }
 
    /**
     * Computes the value for currentLevel based on xAxis.

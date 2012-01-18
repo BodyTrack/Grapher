@@ -208,6 +208,12 @@ public class PlotContainer implements Resizable {
 
    private void handleMouseUpEvent(final MouseUpEvent event) {
       mouseDragLastPos = null;
+
+      // Alert all the plots to the click event
+      final Vector2 pos = new Vector2(event.getX(), event.getY());
+
+      for (final Plot plot: containedPlots)
+         plot.onClick(pos);
    }
 
    private void handleMouseOutEvent(final MouseOutEvent event) {

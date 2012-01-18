@@ -6,7 +6,7 @@ import com.google.gwt.core.client.JavaScriptObject;
  * @author Chris Bartley (bartley@cmu.edu)
  */
 public final class DataPointListener extends JavaScriptObject {
-	private static enum TriggerAction {
+	public static enum TriggerAction {
 		HIGHLIGHT("highlight"),
 		CLICK("click"),
 		MOUSEOVER("mouseover");
@@ -22,20 +22,7 @@ public final class DataPointListener extends JavaScriptObject {
 		}
 	}
 
-	/* Overlay types always have protected empty no-arg constructors */
 	protected DataPointListener() { }
-
-	public void handleDataPointHighlight(final PlottablePoint point) {
-		handleDataPointUpdate(point, TriggerAction.HIGHLIGHT);
-	}
-
-	public void handleDataPointClick(final PlottablePoint point) {
-		handleDataPointUpdate(point, TriggerAction.CLICK);
-	}
-
-	public void handleDataPointMouseover(final PlottablePoint point) {
-		handleDataPointUpdate(point, TriggerAction.MOUSEOVER);
-	}
 
 	/**
 	 * The dispatcher helper function that determines which native call to make
@@ -45,10 +32,13 @@ public final class DataPointListener extends JavaScriptObject {
 	 * 	be informed
 	 * @param action
 	 * 	The non-<code>null</code> action that triggered this call
+	 * @throws NullPointerException
+	 * 	If action is <code>null</code>
 	 */
-	private void handleDataPointUpdate(final PlottablePoint point,
+	public void handleDataPointUpdate(final PlottablePoint point,
 			final TriggerAction action) {
-		assert action != null;
+		if (action == null)
+			throw new NullPointerException();
 
 		if (point == null)
 			handleNoDataPointUpdate(action.getActionName());

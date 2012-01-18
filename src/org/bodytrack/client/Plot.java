@@ -66,16 +66,18 @@ public interface Plot {
     * @return
     * 		<code>true</code> if and only if this highlights the axes
     */
-   boolean highlightIfNear(Vector2 pos);
+   boolean highlightIfNear(final Vector2 pos);
 
    /**
-    * Returns the highlighted point maintained by this Plot.
+    * Returns the highlighted point maintained by this {@link Plot}.
     *
     * @return
-    * 		the highlighted point this Plot keeps, or
+    * 		the highlighted point this {@link Plot} keeps, or
     * 		<code>null</code> if there is no highlighted point
     */
    PlottablePoint getHighlightedPoint();
 
    void setHighlightedPoint(final PlottablePoint highlightedPoint);
+
+   void onClick(final Vector2 pos);
 }
