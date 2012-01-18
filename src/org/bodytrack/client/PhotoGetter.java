@@ -51,7 +51,7 @@ public final class PhotoGetter extends JavaScriptObject implements Comparable<Ph
 			final PhotoAlertable callback,
 			final boolean download) {
 		return buildPhotoGetter(userId, desc.getId(), desc.getBeginDate(),
-				DEFAULT_COUNT, callback, download);
+				desc.getCount(), callback, download);
 	}
 
 	/**
