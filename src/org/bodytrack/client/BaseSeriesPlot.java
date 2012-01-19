@@ -96,9 +96,7 @@ public abstract class BaseSeriesPlot implements Plot {
          throw new IllegalArgumentException("Y-axis must be vertical");
 
       this.minLevel = minLevel;
-      tileLoader = new StandardTileLoader(minLevel, datasource, xAxis);
-      tileLoader.addEventListener(new AlwaysRepaintListener());
-      tileLoader.checkForFetch(computeCurrentLevel());
+      tileLoader = buildTileLoader(datasource);
 
       // register self as an event listener to the axes...
       registerGraphAxisEventListener(getXAxis());
@@ -106,12 +104,63 @@ public abstract class BaseSeriesPlot implements Plot {
    }
 
    public final void setDatasource(final JavaScriptObject datasource) {
-      tileLoader = new StandardTileLoader(minLevel, datasource, xAxis);
-      tileLoader.addEventListener(new AlwaysRepaintListener());
-      tileLoader.checkForFetch(computeCurrentLevel());
+      // Because we are getting rid of the old tile loader, the cache
+      // is automatically dropped
+      tileLoader = buildTileLoader(datasource);
 
-      // TODO: REMOVE DEBUGGING LINES
-      Log.debug("Plot.setDatasource called");
+      // Need to replace the drawing of the old data, and replace it
+      // with nothing until we reload the tiles
+      signalRepaintOfPlotContainer();
+   }
+
+   // The method that should be called from within this class
+   private TileLoader buildTileLoader(final JavaScriptObject datasource) {
+      TileLoader loader = buildTileLoader(minLevel, datasource, xAxis);
+      loader.checkForFetch(computeCurrentLevel());
+
+      return loader;
+   }
+
+   /**
+    * A hook to allow subclasses to build their tile loaders however they choose
+    *
+    * <p>This method builds a new {@link TileLoader}, with any necessary listeners
+    * attached.  This particular implementation attaches a listener that
+    * causes this plot's container to be repainted whenever any new data
+    * is loaded.</p>
+    *
+    * <p>This is not designed to be called by subclasses, but is designed
+    * to be overridden by subclasses that require some special tile loading
+    * logic.  If a subclass does require some special tile loading logic,
+    * it can override this method to return a {@link TileLoader} that
+    * encapsulates that logic.  However, the subclass implementation does
+    * <strong>not</strong> need to call {@link TileLoader#checkForFetch(int)}
+    * on the newly created {@link TileLoader}, since any code to set the
+    * datasource on a {@link BaseSeriesPlot} will call
+    * {@link TileLoader#checkForFetch(int)} automatically just after the
+    * object is created.  It is expected that a subclass implementation of
+    * this method will never return <code>null</code>.</p>
+    *
+    * @param minLevel
+    *  The minimum level to which the newly created {@link TileLoader} should
+    *  load tiles
+    * @param datasource
+    *  The native JavaScript function that actually loads tiles
+    * @param xAxis
+    *  The X-axis that will allow the tile loader to determine if another
+    *  tile load is required or not
+    * @return
+    *  A newly created {@link TileLoader} that uses the specified X-axis
+    *  and minimum level to determine when to call the datasource function
+    *  in order to load tiles
+    */
+   protected TileLoader buildTileLoader(final int minLevel,
+                                        final JavaScriptObject datasource,
+                                        final GraphAxis xAxis) {
+      TileLoader loader = new StandardTileLoader(minLevel, datasource, xAxis);
+      loader.addEventListener(new AlwaysRepaintListener());
+
+      return loader;
    }
 
    public final void addDataPointListener(final JavaScriptObject listener) {
