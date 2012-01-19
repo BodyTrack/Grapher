@@ -118,6 +118,11 @@ public abstract class BaseSeriesPlot implements Plot {
       registerGraphAxisEventListener(getYAxis());
    }
 
+   public final void setDatasource(final JavaScriptObject datasource) {
+      // TODO: IMPLEMENT
+      Log.debug("Plot.setDatasource called");
+   }
+
    public final void addDataPointListener(final JavaScriptObject listener) {
       if (listener != null) {
          dataPointListeners.add(listener.<DataPointListener>cast());
