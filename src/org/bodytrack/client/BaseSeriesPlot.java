@@ -41,7 +41,8 @@ public abstract class BaseSeriesPlot implements Plot {
    private final JavaScriptObject yAxisNative;
    private final GraphAxis xAxis;
    private final GraphAxis yAxis;
-   private final TileLoader tileLoader;
+   private final int minLevel;
+   private TileLoader tileLoader;
 
    private PlottablePoint publishedPoint = null;
    private final Set<DataPointListener> dataPointListeners = new HashSet<DataPointListener>();
@@ -81,36 +82,22 @@ public abstract class BaseSeriesPlot implements Plot {
                             final JavaScriptObject nativeXAxis,
                             final JavaScriptObject nativeYAxis,
                             final int minLevel) {
-      if (datasource == null || nativeXAxis == null || nativeYAxis == null) {
+      if (datasource == null || nativeXAxis == null || nativeYAxis == null)
          throw new NullPointerException("Cannot have a null datasource or axis");
-      }
 
       this.xAxisNative = nativeXAxis;
       this.yAxisNative = nativeYAxis;
       this.xAxis = GraphAxis.getAxis(this.xAxisNative);
       this.yAxis = GraphAxis.getAxis(this.yAxisNative);
 
-      if (!xAxis.isXAxis()) {
+      if (!xAxis.isXAxis())
          throw new IllegalArgumentException("X-axis must be horizontal");
-      }
-      if (yAxis.isXAxis()) {
+      if (yAxis.isXAxis())
          throw new IllegalArgumentException("Y-axis must be vertical");
-      }
 
-      this.tileLoader = new StandardTileLoader(minLevel, datasource, xAxis);
-      tileLoader.addEventListener(
-            new TileLoader.EventListener() {
-               @Override
-               public void handleLoadSuccess() {
-                  signalRepaintOfPlotContainer();
-               }
-
-               @Override
-               public void handleLoadFailure() {
-                  signalRepaintOfPlotContainer();
-               }
-            }
-      );
+      this.minLevel = minLevel;
+      tileLoader = new StandardTileLoader(minLevel, datasource, xAxis);
+      tileLoader.addEventListener(new AlwaysRepaintListener());
       tileLoader.checkForFetch(computeCurrentLevel());
 
       // register self as an event listener to the axes...
@@ -119,7 +106,11 @@ public abstract class BaseSeriesPlot implements Plot {
    }
 
    public final void setDatasource(final JavaScriptObject datasource) {
-      // TODO: IMPLEMENT
+      tileLoader = new StandardTileLoader(minLevel, datasource, xAxis);
+      tileLoader.addEventListener(new AlwaysRepaintListener());
+      tileLoader.checkForFetch(computeCurrentLevel());
+
+      // TODO: REMOVE DEBUGGING LINES
       Log.debug("Plot.setDatasource called");
    }
 
@@ -357,5 +348,21 @@ public abstract class BaseSeriesPlot implements Plot {
 
    protected final GrapherTile getBestResolutionTileAt(final double time) {
       return tileLoader.getBestResolutionTileAt(time, computeCurrentLevel());
+   }
+
+   /**
+    * A class that always repaints the plot container whenever any event is fired
+    */
+   protected class AlwaysRepaintListener implements TileLoader.EventListener {
+
+      @Override
+      public void handleLoadSuccess() {
+         signalRepaintOfPlotContainer();
+      }
+
+      @Override
+      public void handleLoadFailure() {
+         signalRepaintOfPlotContainer();
+      }
    }
 }
