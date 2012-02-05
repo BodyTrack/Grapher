@@ -3,18 +3,17 @@ package org.bodytrack.client;
 import gwt.g2d.client.graphics.KnownColor;
 import gwt.g2d.client.graphics.TextAlign;
 import gwt.g2d.client.graphics.TextBaseline;
-import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.core.client.JsArray;
 import gwt.g2d.client.math.Vector2;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.bodytrack.client.DataPointListener.TriggerAction;
 import org.bodytrack.client.StyleDescription.StyleType;
+
+import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.JsArray;
 
 /**
  * A class to show photos on a {@link PlotContainer}
@@ -25,16 +24,8 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 
 	private static final double COUNT_CIRCLE_SIZE = 20;
 
-	/**
-	 * Ratio of heights between highlighted image and regular image
-	 */
-	private static final double HIGHLIGHTED_SIZE_RATIO = 2;
-
-	private static final double PHOTO_HIGHLIGHT_THRESHOLD_PROPORTION = 0.10;
-
 	private final int userId;
 	private final List<PhotoGetter> images;
-	private Set<PhotoGetter> highlightedImages;
 	private final PhotoAlertable loadListener;
 	private final SeriesPlotRenderer renderer;
 
@@ -71,7 +62,6 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 		this.userId = userId;
 
 		images = new ArrayList<PhotoGetter>();
-		highlightedImages = new HashSet<PhotoGetter>();
 		loadListener = new PhotoAlertable();
 		renderer = new PhotoRenderer(styleJson.<StyleDescription>cast());
 	}
@@ -250,11 +240,7 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 	 * 	The height at which photo should be drawn, if at full size
 	 */
 	private double getPhotoHeight(final PhotoGetter photo) {
-		double height = getPhotoHeight();
-
-		return highlightedImages.contains(photo)
-			? height * HIGHLIGHTED_SIZE_RATIO
-			: height;
+		return getPhotoHeight();
 	}
 
 	/**
@@ -347,30 +333,17 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 
 	@Override
 	public boolean highlightIfNear(final Vector2 pos) {
-		highlightedImages = getCloseImages(pos,
-				PHOTO_HIGHLIGHT_THRESHOLD_PROPORTION * getPhotoHeight());
-
-		final PhotoGetter getter =
-			CollectionUtils.getFirst(highlightedImages);
-		if (getter != null)
-			setHighlightedPoint(
-					new PlottablePoint(getter.getTime(), IMAGE_Y_VALUE));
-		else
-			unhighlight();
-
-		return getter != null;
+		return false;
 	}
 
 	@Override
 	public void onClick(final Vector2 pos) {
-		final Set<PhotoGetter> closeImages = getCloseImages(pos,
-				PHOTO_HIGHLIGHT_THRESHOLD_PROPORTION * getPhotoHeight());
+		final PhotoGetter closestImage = getVisibleImageAt(pos);
 
-		final PhotoGetter getter = CollectionUtils.getFirst(closeImages);
-		if (getter != null) {
-			publishDataPoint(new PlottablePoint(getter.getTime(), IMAGE_Y_VALUE),
+		if (closestImage != null) {
+			publishDataPoint(new PlottablePoint(closestImage.getTime(), IMAGE_Y_VALUE),
 					TriggerAction.CLICK,
-					buildClickInfo(getter));
+					buildClickInfo(closestImage));
 		}
 	}
 
@@ -381,41 +354,31 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 		};
 	}-*/;
 
-	/**
-	 * In much the same style as {@link DataSeriesPlot#closest(Vector2, double)},
-	 * finds the images with centers within threshold pixels of pos
-	 *
-	 * @param pos
-	 * 	The current mouse position
-	 * @param threshold
-	 * 	The maximum number of pixels an image must be from pos in order to be
-	 * 	highlighted
-	 * @return
-	 * 	A <tt>Set</tt> of images that should be highlighted, based
-	 * 	on the fact that the mouse is at pos
-	 */
-	private Set<PhotoGetter> getCloseImages(final Vector2 pos,
-			final double threshold) {
-		final Set<PhotoGetter> result = new HashSet<PhotoGetter>();
+	private PhotoGetter getVisibleImageAt(final Vector2 pos) {
+		// If pos has an out-of-range Y-value, no chance at overlapping with a photo
+		if (Math.abs(pos.getY() - getPhotoY()) > getPhotoHeight() / 2)
+			return null;
 
-		// Precompute some values
-		final double xAxisMinValue = getXAxis().getMin();
-		final double xAxisMaxValue = getXAxis().getMax();
-		final double thresholdSq = threshold * threshold;
+		PhotoGetter lastVisible = null;
+		final double x = pos.getX();
 
 		for (final PhotoGetter photo: images) {
-			final double time = photo.getTime();
-
-			// Don't bother with photos that are out of bounds
-			if (time < xAxisMinValue || time > xAxisMaxValue)
+			// Photo can't be visible unless it has been downloaded
+			if (!photo.loadStarted())
 				continue;
 
-			final Vector2 photoPos = new Vector2(getPhotoX(photo), getPhotoY());
-			if (pos.distanceSquared(photoPos) < thresholdSq)
-				result.add(photo);
+			if (lastVisible != null && overlaps(lastVisible, photo))
+				continue;
+
+			lastVisible = photo;
+
+			final double height = getPhotoHeight(photo);
+
+			if (Math.abs(getPhotoX(photo) - x) < getPhotoWidth(photo, height) / 2)
+				return photo;
 		}
 
-		return result;
+		return null;
 	}
 
 	private class PhotoRenderingStrategy implements SeriesPlotRenderingStrategy {
