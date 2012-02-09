@@ -32,6 +32,8 @@ import com.google.gwt.user.client.Element;
 // is too full (possibly use reference counting to make sure that the cache
 // doesn't drop photos that someone is using)
 
+// TODO: Make an immutable base object, and wrap the mutable parts around that
+
 public final class PhotoGetter extends JavaScriptObject implements Comparable<PhotoGetter> {
 	private static final int DUMMY_IMAGE_ID = -1;
 	private static final int DEFAULT_COUNT = 1;
@@ -96,6 +98,10 @@ public final class PhotoGetter extends JavaScriptObject implements Comparable<Ph
 
 		var baseUrl = "/users/" + userId + "/logphotos/" + imageId + ".";
 		var url = baseUrl + DEFAULT_WIDTH + ".jpg";
+
+		if (imageId > 0) {
+			console.log("Building PhotoGetter for URL " + url);
+		}
 
 		var getter = {};
 		getter.userId = userId;
@@ -193,6 +199,10 @@ public final class PhotoGetter extends JavaScriptObject implements Comparable<Ph
 	 */
 	public native int getCount() /*-{
 		return this.count;
+	}-*/;
+
+	public native void setCount(final int count) /*-{
+		this.count = count;
 	}-*/;
 
 	/**
@@ -391,10 +401,15 @@ public final class PhotoGetter extends JavaScriptObject implements Comparable<Ph
 		return true;
 	}-*/;
 
+	// Compare first by floor of time, then by user ID, then by image ID
 	@Override
 	public int compareTo(PhotoGetter other) {
 		if (other == null)
 			return 1;
+
+		if (getUserId() == other.getUserId()
+				&& getImageId() == other.getImageId())
+			return 0;
 
 		return DATE_COMPARATOR.compare(getTime(), other.getTime());
 	}

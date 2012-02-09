@@ -9,7 +9,7 @@ import java.util.Random;
 
 import org.junit.Test;
 
-public class CollectionUtilsTest {
+public class InsertInOrderTest {
 	private static final int SEED = 424242;
 
 	@Test(expected=NullPointerException.class)
@@ -26,11 +26,10 @@ public class CollectionUtilsTest {
 	public void testEmptyList() {
 		final List<Integer> lst = new ArrayList<Integer>();
 
-		CollectionUtils.insertInOrder(lst, 0);
+		assertEquals(0, CollectionUtils.insertInOrder(lst, 0));
 
-		assertEquals(lst.size(), 1);
-
-		assertEquals(lst.get(0).intValue(), 0);
+		assertEquals(1, lst.size());
+		assertEquals(0, lst.get(0).intValue());
 	}
 
 	@Test
@@ -40,13 +39,13 @@ public class CollectionUtilsTest {
 		lst.add(5);
 		lst.add(42);
 
-		CollectionUtils.insertInOrder(lst, 7);
+		assertEquals(1, CollectionUtils.insertInOrder(lst, 7));
 
-		assertEquals(lst.size(), 3);
+		assertEquals(3, lst.size());
 
-		assertEquals(lst.get(0).intValue(), 5);
-		assertEquals(lst.get(1).intValue(), 7);
-		assertEquals(lst.get(2).intValue(), 42);
+		assertEquals(5, lst.get(0).intValue());
+		assertEquals(7, lst.get(1).intValue());
+		assertEquals(42, lst.get(2).intValue());
 	}
 
 	@Test
@@ -56,16 +55,16 @@ public class CollectionUtilsTest {
 		final Random rg = new Random(SEED);
 
 		for (int i = 0; i < 10000; i++) {
-			int n = rg.nextInt();
+			final int n = rg.nextInt();
 			lst.add(n);
 			CollectionUtils.insertInOrder(copy, n);
 		}
 
 		Collections.sort(lst);
 
-		assertEquals(lst.size(), copy.size());
+		assertEquals(copy.size(), lst.size());
 
 		for (int i = 0; i < lst.size(); i++)
-			assertEquals(lst.get(i), copy.get(i));
+			assertEquals(copy.get(i), lst.get(i));
 	}
 }

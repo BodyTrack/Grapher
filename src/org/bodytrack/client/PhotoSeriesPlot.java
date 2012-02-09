@@ -6,7 +6,6 @@ import gwt.g2d.client.graphics.TextBaseline;
 import gwt.g2d.client.math.Vector2;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.bodytrack.client.DataPointListener.TriggerAction;
@@ -111,17 +110,18 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 
 	private void loadPhotos(final List<PhotoDescription> descs) {
 		for (final PhotoDescription desc: descs) {
-			// This depends on the fact that equality of PlottablePoint
-			// objects is based on equality of the floors of the times
-			// of the objects (this is robust to small variations)
-			if (Collections.binarySearch(images,
-					PhotoGetter.buildDummyPhotoGetter(userId, desc)) < 0) {
+			int idx = CollectionUtils.binarySearch(images,
+					PhotoGetter.buildDummyPhotoGetter(userId, desc));
+			if (idx < 0) {
 				// Since the download parameter is false, the photo isn't
 				// downloaded until absolutely necessary
 				PhotoGetter getter =
 					PhotoGetter.buildPhotoGetter(userId, desc,
 							loadListener, false);
 				CollectionUtils.insertInOrder(images, getter);
+			} else {
+				// Update count to reflect closer neighbors from server
+				images.get(idx).setCount(desc.getCount());
 			}
 		}
 	}
