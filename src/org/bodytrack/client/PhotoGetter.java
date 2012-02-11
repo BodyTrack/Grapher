@@ -4,6 +4,7 @@ import gwt.g2d.client.math.Vector2;
 
 import java.util.Comparator;
 
+import org.bodytrack.client.NativeObjectSet.EqualsHashcodeProvider;
 import org.bodytrack.client.PhotoSeriesPlot.PhotoAlertable;
 import org.bodytrack.client.PlottablePoint.DateComparator;
 
@@ -35,6 +36,9 @@ import com.google.gwt.user.client.Element;
 // TODO: Make an immutable base object, and wrap the mutable parts around that
 
 public final class PhotoGetter extends JavaScriptObject implements Comparable<PhotoGetter> {
+	public static final EqualsHashcodeProvider<PhotoGetter> EQUALS_HASHCODE =
+		new PhotoGetterEqualsHashcodeProvider();
+
 	private static final Comparator<Double> DATE_COMPARATOR = new DateComparator();
 
 	/* Overlay types always have protected zero-arg constructors. */
@@ -99,11 +103,6 @@ public final class PhotoGetter extends JavaScriptObject implements Comparable<Ph
 
 		var baseUrl = "/users/" + userId + "/logphotos/" + imageId + ".";
 		var url = baseUrl + DEFAULT_WIDTH + ".jpg";
-
-		if (!isDummy) {
-			console.log("Building PhotoGetter for URL " + url
-				+ ", with count = " + count);
-		}
 
 		var getter = {};
 		getter.userId = userId;
@@ -205,10 +204,6 @@ public final class PhotoGetter extends JavaScriptObject implements Comparable<Ph
 	}-*/;
 
 	public native void setCount(final int count) /*-{
-		if (count != this.count) {
-			console.log("Changing count for image at " + this.url
-				+ " from " + this.count + " to " + count);
-		}
 		this.count = count;
 	}-*/;
 
@@ -419,5 +414,26 @@ public final class PhotoGetter extends JavaScriptObject implements Comparable<Ph
 			return 0;
 
 		return DATE_COMPARATOR.compare(getTime(), other.getTime());
+	}
+
+	private static class PhotoGetterEqualsHashcodeProvider
+			implements EqualsHashcodeProvider<PhotoGetter> {
+
+		@Override
+		public boolean equals(PhotoGetter obj1, PhotoGetter obj2) {
+			if (obj1 == null || obj2 == null)
+				return obj1 == null && obj2 == null;
+
+			return (obj1.getUserId() == obj2.getUserId())
+				&& (obj1.getImageId() == obj2.getImageId());
+		}
+
+		@Override
+		public int hashCode(PhotoGetter obj) {
+			if (obj == null)
+				return 0;
+
+			return (obj.getUserId() << 16) + obj.getImageId();
+		}
 	}
 }

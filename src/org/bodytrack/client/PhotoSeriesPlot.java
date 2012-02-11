@@ -7,6 +7,7 @@ import gwt.g2d.client.math.Vector2;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.bodytrack.client.DataPointListener.TriggerAction;
 import org.bodytrack.client.StyleDescription.StyleType;
@@ -87,7 +88,7 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 	 */
 	private List<PlottablePoint> getDataPoints(final GrapherTile tile) {
 		if (tile.getPhotoDescriptions() != null)
-			loadPhotos(tile.getPhotoDescriptions());
+			loadPhotos(tile.getPhotoDescriptions(), tile.getDescription());
 
 		return getDataPoints();
 	}
@@ -108,10 +109,16 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 		return result;
 	}
 
-	private void loadPhotos(final List<PhotoDescription> descs) {
+	private void loadPhotos(final List<PhotoDescription> descs,
+			final TileDescription tileDesc) {
+		final Set<PhotoGetter> descSet =
+			new NativeObjectSet<PhotoGetter>(PhotoGetter.EQUALS_HASHCODE);
+
 		for (final PhotoDescription desc: descs) {
-			int idx = CollectionUtils.binarySearch(images,
-					PhotoGetter.buildDummyPhotoGetter(userId, desc));
+			final PhotoGetter dummy = PhotoGetter.buildDummyPhotoGetter(userId, desc);
+			descSet.add(dummy);
+
+			final int idx = CollectionUtils.binarySearch(images, dummy);
 			if (idx < 0) {
 				// Since the download parameter is false, the photo isn't
 				// downloaded until absolutely necessary
@@ -121,11 +128,19 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 				CollectionUtils.insertInOrder(images, getter);
 			} else {
 				// Update count to reflect closer neighbors from server
-				images.get(idx).setCount(
-					Math.min(images.get(idx).getCount(), desc.getCount()));
+				images.get(idx).setCount(desc.getCount());
 			}
-			for (PhotoGetter image: images) {
-				Log.debug("Photo " + image.getImageId() + " has count " + image.getCount());
+		}
+
+		// Fixes the issue in which a photo loaded at a higher level is not
+		// passed in a tile to a lower level, causing the count to go too high
+		final double minTime = tileDesc.getMinTime();
+		final double maxTime = tileDesc.getMaxTime();
+
+		for (final PhotoGetter image: images) {
+			if (image.getTime() > minTime && image.getTime() < maxTime) {
+				if (!descSet.contains(image))
+					image.setCount(0);
 			}
 		}
 	}
@@ -136,6 +151,9 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 			return lastPhoto;
 
 		PhotoGetter photo = images.get(idx);
+		if (photo.getCount() == 0)
+			return lastPhoto;
+
 		if (lastPhoto == null || !overlaps(photo, lastPhoto)) {
 			// Actually load a photo that hasn't been downloaded yet
 			if (!photo.loadStarted())
