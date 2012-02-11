@@ -1,8 +1,8 @@
 package org.bodytrack.client;
 
-import java.util.Comparator;
-
 import gwt.g2d.client.math.Vector2;
+
+import java.util.Comparator;
 
 import org.bodytrack.client.PhotoSeriesPlot.PhotoAlertable;
 import org.bodytrack.client.PlottablePoint.DateComparator;
@@ -35,8 +35,6 @@ import com.google.gwt.user.client.Element;
 // TODO: Make an immutable base object, and wrap the mutable parts around that
 
 public final class PhotoGetter extends JavaScriptObject implements Comparable<PhotoGetter> {
-	private static final int DUMMY_IMAGE_ID = -1;
-	private static final int DEFAULT_COUNT = 1;
 	private static final Comparator<Double> DATE_COMPARATOR = new DateComparator();
 
 	/* Overlay types always have protected zero-arg constructors. */
@@ -44,16 +42,16 @@ public final class PhotoGetter extends JavaScriptObject implements Comparable<Ph
 
 	public static PhotoGetter buildDummyPhotoGetter(final int userId,
 			final PhotoDescription desc) {
-		return buildPhotoGetter(userId, DUMMY_IMAGE_ID,
-				desc.getBeginDate(), DEFAULT_COUNT, null, false);
+		return buildPhotoGetter(userId, desc.getId(), true,
+				desc.getBeginDate(), desc.getCount(), null, false);
 	}
 
 	public static PhotoGetter buildPhotoGetter(final int userId,
 			final PhotoDescription desc,
 			final PhotoAlertable callback,
 			final boolean download) {
-		return buildPhotoGetter(userId, desc.getId(), desc.getBeginDate(),
-				desc.getCount(), callback, download);
+		return buildPhotoGetter(userId, desc.getId(), false,
+				desc.getBeginDate(), desc.getCount(), callback, download);
 	}
 
 	/**
@@ -62,9 +60,11 @@ public final class PhotoGetter extends JavaScriptObject implements Comparable<Ph
 	 * @param userId
 	 * 	The ID of the user who owns the specified image
 	 * @param imageId
-	 * 	The ID of the specified image.  If this is negative, the PhotoGetter
-	 * 	is created normally except that no image will ever actually be loaded
-	 * 	from the server, meaning that callback is never called
+	 * 	The ID of the specified image
+	 * @param isDummy
+	 * 	If this is <code>true</code>, the PhotoGetter is created normally
+	 * 	except that no image will ever actually be loaded from the server,
+	 * 	meaning that callback is never called
 	 * @param time
 	 * 	The time at which this image should appear
 	 * @param count
@@ -87,6 +87,7 @@ public final class PhotoGetter extends JavaScriptObject implements Comparable<Ph
 	// when I tried to use Alertable in JSNI
 	public native static PhotoGetter buildPhotoGetter(final int userId,
 			final int imageId,
+			final boolean isDummy,
 			final double time,
 			final int count,
 			final PhotoAlertable callback,
@@ -99,7 +100,7 @@ public final class PhotoGetter extends JavaScriptObject implements Comparable<Ph
 		var baseUrl = "/users/" + userId + "/logphotos/" + imageId + ".";
 		var url = baseUrl + DEFAULT_WIDTH + ".jpg";
 
-		if (imageId > 0) {
+		if (!isDummy) {
 			console.log("Building PhotoGetter for URL " + url
 				+ ", with count = " + count);
 		}
@@ -107,6 +108,7 @@ public final class PhotoGetter extends JavaScriptObject implements Comparable<Ph
 		var getter = {};
 		getter.userId = userId;
 		getter.imageId = imageId;
+		getter.isDummy = isDummy;
 		getter.time = time;
 		getter.count = count;
 		getter.callback = callback;
@@ -120,7 +122,7 @@ public final class PhotoGetter extends JavaScriptObject implements Comparable<Ph
 
 		getter.img = new Image();
 
-		if (imageId < 0) {
+		if (isDummy) {
 			// No need to create extra closures that will never be called
 			return getter;
 		}
