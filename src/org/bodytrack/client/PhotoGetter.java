@@ -100,7 +100,8 @@ public final class PhotoGetter extends JavaScriptObject implements Comparable<Ph
 		var url = baseUrl + DEFAULT_WIDTH + ".jpg";
 
 		if (imageId > 0) {
-			console.log("Building PhotoGetter for URL " + url);
+			console.log("Building PhotoGetter for URL " + url
+				+ ", with count = " + count);
 		}
 
 		var getter = {};
@@ -202,6 +203,10 @@ public final class PhotoGetter extends JavaScriptObject implements Comparable<Ph
 	}-*/;
 
 	public native void setCount(final int count) /*-{
+		if (count != this.count) {
+			console.log("Changing count for image at " + this.url
+				+ " from " + this.count + " to " + count);
+		}
 		this.count = count;
 	}-*/;
 

@@ -121,7 +121,11 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 				CollectionUtils.insertInOrder(images, getter);
 			} else {
 				// Update count to reflect closer neighbors from server
-				images.get(idx).setCount(desc.getCount());
+				images.get(idx).setCount(
+					Math.min(images.get(idx).getCount(), desc.getCount()));
+			}
+			for (PhotoGetter image: images) {
+				Log.debug("Photo " + image.getImageId() + " has count " + image.getCount());
 			}
 		}
 	}
