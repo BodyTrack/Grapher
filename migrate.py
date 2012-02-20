@@ -10,14 +10,11 @@ WEBSITE_REPO_PATH = '../website/'
 
 TAG_SCRIPT = './getCommitTag.pl'
 
-WIDGET_DIRECTORIES = {'war/': 'grapher2/',}
-OUTPUT_SUBDIR = 'public/'
-OUTPUT_DIRECTORY = WEBSITE_REPO_PATH + OUTPUT_SUBDIR
+INPUT_DIR = 'war/grapher2/'
+OUTPUT_DIR = 'public/grapher4/'
 
 def copyWidgets():
-    '''
-    Copies over widgets from WIDGETS_REPO_PATH to WEBSITE_REPO_PATH
-    '''
+    'Copies over widgets from WIDGETS_REPO_PATH to WEBSITE_REPO_PATH'
     shouldContinue = checkGit(WIDGETS_REPO_PATH) \
         and checkGit(WEBSITE_REPO_PATH)
 
@@ -26,38 +23,24 @@ def copyWidgets():
     if not shouldContinue:
         print 'Please commit both your git repositories!'
         return
-    
-    # Copy over widget directories
-    for key, value in WIDGET_DIRECTORIES.iteritems():
-        src = key + value
-        dest = OUTPUT_DIRECTORY + value
 
-        # Remove any old copy of dest
-        if os.path.exists(dest):
-            shutil.rmtree(dest)
+    # 'git rm' the old version
+    olddir = os.path.abspath(os.path.curdir)
+    os.chdir(WEBSITE_REPO_PATH)
+    pCall('git rm -rf %s' % OUTPUT_DIR)
+    os.chdir(olddir)
 
-        # 'git rm' the old version
-        olddir = os.path.abspath(os.path.curdir)
-        os.chdir(OUTPUT_DIRECTORY)
-        pCall('git rm -rf %s' % value)
-        os.chdir(olddir)
-
-        # Now copy over current version
-        shutil.copytree(src, dest)
+    # Now copy over current version
+    shutil.copytree(INPUT_DIR, WEBSITE_REPO_PATH + OUTPUT_DIR)
 
     # Make a commit on the website repo
-    os.chdir(OUTPUT_DIRECTORY)
-
-    for value in WIDGET_DIRECTORIES.itervalues():
-        pCall('git add %s' % value)
-
+    os.chdir(WEBSITE_REPO_PATH)
+    pCall('git add %s' % OUTPUT_DIR)
     pCall(r'git commit -m "Automatic grapher update from commit %s"'
         % commitTag)
 
 def checkGit(path):
-    '''
-    Also handles the user interaction to check that a repo is committed
-    '''
+    'Also handles the user interaction to check that a repo is committed'
     shouldContinue = True
 
     committed = gitIsCommitted(path)
@@ -76,55 +59,38 @@ def checkGit(path):
     return shouldContinue
 
 def gitIsCommitted(path):
-    '''
-    Checks that git has no changed files since the last commit
-    '''
+    'Checks that git has no changed files since the last commit'
     gitProcess = subprocess.Popen('git status'.split(),
-                                  stdout = subprocess.PIPE,
-                                  cwd = path)
-    output = gitProcess.communicate()
+                                  stdout=subprocess.PIPE,
+                                  cwd=path)
+    stdout, _ = gitProcess.communicate()
+    lines = stdout.split('\n')
 
-    linesList = output[0].split('\n')
-
-    for line in linesList:
+    for line in lines:
         if 'Changes to be committed' in line:
             return False
-
         if 'nothing to commit' in line:
             return True
 
-    return linesList
+    return lines
 
 def getCommitTag(path):
-    '''
-    Returns the hash of the current commit in the repo at path
-    '''
+    'Returns the hash of the current commit in the repo at path'
     tagProcess = subprocess.Popen(TAG_SCRIPT.split(),
-                                  stdout = subprocess.PIPE,
-                                  cwd = path)
-    output = tagProcess.stdout
-    
-    tag = output.readline()
+                                  stdout=subprocess.PIPE,
+                                  cwd=path)
+    stdout, _ = tagProcess.communicate()
+    return stdout.strip()
 
-    output.close()
+def pCall(cmd, print_output=True):
+    'Calls cmd and returns the standard output from cmd'
+    print '%s' % cmd
+    process = subprocess.Popen(cmd, shell=True)
 
-    return tag
-
-def pCall(cmd):
-    '''
-    Calls cmd and returns the standard output from cmd
-    '''
-    print cmd
-    process = subprocess.Popen(cmd, shell = True)
-
-    output = process.communicate()
-
-    stdOutput = output[0]
-
-    if stdOutput:
-        print '%s\n' % stdOutput
-
-    return stdOutput
+    stdout, _ = process.communicate()
+    if print_output and stdout:
+        print '%s\n' % stdout
+    return stdout
 
 if __name__ == '__main__':
     copyWidgets()

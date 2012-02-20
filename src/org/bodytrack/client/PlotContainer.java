@@ -591,7 +591,7 @@ public class PlotContainer implements Resizable {
       private final Color color;
 
       /**
-       * Creates a new <tt>MessageIdPair</tt> object.
+       * Creates a new {@link DisplayMessage DisplayMessage} object
        *
        * @param id
        * 		the ID this object should hold
@@ -656,7 +656,7 @@ public class PlotContainer implements Resizable {
 
       /**
        * Tells if this is logically equal to o.  Note that, if o
-       * is not a MessageIdPair, then this and o must be unequal.
+       * is not a DisplayMessage, then this and o must be unequal.
        * Note that equality is determined by ID.
        */
       @Override
