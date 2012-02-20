@@ -240,7 +240,7 @@ public final class NativeInterface {
 		///		An non-null axis with horizontal orientation
 		/// @param verticalAxis
 		///		A non-null axis with vertical orientation
-		$wnd.PhotoSeriesPlot = function(datasource, horizontalAxis, verticalAxis, userId) {
+		$wnd.PhotoSeriesPlot = function(datasource, horizontalAxis, verticalAxis, userId, style) {
 			if (datasource == null) {
 				throw 'Must pass in datasource';
 			}
@@ -249,15 +249,17 @@ public final class NativeInterface {
 				throw 'Must pass in both axes';
 			}
 
-			// create a default style until we support photo styles specified by the page
-			var style = {
-				"styles": [
-					{"type":"photo"}
-				],
-				"comments":{"show":true}
-			};
+         // create a default style if necessary
+         if (style == null) {
+            style = {
+               "styles":[
+                  {"type":"photo"}
+               ],
+               "comments":{"show":true}
+            };
+         }
 
-			this.datasource = datasource;
+         this.datasource = datasource;
 			this.getDatasource = function() {
 				return this.datasource;
 			};
@@ -275,7 +277,17 @@ public final class NativeInterface {
 			this.getVerticalAxis = function() {
 				return this.__backingPlot.@org.bodytrack.client.PhotoSeriesPlot::getNativeYAxis()();
 			};
-			this.addDataPointListener = function(listenerFunction) {
+         this.style = style;
+         this.getStyle = function () {
+            // stringify and then parse the style so that we return
+            // a COPY of the style, so the user can't mutate the one we store
+            return JSON.parse(JSON.stringify(this.style));
+         };
+         this.setStyle = function (new_style) {
+            this.style = new_style;
+            this.__backingPlot.@org.bodytrack.client.PhotoSeriesPlot::setStyle(Lcom/google/gwt/core/client/JavaScriptObject;)(new_style);
+         };
+         this.addDataPointListener = function(listenerFunction) {
 				return this.__backingPlot.@org.bodytrack.client.PhotoSeriesPlot::addDataPointListener(Lcom/google/gwt/core/client/JavaScriptObject;)(listenerFunction);
 			};
 			this.removeDataPointListener = function(listenerFunction) {
