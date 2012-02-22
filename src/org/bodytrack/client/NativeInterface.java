@@ -249,17 +249,17 @@ public final class NativeInterface {
 				throw 'Must pass in both axes';
 			}
 
-         // create a default style if necessary
-         if (style == null) {
-            style = {
-               "styles":[
-                  {"type":"photo"}
-               ],
-               "comments":{"show":true}
-            };
-         }
+			// create a default style if necessary
+			if (style == null) {
+				style = {
+					"styles": [
+						{"type": "photo"}
+					],
+					"comments": {"show": true}
+				};
+			}
 
-         this.datasource = datasource;
+			this.datasource = datasource;
 			this.getDatasource = function() {
 				return this.datasource;
 			};
@@ -277,17 +277,17 @@ public final class NativeInterface {
 			this.getVerticalAxis = function() {
 				return this.__backingPlot.@org.bodytrack.client.PhotoSeriesPlot::getNativeYAxis()();
 			};
-         this.style = style;
-         this.getStyle = function () {
-            // stringify and then parse the style so that we return
-            // a COPY of the style, so the user can't mutate the one we store
-            return JSON.parse(JSON.stringify(this.style));
-         };
-         this.setStyle = function (new_style) {
-            this.style = new_style;
-            this.__backingPlot.@org.bodytrack.client.PhotoSeriesPlot::setStyle(Lcom/google/gwt/core/client/JavaScriptObject;)(new_style);
-         };
-         this.addDataPointListener = function(listenerFunction) {
+			this.style = style;
+			this.getStyle = function () {
+				// stringify and then parse the style so that we return
+				// a COPY of the style, so the user can't mutate the one we store
+				return JSON.parse(JSON.stringify(this.style));
+			};
+			this.setStyle = function (new_style) {
+				this.style = new_style;
+				this.__backingPlot.@org.bodytrack.client.PhotoSeriesPlot::setStyle(Lcom/google/gwt/core/client/JavaScriptObject;)(new_style);
+			};
+			this.addDataPointListener = function(listenerFunction) {
 				return this.__backingPlot.@org.bodytrack.client.PhotoSeriesPlot::addDataPointListener(Lcom/google/gwt/core/client/JavaScriptObject;)(listenerFunction);
 			};
 			this.removeDataPointListener = function(listenerFunction) {
