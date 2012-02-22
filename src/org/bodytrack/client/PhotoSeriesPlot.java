@@ -385,8 +385,9 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 		final double x = pos.getX();
 
 		for (final PhotoGetter photo: images) {
-			// Photo can't be visible unless it has been downloaded
-			if (!photo.loadStarted())
+			// Photo can't be visible unless it has been downloaded and
+			// has nonzero count
+			if ((!photo.loadStarted()) || (photo.getCount() <= 0))
 				continue;
 
 			if (lastVisible != null && overlaps(lastVisible, photo))
