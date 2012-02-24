@@ -54,6 +54,7 @@ public class PlotContainer implements Resizable {
    private static final double VALUE_MSG_GAP = 2;
    private static final double TEXT_HEIGHT = 12;
    private static final double TEXT_LINE_WIDTH = 0.75;
+   private static final int MAX_DRAG_CLICK_EVENT = 3;
 
    private final Surface drawing;
    private final Set<Plot> containedPlots = new HashSet<Plot>();
@@ -78,6 +79,7 @@ public class PlotContainer implements Resizable {
    private int height;
 
    private Vector2 mouseDragLastPos;
+   private Vector2 mouseDragStartPos;
 
    private int previousPaintEventId = 0;
    private final String placeholderElementId;
@@ -130,6 +132,7 @@ public class PlotContainer implements Resizable {
    }
 
    private void handleMouseDownEvent(final MouseDownEvent event) {
+      mouseDragStartPos = new Vector2(event.getX(), event.getY());
       mouseDragLastPos = new Vector2(event.getX(), event.getY());
    }
 
@@ -207,13 +210,19 @@ public class PlotContainer implements Resizable {
    }
 
    private void handleMouseUpEvent(final MouseUpEvent event) {
+      final Vector2 pos = new Vector2(event.getX(), event.getY());
+      final boolean isClickEvent = (mouseDragStartPos == null)
+         || (pos.distanceSquared(mouseDragStartPos) <
+               (MAX_DRAG_CLICK_EVENT * MAX_DRAG_CLICK_EVENT));
+
+      mouseDragStartPos = null;
       mouseDragLastPos = null;
 
       // Alert all the plots to the click event
-      final Vector2 pos = new Vector2(event.getX(), event.getY());
-
-      for (final Plot plot: containedPlots)
-         plot.onClick(pos);
+      if (isClickEvent) {
+         for (final Plot plot: containedPlots)
+            plot.onClick(pos);
+      }
    }
 
    private void handleMouseOutEvent(final MouseOutEvent event) {
