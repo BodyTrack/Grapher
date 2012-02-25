@@ -41,7 +41,6 @@ public abstract class BaseSeriesPlot implements Plot {
    private final JavaScriptObject yAxisNative;
    private final GraphAxis xAxis;
    private final GraphAxis yAxis;
-   private final int minLevel;
    private TileLoader tileLoader;
 
    private PlottablePoint publishedPoint = null;
@@ -71,8 +70,6 @@ public abstract class BaseSeriesPlot implements Plot {
     * 		the X-axis along which this data set will be aligned when drawn
     * @param nativeYAxis
     * 		the Y-axis along which this data set will be aligned when drawn
-    * @param minLevel
-    * 		the minimum level to which the user will be allowed to zoom
     * @throws NullPointerException
     * 		if datasource, nativeXAxis, or nativeYAxis is <code>null</code>
     * @throws IllegalArgumentException
@@ -80,8 +77,7 @@ public abstract class BaseSeriesPlot implements Plot {
     */
    protected BaseSeriesPlot(final JavaScriptObject datasource,
                             final JavaScriptObject nativeXAxis,
-                            final JavaScriptObject nativeYAxis,
-                            final int minLevel) {
+                            final JavaScriptObject nativeYAxis) {
       if (datasource == null || nativeXAxis == null || nativeYAxis == null)
          throw new NullPointerException("Cannot have a null datasource or axis");
 
@@ -95,7 +91,6 @@ public abstract class BaseSeriesPlot implements Plot {
       if (yAxis.isXAxis())
          throw new IllegalArgumentException("Y-axis must be vertical");
 
-      this.minLevel = minLevel;
       tileLoader = buildTileLoader(datasource);
 
       // register self as an event listener to the axes...
@@ -115,7 +110,7 @@ public abstract class BaseSeriesPlot implements Plot {
 
    // The method that should be called from within this class
    private TileLoader buildTileLoader(final JavaScriptObject datasource) {
-      TileLoader loader = buildTileLoader(minLevel, datasource, xAxis);
+      TileLoader loader = buildTileLoader(datasource, xAxis);
       loader.checkForFetch(computeCurrentLevel());
 
       return loader;
@@ -141,9 +136,6 @@ public abstract class BaseSeriesPlot implements Plot {
     * object is created.  It is expected that a subclass implementation of
     * this method will never return <code>null</code>.</p>
     *
-    * @param minLevel
-    *  The minimum level to which the newly created {@link TileLoader} should
-    *  load tiles
     * @param datasource
     *  The native JavaScript function that actually loads tiles
     * @param xAxis
@@ -154,10 +146,9 @@ public abstract class BaseSeriesPlot implements Plot {
     *  and minimum level to determine when to call the datasource function
     *  in order to load tiles
     */
-   protected TileLoader buildTileLoader(final int minLevel,
-                                        final JavaScriptObject datasource,
+   protected TileLoader buildTileLoader(final JavaScriptObject datasource,
                                         final GraphAxis xAxis) {
-      TileLoader loader = new StandardTileLoader(minLevel, datasource, xAxis);
+      TileLoader loader = new StandardTileLoader(datasource, xAxis);
       loader.addEventListener(new AlwaysRepaintListener());
 
       return loader;

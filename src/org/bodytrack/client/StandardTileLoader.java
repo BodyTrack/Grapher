@@ -25,8 +25,6 @@ public class StandardTileLoader implements TileLoader {
    private final Map<String, Integer> pendingUrls = new HashMap<String, Integer>();
    private final List<GrapherTile> pendingData = new ArrayList<GrapherTile>();
 
-   // Determining whether or not we should retrieve more data from the server
-   private final int minLevel;
    private final JavaScriptObject datasource;
    private final GraphAxis timeAxis;
    private int currentLevel;
@@ -36,12 +34,7 @@ public class StandardTileLoader implements TileLoader {
    private final Set<EventListener> eventListeners = new HashSet<EventListener>();
    private final Alertable<GrapherTile> loadTileAlertable = new LoadTileAlertable();
 
-   /**
-    * @param minLevel
-    * 		the minimum level to which the user will be allowed to zoom
-    */
-   public StandardTileLoader(final int minLevel, final JavaScriptObject datasource, final GraphAxis timeAxis) {
-      this.minLevel = minLevel;
+   public StandardTileLoader(final JavaScriptObject datasource, final GraphAxis timeAxis) {
       this.datasource = datasource;
       this.timeAxis = timeAxis;
       currentLevel = Integer.MIN_VALUE;
@@ -65,15 +58,10 @@ public class StandardTileLoader implements TileLoader {
 
    /**
     * Checks for and performs a fetch for data from the server if
-    * necessary.
-    *
-    * @return
-    * 		<tt>true</tt> if the user should be allowed to zoom past
-    * 		this point, <tt>false</tt> if the user shouldn't be allowed
-    * 		to zoom past this point
+    * necessary
     */
    @Override
-   public final boolean checkForFetch(final int correctLevel) {
+   public final void checkForFetch(final int correctLevel) {
       final int correctMinOffset = computeMinOffset(correctLevel);
       final int correctMaxOffset = computeMaxOffset(correctLevel);
 
@@ -91,8 +79,6 @@ public class StandardTileLoader implements TileLoader {
       currentLevel = correctLevel;
       currentMinOffset = correctMinOffset;
       currentMaxOffset = correctMaxOffset;
-
-      return correctLevel > minLevel;
    }
 
    /**
