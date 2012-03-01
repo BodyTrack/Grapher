@@ -19,27 +19,31 @@ public class StandardTileLoader implements TileLoader {
     */
    private static final int MAX_REQUESTS_PER_URL = 5;
 
-   // Values related to getting new values from the server (the data will be pulled in with the checkForFetch call)
-   private final List<GrapherTile> currentData = new ArrayList<GrapherTile>();
-   private final Set<TileDescription> pendingDescriptions = new HashSet<TileDescription>();
-   private final Map<String, Integer> pendingUrls = new HashMap<String, Integer>();
-   private final List<GrapherTile> pendingData = new ArrayList<GrapherTile>();
+   // TODO: Transform these first two data structures into a map from description to data
+   private final List<GrapherTile> currentData;
+   private final Set<TileDescription> descriptions;
+   private final Set<TileDescription> pendingDescriptions;
+   private final Map<String, Integer> pendingUrls;
+   private final List<GrapherTile> pendingData;
 
    private final JavaScriptObject datasource;
    private final GraphAxis timeAxis;
-   private int currentLevel;
-   private int currentMinOffset;
-   private int currentMaxOffset;
 
-   private final Set<EventListener> eventListeners = new HashSet<EventListener>();
-   private final Alertable<GrapherTile> loadTileAlertable = new LoadTileAlertable();
+   private final Set<EventListener> eventListeners;
+   private final Alertable<GrapherTile> loadTileAlertable;
 
    public StandardTileLoader(final JavaScriptObject datasource, final GraphAxis timeAxis) {
       this.datasource = datasource;
       this.timeAxis = timeAxis;
-      currentLevel = Integer.MIN_VALUE;
-      currentMinOffset = Integer.MAX_VALUE;
-      currentMaxOffset = Integer.MIN_VALUE;
+
+      currentData = new ArrayList<GrapherTile>();
+      descriptions = new HashSet<TileDescription>();
+      pendingDescriptions = new HashSet<TileDescription>();
+      pendingUrls = new HashMap<String, Integer>();
+      pendingData = new ArrayList<GrapherTile>();
+
+      eventListeners = new HashSet<EventListener>();
+      loadTileAlertable = new LoadTileAlertable();
    }
 
    @Override
@@ -65,20 +69,12 @@ public class StandardTileLoader implements TileLoader {
       final int correctMinOffset = computeMinOffset(correctLevel);
       final int correctMaxOffset = computeMaxOffset(correctLevel);
 
-      if (correctLevel != currentLevel) {
-         for (int i = correctMinOffset; i <= correctMaxOffset; i++) {
-            fetchFromServer(correctLevel, i);
-         }
-      } else if (correctMinOffset < currentMinOffset) {
-         fetchFromServer(correctLevel, correctMinOffset);
-      } else if (correctMaxOffset > currentMaxOffset) {
-         fetchFromServer(correctLevel, correctMaxOffset);
+      // No danger of multiple fetches of the same tile, because
+      // fetchFromServer ensures that it doesn't attempt to fetch a
+      // previously-fetched tile
+      for (int i = correctMinOffset; i <= correctMaxOffset; i++) {
+         fetchFromServer(correctLevel, i);
       }
-
-      // This way we don't fetch the same data multiple times
-      currentLevel = correctLevel;
-      currentMinOffset = correctMinOffset;
-      currentMaxOffset = correctMaxOffset;
    }
 
    /**
@@ -141,7 +137,7 @@ public class StandardTileLoader implements TileLoader {
       final TileDescription desc = new TileDescription(level, offset);
 
       // Ensures we don't fetch the same tile twice unnecessarily
-      if (pendingDescriptions.contains(desc)) {
+      if (pendingDescriptions.contains(desc) || descriptions.contains(desc)) {
          return;
       }
 
@@ -166,6 +162,7 @@ public class StandardTileLoader implements TileLoader {
             }
 
             currentData.add(tile);
+            descriptions.add(tile.getDescription());
 
             // Make sure we don't still mark this as pending
             pendingDescriptions.remove(tile.getDescription());
