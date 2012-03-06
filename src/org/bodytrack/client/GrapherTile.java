@@ -39,8 +39,9 @@ public final class GrapherTile {
     */
    public static final int TILE_WIDTH = 512;
 
-   public GrapherTile(final int level, final double offset, final JavaScriptObject tileObj) {
-      this(level, (long)offset, tileObj);
+   public GrapherTile(final int level, final String offset,
+         final JavaScriptObject tileObj) {
+      this(level, Long.parseLong(offset), tileObj);
    }
 
    /**

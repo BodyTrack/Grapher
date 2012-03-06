@@ -241,7 +241,10 @@ public class StandardTileLoader implements TileLoader {
 	 * 	The offset of the tile we are retrieving
 	 */
 	private void loadTile(final int level, final long offset) {
-		loadTileNative(datasource, level, (double)offset, loadTileAlertable);
+		loadTileNative(datasource, level,
+				(double)offset,
+				Long.toString(offset),
+				loadTileAlertable);
 	}
 
 	/**
@@ -259,6 +262,9 @@ public class StandardTileLoader implements TileLoader {
 	 * 	The offset of the tile we are retrieving, except of type <code>double</code>.
 	 * 	This is required because GWT wraps the <code>long</code> type in a way that
 	 * 	makes longs inaccessible to JavaScript
+	 * @param offsetString
+	 * 	A string representation of offset.  This is required because GWT doesn't let
+	 * 	us pass longs through JavaScript
 	 * @param callback
 	 * 	An {@link Alertable<GrapherTile>} that is passed the loaded tile whenever the
 	 * 	tile arrives from the server
@@ -266,10 +272,11 @@ public class StandardTileLoader implements TileLoader {
 	private native void loadTileNative(final JavaScriptObject datasource,
 			final int level,
 			final double offset,
+			final String offsetString,
 			final Alertable<GrapherTile> callback) /*-{
 		datasource(level, offset,
 			function (tile) {
-				var successTile = @org.bodytrack.client.GrapherTile::new(IDLcom/google/gwt/core/client/JavaScriptObject;)(level, offset, tile);
+				var successTile = @org.bodytrack.client.GrapherTile::new(ILjava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(level, offsetString, tile);
 
 				// The following method is generic in Java, but changing
 				// the parameter specification to Object seems to work, if
@@ -277,7 +284,7 @@ public class StandardTileLoader implements TileLoader {
 				callback.@org.bodytrack.client.Alertable::onSuccess(Ljava/lang/Object;)(successTile);
 			},
 			function () {
-				var failureTile = @org.bodytrack.client.GrapherTile::new(IDLcom/google/gwt/core/client/JavaScriptObject;)(level, offset, null);
+				var failureTile = @org.bodytrack.client.GrapherTile::new(ILjava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(level, offsetString, null);
 
 				// Again, replacing a Java generic with Object seems to work
 				callback.@org.bodytrack.client.Alertable::onFailure(Ljava/lang/Object;)(failureTile);
