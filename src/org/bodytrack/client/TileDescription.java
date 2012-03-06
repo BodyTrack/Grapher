@@ -9,49 +9,48 @@ package org.bodytrack.client;
  * class, if that attacker can introduce cross-site scripting.</p>
  */
 public final class TileDescription {
-	
 	private int level;
-	private int offset;
+	private long offset;
 
 	/**
-	 * Creates a new TileDescription.
+	 * Creates a new TileDescription
 	 *
 	 * @param level
-	 * 		the level for the tile this TileDescription describes
+	 * 	The level for the tile this TileDescription describes
 	 * @param offset
-	 * 		the offset for the tile this TileDescription describes
+	 * 	The offset for the tile this TileDescription describes
 	 */
-	public TileDescription(int level, int offset) {
+	public TileDescription(int level, long offset) {
 		this.level = level;
 		this.offset = offset;
 	}
 
 	/**
-	 * Returns the level of the tile this TileDescription describes.
+	 * Returns the level of the tile this TileDescription describes
 	 *
 	 * @return
-	 * 		the level of the tile this TileDescription describes
+	 * 	The level of the tile this TileDescription describes
 	 */
 	public int getLevel() {
 		return level;
 	}
 
 	/**
-	 * Returns the offset of the tile this TileDescription describes.
+	 * Returns the offset of the tile this TileDescription describes
 	 *
 	 * @return
-	 * 		the offset of the tile this TileDescription describes
+	 * 	The offset of the tile this TileDescription describes
 	 */
-	public int getOffset() {
+	public long getOffset() {
 		return offset;
 	}
 
 	/**
-	 * Returns the width of the tile this describes, as a double.
+	 * Returns the width of the tile this describes, as a double
 	 *
 	 * @return
-	 * 		the width, in seconds, of the tile with the level and
-	 * 		offset specified in this object
+	 * 	The width, in seconds, of the tile with the level returned
+	 * 	by {@link #getLevel()}
 	 */
 	public double getTileWidth() {
 		return Math.pow(2, level) * GrapherTile.TILE_WIDTH;
@@ -59,11 +58,11 @@ public final class TileDescription {
 
 	/**
 	 * Returns the minimum time possible for a data point inside the
-	 * tile this TileDescription describes.
+	 * tile this {@link TileDescription} describe.
 	 *
 	 * @return
-	 * 		the minimum possible time which could be associated with
-	 * 		a data point in a tile described by this TileDescription
+	 * 	The minimum possible time which could be associated with
+	 * 	a data point in a tile described by this {@link TileDescription}
 	 */
 	public double getMinTime() {
 		return getOffset() * getTileWidth();
@@ -71,48 +70,48 @@ public final class TileDescription {
 
 	/**
 	 * Returns the maximum time possible for a data point inside the
-	 * tile this TileDescription describes.
+	 * tile this {@link TileDescription} describes
 	 *
 	 * @return
-	 * 		the maximum possible time which could be associated with
-	 * 		a data point in a tile described by this TileDescription
+	 * 	The maximum possible time which could be associated with
+	 * 	a data point in a tile described by this {@link TileDescription}
 	 */
 	public double getMaxTime() {
 		return getMinTime() + getTileWidth();
 	}
 
 	/**
-	 * Returns a hash code for this object.
+	 * Returns a hash code for this object
 	 *
-	 * This method of computing hash codes works best when level and
+	 * <p>This method of computing hash codes works best when level and
 	 * offset both fit in 16 bits (they are both between -32768 and
 	 * 32767, inclusive).  This should be the case for most instances
 	 * of this class.  Note that this method still works even when
-	 * level and offset do not both fit in 16 bits, though.
+	 * level and offset do not both fit in 16 bits, though.</p>
 	 *
 	 * @return
-	 * 		an integer that will be the same for objects that are equal,
-	 * 		and should be different for unequal objects, at least most
-	 * 		of the time
+	 * 	An integer that will be the same for objects that are equal,
+	 * 	and should usually be different for unequal objects
 	 *
 	 * @see java.lang.Object#hashCode()
 	 */
 	@Override
 	public int hashCode() {
-		return (level << 16) + offset;
+		return (level << 16) + (int)offset;
 	}
 
 	/**
-	 * Indicates whether this object is equal to o.
+	 * Indicates whether this object is equal to o
 	 *
-	 * If o is not a TileDescription, or if o is a TileDescription
-	 * with different level or different offset, returns
-	 * <tt>false</tt>.  Otherwise, returns <tt>true</tt>.
+	 * <p>If o is not a {@link TileDescription}, or if o is a {@link TileDescription}
+	 * with different level or different offset, returns <code>false</code>.
+	 * Otherwise, returns <tt>true</tt>.</p>
 	 *
+	 * @param o
+	 * 	The object to check for equality with
 	 * @return
-	 * 		<tt>true</tt> if and only if o is a non-<tt>null</tt>
-	 * 		TileDescription with the same level and offset as
-	 * 		this
+	 * 	<code>true</code> if and only if o is a non-<code>null</code>
+	 * 	{@link TileDescription} with the same level and offset as this
 	 *
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
@@ -134,27 +133,44 @@ public final class TileDescription {
 
 		return true;
 	}
+
+	/**
+	 * Returns a short string uniquely representing this {@link TileDescription}
+	 *
+	 * @return
+	 * 	The returned string is suitable to use as a key in a string-keyed
+	 * 	hash table
+	 */
+	public String getTileKey() {
+		return level + "." + offset;
+	}
 	
 	/**
-	 * Computes the tile level corresponding to a length of time.
-	 * Returns a double;  consider using Math.{floor,round,ceil} to convert to integer.
+	 * Computes the tile level corresponding to a length of time
+	 *
+	 * <p>Returns a double; consider using {@link Math#floor(double) Math.floor},
+	 * {@link Math#round(double) Math.round}, or {@link Math#ceil(double) Math.ceil}
+	 * to convert to an integer.</p>
 	 *
 	 * @param timeLength
-	 * 		length of time, in seconds
+	 * 	Length of time, in seconds
 	 */
 	public static double computeLevel(double timeLength) {
 		return Math.log(timeLength/GrapherTile.TILE_WIDTH)/Math.log(2);
 	}
 
 	/**
-	 * Compute TileDescription for tile at a given level containing a given time.
+	 * Builds a {@link TileDescription} for tile at a given level containing a
+	 * given time
 	 *
 	 * @param level
-	 * 		the level for the TileDescription to be returned
+	 * 	The level for the {@link TileDescription} to be returned
 	 * @param time
-	 * 		timestamp contained in tile (standard BodyTrack timestamp: seconds since 1/1/1970)
+	 * 	Timestamp contained in tile (standard Unix timestamp as used by BodyTrack:
+	 * 	seconds since 1/1/1970)
 	 */
 	public static TileDescription tileAt(int level, double time) {
-		return new TileDescription(level, (int) Math.floor(time / (Math.pow(2, level) * GrapherTile.TILE_WIDTH)));
+		return new TileDescription(level,
+			(long) Math.floor(time / (Math.pow(2, level) * GrapherTile.TILE_WIDTH)));
 	}
 }
