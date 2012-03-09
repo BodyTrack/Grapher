@@ -24,7 +24,7 @@ public class SequenceNumber {
 
 	// The number of milliseconds between unique values returned from
 	// getNextThrottled
-	private static final int THROTTLED_THRESHOLD = 100;
+	private static final int THROTTLED_THRESHOLD = 50;
 
 	// Have to divide and then multiple in order to prevent overflow
 	private static final int MIN_THROTTLED = (Integer.MAX_VALUE / 4) * 3;
