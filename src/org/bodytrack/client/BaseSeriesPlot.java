@@ -97,10 +97,6 @@ public abstract class BaseSeriesPlot implements Plot {
 
       this.minLevel = minLevel;
       tileLoader = buildTileLoader(datasource);
-
-      // register self as an event listener to the axes...
-      registerGraphAxisEventListener(getXAxis());
-      registerGraphAxisEventListener(getYAxis());
    }
 
    public final void setDatasource(final JavaScriptObject datasource) {
@@ -219,22 +215,44 @@ public abstract class BaseSeriesPlot implements Plot {
       }
    }
 
-   /** Sets the {@link PlotContainer} which contains this {@link Plot}. */
+   /**
+    * Sets the {@link PlotContainer} which contains this {@link Plot}.
+    *
+    * <p>
+    * Also registers the axes to begin notifying this plot whenever the
+    * user pans or zooms.
+    * </p>
+    */
    @Override
    public final void registerPlotContainer(final PlotContainer plotContainer) {
       this.plotContainer = plotContainer;
+
+      this.registerGraphAxisEventListener(getXAxis());
+      this.registerGraphAxisEventListener(getYAxis());
    }
 
    /**
-    * Unregisters the given {@link PlotContainer} from this {@link Plot} if and only if the given
-    * {@link PlotContainer} is not <code>null</code> and is currently registered with this {@link Plot}. That is,
-    * if this {@link Plot} is already associated with a {@link PlotContainer} other than the given one, then
-    * nothing happens.
+    * Unregisters the given {@link PlotContainer} from this {@link Plot} if
+    * and only if the given {@link PlotContainer} is not <code>null</code> and
+    * is currently registered with this {@link Plot}. That is, if this {@link Plot}
+    * is already associated with a {@link PlotContainer} other than the given one,
+    * then nothing happens.
+    *
+    * <p>
+    * This also unregisters the axis listeners so that no further updates cause
+    * extra tiles to be fetches from the server.
+    * </p>
     */
    @Override
    public final void unregisterPlotContainer(final PlotContainer plotContainer) {
       if (plotContainer != null && plotContainer.equals(this.plotContainer)) {
          this.plotContainer = null;
+
+         this.unregisterGraphAxisEventListener(getXAxis());
+         this.unregisterGraphAxisEventListener(getYAxis());
+
+         // TODO: Possibly set an inactive flag that disables all operations
+         // until the flag is reset by calling registerPlotContainer?
       }
    }
 
