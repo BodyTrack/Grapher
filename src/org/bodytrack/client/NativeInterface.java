@@ -203,7 +203,8 @@ public final class NativeInterface {
 				this.__backingPlot.@org.bodytrack.client.DataSeriesPlot::setDatasource(Lcom/google/gwt/core/client/JavaScriptObject;)(datasource);
 			};
 			this.__backingPlot = (function() {
-				return @org.bodytrack.client.DataSeriesPlot::new(Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/core/client/JavaScriptObject;)(datasource, horizontalAxis, verticalAxis, style);
+				var MIN_LEVEL = -20; // TODO: Offer control to the plot creator?
+				return @org.bodytrack.client.DataSeriesPlot::new(Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/core/client/JavaScriptObject;ILcom/google/gwt/core/client/JavaScriptObject;)(datasource, horizontalAxis, verticalAxis, MIN_LEVEL, style);
 			})();
 			this.getHorizontalAxis = function() {
 				return this.__backingPlot.@org.bodytrack.client.DataSeriesPlot::getNativeXAxis()();
@@ -267,7 +268,8 @@ public final class NativeInterface {
 				this.__backingPlot.@org.bodytrack.client.PhotoSeriesPlot::setDatasource(Lcom/google/gwt/core/client/JavaScriptObject;)(datasource);
 			};
 			this.__backingPlot = (function() {
-				return @org.bodytrack.client.PhotoSeriesPlot::new(Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/core/client/JavaScriptObject;ILcom/google/gwt/core/client/JavaScriptObject;)(datasource, horizontalAxis, verticalAxis, userId, style);
+				var MIN_LEVEL = -20; // TODO: Offer control to the plot creator?
+				return @org.bodytrack.client.PhotoSeriesPlot::new(Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/core/client/JavaScriptObject;IILcom/google/gwt/core/client/JavaScriptObject;)(datasource, horizontalAxis, verticalAxis, MIN_LEVEL, userId, style);
 			})();
 			this.getHorizontalAxis = function() {
 				return this.__backingPlot.@org.bodytrack.client.PhotoSeriesPlot::getNativeXAxis()();

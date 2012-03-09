@@ -39,6 +39,8 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 	 * 	The X-axis along which this data set will be aligned when drawn
 	 * @param nativeYAxis
 	 * 	The Y-axis along which this data set will be aligned when drawn
+	 * @param minLevel
+	 * 	The minimum level to which the user will be allowed to zoom
 	 * @param userId
 	 * 	The user ID of the current user
 	 * @param styleJson
@@ -49,9 +51,10 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 	public PhotoSeriesPlot(final JavaScriptObject datasource,
 			final JavaScriptObject nativeXAxis,
 			final JavaScriptObject nativeYAxis,
+			final int minLevel,
 			final int userId,
 			final JavaScriptObject styleJson) {
-		super(datasource, nativeXAxis, nativeYAxis);
+		super(datasource, nativeXAxis, nativeYAxis, minLevel);
 
 		if (styleJson == null)
 			throw new NullPointerException();

@@ -17,7 +17,7 @@ public interface TileLoader {
 
    void removeEventListener(EventListener listener);
 
-   void checkForFetch(final int correctLevel);
+   boolean checkForFetch(final int correctLevel);
 
    List<GrapherTile> getBestResolutionTiles(final int currentLevel);
 

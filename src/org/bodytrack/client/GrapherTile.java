@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Represents a single tile of data
+ * Represents a single tile of data.
  *
  * <p>This is generic enough to hold an array of {@link PhotoDescription PhotoDescription}
  * objects, or a single {@link PlottablePointTile PlottablePointTile}
@@ -25,9 +25,15 @@ import java.util.List;
  * overlay object, for efficiency we do not bother making copies of
  * return values, meaning that this class is <em>not</em> immutable.</p>
  */
+// TODO: Use JSONParser.parseStrict() rather than eval() - this is for safety
+// OR use http://www.ietf.org/rfc/rfc4627.txt, section 6, which has an
+// expression that will parse JSON safely
+// TODO: Make sure the level and offset we store here are consistent with
+// that sent to us in a PlottablePointTile
+
 public final class GrapherTile {
    private final int level;
-   private final long offset;
+   private final int offset;
    private final PlottablePointTile tile;
    private final List<PhotoDescription> photoDescs;
 
@@ -38,11 +44,6 @@ public final class GrapherTile {
     * equal to {@code Math.pow(2, level) * TILE_WIDTH} seconds.</p>
     */
    public static final int TILE_WIDTH = 512;
-
-   public GrapherTile(final int level, final String offset,
-         final JavaScriptObject tileObj) {
-      this(level, Long.parseLong(offset), tileObj);
-   }
 
    /**
     * Initializes this GrapherTile.
@@ -57,7 +58,7 @@ public final class GrapherTile {
     * 		possibility is to pass the <code>null</code>, to represent
     * 		that this tile contains no data
     */
-   public GrapherTile(final int level, final long offset, final JavaScriptObject tileObj) {
+   public GrapherTile(final int level, final int offset, final JavaScriptObject tileObj) {
       if (tileObj != null) {
          final JSONValue jsonTile = JSONParser.parseStrict(tileObj.toString());
          if (jsonTile.isObject() != null) {
@@ -121,7 +122,7 @@ public final class GrapherTile {
     * 		the offset passed to the constructor when this
     * 		<tt>GrapherTile</tt> was created
     */
-   public long getOffset() {
+   public int getOffset() {
       return offset;
    }
 
