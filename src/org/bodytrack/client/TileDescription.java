@@ -134,7 +134,18 @@ public final class TileDescription {
 
 		return true;
 	}
-	
+
+    /**
+     * Returns a short string uniquely representing this {@link TileDescription}
+     *
+     * @return
+     * 	The returned string is suitable to use as a key in a string-keyed
+     * 	hash table
+     */
+	public String getTileKey() {
+		return level + "." + offset;
+	}
+
 	/**
 	 * Computes the tile level corresponding to a length of time.
 	 * Returns a double;  consider using Math.{floor,round,ceil} to convert to integer.

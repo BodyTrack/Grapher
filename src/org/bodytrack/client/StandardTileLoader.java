@@ -19,11 +19,12 @@ public class StandardTileLoader implements TileLoader {
     */
    private static final int MAX_REQUESTS_PER_URL = 5;
 
-   // Values related to getting new values from the server (the data will be pulled in with the checkForFetch call)
-   private final List<GrapherTile> currentData = new ArrayList<GrapherTile>();
-   private final Set<TileDescription> pendingDescriptions = new HashSet<TileDescription>();
-   private final Map<String, Integer> pendingUrls = new HashMap<String, Integer>();
-   private final List<GrapherTile> pendingData = new ArrayList<GrapherTile>();
+   // Values related to getting new values from the server (the
+   // data will be pulled in with the checkForFetch call)
+   private final Map<TileDescription, GrapherTile> descriptions;
+   private final Set<TileDescription> pendingDescriptions;
+   private final Map<String, Integer> pendingUrls;
+   private final List<GrapherTile> pendingData;
 
    // Determining whether or not we should retrieve more data from the server
    private final int minLevel;
@@ -33,34 +34,47 @@ public class StandardTileLoader implements TileLoader {
    private int currentMinOffset;
    private int currentMaxOffset;
 
-   private final Set<EventListener> eventListeners = new HashSet<EventListener>();
-   private final Alertable<GrapherTile> loadTileAlertable = new LoadTileAlertable();
+   private final Set<EventListener> eventListeners;
+   private final Alertable<GrapherTile> loadTileAlertable;
 
    /**
     * @param minLevel
     * 		the minimum level to which the user will be allowed to zoom
     */
-   public StandardTileLoader(final int minLevel, final JavaScriptObject datasource, final GraphAxis timeAxis) {
+   public StandardTileLoader(final int minLevel, final JavaScriptObject datasource,
+         final GraphAxis timeAxis) {
       this.minLevel = minLevel;
       this.datasource = datasource;
       this.timeAxis = timeAxis;
       currentLevel = Integer.MIN_VALUE;
       currentMinOffset = Integer.MAX_VALUE;
       currentMaxOffset = Integer.MIN_VALUE;
+
+      descriptions = new HashMap<TileDescription, GrapherTile>();
+      pendingDescriptions = new HashSet<TileDescription>();
+      pendingUrls = new HashMap<String, Integer>();
+      pendingData = new ArrayList<GrapherTile>();
+
+      eventListeners = new HashSet<EventListener>();
+      loadTileAlertable = new LoadTileAlertable();
    }
 
    @Override
    public final void addEventListener(final EventListener listener) {
-      if (listener != null) {
-         eventListeners.add(listener);
+      if (listener == null) {
+         throw new NullPointerException();
       }
+
+      eventListeners.add(listener);
    }
 
    @Override
    public final void removeEventListener(final EventListener listener) {
-      if (listener != null) {
-         eventListeners.remove(listener);
+      if (listener == null) {
+         throw new NullPointerException();
       }
+
+      eventListeners.remove(listener);
    }
 
    /**
@@ -155,11 +169,11 @@ public class StandardTileLoader implements TileLoader {
       final TileDescription desc = new TileDescription(level, offset);
 
       // Ensures we don't fetch the same tile twice unnecessarily
-      if (pendingDescriptions.contains(desc)) {
+      if (pendingDescriptions.contains(desc) || descriptions.containsKey(desc)) {
          return;
       }
 
-      final String tileKey = level + "." + offset;
+      final String tileKey = desc.getTileKey();
 
       // Make sure we don't fetch this again unnecessarily
       pendingDescriptions.add(desc);
@@ -179,7 +193,7 @@ public class StandardTileLoader implements TileLoader {
                continue;
             }
 
-            currentData.add(tile);
+            descriptions.put(tile.getDescription(), tile);
 
             // Make sure we don't still mark this as pending
             pendingDescriptions.remove(tile.getDescription());
@@ -210,7 +224,8 @@ public class StandardTileLoader implements TileLoader {
 
       final double timespan = maxTime - minTime;
       while (maxCoveredTime <= maxTime) {
-         final GrapherTile bestAtCurrTime = getBestResolutionTileAt(maxCoveredTime + timespan * 1e-3, currentLevel);
+         final GrapherTile bestAtCurrTime =
+            getBestResolutionTileAt(maxCoveredTime + timespan * 1e-3, currentLevel);
          // We need to move a little to the right of the current time
          // so we don't get the same tile twice
 
@@ -244,7 +259,7 @@ public class StandardTileLoader implements TileLoader {
       GrapherTile best = null;
       TileDescription bestDesc = null;
 
-      for (final GrapherTile tile : currentData) {
+      for (final GrapherTile tile : descriptions.values()) {
          final TileDescription desc = tile.getDescription();
 
          if (desc.getMinTime() > time || desc.getMaxTime() < time) {
@@ -342,7 +357,7 @@ public class StandardTileLoader implements TileLoader {
        */
       @Override
       public void onSuccess(final GrapherTile tile) {
-         final String tileKey = tile.getLevel() + "." + tile.getOffset();
+         final String tileKey = tile.getDescription().getTileKey();
 
          pendingData.add(tile);
 
@@ -369,9 +384,8 @@ public class StandardTileLoader implements TileLoader {
        */
       @Override
       public void onFailure(final GrapherTile tile) {
-         final int level = tile.getLevel();
-         final int offset = tile.getOffset();
-         final String tileKey = level + "." + offset;
+         final TileDescription desc = tile.getDescription();
+         final String tileKey = desc.getTileKey();
 
          if (pendingUrls.containsKey(tileKey)) {
             final int oldValue = pendingUrls.get(tileKey);
@@ -385,7 +399,7 @@ public class StandardTileLoader implements TileLoader {
             pendingUrls.put(tileKey, 1);
          }
 
-         loadTile(level, offset);
+         loadTile(desc.getLevel(), desc.getOffset());
 
          // tell listeners that a tile failed to load
          for (final EventListener listener : eventListeners) {
