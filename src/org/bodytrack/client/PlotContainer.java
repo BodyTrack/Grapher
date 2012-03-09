@@ -167,7 +167,7 @@ public class PlotContainer implements Resizable {
 
          // drag the axes
          for (final GraphAxis axis : axes) {
-            axis.drag(mouseDragLastPos, pos, SequenceNumber.getNext());
+            axis.drag(mouseDragLastPos, pos, SequenceNumber.getNextThrottled());
          }
 
          mouseDragLastPos = pos;
@@ -205,7 +205,7 @@ public class PlotContainer implements Resizable {
             plot.getYAxis().highlight(highlightedPoint);
          }
 
-         paint();
+         paint(SequenceNumber.getNextThrottled());
       }
    }
 
@@ -235,7 +235,7 @@ public class PlotContainer implements Resizable {
          plot.getYAxis().unhighlight();
       }
 
-      paint();
+      paint(SequenceNumber.getNextThrottled());
    }
 
    private void layout() {
@@ -392,7 +392,7 @@ public class PlotContainer implements Resizable {
       containedPlots.add(plot);
       plot.registerPlotContainer(this);
 
-      paint();
+      paint(SequenceNumber.getNext());
    }
 
    /**
@@ -407,7 +407,7 @@ public class PlotContainer implements Resizable {
       containedPlots.remove(plot);
       plot.unregisterPlotContainer(this);
 
-      paint();
+      paint(SequenceNumber.getNext());
    }
 
    /**

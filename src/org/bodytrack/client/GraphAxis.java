@@ -113,7 +113,7 @@ public class GraphAxis implements Resizable {
                final Vector2 pos = new Vector2(event.getX(), event.getY());
                final double zoomFactor = Math.pow(getMouseWheelZoomRate(), event.getDeltaY());
 
-               zoom(zoomFactor, unproject(pos), SequenceNumber.getNext());
+               zoom(zoomFactor, unproject(pos), SequenceNumber.getNextThrottled());
             }
          });
 
@@ -130,7 +130,7 @@ public class GraphAxis implements Resizable {
                // ignore mouse moves if the mouse button isn't being held down
                if (mouseDragLastPos != null) {
                   final Vector2 pos = new Vector2(event.getX(), event.getY());
-                  drag(mouseDragLastPos, pos, SequenceNumber.getNext());
+                  drag(mouseDragLastPos, pos, SequenceNumber.getNextThrottled());
                   mouseDragLastPos = pos;
                }
             }
@@ -148,7 +148,7 @@ public class GraphAxis implements Resizable {
             public void onMouseOut(final MouseOutEvent event) {
                mouseDragLastPos = null;
 
-               paint(SequenceNumber.getNext());
+               paint(SequenceNumber.getNextThrottled());
             }
          });
 
