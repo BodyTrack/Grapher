@@ -82,6 +82,8 @@ public class PlotContainer implements Resizable {
    private Vector2 mouseDragStartPos;
 
    private int previousPaintEventId = 0;
+
+   @SuppressWarnings("unused")
    private final String placeholderElementId;
 
    public PlotContainer(final String placeholderElementId) {

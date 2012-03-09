@@ -78,6 +78,7 @@ public class GraphAxis implements Resizable {
    // For determining whether to highlight this GraphAxis
    private PlottablePoint highlightedPoint; // null if this isn't highlighted
 
+   @SuppressWarnings("unused")
    private final String placeholderElementId;
 
    private final Set<EventListener> eventListeners = new HashSet<EventListener>();
