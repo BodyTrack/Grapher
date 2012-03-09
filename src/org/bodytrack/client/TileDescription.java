@@ -136,7 +136,7 @@ public final class TileDescription {
 	}
 
     /**
-     * Returns a short string uniquely representing this {@link TileDescription}
+     * Returns a short string uniquely representing this {@link TileDescription}.
      *
      * @return
      * 	The returned string is suitable to use as a key in a string-keyed

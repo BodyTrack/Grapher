@@ -1,5 +1,18 @@
 package org.bodytrack.client;
 
+import gwt.g2d.client.graphics.Color;
+import gwt.g2d.client.graphics.DirectShapeRenderer;
+import gwt.g2d.client.graphics.KnownColor;
+import gwt.g2d.client.graphics.Surface;
+import gwt.g2d.client.graphics.TextAlign;
+import gwt.g2d.client.graphics.TextBaseline;
+import gwt.g2d.client.math.Vector2;
+
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+import java.util.Set;
+
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.event.dom.client.MouseDownHandler;
@@ -13,18 +26,6 @@ import com.google.gwt.event.dom.client.MouseWheelEvent;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.RootPanel;
-import gwt.g2d.client.graphics.Color;
-import gwt.g2d.client.graphics.DirectShapeRenderer;
-import gwt.g2d.client.graphics.KnownColor;
-import gwt.g2d.client.graphics.Surface;
-import gwt.g2d.client.graphics.TextAlign;
-import gwt.g2d.client.graphics.TextBaseline;
-import gwt.g2d.client.math.Vector2;
-
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-import java.util.Set;
 
 public class GraphAxis implements Resizable {
 
