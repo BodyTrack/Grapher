@@ -19,6 +19,8 @@ public class StandardTileLoader implements TileLoader {
     */
    private static final int MAX_REQUESTS_PER_URL = 5;
 
+   private static final double EPSILON = 1e-10;
+
    // Values related to getting new values from the server (the
    // data will be pulled in with the checkForFetch call)
    private final Map<TileDescription, GrapherTile> descriptions;
@@ -220,9 +222,13 @@ public class StandardTileLoader implements TileLoader {
       final double minTime = timeAxis.getMin();
       final double maxTime = timeAxis.getMax();
 
+      // Making sure that timespan is at least EPSILON ensures that
+      // the (timespan * 1e-3) calculation below doesn't become zero
+      // and leave this method stuck in an infinite loop
+      final double timespan = Math.max(maxTime - minTime, EPSILON);
+
       double maxCoveredTime = minTime;
 
-      final double timespan = maxTime - minTime;
       while (maxCoveredTime <= maxTime) {
          final GrapherTile bestAtCurrTime =
             getBestResolutionTileAt(maxCoveredTime + timespan * 1e-3, currentLevel);
