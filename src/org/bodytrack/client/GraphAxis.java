@@ -141,6 +141,9 @@ public class GraphAxis implements Resizable {
             @Override
             public void onMouseUp(final MouseUpEvent event) {
                mouseDragLastPos = null;
+
+               // Want a guaranteed update of the plots
+               paint(SequenceNumber.getNext());
             }
          });
 
@@ -149,7 +152,8 @@ public class GraphAxis implements Resizable {
             public void onMouseOut(final MouseOutEvent event) {
                mouseDragLastPos = null;
 
-               paint(SequenceNumber.getNextThrottled());
+               // Want a guaranteed update of the plots
+               paint(SequenceNumber.getNext());
             }
          });
 

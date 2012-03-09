@@ -225,6 +225,9 @@ public class PlotContainer implements Resizable {
          for (final Plot plot: containedPlots)
             plot.onClick(pos);
       }
+
+      // Want guaranteed update for the axes
+      paint(SequenceNumber.getNext());
    }
 
    private void handleMouseOutEvent(final MouseOutEvent event) {
@@ -237,7 +240,8 @@ public class PlotContainer implements Resizable {
          plot.getYAxis().unhighlight();
       }
 
-      paint(SequenceNumber.getNextThrottled());
+      // Want guaranteed update for the axes
+      paint(SequenceNumber.getNext());
    }
 
    private void layout() {
