@@ -40,9 +40,14 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
    private double commentVerticalMargin = DEFAULT_COMMENT_VERTICAL_MARGIN;
    private String commentContainerCssClass = null;
    private String commentCssClass = null;
-   private final List<SeriesPlotRenderingStrategy> plotRenderingStrategies = new ArrayList<SeriesPlotRenderingStrategy>();
-   private final List<DataPointRenderingStrategy> highlightRenderingStrategies = new ArrayList<DataPointRenderingStrategy>();
-   private final List<DataPointRenderingStrategy> commentRenderingStrategies = new ArrayList<DataPointRenderingStrategy>();
+   private final List<SeriesPlotRenderingStrategy> plotRenderingStrategies =
+      new ArrayList<SeriesPlotRenderingStrategy>();
+   private final List<DataPointRenderingStrategy> highlightRenderingStrategies =
+      new ArrayList<DataPointRenderingStrategy>();
+   private final List<DataPointRenderingStrategy> commentRenderingStrategies =
+      new ArrayList<DataPointRenderingStrategy>();
+   private final List<DataIndependentRenderingStrategy> dataIndependentStrategies =
+      new ArrayList<DataIndependentRenderingStrategy>();
 
    /**
     * Creates a new BaseSeriesPlotRenderer object
@@ -91,6 +96,10 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
             }
          }
       }
+
+      // Mandatory midnight lines
+      // TODO: Change this to optional?
+      dataIndependentStrategies.add(new MidnightLineRenderingStrategy());
    }
 
    protected abstract List<SeriesPlotRenderingStrategy> buildSeriesPlotRenderingStrategies(final JsArray<StyleDescription.StyleType> styleTypes,
@@ -107,6 +116,12 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
                             final GraphAxis yAxis,
                             final PlottablePoint highlightedPoint) {
       final boolean isAnyPointHighlighted = highlightedPoint != null;
+
+      for (final DataIndependentRenderingStrategy strategy : dataIndependentStrategies) {
+         strategy.beforeRender(canvas, drawing, isAnyPointHighlighted);
+         strategy.render(drawing, xAxis, yAxis);
+         strategy.afterRender(canvas, drawing);
+      }
 
       for (final GrapherTile tile : tiles) {
          final List<PlottablePoint> dataPoints = getDataPoints(tile);
