@@ -146,7 +146,7 @@ public class TimeGraphAxis extends GraphAxis {
 
 
 	double closestDay(double time) {
-		Date timeDate = new Date((long) (time*1000));
+		Date timeDate = new Date(((long)time) * 1000);
 		double hour = timeDate.getHours() + timeDate.getMinutes() / 30.0
 			+ timeDate.getSeconds() / 1800.;
 		if (hour >= 12) {
