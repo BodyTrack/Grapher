@@ -1,7 +1,5 @@
 package org.bodytrack.client;
 
-import com.google.gwt.core.client.JavaScriptObject;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -9,408 +7,412 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.gwt.core.client.JavaScriptObject;
+
 /**
  * @author Chris Bartley (bartley@cmu.edu)
  */
 public class StandardTileLoader implements TileLoader {
-   /**
-    * We never re-request a URL with MAX_REQUESTS_PER_URL or more failures
-    * in a row.
-    */
-   private static final int MAX_REQUESTS_PER_URL = 5;
+	/**
+	 * We never re-request a URL with MAX_REQUESTS_PER_URL or more failures
+	 * in a row.
+	 */
+	private static final int MAX_REQUESTS_PER_URL = 5;
 
-   private static final double EPSILON = 1e-10;
+	private static final double EPSILON = 1e-10;
 
-   // Values related to getting new values from the server (the
-   // data will be pulled in with the checkForFetch call)
-   private final Map<TileDescription, GrapherTile> descriptions;
-   private final Set<TileDescription> pendingDescriptions;
-   private final Map<String, Integer> pendingUrls;
-   private final List<GrapherTile> pendingData;
+	// Values related to getting new values from the server (the
+	// data will be pulled in with the checkForFetch call)
+	private final Map<TileDescription, GrapherTile> descriptions;
+	private final Set<TileDescription> pendingDescriptions;
+	private final Map<String, Integer> pendingUrls;
+	private final List<GrapherTile> pendingData;
 
-   // Determining whether or not we should retrieve more data from the server
-   private final int minLevel;
-   private final JavaScriptObject datasource;
-   private final GraphAxis timeAxis;
-   private int currentLevel;
-   private int currentMinOffset;
-   private int currentMaxOffset;
+	// Determining whether or not we should retrieve more data from the server
+	private final int minLevel;
+	private final JavaScriptObject datasource;
+	private final GraphAxis timeAxis;
+	private int currentLevel;
+	private long currentMinOffset;
+	private long currentMaxOffset;
 
-   private final Set<EventListener> eventListeners;
-   private final Alertable<GrapherTile> loadTileAlertable;
+	private final Set<EventListener> eventListeners;
+	private final Alertable<GrapherTile> loadTileAlertable;
 
-   /**
-    * @param minLevel
-    * 		the minimum level to which the user will be allowed to zoom
-    */
-   public StandardTileLoader(final int minLevel, final JavaScriptObject datasource,
-         final GraphAxis timeAxis) {
-      this.minLevel = minLevel;
-      this.datasource = datasource;
-      this.timeAxis = timeAxis;
-      currentLevel = Integer.MIN_VALUE;
-      currentMinOffset = Integer.MAX_VALUE;
-      currentMaxOffset = Integer.MIN_VALUE;
+	/**
+	 * @param minLevel
+	 * 	The minimum level to which the user will be allowed to zoom
+	 */
+	public StandardTileLoader(final int minLevel,
+			final JavaScriptObject datasource,
+			final GraphAxis timeAxis) {
+		this.minLevel = minLevel;
+		this.datasource = datasource;
+		this.timeAxis = timeAxis;
+		currentLevel = Integer.MIN_VALUE;
+		currentMinOffset = Long.MAX_VALUE;
+		currentMaxOffset = Long.MIN_VALUE;
 
-      descriptions = new HashMap<TileDescription, GrapherTile>();
-      pendingDescriptions = new HashSet<TileDescription>();
-      pendingUrls = new HashMap<String, Integer>();
-      pendingData = new ArrayList<GrapherTile>();
+		descriptions = new HashMap<TileDescription, GrapherTile>();
+		pendingDescriptions = new HashSet<TileDescription>();
+		pendingUrls = new HashMap<String, Integer>();
+		pendingData = new ArrayList<GrapherTile>();
 
-      eventListeners = new HashSet<EventListener>();
-      loadTileAlertable = new LoadTileAlertable();
-   }
+		eventListeners = new HashSet<EventListener>();
+		loadTileAlertable = new LoadTileAlertable();
+	}
 
-   @Override
-   public final void addEventListener(final EventListener listener) {
-      if (listener == null) {
-         throw new NullPointerException();
-      }
+	@Override
+	public final void addEventListener(final EventListener listener) {
+		if (listener == null) {
+			throw new NullPointerException();
+		}
 
-      eventListeners.add(listener);
-   }
+		eventListeners.add(listener);
+	}
 
-   @Override
-   public final void removeEventListener(final EventListener listener) {
-      if (listener == null) {
-         throw new NullPointerException();
-      }
+	@Override
+	public final void removeEventListener(final EventListener listener) {
+		if (listener == null) {
+			throw new NullPointerException();
+		}
 
-      eventListeners.remove(listener);
-   }
+		eventListeners.remove(listener);
+	}
 
-   /**
-    * Checks for and performs a fetch for data from the server if
-    * necessary.
-    *
-    * @return
-    * 		<tt>true</tt> if the user should be allowed to zoom past
-    * 		this point, <tt>false</tt> if the user shouldn't be allowed
-    * 		to zoom past this point
-    */
-   @Override
-   public final boolean checkForFetch(final int correctLevel) {
-      final int correctMinOffset = computeMinOffset(correctLevel);
-      final int correctMaxOffset = computeMaxOffset(correctLevel);
+	/**
+	 * Checks for and performs a fetch for data from the server if
+	 * necessary.
+	 *
+	 * @return
+	 * 	<tt>true</tt> if the user should be allowed to zoom past
+	 * 	this point, <tt>false</tt> if the user shouldn't be allowed
+	 * 	to zoom past this point
+	 */
+	@Override
+	public final boolean checkForFetch(final int correctLevel) {
+		final long correctMinOffset = computeMinOffset(correctLevel);
+		final long correctMaxOffset = computeMaxOffset(correctLevel);
 
-      if (correctLevel != currentLevel) {
-         for (int i = correctMinOffset; i <= correctMaxOffset; i++) {
-            fetchFromServer(correctLevel, i);
-         }
-      } else if (correctMinOffset < currentMinOffset) {
-         fetchFromServer(correctLevel, correctMinOffset);
-      } else if (correctMaxOffset > currentMaxOffset) {
-         fetchFromServer(correctLevel, correctMaxOffset);
-      }
+		if (correctLevel != currentLevel) {
+			for (long i = correctMinOffset; i <= correctMaxOffset; i++) {
+				fetchFromServer(correctLevel, i);
+			}
+		} else if (correctMinOffset < currentMinOffset) {
+			fetchFromServer(correctLevel, correctMinOffset);
+		} else if (correctMaxOffset > currentMaxOffset) {
+			fetchFromServer(correctLevel, correctMaxOffset);
+		}
 
-      // This way we don't fetch the same data multiple times
-      currentLevel = correctLevel;
-      currentMinOffset = correctMinOffset;
-      currentMaxOffset = correctMaxOffset;
+		// This way we don't fetch the same data multiple times
+		currentLevel = correctLevel;
+		currentMinOffset = correctMinOffset;
+		currentMaxOffset = correctMaxOffset;
 
-      return correctLevel > minLevel;
-   }
+		return correctLevel > minLevel;
+	}
 
-   /**
-    * Returns the offset at which the left edge of the X-axis is operating.
-    *
-    * Returns the offset of the tile in which the minimum value
-    * of the X-axis is found.
-    *
-    * @param level
-    * 		the level at which we assume we are operating when calculating
-    * 		offsets
-    * @return
-    * 		the current offset of the timeAxis, based on level
-    * 		and the private variable timeAxis
-    */
-   private int computeMinOffset(final int level) {
-      final double min = timeAxis.getMin();
+	/**
+	 * Returns the offset at which the left edge of the X-axis is operating.
+	 *
+	 * <p>
+	 * Returns the offset of the tile in which the minimum value of the X-axis
+	 * is found.
+	 * </p>
+	 *
+	 * @param level
+	 * 	The level at which we assume we are operating when calculating offsets
+	 * @return
+	 * 	The current offset of the timeAxis, based on level and the private
+	 * 	variable timeAxis
+	 */
+	private long computeMinOffset(final int level) {
+		final double tileWidth = getTileWidth(level);
+		return (long)(timeAxis.getMin() / tileWidth);
+	}
 
-      final double tileWidth = getTileWidth(level);
+	/**
+	 * Returns the offset at which the right edge of the X-axis is operating.
+	 *
+	 * <p>
+	 * Returns the offset of the tile in which the maximum value of the X-axis
+	 * is found.
+	 * </p>
+	 *
+	 * @param level
+	 * 	The level at which we assume we are operating when calculating offsets
+	 * @return
+	 * 	The current offset of the timeAxis, based on level
+	 * 	and the private variable timeAxis
+	 */
+	private long computeMaxOffset(final int level) {
+		final double tileWidth = getTileWidth(level);
+		return (long)(timeAxis.getMax() / tileWidth);
+	}
 
-      // Tile offset computation
-      return (int)(min / tileWidth);
-   }
+	/**
+	 * Fetches the specified tile from the server.
+	 *
+	 * <p>
+	 * Note that this checks the pendingDescriptions instance variable to
+	 * determine if this tile has already been requested.  If so, does not
+	 * request anything from the server.
+	 * </p>
+	 *
+	 * @param level
+	 * 	The level of the tile to fetch
+	 * @param offset
+	 * 	The offset of the tile to fetch
+	 */
+	private void fetchFromServer(final int level, final long offset) {
+		final TileDescription desc = new TileDescription(level, offset);
 
-   /**
-    * Returns the offset at which the right edge of the X-axis is operating.
-    *
-    * Returns the offset of the tile in which the maximum value
-    * of the X-axis is found.
-    *
-    * @param level
-    * 		the level at which we assume we are operating when calculating
-    * 		offsets
-    * @return
-    * 		the current offset of the timeAxis, based on level
-    * 		and the private variable timeAxis
-    */
-   private int computeMaxOffset(final int level) {
-      final double max = timeAxis.getMax();
+		// Ensures we don't fetch the same tile twice unnecessarily
+		if (pendingDescriptions.contains(desc) || descriptions.containsKey(desc)) {
+			return;
+		}
 
-      final double tileWidth = getTileWidth(level);
+		final String tileKey = desc.getTileKey();
 
-      // Tile number computation
-      return (int)(max / tileWidth);
-   }
+		// Make sure we don't fetch this again unnecessarily
+		pendingDescriptions.add(desc);
+		pendingUrls.put(tileKey, 0);
 
-   /**
-    * Fetches the specified tile from the server.
-    *
-    * Note that this checks the pendingDescriptions instance variable
-    * to determine if this tile has already been requested.  If so,
-    * does not request anything from the server.
-    *
-    * @param level
-    * 		the level of the tile to fetch
-    * @param offset
-    * 		the offset of the tile to fetch
-    */
-   private void fetchFromServer(final int level, final int offset) {
-      final TileDescription desc = new TileDescription(level, offset);
+		loadTile(level, offset);
+	}
 
-      // Ensures we don't fetch the same tile twice unnecessarily
-      if (pendingDescriptions.contains(desc) || descriptions.containsKey(desc)) {
-         return;
-      }
+	/**
+	 * Checks to see if we have received data from the server
+	 */
+	private void checkForNewData() {
+		if (pendingData.size() > 0) {
+			// Pull all the data out of pendingData
+			for (final GrapherTile tile : pendingData) {
+				if (tile == null) {
+					continue;
+				}
 
-      final String tileKey = desc.getTileKey();
+				descriptions.put(tile.getDescription(), tile);
 
-      // Make sure we don't fetch this again unnecessarily
-      pendingDescriptions.add(desc);
-      pendingUrls.put(tileKey, 0);
+				// Make sure we don't still mark this as pending
+				pendingDescriptions.remove(tile.getDescription());
+			}
 
-      loadTile(level, offset);
-   }
+			pendingData.clear();
+		}
+	}
 
-   /**
-    * Checks to see if we have received data from the server
-    */
-   private void checkForNewData() {
-      if (pendingData.size() > 0) {
-         // Pull all the data out of pendingData
-         for (final GrapherTile tile : pendingData) {
-            if (tile == null) {
-               continue;
-            }
+	/**
+	 * Returns a sorted list of all best resolution tiles available.
+	 *
+	 * @return
+	 * 	A sorted list of all the best resolution tiles in currentData
+	 */
+	@Override
+	public final List<GrapherTile> getBestResolutionTiles(final int currentLevel) {
+		final List<GrapherTile> best = new ArrayList<GrapherTile>();
 
-            descriptions.put(tile.getDescription(), tile);
+		// When minTime and maxTime are used in calculations, they are
+		// used to make the calculations scale-independent
+		final double minTime = timeAxis.getMin();
+		final double maxTime = timeAxis.getMax();
 
-            // Make sure we don't still mark this as pending
-            pendingDescriptions.remove(tile.getDescription());
-         }
+		// Making sure that timespan is at least EPSILON ensures that
+		// the (timespan * 1e-3) calculation below doesn't become zero
+		// and leave this method stuck in an infinite loop
+		final double timespan = Math.max(maxTime - minTime, EPSILON);
 
-         pendingData.clear();
-      }
-   }
+		double maxCoveredTime = minTime;
 
-   /**
-    * Returns a sorted list of all best resolution tiles available.
-    *
-    * @return
-    * 		a sorted list of all the best resolution tiles in
-    * 		currentData
-    */
-   @Override
-   public final List<GrapherTile> getBestResolutionTiles(final int currentLevel) {
+		while (maxCoveredTime <= maxTime) {
+			final GrapherTile bestAtCurrTime =
+				getBestResolutionTileAt(maxCoveredTime + timespan * 1e-3, currentLevel);
+			// We need to move a little to the right of the current time
+			// so we don't get the same tile twice
 
-      final List<GrapherTile> best = new ArrayList<GrapherTile>();
+			if (bestAtCurrTime == null) {
+				maxCoveredTime += timespan * 1e-2;
+			} else {
+				best.add(bestAtCurrTime);
 
-      // When minTime and maxTime are used in calculations, they are
-      // used to make the calculations scale-independent
-      final double minTime = timeAxis.getMin();
-      final double maxTime = timeAxis.getMax();
+				maxCoveredTime = bestAtCurrTime.getDescription().getMaxTime();
+			}
+		}
 
-      // Making sure that timespan is at least EPSILON ensures that
-      // the (timespan * 1e-3) calculation below doesn't become zero
-      // and leave this method stuck in an infinite loop
-      final double timespan = Math.max(maxTime - minTime, EPSILON);
+		return best;
+	}
 
-      double maxCoveredTime = minTime;
+	/**
+	 * Returns the best-resolution tile that covers the specified
+	 * point.
+	 *
+	 * @param time
+	 * 	The time which must be covered by the tile
+	 * @param bestLevel
+	 * 	The level to which we want the returned tile to be close
+	 * @return
+	 * 	The best-resolution (with level closest to bestLevel) tile
+	 * 	which has min value less than or equal to time, and max value
+	 * 	greater than or	equal to time, or <tt>null</tt> if no such tile
+	 * 	exists
+	 */
+	@Override
+	public final GrapherTile getBestResolutionTileAt(final double time,
+			final int bestLevel) {
+		GrapherTile best = null;
+		TileDescription bestDesc = null;
 
-      while (maxCoveredTime <= maxTime) {
-         final GrapherTile bestAtCurrTime =
-            getBestResolutionTileAt(maxCoveredTime + timespan * 1e-3, currentLevel);
-         // We need to move a little to the right of the current time
-         // so we don't get the same tile twice
+		for (final GrapherTile tile : descriptions.values()) {
+			final TileDescription desc = tile.getDescription();
 
-         if (bestAtCurrTime == null) {
-            maxCoveredTime += timespan * 1e-2;
-         } else {
-            best.add(bestAtCurrTime);
+			if (desc.getMinTime() > time || desc.getMaxTime() < time) {
+				continue;
+			}
 
-            maxCoveredTime = bestAtCurrTime.getDescription().getMaxTime();
-         }
-      }
+			if (best == null) {
+				best = tile;
+				bestDesc = desc;
+			} else if (Math.abs(desc.getLevel() - bestLevel) <
+					Math.abs(bestDesc.getLevel() - bestLevel)) {
+				best = tile;
+				bestDesc = desc;
+			} else if (Math.abs(desc.getLevel() - bestLevel) ==
+				Math.abs(bestDesc.getLevel() - bestLevel)) {
+				if (desc.getLevel() < bestDesc.getLevel()) {
+					best = tile;
+					bestDesc = desc;
+				}
+			}
+		}
 
-      return best;
-   }
+		return best;
+	}
 
-   /**
-    * Returns the best-resolution tile that covers the specified
-    * point.
-    *
-    * @param time
-    * 		the time which must be covered by the tile
-    * @param bestLevel
-    * 		the level to which we want the returned tile to be close
-    * @return
-    * 		the best-resolution (lowest-level) tile which has min value
-    * 		less than or equal to time, and max value greater than or
-    * 		equal to time, or <tt>null</tt> if no such tile exists
-    */
-   @Override
-   public final GrapherTile getBestResolutionTileAt(final double time, final int bestLevel) {
-      GrapherTile best = null;
-      TileDescription bestDesc = null;
+	/**
+	 * Returns the width of a single tile.
+	 *
+	 * @param level
+	 * 	The level of the tile for which we will find the width
+	 * @return
+	 * 	The width of a tile at the given level
+	 */
+	private static double getTileWidth(final int level) {
+		return (new TileDescription(level, 0)).getTileWidth();
+	}
 
-      for (final GrapherTile tile : descriptions.values()) {
-         final TileDescription desc = tile.getDescription();
+	/**
+	 * Retrieves a tile from the specified <code>level</code> and <code>offset</code>.
+	 *
+	 * @param level
+	 * 	The level of the tile we are retrieving
+	 * @param offset
+	 * 	The offset of the tile we are retrieving
+	 */
+	private void loadTile(final int level, final long offset) {
+		loadTileNative(datasource, level, (double)offset,
+				Long.toString(offset), loadTileAlertable);
+	}
 
-         if (desc.getMinTime() > time || desc.getMaxTime() < time) {
-            continue;
-         }
+	/**
+	 * Retrieves a tile from the specified <code>level</code> and <code>offset</code>.
+	 *
+	 * <p>
+	 * Sends a tile retrieved from url to the {@link Alertable#onSuccess(Object)}
+	 * or {@link Alertable#onFailure(Object)} callback whenever that tile
+	 * arrives.
+	 * </p>
+	 *
+	 * @param theDatasource
+	 * 	The theDatasource from which to retrieve the data
+	 * @param level
+	 * 	The level of the tile we are retrieving
+	 * @param offset
+	 * 	The offset of the tile we are retrieving
+	 * @param offsetString
+	 * 	A string representation of offset, without losing any precision
+	 * @param callback
+	 * 	An {@link Alertable<String>} that is passed the loaded tile whenever
+	 * 	the tile arrives
+	 */
+	private native void loadTileNative(final JavaScriptObject theDatasource,
+			final int level,
+			final double offset,
+			final String offsetString,
+			final Alertable<GrapherTile> callback) /*-{
+		theDatasource(level,
+			offset,
+			function (tile) {
+				var successTile = @org.bodytrack.client.GrapherTile::new(ILjava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(level, offsetString, tile);
 
-         if (best == null) {
-            best = tile;
-            bestDesc = desc;
-         } else if (Math.abs(desc.getLevel() - bestLevel) <
-                    Math.abs(bestDesc.getLevel() - bestLevel)) {
-            best = tile;
-            bestDesc = desc;
-         } else if (Math.abs(desc.getLevel() - bestLevel) ==
-                    Math.abs(bestDesc.getLevel() - bestLevel)) {
-            if (desc.getLevel() < bestDesc.getLevel()) {
-               best = tile;
-               bestDesc = desc;
-            }
-         }
-      }
+				// The following call is generic in Java, but changing
+				// the parameter specification to Object seems to work, if
+				// only because of type erasure
+				callback.@org.bodytrack.client.Alertable::onSuccess(Ljava/lang/Object;)(successTile);
+			},
+			function () {
+				var failureTile = @org.bodytrack.client.GrapherTile::new(ILjava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(level, offsetString, null);
 
-      return best;
-   }
+				// Again, replacing a Java generic with Object seems to work
+				callback.@org.bodytrack.client.Alertable::onFailure(Ljava/lang/Object;)(failureTile);
+		});
+	}-*/;
 
-   /**
-    * Returns the width of a single tile.
-    *
-    * @param level
-    * 		the level of the tile for which we will find the width
-    * @return
-    * 		the width of a tile at the given level
-    */
-   private static double getTileWidth(final int level) {
-      return (new TileDescription(level, 0)).getTileWidth();
-   }
+	private final class LoadTileAlertable implements Alertable<GrapherTile> {
+		/**
+		 * Called every time a new tile loads.
+		 *
+		 * @param tile
+		 * 	The <tt>GrapherTile</tt> representing the tile that loaded
+		 */
+		@Override
+		public void onSuccess(final GrapherTile tile) {
+			final String tileKey = tile.getDescription().getTileKey();
 
-   /**
-    * Retrieves a tile from the specified <code>level</code> and <code>offset</code>.
-    *
-    * @param level
-    * 		the level of the tile we are retrieving
-    * @param offset
-    * 		the offset of the tile we are retrieving
-    */
-   private void loadTile(final int level, final int offset) {
-      loadTileHelper(datasource, level, offset, loadTileAlertable);
-   }
+			pendingData.add(tile);
 
-   /**
-    * Retrieves a tile from the specified <code>level</code> and <code>offset</code>.
-    *
-    * <p>Sends a tile retrieved from url to the {@link Alertable#onSuccess(Object)}
-    * or {@link Alertable#onFailure(Object)} callback whenever that tile
-    * arrives.</p>
-    *
-    * @param theDatasource
-    * 		the theDatasource from which to retrieve the data
-    * @param level
-    * 		the level of the tile we are retrieving
-    * @param offset
-    * 		the offset of the tile we are retrieving
-    * @param callback
-    * 		an {@link Alertable<String>} that
-    * 		is given the loaded tile whenever the tile arrives
-    */
-   private native void loadTileHelper(final JavaScriptObject theDatasource,
-                                final int level,
-                                final int offset,
-                                final Alertable<GrapherTile> callback) /*-{
-      theDatasource(level,
-                    offset,
-                    function (tile) {
-                       var success_tile = @org.bodytrack.client.GrapherTile::new(IILcom/google/gwt/core/client/JavaScriptObject;)(level, offset, tile);
+			if (pendingUrls.containsKey(tileKey)) {
+				pendingUrls.remove(tileKey);
+			}
 
-                       // The following method is generic in Java, but changing
-                       // the parameter specification to Object seems to work, if
-                       // only because of type erasure
-                       callback.@org.bodytrack.client.Alertable::onSuccess(Ljava/lang/Object;)(success_tile);
-                    },
-                    function () {
-                       var failure_tile = @org.bodytrack.client.GrapherTile::new(IILcom/google/gwt/core/client/JavaScriptObject;)(level, offset, null);
+			checkForNewData();
 
-                       // Again, replacing a Java generic with Object seems to work
-                       callback.@org.bodytrack.client.Alertable::onFailure(Ljava/lang/Object;)(failure_tile);
-                    });
-   }-*/;
+			// tell listeners that a tile has loaded
+			for (final EventListener listener : eventListeners) {
+				listener.handleLoadSuccess();
+			}
+		}
 
-   private final class LoadTileAlertable implements Alertable<GrapherTile> {
-      /**
-       * Called every time a new tile loads.
-       *
-       * @param tile
-       * 		the <tt>GrapherTile</tt> representing the tile that loaded
-       */
-      @Override
-      public void onSuccess(final GrapherTile tile) {
-         final String tileKey = tile.getDescription().getTileKey();
+		/**
+		 * Called every time a tile load fails.
+		 *
+		 * <p>Tries to re-request the tile.</p>
+		 *
+		 * @param tile
+		 * 	The <tt>GrapherTile</tt> representing the tile that failed to load
+		 */
+		@Override
+		public void onFailure(final GrapherTile tile) {
+			final TileDescription desc = tile.getDescription();
+			final String tileKey = desc.getTileKey();
 
-         pendingData.add(tile);
+			if (pendingUrls.containsKey(tileKey)) {
+				final int oldValue = pendingUrls.get(tileKey);
+				if (oldValue > MAX_REQUESTS_PER_URL) {
+					return;
+				}
 
-         if (pendingUrls.containsKey(tileKey)) {
-            pendingUrls.remove(tileKey);
-         }
+				pendingUrls.remove(tileKey);
+				pendingUrls.put(tileKey, oldValue + 1);
+			} else {
+				pendingUrls.put(tileKey, 1);
+			}
 
-         checkForNewData();
+			loadTile(desc.getLevel(), desc.getOffset());
 
-         // tell listeners that a tile has loaded
-         for (final EventListener listener : eventListeners) {
-            listener.handleLoadSuccess();
-         }
-      }
-
-      /**
-       * Called every time a tile load fails.
-       *
-       * <p>Tries to re-request the tile.</p>
-       *
-       * @param tile
-       * 		the <tt>GrapherTile</tt> representing the tile that failed
-       * 		to load
-       */
-      @Override
-      public void onFailure(final GrapherTile tile) {
-         final TileDescription desc = tile.getDescription();
-         final String tileKey = desc.getTileKey();
-
-         if (pendingUrls.containsKey(tileKey)) {
-            final int oldValue = pendingUrls.get(tileKey);
-            if (oldValue > MAX_REQUESTS_PER_URL) {
-               return;
-            }
-
-            pendingUrls.remove(tileKey);
-            pendingUrls.put(tileKey, oldValue + 1);
-         } else {
-            pendingUrls.put(tileKey, 1);
-         }
-
-         loadTile(desc.getLevel(), desc.getOffset());
-
-         // tell listeners that a tile failed to load
-         for (final EventListener listener : eventListeners) {
-            listener.handleLoadFailure();
-         }
-      }
-   }
+			// tell listeners that a tile failed to load
+			for (final EventListener listener : eventListeners) {
+				listener.handleLoadFailure();
+			}
+		}
+	}
 }
