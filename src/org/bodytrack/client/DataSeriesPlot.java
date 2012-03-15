@@ -351,15 +351,15 @@ public class DataSeriesPlot extends BaseSeriesPlot {
       final boolean hasData = hasData(xMin, xMax);
       final Dynamic result = (Dynamic)JavaScriptObject.createObject();
 
-      if (CollectionUtils.contains(fieldnames, "has_data")) {
+      if (JsUtils.contains(fieldnames, "has_data")) {
          result.set("has_data", hasData);
       }
 
       if (hasData) {
-         if (CollectionUtils.contains(fieldnames, "y_min")) {
+         if (JsUtils.contains(fieldnames, "y_min")) {
             result.set("y_min", getYMin(xMin, xMax));
          }
-         if (CollectionUtils.contains(fieldnames, "y_max")) {
+         if (JsUtils.contains(fieldnames, "y_max")) {
             result.set("y_max", getYMax(xMin, xMax));
          }
       }

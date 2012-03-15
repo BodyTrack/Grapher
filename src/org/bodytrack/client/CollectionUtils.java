@@ -3,8 +3,6 @@ package org.bodytrack.client;
 import java.util.Collection;
 import java.util.List;
 
-import com.google.gwt.core.client.JsArrayString;
-
 public final class CollectionUtils {
 	private CollectionUtils() {
 		throw new UnsupportedOperationException();
@@ -79,31 +77,5 @@ public final class CollectionUtils {
 		for (final T value: lst)
 			return value;
 		return null;
-	}
-
-	public static boolean contains(final JsArrayString lst, final String test) {
-		if (lst == null)
-			throw new NullPointerException();
-		if (test == null)
-			return containsNull(lst);
-
-		for (int i = 0; i < lst.length(); i++) {
-			if (test.equals(lst.get(i)))
-				return true;
-		}
-
-		return false;
-	}
-
-	public static boolean containsNull(final JsArrayString lst) {
-		if (lst == null)
-			throw new NullPointerException();
-
-		for (int i = 0; i < lst.length(); i++) {
-			if (lst.get(i) == null)
-				return true;
-		}
-
-		return false;
 	}
 }

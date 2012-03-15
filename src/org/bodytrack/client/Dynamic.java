@@ -2,6 +2,10 @@ package org.bodytrack.client;
 
 import com.google.gwt.core.client.JavaScriptObject;
 
+/**
+ * A set of methods to wrap native JavaScript objects and make them easier to
+ * work with in Java.
+ */
 public final class Dynamic extends JavaScriptObject {
 	protected Dynamic() { }
 
