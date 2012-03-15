@@ -1,13 +1,13 @@
 package org.bodytrack.client;
 
-import com.google.gwt.core.client.JavaScriptObject;
-
 import gwt.g2d.client.math.Vector2;
 
 import java.util.HashSet;
 import java.util.Set;
 
 import org.bodytrack.client.DataPointListener.TriggerAction;
+
+import com.google.gwt.core.client.JavaScriptObject;
 
 /**
  * <p>
@@ -327,6 +327,13 @@ public abstract class BaseSeriesPlot implements Plot {
       final double maxY = getYAxis().project2D(getYAxis().getMin()).getY();
 
       return new BoundedDrawingBox(canvas, minX, minY, maxX, maxY);
+   }
+
+   // Returns true if and only if an actual server request is made
+   public final boolean checkForData(final double xMin, final double xMax,
+         final TileLoader.EventListener onload) {
+      // TODO: IMPLEMENT
+      return false;
    }
 
    /**

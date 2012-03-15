@@ -1,9 +1,11 @@
 package org.bodytrack.client;
 
-import com.google.gwt.core.client.JavaScriptObject;
 import gwt.g2d.client.math.Vector2;
 
 import java.util.List;
+
+import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.JsArrayString;
 
 /**
  * Represents a single set of data, along with references to its
@@ -318,5 +320,65 @@ public class DataSeriesPlot extends BaseSeriesPlot {
       setHighlightedPoint(closest(pos, HIGHLIGHT_DISTANCE_THRESHOLD));
       publishHighlightedValue();
       return isHighlighted();
+   }
+
+   public final JavaScriptObject getStatistics(final double xMin, final double xMax,
+         final JsArrayString fieldnames, final JavaScriptObject afterload) {
+      if (xMin > xMax) {
+         return JavaScriptObject.createObject();
+      }
+
+      final Dynamic result = (Dynamic)calculateStatistics(xMin, xMax, fieldnames);
+      final boolean dataPending = checkForData(xMin, xMax,
+         new TileLoader.EventListener() {
+            @Override
+            public void handleLoadSuccess() {
+               // TODO: IMPLEMENT
+            }
+
+            @Override
+            public void handleLoadFailure() {
+               // TODO: IMPLEMENT
+            }
+      });
+
+      result.set("data_pending", dataPending);
+      return result;
+   }
+
+   private JavaScriptObject calculateStatistics(final double xMin, final double xMax,
+         final JsArrayString fieldnames) {
+      final boolean hasData = hasData(xMin, xMax);
+      final Dynamic result = (Dynamic)JavaScriptObject.createObject();
+
+      if (CollectionUtils.contains(fieldnames, "has_data")) {
+         result.set("has_data", hasData);
+      }
+
+      if (hasData) {
+         if (CollectionUtils.contains(fieldnames, "y_min")) {
+            result.set("y_min", getYMin(xMin, xMax));
+         }
+         if (CollectionUtils.contains(fieldnames, "y_max")) {
+            result.set("y_max", getYMax(xMin, xMax));
+         }
+      }
+
+      return result;
+   }
+
+   private boolean hasData(final double xMin, final double xMax) {
+      // TODO: IMPLEMENT
+      return false;
+   }
+
+   private double getYMin(final double xMin, final double xMax) {
+      // TODO: IMPLEMENT
+      return Double.MAX_VALUE;
+   }
+
+   private double getYMax(final double xMin, final double xMax) {
+      // TODO: IMPLEMENT
+      return Double.MIN_VALUE;
    }
 }

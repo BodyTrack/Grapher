@@ -228,6 +228,9 @@ public final class NativeInterface {
 			this.removeDataPointListener = function(listenerFunction) {
 				return this.__backingPlot.@org.bodytrack.client.DataSeriesPlot::removeDataPointListener(Lcom/google/gwt/core/client/JavaScriptObject;)(listenerFunction);
 			};
+			this.getStatistics = function(xMin, xMax, fieldnames, afterload) {
+				return this.__backingPlot.@org.bodytrack.client.DataSeriesPlot::getStatistics(DDLcom/google/gwt/core/client/JsArrayString;Lcom/google/gwt/core/client/JavaScriptObject;)(xMin, xMax, fieldnames, afterload);
+			};
 			this.id = __getNextID();
 		};
 
