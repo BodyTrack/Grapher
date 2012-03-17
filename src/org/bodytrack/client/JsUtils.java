@@ -1,5 +1,6 @@
 package org.bodytrack.client;
 
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArrayString;
 
 public final class JsUtils {
@@ -32,4 +33,9 @@ public final class JsUtils {
 
 		return false;
 	}
+
+	public static native JavaScriptObject callFunction(final JavaScriptObject fun,
+			final JavaScriptObject... args) /*-{
+		fun.apply(null, args);
+	}-*/;
 }

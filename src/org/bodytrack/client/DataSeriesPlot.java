@@ -328,20 +328,21 @@ public class DataSeriesPlot extends BaseSeriesPlot {
          return JavaScriptObject.createObject();
       }
 
-      final Dynamic result = (Dynamic)calculateStatistics(xMin, xMax, fieldnames);
       final boolean dataPending = checkForData(xMin, xMax,
          new TileLoader.EventListener() {
             @Override
             public void handleLoadSuccess() {
-               // TODO: IMPLEMENT
+               JsUtils.callFunction(afterload,
+                  calculateStatistics(xMin, xMax, fieldnames));
             }
 
             @Override
             public void handleLoadFailure() {
-               // TODO: IMPLEMENT
+               JsUtils.callFunction(afterload, (JavaScriptObject)null);
             }
       });
 
+      final Dynamic result = (Dynamic)calculateStatistics(xMin, xMax, fieldnames);
       result.set("data_pending", dataPending);
       return result;
    }

@@ -415,8 +415,11 @@ public abstract class BaseSeriesPlot implements Plot {
     */
    private int computeCurrentLevel() {
       final double xAxisWidth = getXAxis().getMax() - getXAxis().getMin();
-      final double dataPointWidth = xAxisWidth / GrapherTile.TILE_WIDTH;
+      return computeLevel(xAxisWidth);
+   }
 
+   protected static int computeLevel(final double rangeWidth) {
+      final double dataPointWidth = rangeWidth / GrapherTile.TILE_WIDTH;
       return log2(dataPointWidth);
    }
 
