@@ -79,23 +79,30 @@ public class StandardTileLoader implements TileLoader {
 	 */
 	@Override
 	public final boolean checkForFetch() {
-		final int currentLevel = computeCurrentLevel();
-		final long currentMinOffset = computeMinOffset(currentLevel);
-		final long currentMaxOffset = computeMaxOffset(currentLevel);
+		return checkForFetch(timeAxis.getMin(), timeAxis.getMax(), null);
+	}
+
+	// If onload is null, it is ignored
+	@Override
+	public boolean checkForFetch(final double xMin, final double xMax,
+			final EventListener onload) {
+		// TODO: Fire onload.handleLoadSuccess() after all successes, or
+		// fire onload.handleLoadFailure() after any failure
+
+		if (xMin >= xMax)
+			return false;
+
+		final int level = computeLevel(xMax - xMin);
+		final long minOffset = computeOffset(xMin, level);
+		final long maxOffset = computeOffset(xMax, level);
 
 		boolean fetched = false;
 
-		for (long i = currentMinOffset; i <= currentMaxOffset; i++) {
-			fetched |= fetchFromServer(currentLevel, i);
+		for (long i = minOffset; i <= maxOffset; i++) {
+			fetched |= fetchFromServer(level, i);
 		}
 
 		return fetched;
-	}
-
-	@Override
-	public boolean checkForFetch(final double xMin, final double xMax) {
-		// TODO: IMPLEMENT
-		return false;
 	}
 
 	private int computeCurrentLevel() {
@@ -104,46 +111,16 @@ public class StandardTileLoader implements TileLoader {
 	}
 
 	public static int computeLevel(final double rangeWidth) {
+		if (rangeWidth <= 0)
+			return Integer.MIN_VALUE;
+
 		final double dataPointWidth = rangeWidth / GrapherTile.TILE_WIDTH;
 		return log2(dataPointWidth);
 	}
 
-	/**
-	 * Returns the offset at which the left edge of the X-axis is operating.
-	 *
-	 * <p>
-	 * Returns the offset of the tile in which the minimum value of the X-axis
-	 * is found.
-	 * </p>
-	 *
-	 * @param level
-	 * 	The level at which we assume we are operating when calculating offsets
-	 * @return
-	 * 	The current offset of the timeAxis, based on level and the private
-	 * 	variable timeAxis
-	 */
-	private long computeMinOffset(final int level) {
+	private long computeOffset(final double x, final int level) {
 		final double tileWidth = getTileWidth(level);
-		return (long)(timeAxis.getMin() / tileWidth);
-	}
-
-	/**
-	 * Returns the offset at which the right edge of the X-axis is operating.
-	 *
-	 * <p>
-	 * Returns the offset of the tile in which the maximum value of the X-axis
-	 * is found.
-	 * </p>
-	 *
-	 * @param level
-	 * 	The level at which we assume we are operating when calculating offsets
-	 * @return
-	 * 	The current offset of the timeAxis, based on level
-	 * 	and the private variable timeAxis
-	 */
-	private long computeMaxOffset(final int level) {
-		final double tileWidth = getTileWidth(level);
-		return (long)(timeAxis.getMax() / tileWidth);
+		return (long)(x / tileWidth);
 	}
 
 	/**

@@ -305,8 +305,7 @@ public abstract class BaseSeriesPlot implements Plot {
    // Returns true if and only if an actual server request is made
    public final boolean checkForData(final double xMin, final double xMax,
          final TileLoader.EventListener onload) {
-      // TODO: IMPLEMENT
-      return false;
+      return tileLoader.checkForFetch(xMin, xMax, onload);
    }
 
    /**
