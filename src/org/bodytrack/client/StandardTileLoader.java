@@ -13,6 +13,9 @@ import com.google.gwt.core.client.JavaScriptObject;
  * @author Chris Bartley (bartley@cmu.edu)
  */
 public class StandardTileLoader implements TileLoader {
+	/** Used to speed up the {@link #log2(double)} method. */
+	private static final double LN_2 = Math.log(2);
+
 	/**
 	 * We never re-request a URL with MAX_REQUESTS_PER_URL or more failures
 	 * in a row.
@@ -31,9 +34,6 @@ public class StandardTileLoader implements TileLoader {
 	// Determining whether or not we should retrieve more data from the server
 	private final JavaScriptObject datasource;
 	private final GraphAxis timeAxis;
-	private int currentLevel;
-	private long currentMinOffset;
-	private long currentMaxOffset;
 
 	private final Set<EventListener> eventListeners;
 	private final Alertable<GrapherTile> loadTileAlertable;
@@ -42,9 +42,6 @@ public class StandardTileLoader implements TileLoader {
 			final GraphAxis timeAxis) {
 		this.datasource = datasource;
 		this.timeAxis = timeAxis;
-		currentLevel = Integer.MIN_VALUE;
-		currentMinOffset = Long.MAX_VALUE;
-		currentMaxOffset = Long.MIN_VALUE;
 
 		descriptions = new HashMap<TileDescription, GrapherTile>();
 		pendingDescriptions = new HashSet<TileDescription>();
@@ -76,26 +73,39 @@ public class StandardTileLoader implements TileLoader {
 	/**
 	 * Checks for and performs a fetch for data from the server if
 	 * necessary.
+	 *
+	 * @return
+	 * 	<code>true</code> if and only if we actually perform a tile fetch
 	 */
 	@Override
-	public final void checkForFetch(final int correctLevel) {
-		final long correctMinOffset = computeMinOffset(correctLevel);
-		final long correctMaxOffset = computeMaxOffset(correctLevel);
+	public final boolean checkForFetch() {
+		final int currentLevel = computeCurrentLevel();
+		final long currentMinOffset = computeMinOffset(currentLevel);
+		final long currentMaxOffset = computeMaxOffset(currentLevel);
 
-		if (correctLevel != currentLevel) {
-			for (long i = correctMinOffset; i <= correctMaxOffset; i++) {
-				fetchFromServer(correctLevel, i);
-			}
-		} else if (correctMinOffset < currentMinOffset) {
-			fetchFromServer(correctLevel, correctMinOffset);
-		} else if (correctMaxOffset > currentMaxOffset) {
-			fetchFromServer(correctLevel, correctMaxOffset);
+		boolean fetched = false;
+
+		for (long i = currentMinOffset; i <= currentMaxOffset; i++) {
+			fetched |= fetchFromServer(currentLevel, i);
 		}
 
-		// This way we don't fetch the same data multiple times
-		currentLevel = correctLevel;
-		currentMinOffset = correctMinOffset;
-		currentMaxOffset = correctMaxOffset;
+		return fetched;
+	}
+
+	@Override
+	public boolean checkForFetch(final double xMin, final double xMax) {
+		// TODO: IMPLEMENT
+		return false;
+	}
+
+	private int computeCurrentLevel() {
+		final double xAxisWidth = timeAxis.getMax() - timeAxis.getMin();
+		return computeLevel(xAxisWidth);
+	}
+
+	public static int computeLevel(final double rangeWidth) {
+		final double dataPointWidth = rangeWidth / GrapherTile.TILE_WIDTH;
+		return log2(dataPointWidth);
 	}
 
 	/**
@@ -149,13 +159,15 @@ public class StandardTileLoader implements TileLoader {
 	 * 	The level of the tile to fetch
 	 * @param offset
 	 * 	The offset of the tile to fetch
+	 * @return
+	 * 	<code>true</code> if and only if we actually perform a tile fetch
 	 */
-	private void fetchFromServer(final int level, final long offset) {
+	private boolean fetchFromServer(final int level, final long offset) {
 		final TileDescription desc = new TileDescription(level, offset);
 
 		// Ensures we don't fetch the same tile twice unnecessarily
 		if (pendingDescriptions.contains(desc) || descriptions.containsKey(desc)) {
-			return;
+			return false;
 		}
 
 		final String tileKey = desc.getTileKey();
@@ -165,6 +177,7 @@ public class StandardTileLoader implements TileLoader {
 		pendingUrls.put(tileKey, 0);
 
 		loadTile(level, offset);
+		return true;
 	}
 
 	/**
@@ -195,7 +208,8 @@ public class StandardTileLoader implements TileLoader {
 	 * 	A sorted list of all the best resolution tiles in currentData
 	 */
 	@Override
-	public final List<GrapherTile> getBestResolutionTiles(final int currentLevel) {
+	public final List<GrapherTile> getBestResolutionTiles() {
+		final int currentLevel = computeCurrentLevel();
 		final List<GrapherTile> best = new ArrayList<GrapherTile>();
 
 		// When minTime and maxTime are used in calculations, they are
@@ -228,6 +242,11 @@ public class StandardTileLoader implements TileLoader {
 		return best;
 	}
 
+	@Override
+	public final GrapherTile getBestResolutionTileAt(final double time) {
+		return getBestResolutionTileAt(time, computeCurrentLevel());
+	}
+
 	/**
 	 * Returns the best-resolution tile that covers the specified
 	 * point.
@@ -235,15 +254,14 @@ public class StandardTileLoader implements TileLoader {
 	 * @param time
 	 * 	The time which must be covered by the tile
 	 * @param bestLevel
-	 * 	The level to which we want the returned tile to be close
+	 * 	The preferred level of the tile
 	 * @return
 	 * 	The best-resolution (with level closest to bestLevel) tile
 	 * 	which has min value less than or equal to time, and max value
-	 * 	greater than or	equal to time, or <tt>null</tt> if no such tile
+	 * 	greater than or	equal to time, or <code>null</code> if no such tile
 	 * 	exists
 	 */
-	@Override
-	public final GrapherTile getBestResolutionTileAt(final double time,
+	private GrapherTile getBestResolutionTileAt(final double time,
 			final int bestLevel) {
 		GrapherTile best = null;
 		TileDescription bestDesc = null;
@@ -400,5 +418,19 @@ public class StandardTileLoader implements TileLoader {
 				listener.handleLoadFailure();
 			}
 		}
+	}
+
+	/**
+	 * Computes the floor of the log (base 2) of x.
+	 *
+	 * @param x the value for which we want to take the log
+	 * @return the floor of the log (base 2) of x
+	 */
+	private static int log2(final double x) {
+		if (x <= 0) {
+			return Integer.MIN_VALUE;
+		}
+
+		return (int)Math.floor((Math.log(x) / LN_2));
 	}
 }

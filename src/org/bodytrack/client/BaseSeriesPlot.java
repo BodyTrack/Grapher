@@ -17,24 +17,6 @@ import com.google.gwt.core.client.JavaScriptObject;
  * @author Chris Bartley (bartley@cmu.edu)
  */
 public abstract class BaseSeriesPlot implements Plot {
-
-   /** Used to speed up the {@link #log2(double)} method. */
-   private static final double LN_2 = Math.log(2);
-
-   /**
-    * Computes the floor of the log (base 2) of x.
-    *
-    * @param x the value for which we want to take the log
-    * @return the floor of the log (base 2) of x
-    */
-   private static int log2(final double x) {
-      if (x <= 0) {
-         return Integer.MIN_VALUE;
-      }
-
-      return (int)Math.floor((Math.log(x) / LN_2));
-   }
-
    private PlotContainer plotContainer = null;
 
    private final JavaScriptObject xAxisNative;
@@ -107,7 +89,7 @@ public abstract class BaseSeriesPlot implements Plot {
    // The method that should be called from within this class
    private TileLoader buildTileLoader(final JavaScriptObject datasource) {
       TileLoader loader = buildTileLoader(datasource, xAxis);
-      loader.checkForFetch(computeCurrentLevel());
+      loader.checkForFetch();
 
       return loader;
    }
@@ -279,13 +261,13 @@ public abstract class BaseSeriesPlot implements Plot {
 
             renderer.render(canvas,
                             getDrawingBounds(canvas),
-                            tileLoader.getBestResolutionTiles(computeCurrentLevel()),
+                            tileLoader.getBestResolutionTiles(),
                             getXAxis(),
                             getYAxis(),
                             getHighlightedPoint());
 
             // Make sure we shouldn't get any more info from the server
-            tileLoader.checkForFetch(computeCurrentLevel());
+            tileLoader.checkForFetch();
          }
       }
    }
@@ -398,24 +380,8 @@ public abstract class BaseSeriesPlot implements Plot {
    @Override
    public void onClick(final Vector2 pos) { }
 
-   /**
-    * Computes the value for currentLevel based on xAxis.
-    *
-    * @return
-    * 		the level at which xAxis is operating
-    */
-   private int computeCurrentLevel() {
-      final double xAxisWidth = getXAxis().getMax() - getXAxis().getMin();
-      return computeLevel(xAxisWidth);
-   }
-
-   protected static int computeLevel(final double rangeWidth) {
-      final double dataPointWidth = rangeWidth / GrapherTile.TILE_WIDTH;
-      return log2(dataPointWidth);
-   }
-
    protected final GrapherTile getBestResolutionTileAt(final double time) {
-      return tileLoader.getBestResolutionTileAt(time, computeCurrentLevel());
+      return tileLoader.getBestResolutionTileAt(time);
    }
 
    /**

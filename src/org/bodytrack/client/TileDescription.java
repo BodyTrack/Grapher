@@ -93,11 +93,10 @@ public final class TileDescription {
 			return true;
 		if (o == null)
 			return false;
-		if (! (o instanceof TileDescription))
+		if (!(o instanceof TileDescription))
 			return false;
 
 		TileDescription other = (TileDescription) o;
-
 		return (level == other.level) && (offset == other.offset);
 	}
 
