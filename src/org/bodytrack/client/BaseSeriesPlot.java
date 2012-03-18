@@ -387,7 +387,6 @@ public abstract class BaseSeriesPlot implements Plot {
     * A class that always repaints the plot container whenever any event is fired
     */
    protected class AlwaysRepaintListener implements TileLoader.EventListener {
-
       @Override
       public void handleLoadSuccess() {
          signalRepaintOfPlotContainer();

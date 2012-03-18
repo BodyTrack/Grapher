@@ -1,6 +1,7 @@
 package org.bodytrack.client;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -35,7 +36,7 @@ public class StandardTileLoader implements TileLoader {
 	private final JavaScriptObject datasource;
 	private final GraphAxis timeAxis;
 
-	private final Set<EventListener> eventListeners;
+	private final Set<FilteredEventListener> eventListeners;
 	private final Alertable<GrapherTile> loadTileAlertable;
 
 	public StandardTileLoader(final JavaScriptObject datasource,
@@ -48,7 +49,7 @@ public class StandardTileLoader implements TileLoader {
 		pendingUrls = new HashMap<String, Integer>();
 		pendingData = new ArrayList<GrapherTile>();
 
-		eventListeners = new HashSet<EventListener>();
+		eventListeners = new HashSet<FilteredEventListener>();
 		loadTileAlertable = new LoadTileAlertable();
 	}
 
@@ -58,6 +59,10 @@ public class StandardTileLoader implements TileLoader {
 			throw new NullPointerException();
 		}
 
+		addFilteredEventListener(new FilteredEventListener(listener));
+	}
+
+	private void addFilteredEventListener(final FilteredEventListener listener) {
 		eventListeners.add(listener);
 	}
 
@@ -67,6 +72,10 @@ public class StandardTileLoader implements TileLoader {
 			throw new NullPointerException();
 		}
 
+		removeFilteredEventListener(new FilteredEventListener(listener));
+	}
+
+	private void removeFilteredEventListener(final FilteredEventListener listener) {
 		eventListeners.remove(listener);
 	}
 
@@ -86,23 +95,24 @@ public class StandardTileLoader implements TileLoader {
 	@Override
 	public boolean checkForFetch(final double xMin, final double xMax,
 			final EventListener onload) {
-		// TODO: Fire onload.handleLoadSuccess() after all successes, or
-		// fire onload.handleLoadFailure() after any failure
-
 		if (xMin >= xMax)
 			return false;
 
 		final int level = computeLevel(xMax - xMin);
 		final long minOffset = computeOffset(xMin, level);
 		final long maxOffset = computeOffset(xMax, level);
+		final List<TileDescription> tiles = new ArrayList<TileDescription>();
 
-		boolean fetched = false;
-
-		for (long i = minOffset; i <= maxOffset; i++) {
-			fetched |= fetchFromServer(level, i);
+		for (long offset = minOffset; offset <= maxOffset; offset++) {
+			if (fetchFromServer(level, offset))
+				tiles.add(new TileDescription(level, offset));
 		}
 
-		return fetched;
+		if (onload != null) {
+			addFilteredEventListener(new AllLoadEventListener(onload, tiles));
+		}
+
+		return !tiles.isEmpty();
 	}
 
 	private int computeCurrentLevel() {
@@ -347,7 +357,8 @@ public class StandardTileLoader implements TileLoader {
 		 */
 		@Override
 		public void onSuccess(final GrapherTile tile) {
-			final String tileKey = tile.getDescription().getTileKey();
+			final TileDescription desc = tile.getDescription();
+			final String tileKey = desc.getTileKey();
 
 			pendingData.add(tile);
 
@@ -358,8 +369,9 @@ public class StandardTileLoader implements TileLoader {
 			checkForNewData();
 
 			// tell listeners that a tile has loaded
-			for (final EventListener listener : eventListeners) {
-				listener.handleLoadSuccess();
+			for (final FilteredEventListener listener : eventListeners) {
+				if (listener.meetsFilter(desc, true))
+					listener.handleLoadSuccess();
 			}
 		}
 
@@ -391,8 +403,9 @@ public class StandardTileLoader implements TileLoader {
 			loadTile(desc.getLevel(), desc.getOffset());
 
 			// tell listeners that a tile failed to load
-			for (final EventListener listener : eventListeners) {
-				listener.handleLoadFailure();
+			for (final FilteredEventListener listener : eventListeners) {
+				if (listener.meetsFilter(desc, false))
+					listener.handleLoadFailure();
 			}
 		}
 	}
@@ -409,5 +422,95 @@ public class StandardTileLoader implements TileLoader {
 		}
 
 		return (int)Math.floor((Math.log(x) / LN_2));
+	}
+
+	private static class FilteredEventListener implements EventListener {
+		private final EventListener listener;
+
+		public FilteredEventListener(final EventListener listener) {
+			if (listener == null)
+				throw new NullPointerException();
+			this.listener = listener;
+		}
+
+		// Meant to be overridden by subclasses
+		public boolean meetsFilter(final TileDescription desc,
+				final boolean successfulLoad) {
+			return true;
+		}
+
+		@Override
+		public void handleLoadSuccess() {
+			listener.handleLoadSuccess();
+		}
+
+		@Override
+		public void handleLoadFailure() {
+			listener.handleLoadFailure();
+		}
+
+		@Override
+		public int hashCode() {
+			return listener.hashCode();
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (!(obj instanceof FilteredEventListener))
+				return false;
+			FilteredEventListener other = (FilteredEventListener)obj;
+			return listener.equals(other.listener);
+		}
+	}
+
+	// Whenever all the required tiles come in, finally starts returning
+	// true from meetsFilter.  If any tile fails, returns true from meetsFilter.
+	// Whenever handleLoadSuccess or handleLoadFailure is called, this is
+	// removed from the set of load listeners on this StandardTileLoader.
+	private class AllLoadEventListener extends FilteredEventListener {
+		private final List<TileDescription> pending;
+		private boolean filterMet;
+
+		public AllLoadEventListener(final EventListener listener,
+				final Collection<TileDescription> tiles) {
+			super(listener);
+			if (tiles == null)
+				throw new NullPointerException();
+
+			pending = new ArrayList<TileDescription>(tiles);
+			filterMet = false;
+		}
+
+		@Override
+		public boolean meetsFilter(final TileDescription desc,
+				final boolean successfulLoad) {
+			if (!successfulLoad) {
+				filterMet = true;
+				return true;
+			}
+
+			if (pending.contains(desc))
+				pending.remove(desc);
+			if (pending.isEmpty())
+				filterMet = true;
+
+			return filterMet;
+		}
+
+		@Override
+		public void handleLoadSuccess() {
+			removeFilteredEventListener(this);
+			super.handleLoadSuccess();
+		}
+
+		@Override
+		public void handleLoadFailure() {
+			removeFilteredEventListener(this);
+			super.handleLoadFailure();
+		}
 	}
 }
