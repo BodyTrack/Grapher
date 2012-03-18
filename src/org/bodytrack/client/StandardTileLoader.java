@@ -29,7 +29,6 @@ public class StandardTileLoader implements TileLoader {
 	private final List<GrapherTile> pendingData;
 
 	// Determining whether or not we should retrieve more data from the server
-	private final int minLevel;
 	private final JavaScriptObject datasource;
 	private final GraphAxis timeAxis;
 	private int currentLevel;
@@ -39,14 +38,8 @@ public class StandardTileLoader implements TileLoader {
 	private final Set<EventListener> eventListeners;
 	private final Alertable<GrapherTile> loadTileAlertable;
 
-	/**
-	 * @param minLevel
-	 * 	The minimum level to which the user will be allowed to zoom
-	 */
-	public StandardTileLoader(final int minLevel,
-			final JavaScriptObject datasource,
+	public StandardTileLoader(final JavaScriptObject datasource,
 			final GraphAxis timeAxis) {
-		this.minLevel = minLevel;
 		this.datasource = datasource;
 		this.timeAxis = timeAxis;
 		currentLevel = Integer.MIN_VALUE;
@@ -83,14 +76,9 @@ public class StandardTileLoader implements TileLoader {
 	/**
 	 * Checks for and performs a fetch for data from the server if
 	 * necessary.
-	 *
-	 * @return
-	 * 	<tt>true</tt> if the user should be allowed to zoom past
-	 * 	this point, <tt>false</tt> if the user shouldn't be allowed
-	 * 	to zoom past this point
 	 */
 	@Override
-	public final boolean checkForFetch(final int correctLevel) {
+	public final void checkForFetch(final int correctLevel) {
 		final long correctMinOffset = computeMinOffset(correctLevel);
 		final long correctMaxOffset = computeMaxOffset(correctLevel);
 
@@ -108,8 +96,6 @@ public class StandardTileLoader implements TileLoader {
 		currentLevel = correctLevel;
 		currentMinOffset = correctMinOffset;
 		currentMaxOffset = correctMaxOffset;
-
-		return correctLevel > minLevel;
 	}
 
 	/**

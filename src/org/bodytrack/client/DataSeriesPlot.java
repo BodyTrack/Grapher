@@ -39,7 +39,6 @@ public class DataSeriesPlot extends BaseSeriesPlot {
    private final SeriesPlotRenderer renderer;
 
    public static DataSeriesPlot getDataSeriesPlot(final JavaScriptObject nativePlot) {
-
       final Dynamic dynPlot = nativePlot.cast();
       return dynPlot.get("__backingPlot");
    }
@@ -52,8 +51,6 @@ public class DataSeriesPlot extends BaseSeriesPlot {
     * 		the X-axis along which this data set will be aligned when drawn
     * @param nativeYAxis
     * 		the Y-axis along which this data set will be aligned when drawn
-    * @param minLevel
-    * 		the minimum level to which the user will be allowed to zoom
     * @param styleJson
     * 		the JSON style
     * @throws NullPointerException
@@ -64,10 +61,9 @@ public class DataSeriesPlot extends BaseSeriesPlot {
    public DataSeriesPlot(final JavaScriptObject datasource,
                          final JavaScriptObject nativeXAxis,
                          final JavaScriptObject nativeYAxis,
-                         final int minLevel,
                          final JavaScriptObject styleJson) {
       // The superclass constructor checks for null in its parameters
-      super(datasource, nativeXAxis, nativeYAxis, minLevel);
+      super(datasource, nativeXAxis, nativeYAxis);
       this.renderer = new DataSeriesPlotRenderer(styleJson.<StyleDescription>cast());
    }
 
