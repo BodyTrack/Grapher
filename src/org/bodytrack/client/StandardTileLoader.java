@@ -93,14 +93,14 @@ public class StandardTileLoader implements TileLoader {
 
 	// If onload is null, it is ignored
 	@Override
-	public boolean checkForFetch(final double xMin, final double xMax,
+	public boolean checkForFetch(final double minTime, final double maxTime,
 			final EventListener onload) {
-		if (xMin >= xMax)
+		if (minTime >= maxTime)
 			return false;
 
-		final int level = computeLevel(xMax - xMin);
-		final long minOffset = computeOffset(xMin, level);
-		final long maxOffset = computeOffset(xMax, level);
+		final int level = computeLevel(maxTime - minTime);
+		final long minOffset = computeOffset(minTime, level);
+		final long maxOffset = computeOffset(maxTime, level);
 		final List<TileDescription> tiles = new ArrayList<TileDescription>();
 
 		for (long offset = minOffset; offset <= maxOffset; offset++) {
@@ -196,13 +196,23 @@ public class StandardTileLoader implements TileLoader {
 	 */
 	@Override
 	public final List<GrapherTile> getBestResolutionTiles() {
-		final int currentLevel = computeCurrentLevel();
-		final List<GrapherTile> best = new ArrayList<GrapherTile>();
+		return getBestResolutionTiles(computeCurrentLevel());
+	}
 
-		// When minTime and maxTime are used in calculations, they are
-		// used to make the calculations scale-independent
-		final double minTime = timeAxis.getMin();
-		final double maxTime = timeAxis.getMax();
+	@Override
+	public final List<GrapherTile> getBestResolutionTiles(final int currentLevel) {
+		return getBestResolutionTiles(currentLevel,
+				timeAxis.getMin(),
+				timeAxis.getMax());
+	}
+
+	@Override
+	public final List<GrapherTile> getBestResolutionTiles(final int currentLevel,
+			final double minTime, final double maxTime) {
+		if (minTime >= maxTime)
+			return new ArrayList<GrapherTile>();
+
+		final List<GrapherTile> best = new ArrayList<GrapherTile>();
 
 		// Making sure that timespan is at least EPSILON ensures that
 		// the (timespan * 1e-3) calculation below doesn't become zero
@@ -248,7 +258,8 @@ public class StandardTileLoader implements TileLoader {
 	 * 	greater than or	equal to time, or <code>null</code> if no such tile
 	 * 	exists
 	 */
-	private GrapherTile getBestResolutionTileAt(final double time,
+	@Override
+	public final GrapherTile getBestResolutionTileAt(final double time,
 			final int bestLevel) {
 		GrapherTile best = null;
 		TileDescription bestDesc = null;
