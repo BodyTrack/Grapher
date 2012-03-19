@@ -132,6 +132,10 @@ public abstract class BaseSeriesPlot implements Plot {
       return loader;
    }
 
+   protected TileLoader getTileLoader() {
+      return tileLoader;
+   }
+
    public final void addDataPointListener(final JavaScriptObject listener) {
       if (listener != null) {
          dataPointListeners.add(listener.<DataPointListener>cast());
