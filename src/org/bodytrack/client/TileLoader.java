@@ -19,9 +19,10 @@ public interface TileLoader {
 			final EventListener onload);
 
 	List<GrapherTile> getBestResolutionTiles();
-	List<GrapherTile> getBestResolutionTiles(final int currentLevel);
-	List<GrapherTile> getBestResolutionTiles(final int currentLevel,
-			final double minTime, final double maxTime);
+	List<GrapherTile> getBestResolutionTiles(final double minTime,
+			final double maxTime, final int currentLevel);
+	List<GrapherTile> getBestResolutionTiles(final double minTime,
+			final double maxTime);
 
 	GrapherTile getBestResolutionTileAt(final double time);
 	GrapherTile getBestResolutionTileAt(final double time, final int bestLevel);

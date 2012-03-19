@@ -196,20 +196,22 @@ public class StandardTileLoader implements TileLoader {
 	 */
 	@Override
 	public final List<GrapherTile> getBestResolutionTiles() {
-		return getBestResolutionTiles(computeCurrentLevel());
+		return getBestResolutionTiles(timeAxis.getMin(), timeAxis.getMax());
 	}
 
 	@Override
-	public final List<GrapherTile> getBestResolutionTiles(final int currentLevel) {
-		return getBestResolutionTiles(currentLevel,
-				timeAxis.getMin(),
-				timeAxis.getMax());
+	public final List<GrapherTile> getBestResolutionTiles(final double minTime,
+			final double maxTime) {
+		return getBestResolutionTiles(minTime, maxTime,
+				computeLevel(maxTime - minTime));
 	}
 
 	@Override
-	public final List<GrapherTile> getBestResolutionTiles(final int currentLevel,
-			final double minTime, final double maxTime) {
+	public final List<GrapherTile> getBestResolutionTiles(final double minTime,
+			final double maxTime, final int currentLevel) {
 		if (minTime >= maxTime)
+			return new ArrayList<GrapherTile>();
+		if (currentLevel == Integer.MIN_VALUE)
 			return new ArrayList<GrapherTile>();
 
 		final List<GrapherTile> best = new ArrayList<GrapherTile>();
