@@ -328,18 +328,21 @@ public class DataSeriesPlot extends BaseSeriesPlot {
          new TileLoader.EventListener() {
             @Override
             public void handleLoadSuccess() {
-               JsUtils.callFunction(afterload,
-                  calculateStatistics(xMin, xMax, fieldnames));
+               callAfterload(calculateStatistics(xMin, xMax, fieldnames));
             }
 
             @Override
             public void handleLoadFailure() {
-               JsUtils.callFunction(afterload, (JavaScriptObject)null);
+               callAfterload(null);
             }
+
+            private native void callAfterload(final JavaScriptObject arg) /*-{
+               afterload(arg);
+            }-*/;
       });
 
       final Dynamic result = (Dynamic)calculateStatistics(xMin, xMax, fieldnames);
-      result.set("data_pending", dataPending);
+      result.set("data_pending", JsUtils.convertBoolean(dataPending));
       return result;
    }
 
@@ -347,23 +350,19 @@ public class DataSeriesPlot extends BaseSeriesPlot {
          final JsArrayString fieldnames) {
       final TwoTuple<Double, Double> yRange = getYMinMax(xMin, xMax);
       final boolean hasData = yRange.getItem1() <= yRange.getItem2();
-      final Dynamic result = (Dynamic)JavaScriptObject.createObject();
 
-      if (JsUtils.contains(fieldnames, "has_data")) {
-         result.set("has_data", hasData);
-      }
-
-      if (hasData) {
-         if (JsUtils.contains(fieldnames, "y_min")) {
-            result.set("y_min", yRange.getItem1());
-         }
-         if (JsUtils.contains(fieldnames, "y_max")) {
-            result.set("y_max", yRange.getItem2());
-         }
-      }
-
-      return result;
+      return fillStatisticsDictionary(hasData, yRange.getItem1(), yRange.getItem2());
    }
+
+   private native JavaScriptObject fillStatisticsDictionary(final boolean hasData,
+         final double yMin, final double yMax) /*-{
+      var result = {"has_data": hasData};
+      if (hasData) {
+         result["y_min"] = yMin;
+         result["y_max"] = yMax;
+      }
+      return result;
+   }-*/;
 
    private TwoTuple<Double, Double> getYMinMax(final double xMin, final double xMax) {
       final List<GrapherTile> tiles = getTileLoader().getBestResolutionTiles(xMin, xMax);
@@ -373,7 +372,12 @@ public class DataSeriesPlot extends BaseSeriesPlot {
 
       for (final GrapherTile tile: tiles) {
          for (final PlottablePoint pt: getDataPoints(tile)) {
+            final double time = pt.getDate();
+            if (time < xMin || time > xMax)
+               continue;
             final double val = pt.getValue();
+            if (val < SeriesPlotRenderer.MIN_DRAWABLE_VALUE || Double.isInfinite(val))
+               continue;
             if (val < yMin)
                yMin = val;
             if (val > yMax)

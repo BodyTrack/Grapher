@@ -13,11 +13,11 @@ public final class Dynamic extends JavaScriptObject {
 		return this[fieldName];
 	}-*/;
 
-	public native void set(String fieldName, Object value) /*-{
+	public native void set(String fieldName, JavaScriptObject value) /*-{
 		this[fieldName] = value;
 	}-*/;
 
-	public native <T> T call(String functionName, Object... args) /*-{
+	public native <T> T call(String functionName, JavaScriptObject... args) /*-{
 		return this[functionName].call(this, args);
 	}-*/;
 }

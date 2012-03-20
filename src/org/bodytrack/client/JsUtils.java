@@ -38,4 +38,11 @@ public final class JsUtils {
 			final JavaScriptObject... args) /*-{
 		fun.apply(null, args);
 	}-*/;
+
+	public static native JavaScriptObject convertBoolean(final boolean b) /*-{
+		if (b) {
+			return true;
+		}
+		return false;
+	}-*/;
 }
