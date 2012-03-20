@@ -878,5 +878,7 @@ public class GraphAxis implements Resizable {
 
       // Now translate
       uncheckedDrag(newMin - getMin(), eventId);
+
+      paint(eventId);
    }
 }
