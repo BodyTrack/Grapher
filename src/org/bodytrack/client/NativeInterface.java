@@ -240,6 +240,10 @@ public final class NativeInterface {
 		///		An non-null axis with horizontal orientation
 		/// @param verticalAxis
 		///		A non-null axis with vertical orientation
+		/// @param userId
+		///		The ID of the current logged-in user
+		/// @param style
+		///		The style that determines how the photos should be drawn
 		$wnd.PhotoSeriesPlot = function(datasource, horizontalAxis, verticalAxis, userId, style) {
 			if (datasource == null) {
 				throw 'Must pass in datasource';
@@ -341,8 +345,8 @@ public final class NativeInterface {
 			this.id = __getNextID();
 		};
 
-		// TODO: This is a hack to get around GWT's asynchronous loading,
-		// which ensures that GWT scripts load last
+		// This is a hack to get around GWT's asynchronous loading, which
+		// ensures that GWT scripts load last
 		if (!!($wnd.grapherLoad)) {
 			$wnd.grapherLoad();
 		}
