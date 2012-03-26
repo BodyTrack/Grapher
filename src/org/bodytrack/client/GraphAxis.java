@@ -110,9 +110,10 @@ public class GraphAxis implements Resizable {
 
          drawing.addMouseWheelHandler(new BaseMouseWheelHandler() {
             @Override
-            protected void handleMouseWheelEvent(final MouseWheelEvent event) {
+            protected void handleMouseWheelEvent(final MouseWheelEvent event,
+                  final double wheelDelta) {
                final Vector2 pos = new Vector2(event.getX(), event.getY());
-               final double zoomFactor = Math.pow(getMouseWheelZoomRate(), event.getDeltaY());
+               final double zoomFactor = Math.pow(MOUSE_WHEEL_ZOOM_RATE, wheelDelta);
 
                zoom(zoomFactor, unproject(pos), SequenceNumber.getNextThrottled());
             }
