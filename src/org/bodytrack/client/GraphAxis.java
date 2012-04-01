@@ -50,7 +50,7 @@ public class GraphAxis implements Resizable {
    static final int JUSTIFY_MED = 1;
    static final int JUSTIFY_MAX = 2;
 
-   public double majorTickMinSpacingPixels = 50;
+   public double majorTickMinSpacingPixels = 30;
    public double majorTickWidthPixels = 8;
 
    public double minorTickMinSpacingPixels = 10;
