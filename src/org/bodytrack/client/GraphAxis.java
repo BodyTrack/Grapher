@@ -499,29 +499,17 @@ public class GraphAxis implements Resizable {
       private double minValue;
 
       /**
-       * Builds a new IterableTickGenerator wrapping the specified
-       * TickGenerator.
-       *
-       * @param gen
-       * 		the TickGenerator this IterableTickGenerator should wrap
-       * @param minValue
-       * 		the minimum (starting) value of a tick
-       * @param maxValue
-       * 		the maximum value of a tick this should return in
-       * 		iteration
-       * @throws NullPointerException
-       * 		if gen is <tt>null</tt>
+       * Builds a new IterableTickGenerator wrapping gen over (min, max)
        */
-      public IterableTickGenerator(TickGenerator gen, double minValue,
-                                   double maxValue) {
+      public IterableTickGenerator(TickGenerator gen, double min, double max) {
          if (gen == null) {
             throw new NullPointerException(
                   "TickGenerator cannot be null");
          }
 
          this.gen = gen;
-         this.minValue = minValue;
-         this.maxValue = maxValue;
+         this.minValue = min;
+         this.maxValue = max;
       }
 
       @Override
@@ -533,9 +521,6 @@ public class GraphAxis implements Resizable {
          private double currTick;
          private double nextTick;
 
-         /**
-          * Primes the ticks to return.
-          */
          public TickGeneratorIterator() {
             currTick = 0.0;
             nextTick = gen.nextTick(minValue);
@@ -544,12 +529,7 @@ public class GraphAxis implements Resizable {
          /**
           * Returns <tt>true</tt> iff the next tick returned from
           * {@link #next()} would be less than or equal to maxValue
-          * (which was passed into the IterableTickGenerator constructor).
-          *
-          * @return
-          * 		<tt>true</tt> iff the next tick would be
-          * 		less than or equal to maxValue (which was passed
-          * 		into the IterableTickGenerator constructor)
+          * (which was passed into the IterableTickGenerator constructor)
           */
          @Override
          public boolean hasNext() {
@@ -557,16 +537,7 @@ public class GraphAxis implements Resizable {
          }
 
          /**
-          * Returns the next tick.
-          *
-          * @throws NoSuchElementException
-          * 		if there are no more ticks available (users of this class
-          * 		can test for this by calling
-          * 		{@link TickGeneratorIterator#hasNext() hasNext()}
-          * @return
-          * 		a Double obtained by calling nextTick() on the
-          * 		TickGenerator specified in the constructor to this
-          * 		IterableTickGenerator
+          * Returns the next tick
           */
          @Override
          public Double next() {
@@ -581,13 +552,6 @@ public class GraphAxis implements Resizable {
             return currTick;
          }
 
-         /**
-          * Always throws a
-          * {@linkplain java.lang.UnsupportedOperationException}
-          *
-          * @throws UnsupportedOperationException
-          * 		always
-          */
          @Override
          public void remove() {
             throw new UnsupportedOperationException(
