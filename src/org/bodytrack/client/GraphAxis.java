@@ -337,7 +337,7 @@ public class GraphAxis implements Resizable {
             return;
          }
 
-         drawingCanvas.getSurface().clear();
+         drawingCanvas.clear();
 
          // Pick the color to use, based on highlighting status
          if (isHighlighted()) {
@@ -346,8 +346,8 @@ public class GraphAxis implements Resizable {
             drawingCanvas.setStrokeStyle(NORMAL_COLOR);
          }
 
-         drawingCanvas.getRenderer().beginPath();
-         drawingCanvas.getRenderer().drawLineSegment(project2D(this.min), project2D(this.max));
+         drawingCanvas.beginPath();
+         drawingCanvas.drawLineSegment(project2D(this.min), project2D(this.max));
 
          final double majorTickSize = computeTickSize(majorTickMinSpacingPixels);
          renderTicks(0, majorTickSize, null, drawingCanvas, majorTickWidthPixels, new DefaultLabelFormatter());
@@ -356,7 +356,7 @@ public class GraphAxis implements Resizable {
          final double minorTickSize = computeTickSize(minorTickMinSpacingPixels);
          renderTicks(0, minorTickSize, null, drawingCanvas, minorTickWidthPixels, null);
 
-         drawingCanvas.getRenderer().stroke();
+         drawingCanvas.stroke();
 
          renderHighlight(drawingCanvas, highlightedPoint);
 

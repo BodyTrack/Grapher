@@ -6,6 +6,7 @@ import gwt.g2d.client.graphics.Surface;
 import gwt.g2d.client.graphics.TextAlign;
 import gwt.g2d.client.graphics.TextBaseline;
 import gwt.g2d.client.graphics.canvas.Context;
+import gwt.g2d.client.math.Vector2;
 
 import org.bodytrack.client.InstanceController.InstanceProducer;
 
@@ -353,5 +354,12 @@ public final class Canvas {
 	 */
 	public DirectShapeRenderer fill() {
 		return renderer.fill();
+	}
+
+	/**
+	 * Equivalent to <code>getRenderer().drawLineSegment(start, end)</code>
+	 */
+	public DirectShapeRenderer drawLineSegment(Vector2 start, Vector2 end) {
+		return renderer.drawLineSegment(start, end);
 	}
 }
