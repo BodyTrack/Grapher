@@ -64,11 +64,11 @@ public final class Canvas {
 	 * Creates a new <tt>Canvas</tt> that draws on the specified surface.
 	 *
 	 * @param s
-	 * 		the surface on which the new <tt>Canvas</tt> will draw
+	 * 	The surface on which the new {@link Canvas} will draw
 	 * @throws NullPointerException
-	 * 		if s is <tt>null</tt>
+	 * 	If s is <code>null</code>
 	 * @throws IllegalArgumentException
-	 * 		if s has no native HTML canvas element inside its DOM tree
+	 * 	If s has no native HTML canvas element inside its DOM tree
 	 */
 	private Canvas(Surface s) {
 		if (s == null)
@@ -86,11 +86,11 @@ public final class Canvas {
 	 * Finds the first canvas element in the DOM tree rooted at e.
 	 *
 	 * @param e
-	 * 		the root of the search tree
+	 * 	The root of the search tree
 	 * @return
-	 * 		the first canvas element found in the subtree rooted
-	 * 		at e, or <tt>null</tt> if there is no canvas element
-	 * 		in the subtree rooted at e
+	 * 	The first canvas element found in the subtree rooted
+	 * 	at e, or <code>null</code> if there is no canvas element
+	 * 	in the subtree rooted at e
 	 */
 	private Element findCanvasElement(Element e) {
 		if (e == null)
@@ -118,23 +118,17 @@ public final class Canvas {
 	 * Factory method to create a new Canvas object.
 	 *
 	 * @param s
-	 * 		the {@link gwt.g2d.client.graphics.Surface Surface}
-	 * 		on which the new Canvas will draw
+	 * 	The {@link gwt.g2d.client.graphics.Surface Surface}
+	 * 	on which the new Canvas will draw
 	 * @return
-	 * 		a Canvas with a pointer to s and to an associated
-	 * 		{@link gwt.g2d.client.graphics.DirectShapeRenderer
-	 * 		DirectShapeRenderer}
+	 * 	A Canvas with a pointer to s and to an associated
+	 * 	{@link gwt.g2d.client.graphics.DirectShapeRenderer
+	 * 	DirectShapeRenderer}
 	 */
 	public static Canvas buildCanvas(Surface s) {
 		return instances.newInstance(s);
 	}
 
-	/**
-	 * Returns the Surface passed in to this object's constructor.
-	 *
-	 * @return
-	 * 		the surface
-	 */
 	public Surface getSurface() {
 		return surface;
 	}
@@ -142,9 +136,6 @@ public final class Canvas {
 	/**
 	 * Returns the DirectShapeRenderer derived from the Surface passed
 	 * in to this object's constructor.
-	 *
-	 * @return
-	 * 		the renderer
 	 */
 	public DirectShapeRenderer getRenderer() {
 		return renderer;
@@ -155,7 +146,7 @@ public final class Canvas {
 	 * rooted at the surface passed in to this object's constructor.
 	 *
 	 * @return
-	 * 		the native canvas element
+	 * 	The native canvas element
 	 */
 	public Element getNativeCanvasElement() {
 		return nativeCanvasElement;
@@ -165,54 +156,49 @@ public final class Canvas {
 	 * Returns the Context returned by {@code getSurface().getContext()}
 	 *
 	 * @return
-	 * 		the context for this canvas
+	 * 	The context for this canvas
 	 */
 	public Context getContext() {
 		return surface.getContext();
 	}
 
 	// --------------------------------------------------------------
-	// Copies of Surface methods
+	// Wrappers for Surface methods
 	// --------------------------------------------------------------
 
 	/**
-	 * Is exactly equivalent to a call to getSurface().setStrokeStyle(color)
+	 * Equivalent to <code>getSurface().setStrokeStyle(color)</code>
 	 *
 	 * @param color
-	 * 		the color that will be used to stroke future drawing on the
-	 * 		surface
+	 * 	The color that will be used to stroke future drawing on the surface
 	 * @return
-	 * 		the Surface used for the setStrokeStyle call
+	 * 	The Surface used for the setStrokeStyle call
 	 */
 	public Surface setStrokeStyle(Color color) {
 		return surface.setStrokeStyle(color);
 	}
 
 	/**
-	 * Is exactly equivalent to a call to getSurface().setFillStyle(color)
+	 * Equivalent to <code>getSurface().setFillStyle(color)</code>
 	 *
 	 * @param color
-	 * 		the color that will be used to fill future drawing on the
-	 * 		surface
+	 * 	The color that will be used to fill future drawing on the surface
 	 * @return
-	 * 		the Surface used for the setFillStyle call
+	 * 	The Surface used for the setFillStyle call
 	 */
 	public Surface setFillStyle(Color color) {
 		return surface.setFillStyle(color);
 	}
 
 	/**
-	 * Is exactly equivalent to a call to getSurface().getLineWidth()
-	 *
-	 * @return
-	 * 	The line width for this canvas
+	 * Equivalent to <code>getSurface().getLineWidth()</code>
 	 */
 	public double getLineWidth() {
 		return surface.getLineWidth();
 	}
 
 	/**
-	 * Is exactly equivalent to a call to getSurface().setLineWidth(width)
+	 * Equivalent to <code>getSurface().setLineWidth(width)</code>
 	 *
 	 * @param width
 	 * 	The new width for lines on the surface
@@ -224,17 +210,14 @@ public final class Canvas {
 	}
 
 	/**
-	 * Is exactly equivalent to a call to getSurface().getGlobalAlpha()
-	 *
-	 * @return
-	 * 	The global alpha for this canvas
+	 * Equivalent to <code>getSurface().getGlobalAlpha()</code>
 	 */
 	public double getGlobalAlpha() {
 		return surface.getGlobalAlpha();
 	}
 
 	/**
-	 * Is exactly equivalent to a call to getSurface().setGlobalAlpha(alpha)
+	 * Equivalent to <code>getSurface().setGlobalAlpha(alpha)</code>
 	 *
 	 * @param alpha
 	 * 	The new alpha for the canvas
@@ -246,7 +229,7 @@ public final class Canvas {
 	}
 
 	/**
-	 * Is exactly equivalent to a call to getSurface().getTextAlign()
+	 * Equivalent to <code>getSurface().getTextAlign()</code>
 	 *
 	 * @return
 	 * 	The text alignment for this canvas
@@ -256,7 +239,7 @@ public final class Canvas {
 	}
 
 	/**
-	 * Is exactly equivalent to a call to getSurface().setTextAlign(textAlign)
+	 * Equivalent to <code>getSurface().setTextAlign(textAlign)</code>
 	 *
 	 * @param textAlign
 	 * 	The new alignment to use for text on the canvas
@@ -268,18 +251,14 @@ public final class Canvas {
 	}
 
 	/**
-	 * Is exactly equivalent to a call to getSurface().getTextBaseline()
-	 *
-	 * @return
-	 * 	The text baseline for this canvas
+	 * Equivalent to <code>getSurface().getTextBaseline()</code>
 	 */
 	public TextBaseline getTextBaseline() {
 		return surface.getTextBaseline();
 	}
 
 	/**
-	 * Is exactly equivalent to a call to
-	 * getSurface().setTextBaseline(textBaseline)
+	 * Equivalent to <code>getSurface().setTextBaseline(textBaseline)</code>
 	 *
 	 * @param textBaseline
 	 * 	The new baseline to use for text on the canvas
@@ -291,28 +270,29 @@ public final class Canvas {
 	}
 
 	/**
-	 * Is exactly equivalent to a call to getSurface().save()
-	 *
-	 * @return
-	 * 		the Surface used for the save call
+	 * Equivalent to <code>getSurface().clear()</code>
+	 */
+	public Surface clear() {
+		return surface.clear();
+	}
+
+	/**
+	 * Equivalent to <code>getSurface().save()</code>
 	 */
 	public Surface save() {
 		return surface.save();
 	}
 
 	/**
-	 * Is exactly equivalent to a call to getSurface().restore()
-	 *
-	 * @return
-	 * 		the Surface used for the restore call
+	 * Equivalent to <code>getSurface().restore()</code>
 	 */
 	public Surface restore() {
 		return surface.restore();
 	}
 
 	/**
-	 * Is exactly equivalent to a call to
-	 * getSurface().strokeRectangle(x, y, width, height)
+	 * Equivalent to
+	 * <code>getSurface().strokeRectangle(x, y, width, height)</code>
 	 *
 	 * @param x
 	 * 	The X-coordinate of the top left of the rectangle
@@ -332,7 +312,7 @@ public final class Canvas {
 
 	/**
 	 * Is exactly equivalent to a call to
-	 * getSurface().fillRectangle(x, y, width, height)
+	 * <code>getSurface().fillRectangle(x, y, width, height)</code>
 	 *
 	 * @param x
 	 * 	The X-coordinate of the top left of the rectangle
@@ -351,34 +331,25 @@ public final class Canvas {
 	}
 
 	// --------------------------------------------------------------
-	// Copies of DirectShapeRenderer methods
+	// Wrappers for DirectShapeRenderer methods
 	// --------------------------------------------------------------
 
 	/**
-	 * Is exactly equivalent to a call to getRenderer().beginPath()
-	 *
-	 * @return
-	 * 		the DirectShapeRenderer used for the beginPath call
+	 * Equivalent to <code>getRenderer().beginPath()</code>
 	 */
 	public DirectShapeRenderer beginPath() {
 		return renderer.beginPath();
 	}
 
 	/**
-	 * Is exactly equivalent to a call to getRenderer().stroke()
-	 *
-	 * @return
-	 * 		the DirectShapeRenderer used for the stroke call
+	 * Equivalent to <code>getRenderer().stroke()</code>
 	 */
 	public DirectShapeRenderer stroke() {
 		return renderer.stroke();
 	}
 
 	/**
-	 * Is exactly equivalent to a call to getRenderer().fill()
-	 *
-	 * @return
-	 * 		the DirectShapeRenderer used for the fill call
+	 * Equivalent to <code>getRenderer().fill()</code>
 	 */
 	public DirectShapeRenderer fill() {
 		return renderer.fill();
