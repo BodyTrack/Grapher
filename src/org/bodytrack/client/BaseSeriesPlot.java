@@ -193,7 +193,7 @@ public abstract class BaseSeriesPlot implements Plot {
    }
 
    /**
-    * Sets the {@link PlotContainer} which contains this {@link Plot}.
+    * Sets the {@link SeriesPlotContainer} which contains this {@link Plot}.
     *
     * <p>
     * Also registers the axes to begin notifying this plot whenever the
@@ -209,10 +209,10 @@ public abstract class BaseSeriesPlot implements Plot {
    }
 
    /**
-    * Unregisters the given {@link PlotContainer} from this {@link Plot} if
-    * and only if the given {@link PlotContainer} is not <code>null</code> and
+    * Unregisters the given {@link SeriesPlotContainer} from this {@link Plot} if
+    * and only if the given {@link SeriesPlotContainer} is not <code>null</code> and
     * is currently registered with this {@link Plot}. That is, if this {@link Plot}
-    * is already associated with a {@link PlotContainer} other than the given one,
+    * is already associated with a {@link SeriesPlotContainer} other than the given one,
     * then nothing happens.
     *
     * <p>
@@ -236,7 +236,7 @@ public abstract class BaseSeriesPlot implements Plot {
    protected abstract SeriesPlotRenderer getRenderer();
 
    /**
-    * Sets the style for this {@link Plot}, and causes a repaint of the plot's {@link PlotContainer}.  Does
+    * Sets the style for this {@link Plot}, and causes a repaint of the plot's {@link SeriesPlotContainer}.  Does
     * nothing if the given <code>newStyleJson</code> is <code>null</code>.
     */
    public final void setStyle(final JavaScriptObject newStyleJson) {
@@ -251,7 +251,7 @@ public abstract class BaseSeriesPlot implements Plot {
    }
 
    /**
-    * Paints this plot in its {@link PlotContainer}.
+    * Paints this plot in its {@link SeriesPlotContainer}.
     *
     * <p>Does not draw the axes associated with this plot.</p>
     */
@@ -276,7 +276,7 @@ public abstract class BaseSeriesPlot implements Plot {
       }
    }
 
-   /** Causes the containing {@link PlotContainer} to paint itself. */
+   /** Causes the containing {@link SeriesPlotContainer} to paint itself. */
    protected final void signalRepaintOfPlotContainer() {
       if (plotContainer != null) {
          plotContainer.paint();

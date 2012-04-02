@@ -321,9 +321,9 @@ public final class NativeInterface {
 
 			this.getPlaceholder = function() { return placeholder; };
 			this.__backingPlotContainer = (function() {
-				var widget = @org.bodytrack.client.PlotContainer::new(Ljava/lang/String;)(placeholder);
+				var widget = @org.bodytrack.client.SeriesPlotContainer::new(Ljava/lang/String;)(placeholder);
 				for (var i = 0; i < plots.length; i++) {
-					widget.@org.bodytrack.client.PlotContainer::addPlot(Lorg/bodytrack/client/Plot;)(plots[i].__backingPlot);
+					widget.@org.bodytrack.client.SeriesPlotContainer::addPlot(Lorg/bodytrack/client/Plot;)(plots[i].__backingPlot);
 				}
 				return widget;
 			})();
@@ -331,16 +331,16 @@ public final class NativeInterface {
 				if (plot === undefined) {
 					throw 'The addPlot function requires one argument';
 				}
-				this.__backingPlotContainer.@org.bodytrack.client.PlotContainer::addPlot(Lorg/bodytrack/client/Plot;)(plot.__backingPlot);
+				this.__backingPlotContainer.@org.bodytrack.client.SeriesPlotContainer::addPlot(Lorg/bodytrack/client/Plot;)(plot.__backingPlot);
 			};
 			this.removePlot = function(plot) {
 				if (plot === undefined) {
 					throw 'The removePlot function requires one argument';
 				}
-				this.__backingPlotContainer.@org.bodytrack.client.PlotContainer::removePlot(Lorg/bodytrack/client/Plot;)(plot.__backingPlot);
+				this.__backingPlotContainer.@org.bodytrack.client.SeriesPlotContainer::removePlot(Lorg/bodytrack/client/Plot;)(plot.__backingPlot);
 			};
 			this.setSize = function(widthInPixels, heightInPixels, eventId) {
-				this.__backingPlotContainer.@org.bodytrack.client.PlotContainer::setSize(III)(widthInPixels, heightInPixels, eventId);
+				this.__backingPlotContainer.@org.bodytrack.client.SeriesPlotContainer::setSize(III)(widthInPixels, heightInPixels, eventId);
 			};
 			this.id = __getNextID();
 		};

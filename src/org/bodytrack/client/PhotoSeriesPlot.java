@@ -16,7 +16,7 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 
 /**
- * A class to show photos on a {@link PlotContainer}
+ * A class to show photos on a {@link SeriesPlotContainer}
  */
 public class PhotoSeriesPlot extends BaseSeriesPlot {
 	private static final double IMAGE_Y_VALUE =

@@ -7,21 +7,21 @@ import gwt.g2d.client.math.Vector2;
  */
 public interface Plot {
 
-   /** Sets the {@link PlotContainer} which contains this <code>Plot</code>. */
+   /** Sets the {@link SeriesPlotContainer} which contains this <code>Plot</code>. */
    void registerPlotContainer(PlotContainer plotContainer);
 
    /**
-    * Unregisters the given {@link PlotContainer} from this <code>Plot</code> if and only if the given
-    * {@link PlotContainer} is not <code>null</code> and is currently registered with this <code>Plot</code>. That
-    * is, if this <code>Plot</code> is already associated with a {@link PlotContainer} other than the given one,
+    * Unregisters the given {@link SeriesPlotContainer} from this <code>Plot</code> if and only if the given
+    * {@link SeriesPlotContainer} is not <code>null</code> and is currently registered with this <code>Plot</code>. That
+    * is, if this <code>Plot</code> is already associated with a {@link SeriesPlotContainer} other than the given one,
     * then nothing happens.
     */
    void unregisterPlotContainer(PlotContainer plotContainer);
 
    /**
-    * Paints this Plot on the stored {@link PlotContainer}.
+    * Paints this Plot on the stored {@link SeriesPlotContainer}.
     *
-    * @see #registerPlotContainer(PlotContainer)
+    * @see #registerPlotContainer(SeriesPlotContainer)
     */
    void paint(Canvas canvas, int newPaintEventId);
 
