@@ -10,6 +10,7 @@
       <pathelement location="${gwt-dev.jar}"/>
       <pathelement location="${gwt-user.jar}"/>
       <pathelement location="${gwt-log.jar}"/>
+      <pathelement location="${gwt-maps.jar}"/>
    </path>
 
    <path id="project-test.classpath">
