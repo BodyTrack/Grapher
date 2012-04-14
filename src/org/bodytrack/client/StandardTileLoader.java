@@ -358,7 +358,7 @@ public class StandardTileLoader implements TileLoader {
 
 				// Again, replacing a Java generic with Object seems to work
 				callback.@org.bodytrack.client.Alertable::onFailure(Ljava/lang/Object;)(failureTile);
-		});
+			});
 	}-*/;
 
 	private final class LoadTileAlertable implements Alertable<GrapherTile> {

@@ -144,7 +144,7 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 
 	private PhotoGetter drawPhoto(final BoundedDrawingBox drawing, final int idx,
 			final PhotoGetter lastPhoto, final Reference<Integer> currentCount) {
-		if (idx < 0 || idx > images.size())
+		if (idx < 0 || idx >= images.size())
 			return lastPhoto;
 
 		PhotoGetter photo = images.get(idx);
