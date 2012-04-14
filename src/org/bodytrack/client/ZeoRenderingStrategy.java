@@ -48,6 +48,7 @@ public class ZeoRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy {
          return value;
       }
 
+      @SuppressWarnings("unused")
       public String getName() {
          return name;
       }

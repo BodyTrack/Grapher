@@ -1,12 +1,15 @@
 package org.bodytrack.client;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.bodytrack.client.StyleDescription.CommentsDescription;
+import org.bodytrack.client.StyleDescription.HighlightDescription;
+
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PopupPanel;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Draws lines for the default DataSeriesPlot view
@@ -23,315 +26,358 @@ import java.util.List;
  */
 public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
 
-   /**
-    * The default vertical distance between a data point and the comment container.
-    */
-   private static final double DEFAULT_COMMENT_VERTICAL_MARGIN = 4;
+	/**
+	 * The default vertical distance between a data point and the comment container.
+	 */
+	private static final double DEFAULT_COMMENT_VERTICAL_MARGIN = 4;
 
-   /**
-    * The preferred width in pixels of a comment popup panel. The comment
-    * panel's actual width will be the minimum of this value, the drawing
-    * width, and the preferred width of the comment.
-    */
-   private static final int PREFERRED_MAX_COMMENT_WIDTH = 600;
+	/**
+	 * The preferred width in pixels of a comment popup panel. The comment
+	 * panel's actual width will be the minimum of this value, the drawing
+	 * width, and the preferred width of the comment.
+	 */
+	private static final int PREFERRED_MAX_COMMENT_WIDTH = 600;
 
-   private PopupPanel commentPanel;
-   private boolean willShowComments = false;
-   private double commentVerticalMargin = DEFAULT_COMMENT_VERTICAL_MARGIN;
-   private String commentContainerCssClass = null;
-   private String commentCssClass = null;
-   private final List<SeriesPlotRenderingStrategy> plotRenderingStrategies =
-      new ArrayList<SeriesPlotRenderingStrategy>();
-   private final List<DataPointRenderingStrategy> highlightRenderingStrategies =
-      new ArrayList<DataPointRenderingStrategy>();
-   private final List<DataPointRenderingStrategy> commentRenderingStrategies =
-      new ArrayList<DataPointRenderingStrategy>();
-   private final List<DataIndependentRenderingStrategy> dataIndependentStrategies =
-      new ArrayList<DataIndependentRenderingStrategy>();
+	private PopupPanel commentPanel;
+	private boolean willShowComments = false;
+	private double commentVerticalMargin = DEFAULT_COMMENT_VERTICAL_MARGIN;
+	private String commentContainerCssClass = null;
+	private String commentCssClass = null;
+	private final List<SeriesPlotRenderingStrategy> plotRenderingStrategies =
+		new ArrayList<SeriesPlotRenderingStrategy>();
+	private final List<DataPointRenderingStrategy> highlightRenderingStrategies =
+		new ArrayList<DataPointRenderingStrategy>();
+	private final List<DataPointRenderingStrategy> commentRenderingStrategies =
+		new ArrayList<DataPointRenderingStrategy>();
+	private final List<DataIndependentRenderingStrategy> dataIndependentStrategies =
+		new ArrayList<DataIndependentRenderingStrategy>();
 
-   /**
-    * Creates a new BaseSeriesPlotRenderer object
-    *
-    * @param styleDescription the {@link StyleDescription} used for rendering the plot
-    */
-   public BaseSeriesPlotRenderer(final StyleDescription styleDescription) {
-      setStyleDescription(styleDescription);
-   }
+	/**
+	 * Creates a new BaseSeriesPlotRenderer object
+	 *
+	 * @param styleDescription the {@link StyleDescription} used for rendering the plot
+	 */
+	public BaseSeriesPlotRenderer(final StyleDescription styleDescription) {
+		setStyleDescription(styleDescription);
+	}
 
-   public final void setStyleDescription(final StyleDescription styleDescription) {
-      willShowComments = false;
-      commentVerticalMargin = DEFAULT_COMMENT_VERTICAL_MARGIN;
-      commentContainerCssClass = null;
-      commentCssClass = null;
-      plotRenderingStrategies.clear();
-      highlightRenderingStrategies.clear();
-      commentRenderingStrategies.clear();
+	public final void setStyleDescription(final StyleDescription styleDescription) {
+		willShowComments = false;
+		commentVerticalMargin = DEFAULT_COMMENT_VERTICAL_MARGIN;
+		commentContainerCssClass = null;
+		commentCssClass = null;
+		plotRenderingStrategies.clear();
+		highlightRenderingStrategies.clear();
+		commentRenderingStrategies.clear();
 
-      if (styleDescription != null) {
-         willShowComments = styleDescription.willShowComments();
+		if (styleDescription != null) {
+			willShowComments = styleDescription.willShowComments();
 
-         final StyleDescription.HighlightDescription highlightDescription = styleDescription.getHighlightDescription();
-         final Double highlightLineWidth = (highlightDescription == null) ? null : highlightDescription.getLineWidth();
+			final HighlightDescription highlightDescription =
+				styleDescription.getHighlightDescription();
+			final Double highlightLineWidth =
+				(highlightDescription == null)
+					? null
+					: highlightDescription.getLineWidth();
 
-         final List<SeriesPlotRenderingStrategy> newPlotRenderingStrategies = buildSeriesPlotRenderingStrategies(styleDescription.getStyleTypes(), highlightLineWidth);
-         if (newPlotRenderingStrategies != null) {
-            plotRenderingStrategies.addAll(newPlotRenderingStrategies);
-         }
+			final List<SeriesPlotRenderingStrategy> newPlotRenderingStrategies =
+				buildSeriesPlotRenderingStrategies(styleDescription.getStyleTypes(),
+						highlightLineWidth);
+			if (newPlotRenderingStrategies != null) {
+				plotRenderingStrategies.addAll(newPlotRenderingStrategies);
+			}
 
-         if (highlightDescription != null) {
-            final List<DataPointRenderingStrategy> newHighlightRenderingStrategies = buildPointRenderingStrategies(highlightDescription.getStyleTypes(), highlightLineWidth);
-            if (newHighlightRenderingStrategies != null) {
-               highlightRenderingStrategies.addAll(newHighlightRenderingStrategies);
-            }
-         }
+			if (highlightDescription != null) {
+				final List<DataPointRenderingStrategy> newHighlightRenderingStrategies =
+					buildPointRenderingStrategies(highlightDescription.getStyleTypes(),
+							highlightLineWidth);
+				if (newHighlightRenderingStrategies != null) {
+					highlightRenderingStrategies.addAll(newHighlightRenderingStrategies);
+				}
+			}
 
-         final StyleDescription.CommentsDescription commentsDescription = styleDescription.getCommentsDescription();
-         if (commentsDescription != null) {
-            commentVerticalMargin = commentsDescription.getVerticalMargin(DEFAULT_COMMENT_VERTICAL_MARGIN);
-            commentContainerCssClass = commentsDescription.getCommentContainerCssClass();
-            commentCssClass = commentsDescription.getCommentCssClass();
-            final List<DataPointRenderingStrategy> newCommentRenderingStrategies = buildPointRenderingStrategies(commentsDescription.getStyleTypes(), highlightLineWidth);
-            if (newCommentRenderingStrategies != null) {
-               commentRenderingStrategies.addAll(newCommentRenderingStrategies);
-            }
-         }
-      }
+			final CommentsDescription commentsDescription =
+				styleDescription.getCommentsDescription();
+			if (commentsDescription != null) {
+				commentVerticalMargin = commentsDescription.getVerticalMargin(
+						DEFAULT_COMMENT_VERTICAL_MARGIN);
+				commentContainerCssClass = commentsDescription.getCommentContainerCssClass();
+				commentCssClass = commentsDescription.getCommentCssClass();
+				final List<DataPointRenderingStrategy> newCommentRenderingStrategies =
+					buildPointRenderingStrategies(commentsDescription.getStyleTypes(),
+							highlightLineWidth);
+				if (newCommentRenderingStrategies != null) {
+					commentRenderingStrategies.addAll(newCommentRenderingStrategies);
+				}
+			}
+		}
 
-      // Mandatory midnight lines
-      // TODO: Change this to optional?
-      dataIndependentStrategies.add(new MidnightLineRenderingStrategy());
-   }
+		// Mandatory midnight lines
+		dataIndependentStrategies.add(new MidnightLineRenderingStrategy());
+	}
 
-   protected abstract List<SeriesPlotRenderingStrategy> buildSeriesPlotRenderingStrategies(final JsArray<StyleDescription.StyleType> styleTypes,
-                                                                                           final Double highlightLineWidth);
+	protected abstract List<SeriesPlotRenderingStrategy> buildSeriesPlotRenderingStrategies(
+			final JsArray<StyleDescription.StyleType> styleTypes,
+			final Double highlightLineWidth);
 
-   protected abstract List<DataPointRenderingStrategy> buildPointRenderingStrategies(final JsArray<StyleDescription.StyleType> styleTypes,
-                                                                                 final Double highlightLineWidth);
+	protected abstract List<DataPointRenderingStrategy> buildPointRenderingStrategies(
+			final JsArray<StyleDescription.StyleType> styleTypes,
+			final Double highlightLineWidth);
 
-   @Override
-   public final void render(final Canvas canvas,
-                            final BoundedDrawingBox drawing,
-                            final Iterable<GrapherTile> tiles,
-                            final GraphAxis xAxis,
-                            final GraphAxis yAxis,
-                            final PlottablePoint highlightedPoint) {
-      final boolean isAnyPointHighlighted = highlightedPoint != null;
+	@Override
+	public final void render(final Canvas canvas,
+			final BoundedDrawingBox drawing,
+			final Iterable<GrapherTile> tiles,
+			final GraphAxis xAxis,
+			final GraphAxis yAxis,
+			final PlottablePoint highlightedPoint) {
+		final boolean isAnyPointHighlighted = highlightedPoint != null;
 
-      for (final DataIndependentRenderingStrategy strategy : dataIndependentStrategies) {
-         strategy.beforeRender(canvas, drawing, isAnyPointHighlighted);
-         strategy.render(drawing, xAxis, yAxis);
-         strategy.afterRender(canvas, drawing);
-      }
+		renderDataIndependentStrategies(canvas, drawing, xAxis, yAxis,
+				isAnyPointHighlighted);
+		renderPlotStrategies(canvas, drawing, tiles, xAxis, yAxis,
+				isAnyPointHighlighted);
+		renderHighlightedPointsAndComments(canvas, drawing, tiles, xAxis, yAxis,
+				highlightedPoint);
+	}
 
-      for (final GrapherTile tile : tiles) {
-         final List<PlottablePoint> dataPoints = getDataPoints(tile);
+	private void renderDataIndependentStrategies(final Canvas canvas,
+			final BoundedDrawingBox drawing,
+			final GraphAxis xAxis,
+			final GraphAxis yAxis,
+			final boolean isAnyPointHighlighted) {
+		for (final DataIndependentRenderingStrategy strategy: dataIndependentStrategies) {
+			strategy.beforeRender(canvas, drawing, isAnyPointHighlighted);
+			strategy.render(drawing, xAxis, yAxis);
+			strategy.afterRender(canvas, drawing);
+		}
+	}
 
-         if (dataPoints == null) {
-            continue;
-         }
+	public void renderPlotStrategies(final Canvas canvas,
+			final BoundedDrawingBox drawing,
+			final Iterable<GrapherTile> tiles,
+			final GraphAxis xAxis,
+			final GraphAxis yAxis,
+			final boolean isAnyPointHighlighted) {
+		for (final SeriesPlotRenderingStrategy renderingStrategy: plotRenderingStrategies) {
+			renderingStrategy.beforeRender(canvas, drawing, isAnyPointHighlighted);
+			renderPlotTiles(renderingStrategy, canvas, drawing, tiles,
+					xAxis, yAxis, isAnyPointHighlighted);
+			renderingStrategy.afterRender(canvas, drawing);
+		}
+	}
 
-         for (final SeriesPlotRenderingStrategy renderingStrategy : plotRenderingStrategies) {
-            renderingStrategy.beforeRender(canvas, drawing, isAnyPointHighlighted);
+	private void renderPlotTiles(final SeriesPlotRenderingStrategy renderingStrategy,
+			final Canvas canvas,
+			final BoundedDrawingBox drawing,
+			final Iterable<GrapherTile> tiles,
+			final GraphAxis xAxis,
+			final GraphAxis yAxis,
+			final boolean isAnyPointHighlighted) {
+		double prevX = -Double.MAX_VALUE;
+		double prevY = -Double.MAX_VALUE;
 
-            // Putting these declarations outside the loop ensures
-            // that no gaps appear between lines
-            double prevX = -Double.MAX_VALUE;
-            double prevY = -Double.MAX_VALUE;
+		for (final GrapherTile tile: tiles) {
+			for (final PlottablePoint point: getDataPoints(tile)) {
+				final double x = xAxis.project2D(point.getDate()).getX();
+				final double y = yAxis.project2D(point.getValue()).getY();
 
-            for (final PlottablePoint point : dataPoints) {
-               // TODO: precompute these before iterating over the rendering strategies
-               final double x = xAxis.project2D(point.getDate()).getX();
-               final double y = yAxis.project2D(point.getValue()).getY();
+				if (x < MIN_DRAWABLE_VALUE || y < MIN_DRAWABLE_VALUE
+						|| Double.isInfinite(x) || Double.isInfinite(y)) {
+					// To avoid drawing a boundary point, we set prevY
+					// to something smaller than MIN_DRAWABLE_VALUE, to
+					// cause paintEdgePoint to be called on the next
+					// loop iteration
+					prevY = MIN_DRAWABLE_VALUE * 1.01;
+					continue;
+				}
 
-               if (x < MIN_DRAWABLE_VALUE || y < MIN_DRAWABLE_VALUE
-                   || Double.isInfinite(x) || Double.isInfinite(y)) {
-                  // To avoid drawing a boundary point, we set prevY
-                  // to something smaller than MIN_DRAWABLE_VALUE, to
-                  // cause paintEdgePoint to be called on the next
-                  // loop iteration
-                  prevY = MIN_DRAWABLE_VALUE * 1.01;
+				// Skip any "reverse" drawing
+				if (prevX > x) {
+					continue;
+				}
 
-                  continue;
-               }
+				// Draw this part of the line
+				if (prevX > MIN_DRAWABLE_VALUE
+						&& prevY > MIN_DRAWABLE_VALUE) {
+					renderingStrategy.paintDataPoint(drawing, tile, xAxis, yAxis,
+							isAnyPointHighlighted, prevX, prevY, x, y, point);
+				} else {
+					renderingStrategy.paintEdgePoint(drawing, tile, xAxis, yAxis,
+							isAnyPointHighlighted, x, y, point);
+				}
 
-               // Skip any "reverse" drawing
-               if (prevX > x) {
-                  continue;
-               }
+				prevX = x;
+				prevY = y;
+			}
+		}
+	}
 
-               // Draw this part of the line
-               if (prevX > MIN_DRAWABLE_VALUE
-                   && prevY > MIN_DRAWABLE_VALUE) {
-                  renderingStrategy.paintDataPoint(drawing, tile, xAxis, yAxis, isAnyPointHighlighted, prevX, prevY, x, y, point);
-               } else {
-                  renderingStrategy.paintEdgePoint(drawing, tile, xAxis, yAxis, isAnyPointHighlighted, x, y, point);
-               }
+	private void renderHighlightedPointsAndComments(final Canvas canvas,
+			final BoundedDrawingBox drawing,
+			final Iterable<GrapherTile> tiles,
+			final GraphAxis xAxis,
+			final GraphAxis yAxis,
+			final PlottablePoint highlightedPoint) {
+		final boolean isAnyPointHighlighted = highlightedPoint != null;
 
-               prevX = x;
-               prevY = y;
-            }
+		for (final DataPointRenderingStrategy renderingStrategy: commentRenderingStrategies) {
+			for (final GrapherTile tile: tiles) {
+				for (final PlottablePoint point: getDataPoints(tile)) {
+					if (point.hasComment()) {
+						renderingStrategy.beforeRender(canvas, drawing,
+								isAnyPointHighlighted);
+						renderingStrategy.paintPoint(drawing, xAxis, yAxis,
+								xAxis.project2D(point.getDate()).getX(),
+								yAxis.project2D(point.getValue()).getY(),
+								highlightedPoint);
+						renderingStrategy.afterRender(canvas, drawing);
+					}
+				}
+			}
+		}
 
-            renderingStrategy.afterRender(canvas, drawing);
-         }
+		hideComment();
 
-         // now render the points having comments
-         for (final PlottablePoint point : dataPoints) {
-            if (point.hasComment()) {
-               for (final DataPointRenderingStrategy renderingStrategy : commentRenderingStrategies) {
-                  renderingStrategy.beforeRender(canvas, drawing, isAnyPointHighlighted);
-                  renderingStrategy.paintPoint(drawing,
-                                               xAxis,
-                                               yAxis,
-                                               xAxis.project2D(point.getDate()).getX(),
-                                               yAxis.project2D(point.getValue()).getY(),
-                                               highlightedPoint);
-                  renderingStrategy.afterRender(canvas, drawing);
-               }
-            }
-         }
-      }
+		// if there's a highlighted point, then we should render it as such and,
+		// if it has a comment, also render the comment
+		if (isAnyPointHighlighted) {
+			// render highlight
+			for (final DataPointRenderingStrategy renderingStrategy: highlightRenderingStrategies) {
+				renderingStrategy.beforeRender(canvas, drawing, isAnyPointHighlighted);
+				renderingStrategy.paintPoint(drawing,
+						xAxis,
+						yAxis,
+						xAxis.project2D(highlightedPoint.getDate()).getX(),
+						yAxis.project2D(highlightedPoint.getValue()).getY(),
+						highlightedPoint);
+				renderingStrategy.afterRender(canvas, drawing);
+			}
 
-      hideComment();
+			// finally, render the comment
+			if (highlightedPoint.hasComment()) {
+				paintComment(drawing, highlightedPoint,
+						xAxis.project2D(highlightedPoint.getDate()).getX(),
+						yAxis.project2D(highlightedPoint.getValue()).getY());
+			}
+		}
+	}
 
-      // if there's a highlighted point, then we should render it as such and, if it has a comment, also
-      // render the comment
-      if (isAnyPointHighlighted) {
-         // render highlight
-         for (final DataPointRenderingStrategy renderingStrategy : highlightRenderingStrategies) {
-            renderingStrategy.beforeRender(canvas, drawing, isAnyPointHighlighted);
-            renderingStrategy.paintPoint(drawing,
-                                         xAxis,
-                                         yAxis,
-                                         xAxis.project2D(highlightedPoint.getDate()).getX(),
-                                         yAxis.project2D(highlightedPoint.getValue()).getY(),
-                                         highlightedPoint);
-            renderingStrategy.afterRender(canvas, drawing);
-         }
+	protected List<PlottablePoint> getDataPoints(final GrapherTile tile) {
+		return tile.getDataPoints();
+	}
 
-         // finally, render the comment
-         if (highlightedPoint.hasComment()) {
-            paintComment(drawing, highlightedPoint,
-                         xAxis.project2D(highlightedPoint.getDate()).getX(),
-                         yAxis.project2D(highlightedPoint.getValue()).getY());
-         }
-      }
-   }
+	private void paintComment(final BoundedDrawingBox drawing,
+			final PlottablePoint highlightedPoint,
+			final double x,
+			final double y) {
+		final int ix = (int)x;
+		final int iy = (int)y;
 
-   protected List<PlottablePoint> getDataPoints(final GrapherTile tile) {
-      return tile.getDataPoints();
-   }
+		if (willShowComments && highlightedPoint.hasComment()) {
+			// create the panel, but display it offscreen so we can measure
+			// its preferred width
+			commentPanel = new PopupPanel();
+			final Label label = new Label(highlightedPoint.getComment());
+			if (commentCssClass != null) {
+				label.setStylePrimaryName(commentCssClass);
+			}
+			if (commentContainerCssClass != null) {
+				commentPanel.setStylePrimaryName(commentContainerCssClass);
+			}
+			commentPanel.add(label);
+			commentPanel.setPopupPosition(-10000, -10000);
+			commentPanel.show();
+			final int preferredCommentPanelWidth = commentPanel.getOffsetWidth();
+			commentPanel.hide();
 
-   private void paintComment(final BoundedDrawingBox drawing,
-                             final PlottablePoint highlightedPoint,
-                             final double x,
-                             final double y) {
-      final int ix = (int)x;
-      final int iy = (int)y;
+			// compute the actual panel width by taking the minimum of the comment
+			// panel's preferred width, the width of the drawing region, and the
+			// PREFERRED_MAX_COMMENT_WIDTH.
+			final int desiredPanelWidth =
+				(int)Math.min(preferredCommentPanelWidth,
+						Math.min(drawing.getWidth(),
+								PREFERRED_MAX_COMMENT_WIDTH));
 
-      if (willShowComments && highlightedPoint.hasComment()) {
-         // create the panel, but display it offscreen so we can measure
-         // its preferred width
-         commentPanel = new PopupPanel();
-         final Label label = new Label(highlightedPoint.getComment());
-         if (commentCssClass != null) {
-            label.setStylePrimaryName(commentCssClass);
-         }
-         if (commentContainerCssClass != null) {
-            commentPanel.setStylePrimaryName(commentContainerCssClass);
-         }
-         commentPanel.add(label);
-         commentPanel.setPopupPosition(-10000, -10000);
-         commentPanel.show();
-         final int preferredCommentPanelWidth = commentPanel.getOffsetWidth();
-         commentPanel.hide();
+			// set the panel to the corrected width
+			final int actualPanelWidth;
+			if (desiredPanelWidth == preferredCommentPanelWidth) {
+				actualPanelWidth = preferredCommentPanelWidth;
+			} else {
+				commentPanel.setWidth(String.valueOf(desiredPanelWidth) + "px");
+				commentPanel.show();
 
-         // compute the actual panel width by taking the minimum of the comment
-         // panel's preferred width, the width of the drawing region, and the
-         // PREFERRED_MAX_COMMENT_WIDTH.
-         final int desiredPanelWidth =
-               (int)Math.min(preferredCommentPanelWidth,
-                             Math.min(drawing.getWidth(),
-                                      PREFERRED_MAX_COMMENT_WIDTH));
+				// unfortunately, setting the width doesn't take borders and such
+				// into account, so we need read the width again and then adjust
+				// accordingly
+				final int widthPlusExtra = commentPanel.getOffsetWidth();
+				commentPanel.hide();
 
-         // set the panel to the corrected width
-         final int actualPanelWidth;
-         if (desiredPanelWidth == preferredCommentPanelWidth) {
-            actualPanelWidth = preferredCommentPanelWidth;
-         } else {
-            commentPanel.setWidth(String.valueOf(desiredPanelWidth) + "px");
-            commentPanel.show();
+				commentPanel.setWidth(
+						String.valueOf(desiredPanelWidth - (widthPlusExtra - desiredPanelWidth))
+						+ "px");
+				commentPanel.show();
 
-            // unfortunately, setting the width doesn't take borders and such
-            // into account, so we need read the width again and then adjust
-            // accordingly
-            final int widthPlusExtra = commentPanel.getOffsetWidth();
-            commentPanel.hide();
+				actualPanelWidth = commentPanel.getOffsetWidth();
+			}
 
-            commentPanel.setWidth(
-                  String.valueOf(desiredPanelWidth - (widthPlusExtra - desiredPanelWidth))
-                  + "px");
-            commentPanel.show();
+			// now, if the actual panel width is less than the comment panel's
+			// preferred width, then the height must have changed so we need to
+			// redisplay the panel to determine its new height.
+			commentPanel.show();
+			final int actualPanelHeight = commentPanel.getOffsetHeight();
 
-            actualPanelWidth = commentPanel.getOffsetWidth();
-         }
+			// Now that we know the actual height and width of the comment panel,
+			// we can determine where to place the panel horizontally and
+			// vertically.  The general strategy is to try to center the panel
+			// horizontally above the point (we favor placement above the point
+			// so that the mouse pointer doesn't occlude the comment).  For
+			// horizontal placement, if the panel can't be centered with respect
+			// to the point, then just shift it left or right enough so that it
+			// fits within the bounds of the drawing region.  For vertical
+			// placement, if the panel can't be placed above the point, then
+			// place it below.
 
-         // now, if the actual panel width is less than the comment panel's
-         // preferred width, then the height must have changed so we need to
-         // redisplay the panel to determine its new height.
-         commentPanel.show();
-         final int actualPanelHeight = commentPanel.getOffsetHeight();
+			final int actualPanelLeft;
+			final int desiredPanelLeft = ix - actualPanelWidth / 2;
+			if (desiredPanelLeft < drawing.getTopLeft().getIntX()) {
+				actualPanelLeft = drawing.getTopLeft().getIntX();
+			} else if ((desiredPanelLeft + actualPanelWidth) > drawing.getBottomRight().getIntX()) {
+				actualPanelLeft = drawing.getBottomRight().getIntX() - actualPanelWidth;
+			} else {
+				actualPanelLeft = desiredPanelLeft;
+			}
 
-         // Now that we know the actual height and width of the comment panel,
-         // we can determine where to place the panel horizontally and
-         // vertically.  The general strategy is to try to center the panel
-         // horizontally above the point (we favor placement above the point
-         // so that the mouse pointer doesn't occlude the comment).  For
-         // horizontal placement, if the panel can't be centered with respect
-         // to the point, then just shift it left or right enough so that it
-         // fits within the bounds of the drawing region.  For vertical
-         // placement, if the panel can't be placed above the point, then
-         // place it below.
+			final int actualPanelTop;
+			final int desiredPanelTop =
+				(int)(iy - actualPanelHeight - commentVerticalMargin);
+			if (desiredPanelTop < drawing.getTopLeft().getIntY()) {
+				// place the panel below the point since there's not
+				// enough room to place it above
+				actualPanelTop = (int)(iy + commentVerticalMargin);
+			} else {
+				actualPanelTop = desiredPanelTop;
+			}
 
-         final int actualPanelLeft;
-         final int desiredPanelLeft = ix - actualPanelWidth / 2;
-         if (desiredPanelLeft < drawing.getTopLeft().getIntX()) {
-            actualPanelLeft = drawing.getTopLeft().getIntX();
-         } else if ((desiredPanelLeft + actualPanelWidth) > drawing.getBottomRight().getIntX()) {
-            actualPanelLeft = drawing.getBottomRight().getIntX() - actualPanelWidth;
-         } else {
-            actualPanelLeft = desiredPanelLeft;
-         }
+			// get the top-left coords of the canvas so we can offset the panel position
+			final Element nativeCanvasElement = drawing.getCanvas().getNativeCanvasElement();
+			final int canvasLeft = nativeCanvasElement.getAbsoluteLeft();
+			final int canvasTop = nativeCanvasElement.getAbsoluteTop();
 
-         final int actualPanelTop;
-         final int desiredPanelTop =
-               (int)(iy - actualPanelHeight - commentVerticalMargin);
-         if (desiredPanelTop < drawing.getTopLeft().getIntY()) {
-            // place the panel below the point since there's not
-            // enough room to place it above
-            actualPanelTop = (int)(iy + commentVerticalMargin);
-         } else {
-            actualPanelTop = desiredPanelTop;
-         }
+			// set the panel's position--these are in absolute page coordinates,
+			// so we need to offset it by the canvas's absolute position.
+			commentPanel.setPopupPosition(actualPanelLeft + canvasLeft,
+					actualPanelTop + canvasTop);
 
-         // get the top-left coords of the canvas so we can offset the panel position
-         final Element nativeCanvasElement = drawing.getCanvas().getNativeCanvasElement();
-         final int canvasLeft = nativeCanvasElement.getAbsoluteLeft();
-         final int canvasTop = nativeCanvasElement.getAbsoluteTop();
+			// show the panel
+			commentPanel.show();
+		}
+	}
 
-         // set the panel's position--these are in absolute page coordinates,
-         // so we need to offset it by the canvas's absolute position.
-         commentPanel.setPopupPosition(actualPanelLeft + canvasLeft,
-                                       actualPanelTop + canvasTop);
-
-         // show the panel
-         commentPanel.show();
-      }
-   }
-
-   private void hideComment() {
-      if (commentPanel != null) {
-         commentPanel.hide();
-         commentPanel = null;
-      }
-   }
+	private void hideComment() {
+		if (commentPanel != null) {
+			commentPanel.hide();
+			commentPanel = null;
+		}
+	}
 }

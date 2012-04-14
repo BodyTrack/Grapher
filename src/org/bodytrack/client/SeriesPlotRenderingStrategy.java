@@ -73,7 +73,7 @@ public interface SeriesPlotRenderingStrategy extends RenderingStrategy {
     * 	MIN_DRAWABLE_VALUE
     * @param rawDataPoint
     * 	The raw {@link PlottablePoint}
-    *      @see SeriesPlotRenderer#MIN_DRAWABLE_VALUE
+    * @see SeriesPlotRenderer#MIN_DRAWABLE_VALUE
     */
    void paintDataPoint(BoundedDrawingBox drawing,
                        GrapherTile tile,
