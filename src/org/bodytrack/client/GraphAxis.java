@@ -268,11 +268,10 @@ public class GraphAxis implements Resizable {
 	 * drawing a point.
 	 *
 	 * @param value
-	 * 		the value the user sees on the axis
+	 * 	The value the user sees on the axis
 	 * @return
-	 * 		a {@link Vector2 Vector2} with one
-	 * 		coordinate correct for drawing the specified value relative
-	 * 		to this axis
+	 * 	A {@link Vector2 Vector2} with one coordinate correct for drawing
+	 * 	the specified value relative to this axis
 	 */
 	public Vector2 project2D(double value) {
 		return begin.add(basis.y.scale(project1D(value)));
@@ -286,11 +285,10 @@ public class GraphAxis implements Resizable {
 	 * Marks this GraphAxis as highlighted.
 	 *
 	 * @param point
-	 * 		the point to highlight.  If this is <tt>null</tt>, the
-	 * 		result is the same as calling {@link #unhighlight()}.
-	 * 		Also, if the special value {@link #DARKEN_AXIS_ONLY}
-	 * 		is passed in as point, no line is drawn, but the
-	 * 		axis is still darkened
+	 * 	The point to highlight.  If this is <code>null</code>, the
+	 * 	result is the same as calling {@link #unhighlight()}.
+	 * 	Also, if the special value {@link #DARKEN_AXIS_ONLY} is passed in
+	 * 	as point, no line is drawn, but the axis is still darkened
 	 */
 	public void highlight(PlottablePoint point) {
 		highlightedPoint = point;
@@ -308,10 +306,10 @@ public class GraphAxis implements Resizable {
 	 * highlighted.
 	 *
 	 * @return
-	 * 		<tt>true</tt> if and only if {@link #highlight()} has been
-	 * 		called since this GraphAxis was constructed, and
-	 * 		{@link #unhighlight()} has not been called since the last
-	 * 		call to highlight
+	 * 	<code>true</code> if and only if {@link #highlight()} has been
+	 * 	called with a non-<code>null</code> parameter since this GraphAxis
+	 * 	was constructed, and {@link #unhighlight()} has not been called since
+	 * 	the last call to highlight
 	 */
 	public boolean isHighlighted() {
 		return highlightedPoint != null;
@@ -326,7 +324,7 @@ public class GraphAxis implements Resizable {
 	 * {@link #highlight(PlottablePoint)} and {@link #isHighlighted()}.</p>
 	 *
 	 * @return
-	 * 		the highlighted point for this axis
+	 * 	The highlighted point for this axis
 	 */
 	protected PlottablePoint getHighlightedPoint() {
 		return highlightedPoint;
@@ -379,10 +377,10 @@ public class GraphAxis implements Resizable {
 	 * <p>This is designed to be overridden by subclasses.</p>
 	 *
 	 * @param canvas
-	 * 		the {@link org.bodytrack.client.Canvas Canvas} we can
-	 * 		use to perform all rendering operations
+	 * 	The {@link org.bodytrack.client.Canvas Canvas} we can
+	 * 	use to perform all rendering operations
 	 * @param point
-	 * 		the point to render on the axis
+	 * 	The point to render on the axis
 	 */
 	protected void renderHighlight(Canvas canvas,
 			PlottablePoint point) {
@@ -557,8 +555,7 @@ public class GraphAxis implements Resizable {
 
 			@Override
 			public void remove() {
-				throw new UnsupportedOperationException(
-				"Cannot remove from this iterator");
+				throw new UnsupportedOperationException();
 			}
 		}
 	}
