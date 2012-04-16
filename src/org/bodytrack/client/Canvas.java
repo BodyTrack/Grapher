@@ -168,6 +168,26 @@ public final class Canvas {
 	// --------------------------------------------------------------
 
 	/**
+	 * Equivalent to <code>getSurface().getWidth()</code>
+	 *
+	 * @return
+	 * 	The width of this canvas
+	 */
+	public int getWidth() {
+		return surface.getWidth();
+	}
+
+	/**
+	 * Equivalent to <code>getSurface().getHeight()</code>
+	 *
+	 * @return
+	 * 	The height of this canvas
+	 */
+	public int getHeight() {
+		return surface.getHeight();
+	}
+
+	/**
 	 * Equivalent to <code>getSurface().setStrokeStyle(color)</code>
 	 *
 	 * @param color
