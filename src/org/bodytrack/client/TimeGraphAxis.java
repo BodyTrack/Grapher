@@ -15,13 +15,13 @@ public class TimeGraphAxis extends GraphAxis {
 		hasMinRange = hasMaxRange = true;
 	}
 
-	final long secondsInHour = 3600;
-	final long secondsInDay = secondsInHour * 24;
-	final long secondsInWeek = secondsInDay * 7;
-	final long secondsInYear = 31556926;
-	final long secondsInMonth = (long)Math.round(secondsInYear / 12.);
+	private final long secondsInHour = 3600;
+	private final long secondsInDay = secondsInHour * 24;
+	private final long secondsInWeek = secondsInDay * 7;
+	private final long secondsInYear = 31556926;
+	private final long secondsInMonth = (long)Math.round(secondsInYear / 12.);
 
-	final double timeTickSizes[][] = {
+	private final double timeTickSizes[][] = {
 			{1, 5, 15, 30},                                            // 1, 5, 15, 30 seconds
 			{60*1, 60*5, 60*15, 60*30},                                // 1, 5, 15, 30 mins
 			{3600*1, 3600*3, 3600*6, 3600*12},                         // 1, 3, 6, 12 hours
@@ -33,7 +33,7 @@ public class TimeGraphAxis extends GraphAxis {
 
    private int previousPaintEventId = 0;
 
-	public double computeTimeTickSize(double minPixels) {
+	private double computeTimeTickSize(double minPixels) {
 		//double minDelta = Math.max(minTickSize,
 		// (this.max - this.min) * (minPixels / this.length));
 		double minDelta = (this.max - this.min) * (minPixels / this.length);
@@ -53,7 +53,7 @@ public class TimeGraphAxis extends GraphAxis {
 	// Select minorTickSize to be of the same units as majorTickSize, unless
 	//   majorTickSize is the minimum value of the unit (e.g. 1 second, 1 minute,
 	//   1 hour), in which case select minorTickSize from the next smaller unit
-	public double computeTimeMinorTickSize(double minPixels, double majorTickSize) {
+	private double computeTimeMinorTickSize(double minPixels, double majorTickSize) {
 		// Find unit matching majorTickSize
 		double epsilon = 1e-10;
 		if (majorTickSize <= 1 + epsilon) return computeTickSize(minPixels);
@@ -76,7 +76,7 @@ public class TimeGraphAxis extends GraphAxis {
 		return computeTimeTickSize(minPixels);
 	}
 
-	class TimeLabelFormatter extends LabelFormatter {
+	private class TimeLabelFormatter extends LabelFormatter {
 		String format(double time) {
 			// Compute time, rounded to nearest microsecond, then truncated
 			// to second only
@@ -104,7 +104,7 @@ public class TimeGraphAxis extends GraphAxis {
 		}
 	}
 
-	class DayLabelFormatter extends LabelFormatter {
+	private class DayLabelFormatter extends LabelFormatter {
 		final String[] days = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
 		String format(double time) {
 			Date d = new Date((long) Math.round(time*1000.));
@@ -113,7 +113,7 @@ public class TimeGraphAxis extends GraphAxis {
 		}
 	}	
 
-	class MonthLabelFormatter extends LabelFormatter {
+	private class MonthLabelFormatter extends LabelFormatter {
 		final String[] months = {"Jan", "Feb", "Mar", "Apr", "May",
 				"Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 		String format(double time) {
@@ -122,14 +122,14 @@ public class TimeGraphAxis extends GraphAxis {
 		}
 	}	
 
-	class YearLabelFormatter extends LabelFormatter {
+	private class YearLabelFormatter extends LabelFormatter {
 		String format(double time) {
 			Date d = new Date((long) Math.round(time * 1000.0));
 			return String.valueOf(d.getYear() + 1900);
 		}
 	}	
 
-	TickGenerator createDateTickGenerator(double tickSize) {
+	private TickGenerator createDateTickGenerator(double tickSize) {
 		int nHours = (int) Math.round(tickSize / secondsInHour);
 		if (nHours <= 1) return null;
 		if (nHours < 24) return new HourTickGenerator(nHours);
@@ -144,8 +144,7 @@ public class TimeGraphAxis extends GraphAxis {
 		return new YearTickGenerator(nYears);
 	}
 
-
-	double closestDay(double time) {
+	private double closestDay(double time) {
 		Date timeDate = new Date(((long)time) * 1000);
 		double hour = timeDate.getHours() + timeDate.getMinutes() / 30.0
 			+ timeDate.getSeconds() / 1800.;
@@ -167,36 +166,13 @@ public class TimeGraphAxis extends GraphAxis {
 		return ret;			
 	}
 
-	// Not perfectly accurate around the middle of the month; goes to
-	// beginning of this month if day < 15, otherwise beginning of next month
-	//	double closestMonth(double time) {
-	//		Date timeDate = new Date((long) (time*1000));
-	//
-	//		if (timeDate.getDate() >= 15) {
-	//			// Advance to next month
-	//			timeDate.setDate(1);
-	//			if (timeDate.getMonth() == 11) {
-	//				// Advance to January of next year
-	//				timeDate.setMonth(0);
-	//				timeDate.setYear(timeDate.getYear() + 1);
-	//			} else {
-	//				timeDate.setMonth(timeDate.getMonth() + 1);
-	//			}
-	//		}
-	//
-	//		// Move to beginning of this month
-	//		timeDate.setDate(1);
-	//		timeDate.setHours(0);
-	//		return closestDay(timeDate.getTime() / 1000);
-	//	}
-
-	class YearTickGenerator extends MonthTickGenerator {
+	private class YearTickGenerator extends MonthTickGenerator {
 		YearTickGenerator(int tickSizeYears) {
 			super(12 * tickSizeYears);
 		}
 	}
 
-	class MonthTickGenerator extends TickGenerator {
+	private class MonthTickGenerator extends TickGenerator {
 		private int tickSizeMonths;
 
 		MonthTickGenerator(int tickSizeMonths) {
@@ -204,7 +180,7 @@ public class TimeGraphAxis extends GraphAxis {
 			this.tickSizeMonths = tickSizeMonths;
 		}
 
-		int divideFloor(int numerator, int divisor) {
+		private int divideFloor(int numerator, int divisor) {
 			if (numerator < 0) {
 				return -(((Math.abs(divisor) - numerator - 1)) / divisor);
 			} else {
@@ -231,7 +207,7 @@ public class TimeGraphAxis extends GraphAxis {
 		}
 	}
 
-	class WeekTickGenerator extends TickGenerator {
+	private class WeekTickGenerator extends TickGenerator {
 		WeekTickGenerator() {
 			super(secondsInWeek, 0);
 		}
@@ -256,7 +232,7 @@ public class TimeGraphAxis extends GraphAxis {
 		}
 	}
 
-	class DayTickGenerator extends TickGenerator {
+	private class DayTickGenerator extends TickGenerator {
 		DayTickGenerator() {
 			super(secondsInDay, 0);
 		}
@@ -266,7 +242,7 @@ public class TimeGraphAxis extends GraphAxis {
 		}		
 	}
 
-	class HourTickGenerator extends TickGenerator {
+	private class HourTickGenerator extends TickGenerator {
 		private int tickSizeHours;
 		HourTickGenerator(int tickSizeHours) {
 			super(tickSizeHours * secondsInHour, 0);
@@ -311,17 +287,16 @@ public class TimeGraphAxis extends GraphAxis {
 		if (canvas == null)
 			return;
 
-      canvas.getSurface().clear();
-      
+		canvas.clear();
+
 		// Pick the color to use, based on highlighting status
 		if (isHighlighted())
 			canvas.setStrokeStyle(HIGHLIGHTED_COLOR);
 		else
 			canvas.setStrokeStyle(NORMAL_COLOR);
 
-		canvas.getRenderer().beginPath();
-		canvas.getRenderer().drawLineSegment(
-				project2D(this.min), project2D(this.max));
+		canvas.beginPath();
+		canvas.drawLineSegment(project2D(this.min), project2D(this.max));
 		double epsilon = 1e-10;
 
 		// Year out of line
@@ -392,7 +367,7 @@ public class TimeGraphAxis extends GraphAxis {
 			renderTicks(pixelOffset, dayMinorTickSize,
 					createDateTickGenerator(dayMinorTickSize), canvas,
 					minorTickWidthPixels, null);
-			pixelOffset += 22;			
+			pixelOffset += 22;
 		}
 
 		double monthPixels = 30;
@@ -428,7 +403,7 @@ public class TimeGraphAxis extends GraphAxis {
 			pixelOffset += 22;			
 		}
 
-		canvas.getRenderer().stroke();
+		canvas.stroke();
 
 		renderHighlight(canvas, getHighlightedPoint());
 
@@ -436,5 +411,3 @@ public class TimeGraphAxis extends GraphAxis {
 		canvas.setStrokeStyle(Canvas.DEFAULT_COLOR);
 	}
 }
-
-
