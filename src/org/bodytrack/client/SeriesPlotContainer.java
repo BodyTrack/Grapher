@@ -94,7 +94,7 @@ public class SeriesPlotContainer extends BasePlotContainer {
       final RootPanel placeholderElement = RootPanel.get(placeholderElementId);
       this.width = placeholderElement.getElement().getClientWidth();
       this.height = placeholderElement.getElement().getClientHeight();
-      drawing = new Surface(width, height);
+      drawing = new Surface(width, height + Canvas.G2D_HEIGHT_ADJUSTMENT);
       placeholderElement.add(drawing);
 
       nextLoadingMessageId = INITIAL_MESSAGE_ID;

@@ -43,6 +43,13 @@ public final class Canvas {
 	 */
 	public static final double DEFAULT_ALPHA = 1.0;
 
+	/**
+	 * G2D returns height values that are very slightly off, so adding this
+	 * value to the height argument in creating a new {@link Surface} will
+	 * fix the inconsistencies.
+	 */
+	public static final int G2D_HEIGHT_ADJUSTMENT = -3;
+
 	private final Surface surface;
 	private final DirectShapeRenderer renderer;
 	private final Element nativeCanvasElement;
