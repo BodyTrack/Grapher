@@ -206,6 +206,18 @@ public class GraphAxis implements Resizable {
 		}
 	}
 
+	public final void addEventListener(final JavaScriptObject listener) {
+		if (listener != null) {
+			addEventListener(new JavaScriptAxisChangeListener(listener));
+		}
+	}
+
+	public final void removeEventListener(final JavaScriptObject listener) {
+		if (listener != null) {
+			removeEventListener(new JavaScriptAxisChangeListener(listener));
+		}
+	}
+
 	public void setSize(final int widthInPixels,
 			final int heightInPixels,
 			final int newPaintEventId) {
@@ -848,5 +860,50 @@ public class GraphAxis implements Resizable {
 		uncheckedDrag(newMin - getMin(), eventId);
 
 		paint(eventId);
+	}
+
+	// TODO: Removing an axis probably doesn't work
+	// TODO: Only fire events on user-initiated updates
+	public static class JavaScriptAxisChangeListener implements EventListener {
+		private final JavaScriptObject callback;
+		private int prevEventId;
+
+		public JavaScriptAxisChangeListener(JavaScriptObject callback) {
+			if (callback == null)
+				throw new NullPointerException("null callback is not allowed");
+
+			this.callback = callback;
+			prevEventId = -1;
+		}
+
+		@Override
+		public native void onAxisChange(int eventId) /*-{
+			if (eventId != prevEventId) {
+				callback(eventId);
+			}
+		}-*/;
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + callback.hashCode();
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) {
+				return true;
+			}
+			if (obj == null) {
+				return false;
+			}
+			if (!(obj instanceof JavaScriptAxisChangeListener)) {
+				return false;
+			}
+			JavaScriptAxisChangeListener other = (JavaScriptAxisChangeListener) obj;
+			return callback.equals(other.callback);
+		}
 	}
 }

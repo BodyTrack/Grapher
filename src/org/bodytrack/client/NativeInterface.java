@@ -125,6 +125,12 @@ public final class NativeInterface {
 				this.setSize = function (widthInPixels, heightInPixels, eventId) {
 					this.__backingAxis.@org.bodytrack.client.GraphAxis::setSize(III)(widthInPixels, heightInPixels, eventId);
 				};
+				this.addAxisChangeListener = function (listenerFunction) {
+					this.__backingAxis.@org.bodytrack.client.GraphAxis::addEventListener(Lcom/google/gwt/core/client/JavaScriptObject;)(listenerFunction);
+				}
+				this.removeAxisChangeListener = function (listenerFunction) {
+					this.__backingAxis.@org.bodytrack.client.GraphAxis::removeEventListener(Lcom/google/gwt/core/client/JavaScriptObject;)(listenerFunction);
+				}
 				this.id = __getNextID();
 			};
 		};
