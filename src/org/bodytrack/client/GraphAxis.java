@@ -107,7 +107,7 @@ public class GraphAxis implements Resizable {
 			final int placeholderElementHeight =
 				placeholderElement.getElement().getClientHeight();
 			final Surface drawing = new Surface(placeholderElementWidth,
-					placeholderElementHeight + Canvas.G2D_HEIGHT_ADJUSTMENT);
+					placeholderElementHeight);
 			placeholderElement.add(drawing);
 
 			drawing.addMouseWheelHandler(new BaseMouseWheelHandler() {
