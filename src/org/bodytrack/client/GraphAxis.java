@@ -877,10 +877,15 @@ public class GraphAxis implements Resizable {
 		}
 
 		@Override
-		public native void onAxisChange(int eventId) /*-{
+		public void onAxisChange(int eventId) {
 			if (eventId != prevEventId) {
-				callback(eventId);
+				makeCallback(callback, eventId);
+				prevEventId = eventId;
 			}
+		}
+
+		private native void makeCallback(JavaScriptObject callback, int eventId) /*-{
+			callback(eventId);
 		}-*/;
 
 		@Override
