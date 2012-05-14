@@ -14,16 +14,15 @@ import com.google.gwt.core.client.JavaScriptObject;
  * @author Chris Bartley (bartley@cmu.edu)
  */
 public class StandardTileLoader implements TileLoader {
-	/** Used to speed up the {@link #log2(double)} method. */
-	private static final double LN_2 = Math.log(2);
+	private static final double MISSING_TILE_NUDGE_RATIO = 1e-2;
+	private static final double MIN_TILE_WIDTH_ULPS =
+		Math.ceil(1.0 / MISSING_TILE_NUDGE_RATIO) + 1;
 
 	/**
 	 * We never re-request a URL with MAX_REQUESTS_PER_URL or more failures
 	 * in a row.
 	 */
 	private static final int MAX_REQUESTS_PER_URL = 5;
-
-	private static final double EPSILON = 1e-10;
 
 	// Values related to getting new values from the server (the
 	// data will be pulled in with the checkForFetch call)
@@ -125,7 +124,7 @@ public class StandardTileLoader implements TileLoader {
 			return Integer.MIN_VALUE;
 
 		final double dataPointWidth = rangeWidth / GrapherTile.TILE_WIDTH;
-		return log2(dataPointWidth);
+		return MathEx.log2(dataPointWidth);
 	}
 
 	private long computeOffset(final double x, final int level) {
@@ -216,10 +215,11 @@ public class StandardTileLoader implements TileLoader {
 
 		final List<GrapherTile> best = new ArrayList<GrapherTile>();
 
-		// Making sure that timespan is at least EPSILON ensures that
-		// the (timespan * 1e-3) calculation below doesn't become zero
-		// and leave this method stuck in an infinite loop
-		final double timespan = Math.max(maxTime - minTime, EPSILON);
+		// Ensure that the maxCoveredTime + (timespan * MISSING_TILE_NUDGE_RATIO)
+		// calculation below doesn't become equal to maxCoveredTime and leave
+		// this method stuck in an infinite loop
+		final double timespan = Math.max(maxTime - minTime,
+				MathEx.ulp(maxTime) * MIN_TILE_WIDTH_ULPS);
 
 		double maxCoveredTime = minTime;
 
@@ -230,7 +230,7 @@ public class StandardTileLoader implements TileLoader {
 			// so we don't get the same tile twice
 
 			if (bestAtCurrTime == null) {
-				maxCoveredTime += timespan * 1e-2;
+				maxCoveredTime += timespan * MISSING_TILE_NUDGE_RATIO;
 			} else {
 				best.add(bestAtCurrTime);
 
@@ -421,20 +421,6 @@ public class StandardTileLoader implements TileLoader {
 					listener.handleLoadFailure();
 			}
 		}
-	}
-
-	/**
-	 * Computes the floor of the log (base 2) of x.
-	 *
-	 * @param x the value for which we want to take the log
-	 * @return the floor of the log (base 2) of x
-	 */
-	private static int log2(final double x) {
-		if (x <= 0) {
-			return Integer.MIN_VALUE;
-		}
-
-		return (int)Math.floor((Math.log(x) / LN_2));
 	}
 
 	private static class FilteredEventListener implements EventListener {
