@@ -234,6 +234,10 @@ public final class ColorUtils {
 			extendedColorToName.put(entry.getValue(), entry.getKey());
 	}
 
+	private ColorUtils() {
+		throw new UnsupportedOperationException();
+	}
+
 	public static boolean haveColor(Color c) {
 		return (c != null)
 			&& (basicColorToName.containsKey(c)

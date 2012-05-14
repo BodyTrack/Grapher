@@ -9,7 +9,7 @@ import java.util.Random;
 
 import org.junit.Test;
 
-public class InsertInOrderTest {
+public final class InsertInOrderTest {
 	private static final int SEED = 424242;
 
 	@Test(expected=NullPointerException.class)

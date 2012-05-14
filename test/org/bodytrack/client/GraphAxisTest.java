@@ -2,7 +2,7 @@ package org.bodytrack.client;
 
 import org.junit.Test;
 
-public class GraphAxisTest {
+public final class GraphAxisTest {
 	@Test
 	public void testTicks() {
 		/*

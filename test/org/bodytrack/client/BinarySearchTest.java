@@ -9,7 +9,7 @@ import java.util.Random;
 
 import org.junit.Test;
 
-public class BinarySearchTest {
+public final class BinarySearchTest {
 	private static final int SEED = 42424242;
 
 	@Test(expected=NullPointerException.class)
