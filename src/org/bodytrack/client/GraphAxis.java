@@ -496,12 +496,15 @@ public class GraphAxis implements Resizable {
 		}
 
 		void advanceTick() {
+			double prevTick = currentTick;
 			currentTick = closestTick(currentTick + tickSize);
+			if (currentTick <= prevTick)
+				currentTick = prevTick + MathEx.ulp(prevTick);
 		}
 
 		double closestTick(double val) {
 			return Math.round((val - offset) / tickSize) * tickSize
-			+ offset;
+				+ offset;
 		}
 	}
 
@@ -517,10 +520,10 @@ public class GraphAxis implements Resizable {
 		 * Builds a new IterableTickGenerator wrapping gen over (min, max)
 		 */
 		public IterableTickGenerator(TickGenerator gen, double min, double max) {
-			if (gen == null) {
-				throw new NullPointerException(
-						"TickGenerator cannot be null");
-			}
+			if (gen == null)
+				throw new NullPointerException("TickGenerator cannot be null");
+			if (min >= max)
+				throw new NullPointerException("min must be less than max");
 
 			this.gen = gen;
 			this.minValue = min;
@@ -862,7 +865,7 @@ public class GraphAxis implements Resizable {
 		paint(eventId);
 	}
 
-	// TODO: Removing an axis probably doesn't work
+	// TODO: Removing a listener probably doesn't work
 	// TODO: Only fire events on user-initiated updates
 	public static class JavaScriptAxisChangeListener implements EventListener {
 		private final JavaScriptObject callback;
