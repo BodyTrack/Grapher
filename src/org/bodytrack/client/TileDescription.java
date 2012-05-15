@@ -11,8 +11,8 @@ package org.bodytrack.client;
  * </p>
  */
 public final class TileDescription {
-	private int level;
-	private long offset;
+	private final int level;
+	private final long offset;
 
 	/**
 	 * Creates a new TileDescription.
