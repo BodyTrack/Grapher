@@ -85,7 +85,7 @@ public class SeriesPlotContainer extends BasePlotContainer {
    @SuppressWarnings("unused")
    private final String placeholderElementId;
 
-   public SeriesPlotContainer(final String placeholderElementId) {
+   public SeriesPlotContainer(final String placeholderElementId, boolean ignoreClickEvents) {
       if (placeholderElementId == null) {
          throw new NullPointerException("The placeholder element ID cannot be null");
       }
@@ -102,13 +102,25 @@ public class SeriesPlotContainer extends BasePlotContainer {
 
       nextValueMessageId = INITIAL_MESSAGE_ID;
       valueMessages = new ArrayList<DisplayMessage>();
+      
+      if (!ignoreClickEvents){
+    	  drawing.addMouseDownHandler(new MouseDownHandler() {
+    	         @Override
+    	         public void onMouseDown(final MouseDownEvent event) {
+    	            handleMouseDownEvent(event);
+    	         }
+    	      });
+    	  
+    	  drawing.addMouseUpHandler(new MouseUpHandler() {
+    	         @Override
+    	         public void onMouseUp(final MouseUpEvent event) {
+    	            handleMouseUpEvent(event);
+    	         }
+    	      });
+    	  
+      }
 
-      drawing.addMouseDownHandler(new MouseDownHandler() {
-         @Override
-         public void onMouseDown(final MouseDownEvent event) {
-            handleMouseDownEvent(event);
-         }
-      });
+      
 
       drawing.addMouseMoveHandler(new MouseMoveHandler() {
          @Override
@@ -117,12 +129,6 @@ public class SeriesPlotContainer extends BasePlotContainer {
          }
       });
 
-      drawing.addMouseUpHandler(new MouseUpHandler() {
-         @Override
-         public void onMouseUp(final MouseUpEvent event) {
-            handleMouseUpEvent(event);
-         }
-      });
 
       drawing.addMouseOutHandler(new MouseOutHandler() {
          @Override

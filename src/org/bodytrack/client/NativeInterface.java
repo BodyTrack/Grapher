@@ -314,7 +314,7 @@ public final class NativeInterface {
 		/// @param plots
 		///		Optional parameter: an array of plots that act as the initial
 		///		list of plots for this container
-		$wnd.PlotContainer = function(placeholder, plots) {
+		$wnd.PlotContainer = function(placeholder, ignoreClickEvents, plots) {
 			if (placeholder === undefined) {
 				// It's OK to pass in a null placeholder, but calling
 				// new PlotContainer() with no arguments isn't OK
@@ -327,7 +327,7 @@ public final class NativeInterface {
 
 			this.getPlaceholder = function() { return placeholder; };
 			this.__backingPlotContainer = (function() {
-				var widget = @org.bodytrack.client.SeriesPlotContainer::new(Ljava/lang/String;)(placeholder);
+				var widget = @org.bodytrack.client.SeriesPlotContainer::new(Ljava/lang/String;Z)(placeholder,ignoreClickEvents);
 				for (var i = 0; i < plots.length; i++) {
 					widget.@org.bodytrack.client.SeriesPlotContainer::addPlot(Lorg/bodytrack/client/Plot;)(plots[i].__backingPlot);
 				}
