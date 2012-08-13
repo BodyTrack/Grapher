@@ -131,6 +131,9 @@ public final class NativeInterface {
 				this.removeAxisChangeListener = function (listenerFunction) {
 					this.__backingAxis.@org.bodytrack.client.GraphAxis::removeEventListener(Lcom/google/gwt/core/client/JavaScriptObject;)(listenerFunction);
 				}
+				this.setTimeZoneMapping = function (mapping){
+					this.__backingAxis.@org.bodytrack.client.GraphAxis::setTimeZoneMapping(Lorg/bodytrack/client/TimeZoneMapping;)(mapping);
+				}
 				this.id = __getNextID();
 			};
 		};

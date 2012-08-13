@@ -855,21 +855,12 @@ public class GraphAxis implements Resizable {
 		final double oldMax = getMax();
 
 		final int eventId = SequenceNumber.getNext();
-		
-		this.min = newMin;
-		this.max = newMax;
-		
-		clampToRange();
-		rescale();
-
-		// notify event listeners that the axis has changed
-		publishAxisChangeEvent(eventId);
 
 		// Zoom in place to the right factor
-		//zoom((newMax - newMin) / (oldMax - oldMin), (oldMin + oldMax) / 2, eventId);
+		zoom((newMax - newMin) / (oldMax - oldMin), (oldMin + oldMax) / 2, eventId);
 
 		// Now translate
-		//uncheckedDrag(newMin - getMin(), eventId);
+		uncheckedDrag(newMin - getMin(), eventId);
 
 		paint(eventId);
 	}
@@ -922,5 +913,9 @@ public class GraphAxis implements Resizable {
 			JavaScriptAxisChangeListener other = (JavaScriptAxisChangeListener) obj;
 			return callback.equals(other.callback);
 		}
+	}
+	
+	public void setTimeZoneMapping(TimeZoneMapping mapping){
+		throw new RuntimeException("This axis type doesn't support timezone mappings!");		
 	}
 }

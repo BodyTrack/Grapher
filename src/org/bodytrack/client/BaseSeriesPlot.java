@@ -176,8 +176,13 @@ public abstract class BaseSeriesPlot implements Plot {
    protected final void publishDataPoint(final PlottablePoint point,
                                          final TriggerAction action,
                                          final JavaScriptObject info) {
+	  TimestampFormatter formatter = point;
+	  if (xAxis instanceof TimestampFormatter)
+		  formatter = (TimestampFormatter) xAxis;
+	  else if (yAxis instanceof TimestampFormatter)
+		  formatter = (TimestampFormatter) yAxis;
       for (final DataPointListener listener: dataPointListeners)
-         listener.handleDataPointUpdate(point, action, info);
+         listener.handleDataPointUpdate(point, action, info, formatter);
    }
 
    private void registerGraphAxisEventListener(final GraphAxis axis) {

@@ -5,7 +5,7 @@ import java.util.Date;
 import com.google.gwt.i18n.client.NumberFormat;
 
 @SuppressWarnings("deprecation")
-public class TimeGraphAxis extends GraphAxis {
+public class TimeGraphAxis extends GraphAxis implements TimestampFormatter {
 
 	public TimeGraphAxis(String divName, double min, double max, Basis basis,
 			double width, boolean isXAxis) {
@@ -14,6 +14,8 @@ public class TimeGraphAxis extends GraphAxis {
 		maxRange = 2147483640;
 		hasMinRange = hasMaxRange = true;
 	}
+	
+	private TimeZoneMapping tzMapping;
 
 	private final long secondsInHour = 3600;
 	private final long secondsInDay = secondsInHour * 24;
@@ -410,4 +412,32 @@ public class TimeGraphAxis extends GraphAxis {
 		// Clean up after ourselves
 		canvas.setStrokeStyle(Canvas.DEFAULT_COLOR);
 	}
+	
+	@Override
+	public void setTimeZoneMapping(TimeZoneMapping mapping){
+		tzMapping = mapping;
+	}
+
+	@Override
+	public String formatTimestamp(double timestamp) {
+		return PlottablePoint.DATE_TIME_FORMAT.format(new Date((long) adjustTimestamp(timestamp) * 1000));
+	}
+	
+	private double adjustTimestamp(double timestamp){
+		int additionalOffset = new Date((long) (timestamp * 1000)).getTimezoneOffset() * 60;
+		return timestamp + additionalOffset + getOffsetAtTimestamp(timestamp);
+	}
+	
+	private double getOffsetAtTimestamp(double timestamp){
+		if (tzMapping != null)
+			for (TimeZoneSegment segment : tzMapping.getTimeZones()){
+				if (segment.getStart() > timestamp)
+					break;
+				if (segment.getEnd() > timestamp)
+					return segment.getOffset();
+			}
+		return new Date((long) (timestamp * 1000)).getTimezoneOffset() * -60;
+	}
+	
+	
 }
