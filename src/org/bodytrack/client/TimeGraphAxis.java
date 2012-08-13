@@ -86,7 +86,7 @@ public class TimeGraphAxis extends GraphAxis implements TimestampFormatter {
 			// Compute fractional second in microseconds, rounded to nearest
 			int microseconds = (int) Math.round(1000000 * (time - whole));
 
-			Date d = new Date((long) (whole*1000.));
+			Date d = new Date((long) (adjustTimestamp(whole)*1000));
 			
 			String ret = NumberFormat.getFormat("00").format(d.getHours())
 				+ ":" +	NumberFormat.getFormat("00").format(d.getMinutes());
@@ -109,7 +109,7 @@ public class TimeGraphAxis extends GraphAxis implements TimestampFormatter {
 	private class DayLabelFormatter extends LabelFormatter {
 		final String[] days = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
 		String format(double time) {
-			Date d = new Date((long) Math.round(time*1000.));
+			Date d = new Date((long) Math.round(adjustTimestamp(time)*1000));
 			String ret = days[d.getDay()] + " " + d.getDate();
 			return ret;
 		}
@@ -119,14 +119,14 @@ public class TimeGraphAxis extends GraphAxis implements TimestampFormatter {
 		final String[] months = {"Jan", "Feb", "Mar", "Apr", "May",
 				"Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 		String format(double time) {
-			Date d = new Date((long) Math.round(time * 1000.0));
+			Date d = new Date((long) Math.round(adjustTimestamp(time) * 1000));
 			return months[d.getMonth()];
 		}
 	}	
 
 	private class YearLabelFormatter extends LabelFormatter {
 		String format(double time) {
-			Date d = new Date((long) Math.round(time * 1000.0));
+			Date d = new Date((long) Math.round(adjustTimestamp(time) * 1000));
 			return String.valueOf(d.getYear() + 1900);
 		}
 	}	
@@ -416,6 +416,7 @@ public class TimeGraphAxis extends GraphAxis implements TimestampFormatter {
 	@Override
 	public void setTimeZoneMapping(TimeZoneMapping mapping){
 		tzMapping = mapping;
+		paint();
 	}
 
 	@Override
