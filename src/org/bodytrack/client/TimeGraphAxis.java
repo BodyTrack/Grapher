@@ -3,6 +3,8 @@ package org.bodytrack.client;
 import java.util.Date;
 
 import com.google.gwt.i18n.client.NumberFormat;
+import com.google.gwt.i18n.shared.TimeZone;
+import com.google.gwt.user.client.Window;
 
 @SuppressWarnings("deprecation")
 public class TimeGraphAxis extends GraphAxis implements TimestampFormatter {
@@ -158,6 +160,7 @@ public class TimeGraphAxis extends GraphAxis implements TimestampFormatter {
 			// Advance 12 hours
 			timeDate.setTime(timeDate.getTime() + secondsInHour * 12 * 1000);
 		}
+		
 		// Truncate to beginning of day
 		timeDate.setHours(0);
 		timeDate.setMinutes(0);
@@ -165,7 +168,7 @@ public class TimeGraphAxis extends GraphAxis implements TimestampFormatter {
 		double epsilon = 1e-10;
 		// Return time in seconds, truncating fractional second
 		double ret=Math.floor(timeDate.getTime() / 1000 + epsilon);
-		return ret;			
+		return adjustTickTimestamp(ret);			
 	}
 
 	private class YearTickGenerator extends MonthTickGenerator {
@@ -205,7 +208,7 @@ public class TimeGraphAxis extends GraphAxis implements TimestampFormatter {
 			int tickMonth = tickMonthsSince1970 - tickYear * 12; 
 			Date tickDate = new Date(tickYear, tickMonth, 1);
 
-			return Math.round(tickDate.getTime() / 1000);
+			return adjustTickTimestamp(Math.round(tickDate.getTime() / 1000));
 		}
 	}
 
@@ -270,7 +273,7 @@ public class TimeGraphAxis extends GraphAxis implements TimestampFormatter {
 			timeDate.setSeconds(0);
 			double epsilon = 1e-10;
 			// Return time in seconds, truncating fractional second
-			return Math.floor(timeDate.getTime() / 1000 + epsilon);
+			return adjustTickTimestamp(Math.floor(timeDate.getTime() / 1000 + epsilon));
 		}
 	}
 
@@ -429,13 +432,22 @@ public class TimeGraphAxis extends GraphAxis implements TimestampFormatter {
 		return timestamp + additionalOffset + getOffsetAtTimestamp(timestamp);
 	}
 	
+	private double adjustTickTimestamp(double timestamp){
+		int additionalOffset = new Date((long) (timestamp * 1000)).getTimezoneOffset() * 60;
+		return timestamp - additionalOffset - getOffsetAtTimestamp(timestamp);
+	}
+	
 	private double getOffsetAtTimestamp(double timestamp){
 		if (tzMapping != null)
-			for (TimeZoneSegment segment : tzMapping.getTimeZones()){
+			for (TimeZoneSegmentWrapper segment : tzMapping.getTimeZones()){
 				if (segment.getStart() > timestamp)
 					break;
-				if (segment.getEnd() > timestamp)
+				if (segment.getEnd() > timestamp){
+					TimeZone tz = segment.getTimeZone();
+					if (tz != null)
+						return tz.getOffset(new Date((long) (timestamp * 1000))) * -60;
 					return segment.getOffset();
+				}
 			}
 		return new Date((long) (timestamp * 1000)).getTimezoneOffset() * -60;
 	}
