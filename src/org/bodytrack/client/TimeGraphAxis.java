@@ -3,7 +3,7 @@ package org.bodytrack.client;
 import java.util.Date;
 
 import com.google.gwt.i18n.client.NumberFormat;
-import com.google.gwt.i18n.shared.TimeZone;
+import com.google.gwt.i18n.client.TimeZone;
 import com.google.gwt.user.client.Window;
 
 @SuppressWarnings("deprecation")
@@ -17,7 +17,7 @@ public class TimeGraphAxis extends GraphAxis implements TimestampFormatter {
 		hasMinRange = hasMaxRange = true;
 	}
 	
-	private TimeZoneMapping tzMapping;
+	private TimeZoneSegmentWrapper[] timeZones = {};
 
 	private final long secondsInHour = 3600;
 	private final long secondsInDay = secondsInHour * 24;
@@ -418,7 +418,10 @@ public class TimeGraphAxis extends GraphAxis implements TimestampFormatter {
 	
 	@Override
 	public void setTimeZoneMapping(TimeZoneMapping mapping){
-		tzMapping = mapping;
+		if (mapping != null)
+			timeZones = mapping.getTimeZones();
+		else
+			timeZones = new TimeZoneSegmentWrapper[]{};
 		paint();
 	}
 
@@ -438,17 +441,16 @@ public class TimeGraphAxis extends GraphAxis implements TimestampFormatter {
 	}
 	
 	private double getOffsetAtTimestamp(double timestamp){
-		if (tzMapping != null)
-			for (TimeZoneSegmentWrapper segment : tzMapping.getTimeZones()){
-				if (segment.getStart() > timestamp)
-					break;
-				if (segment.getEnd() > timestamp){
-					TimeZone tz = segment.getTimeZone();
-					if (tz != null)
-						return tz.getOffset(new Date((long) (timestamp * 1000))) * -60;
-					return segment.getOffset();
-				}
+		for (TimeZoneSegmentWrapper segment : timeZones){
+			if (segment.getStart() > timestamp)
+				break;
+			if (segment.getEnd() > timestamp){
+				TimeZone tz = segment.getTimeZone();
+				if (tz != null)
+					return tz.getOffset(new Date((long) (timestamp * 1000))) * -60;
+				return segment.getOffset();
 			}
+		}
 		return new Date((long) (timestamp * 1000)).getTimezoneOffset() * -60;
 	}
 	
