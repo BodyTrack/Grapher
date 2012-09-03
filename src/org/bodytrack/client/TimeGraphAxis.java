@@ -441,6 +441,17 @@ public class TimeGraphAxis extends GraphAxis implements TimestampFormatter {
 	}
 	
 	private double getOffsetAtTimestamp(double timestamp) {
+		TimeZoneSegmentWrapper prevSegment = null;
+		for (TimeZoneSegmentWrapper segment: timeZones) {
+			if (segment.getStart() > timestamp)
+				break;
+			prevSegment = segment;
+		}
+
+		if (prevSegment != null)
+			return prevSegment.getTimeZone().getOffset(new Date((long) (timestamp * 1000))) * -60;
+
+		// Default to the current timezone if all timezone segments start after timestamp
 		return new Date((long) (timestamp * 1000)).getTimezoneOffset() * -60;
 	}
 }
