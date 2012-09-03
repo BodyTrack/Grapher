@@ -417,7 +417,7 @@ public class TimeGraphAxis extends GraphAxis implements TimestampFormatter {
 	}
 	
 	@Override
-	public void setTimeZoneMapping(TimeZoneMapping mapping){
+	public void setTimeZoneMapping(TimeZoneMapping mapping) {
 		if (mapping != null)
 			timeZones = mapping.getTimeZones();
 		else
@@ -430,29 +430,17 @@ public class TimeGraphAxis extends GraphAxis implements TimestampFormatter {
 		return PlottablePoint.DATE_TIME_FORMAT.format(new Date((long) adjustTimestamp(timestamp) * 1000));
 	}
 	
-	private double adjustTimestamp(double timestamp){
+	private double adjustTimestamp(double timestamp) {
 		int additionalOffset = new Date((long) (timestamp * 1000)).getTimezoneOffset() * 60;
 		return timestamp + additionalOffset + getOffsetAtTimestamp(timestamp);
 	}
 	
-	private double adjustTickTimestamp(double timestamp){
+	private double adjustTickTimestamp(double timestamp) {
 		int additionalOffset = new Date((long) (timestamp * 1000)).getTimezoneOffset() * 60;
 		return timestamp - additionalOffset - getOffsetAtTimestamp(timestamp);
 	}
 	
-	private double getOffsetAtTimestamp(double timestamp){
-		for (TimeZoneSegmentWrapper segment : timeZones){
-			if (segment.getStart() > timestamp)
-				break;
-			if (segment.getEnd() > timestamp){
-				TimeZone tz = segment.getTimeZone();
-				if (tz != null)
-					return tz.getOffset(new Date((long) (timestamp * 1000))) * -60;
-				return segment.getOffset();
-			}
-		}
+	private double getOffsetAtTimestamp(double timestamp) {
 		return new Date((long) (timestamp * 1000)).getTimezoneOffset() * -60;
 	}
-	
-	
 }
