@@ -24,8 +24,6 @@ public final class DataPointListener extends JavaScriptObject {
 
 	protected DataPointListener() { }
 
-	
-	
 	/**
 	 * Fires the callback with the specified information
 	 *
@@ -39,11 +37,10 @@ public final class DataPointListener extends JavaScriptObject {
 	 * 	as part of the target argument to the callback
 	 * @throws NullPointerException
 	 * 	If action is <code>null</code>
-	 */	
+	 */
 	public void handleDataPointUpdate(final PlottablePoint point,
 			final TriggerAction action,
-			final JavaScriptObject info,
-			TimestampFormatter formatter) {
+			final JavaScriptObject info) {
 		if (action == null)
 			throw new NullPointerException();
 
@@ -52,7 +49,7 @@ public final class DataPointListener extends JavaScriptObject {
 		else
 			handleDataPointUpdate(point.getDate(),
 					point.getValue(),
-					point.getDateAsString(formatter),
+					point.getDateAsString(),
 					point.getValueAsString(),
 					point.getComment(),
 					action.getActionName(),

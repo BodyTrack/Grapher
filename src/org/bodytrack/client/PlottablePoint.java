@@ -16,12 +16,12 @@ import com.google.gwt.i18n.client.NumberFormat;
  * subject to change if an attacker can exploit a cross-site scripting
  * vulnerability.</p>
  */
-public final class PlottablePoint implements Comparable<PlottablePoint>, TimestampFormatter {
+public final class PlottablePoint implements Comparable<PlottablePoint> {
 
    public static final String DEFAULT_VALUE_FORMAT_STRING = "###,##0.0##";
    public static final String DATE_TIME_FORMAT_STRING =
 	   "EEE MMM dd yyyy, HH:mm:ss.SSS";
-   public static final DateTimeFormat DATE_TIME_FORMAT =
+   private static final DateTimeFormat DATE_TIME_FORMAT =
 	   DateTimeFormat.getFormat(DATE_TIME_FORMAT_STRING);
 
    private static final String ZERO_VALUE_STRING = "0.0";
@@ -82,13 +82,7 @@ public final class PlottablePoint implements Comparable<PlottablePoint>, Timesta
     * @see #DATE_TIME_FORMAT_STRING
     */
    public String getDateAsString() {
-      return getDateAsString(this);
-   }
-   
-   public String getDateAsString(TimestampFormatter formatter){
-	   if (formatter == null)
-		   formatter = this;
-	   return formatter.formatTimestamp(myDate);
+      return DATE_TIME_FORMAT.format(new Date((long)(myDate * 1000)));
    }
 
    /**
@@ -209,9 +203,4 @@ public final class PlottablePoint implements Comparable<PlottablePoint>, Timesta
          return date1.compareTo(date2);
       }
    }
-
-	@Override
-	public String formatTimestamp(double timestamp) {
-		return DATE_TIME_FORMAT.format(new Date((long)(myDate * 1000)));
-	}
 }

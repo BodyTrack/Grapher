@@ -3,11 +3,9 @@ package org.bodytrack.client;
 import java.util.Date;
 
 import com.google.gwt.i18n.client.NumberFormat;
-import com.google.gwt.i18n.client.TimeZone;
-import com.google.gwt.user.client.Window;
 
 @SuppressWarnings("deprecation")
-public class TimeGraphAxis extends GraphAxis implements TimestampFormatter {
+public class TimeGraphAxis extends GraphAxis {
 
 	public TimeGraphAxis(String divName, double min, double max, Basis basis,
 			double width, boolean isXAxis) {
@@ -16,8 +14,6 @@ public class TimeGraphAxis extends GraphAxis implements TimestampFormatter {
 		maxRange = 2147483640;
 		hasMinRange = hasMaxRange = true;
 	}
-	
-	private TimeZoneSegmentWrapper[] timeZones = {};
 
 	private final long secondsInHour = 3600;
 	private final long secondsInDay = secondsInHour * 24;
@@ -88,7 +84,7 @@ public class TimeGraphAxis extends GraphAxis implements TimestampFormatter {
 			// Compute fractional second in microseconds, rounded to nearest
 			int microseconds = (int) Math.round(1000000 * (time - whole));
 
-			Date d = new Date((long) (adjustTimestamp(whole)*1000));
+			Date d = new Date((long) (whole*1000.));
 			
 			String ret = NumberFormat.getFormat("00").format(d.getHours())
 				+ ":" +	NumberFormat.getFormat("00").format(d.getMinutes());
@@ -111,7 +107,7 @@ public class TimeGraphAxis extends GraphAxis implements TimestampFormatter {
 	private class DayLabelFormatter extends LabelFormatter {
 		final String[] days = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
 		String format(double time) {
-			Date d = new Date((long) Math.round(adjustTimestamp(time)*1000));
+			Date d = new Date((long) Math.round(time*1000.));
 			String ret = days[d.getDay()] + " " + d.getDate();
 			return ret;
 		}
@@ -121,14 +117,14 @@ public class TimeGraphAxis extends GraphAxis implements TimestampFormatter {
 		final String[] months = {"Jan", "Feb", "Mar", "Apr", "May",
 				"Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 		String format(double time) {
-			Date d = new Date((long) Math.round(adjustTimestamp(time) * 1000));
+			Date d = new Date((long) Math.round(time * 1000.0));
 			return months[d.getMonth()];
 		}
 	}	
 
 	private class YearLabelFormatter extends LabelFormatter {
 		String format(double time) {
-			Date d = new Date((long) Math.round(adjustTimestamp(time) * 1000));
+			Date d = new Date((long) Math.round(time * 1000.0));
 			return String.valueOf(d.getYear() + 1900);
 		}
 	}	
@@ -160,7 +156,6 @@ public class TimeGraphAxis extends GraphAxis implements TimestampFormatter {
 			// Advance 12 hours
 			timeDate.setTime(timeDate.getTime() + secondsInHour * 12 * 1000);
 		}
-		
 		// Truncate to beginning of day
 		timeDate.setHours(0);
 		timeDate.setMinutes(0);
@@ -168,7 +163,7 @@ public class TimeGraphAxis extends GraphAxis implements TimestampFormatter {
 		double epsilon = 1e-10;
 		// Return time in seconds, truncating fractional second
 		double ret=Math.floor(timeDate.getTime() / 1000 + epsilon);
-		return adjustTickTimestamp(ret);			
+		return ret;			
 	}
 
 	private class YearTickGenerator extends MonthTickGenerator {
@@ -208,7 +203,7 @@ public class TimeGraphAxis extends GraphAxis implements TimestampFormatter {
 			int tickMonth = tickMonthsSince1970 - tickYear * 12; 
 			Date tickDate = new Date(tickYear, tickMonth, 1);
 
-			return adjustTickTimestamp(Math.round(tickDate.getTime() / 1000));
+			return Math.round(tickDate.getTime() / 1000);
 		}
 	}
 
@@ -273,7 +268,7 @@ public class TimeGraphAxis extends GraphAxis implements TimestampFormatter {
 			timeDate.setSeconds(0);
 			double epsilon = 1e-10;
 			// Return time in seconds, truncating fractional second
-			return adjustTickTimestamp(Math.floor(timeDate.getTime() / 1000 + epsilon));
+			return Math.floor(timeDate.getTime() / 1000 + epsilon);
 		}
 	}
 
@@ -414,44 +409,5 @@ public class TimeGraphAxis extends GraphAxis implements TimestampFormatter {
 
 		// Clean up after ourselves
 		canvas.setStrokeStyle(Canvas.DEFAULT_COLOR);
-	}
-	
-	@Override
-	public void setTimeZoneMapping(TimeZoneMapping mapping) {
-		if (mapping != null)
-			timeZones = mapping.getTimeZones();
-		else
-			timeZones = new TimeZoneSegmentWrapper[]{};
-		paint();
-	}
-
-	@Override
-	public String formatTimestamp(double timestamp) {
-		return PlottablePoint.DATE_TIME_FORMAT.format(new Date((long) adjustTimestamp(timestamp) * 1000));
-	}
-	
-	private double adjustTimestamp(double timestamp) {
-		int additionalOffset = new Date((long) (timestamp * 1000)).getTimezoneOffset() * 60;
-		return timestamp + additionalOffset + getOffsetAtTimestamp(timestamp);
-	}
-	
-	private double adjustTickTimestamp(double timestamp) {
-		int additionalOffset = new Date((long) (timestamp * 1000)).getTimezoneOffset() * 60;
-		return timestamp - additionalOffset - getOffsetAtTimestamp(timestamp);
-	}
-	
-	private double getOffsetAtTimestamp(double timestamp) {
-		TimeZoneSegmentWrapper prevSegment = null;
-		for (TimeZoneSegmentWrapper segment: timeZones) {
-			if (segment.getStart() > timestamp)
-				break;
-			prevSegment = segment;
-		}
-
-		if (prevSegment != null)
-			return prevSegment.getTimeZone().getOffset(new Date((long) (timestamp * 1000))) * -60;
-
-		// Default to the current timezone if all timezone segments start after timestamp
-		return new Date((long) (timestamp * 1000)).getTimezoneOffset() * -60;
 	}
 }
