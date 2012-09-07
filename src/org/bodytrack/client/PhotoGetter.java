@@ -47,7 +47,7 @@ public final class PhotoGetter extends JavaScriptObject implements Comparable<Ph
 	public static PhotoGetter buildDummyPhotoGetter(final int userId,
 			final PhotoDescription desc) {
 		return buildPhotoGetter(userId, desc.getId(), true,
-				desc.getBeginDate(), desc.getCount(), null, false);
+				desc.getBeginDate(), desc.getCount(), desc.getUrl(), null, false);
 	}
 
 	public static PhotoGetter buildPhotoGetter(final int userId,
@@ -55,7 +55,7 @@ public final class PhotoGetter extends JavaScriptObject implements Comparable<Ph
 			final PhotoAlertable callback,
 			final boolean download) {
 		return buildPhotoGetter(userId, desc.getId(), false,
-				desc.getBeginDate(), desc.getCount(), callback, download);
+				desc.getBeginDate(), desc.getCount(), desc.getUrl(), callback, download);
 	}
 
 	/**
@@ -94,15 +94,11 @@ public final class PhotoGetter extends JavaScriptObject implements Comparable<Ph
 			final boolean isDummy,
 			final double time,
 			final int count,
+			final String url,
 			final PhotoAlertable callback,
 			final boolean download) /*-{
 		// Declare this constant, and these functions, inside this
 		// function so we don't pollute the global namespace
-
-		var DEFAULT_WIDTH = 150;
-
-		var baseUrl = "/users/" + userId + "/logphotos/" + imageId + ".";
-		var url = baseUrl + DEFAULT_WIDTH + ".jpg";
 
 		var getter = {};
 		getter.userId = userId;
@@ -114,7 +110,6 @@ public final class PhotoGetter extends JavaScriptObject implements Comparable<Ph
 		getter.loadStarted = download;
 		getter.imageLoaded = false;
 		getter.loadFailed = false;
-		getter.baseUrl = baseUrl;
 		getter.url = url;
 		getter.originalImgWidth = -1;
 		getter.originalImgHeight = -1;
@@ -208,8 +203,7 @@ public final class PhotoGetter extends JavaScriptObject implements Comparable<Ph
 	}-*/;
 
 	/**
-	 * Returns the URL built up from the userId and imageId parameters
-	 * to the factory method that created this {@link PhotoGetter}
+	 * Returns the URL this {@link PhotoGetter} uses to request its image
 	 *
 	 * @return
 	 * 	The URL this {@link PhotoGetter} uses to request its image

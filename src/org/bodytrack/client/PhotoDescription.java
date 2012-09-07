@@ -84,7 +84,6 @@ public final class PhotoDescription extends JavaScriptObject {
 	 * @return
 	 * 		the count field from this photo if such a field exists,
 	 * 		or 1 otherwise
-	 * @return
 	 */
 	public native int getCount() /*-{
 		if (!this.count) {
@@ -92,6 +91,13 @@ public final class PhotoDescription extends JavaScriptObject {
 		}
 
 		return this.count;
+	}-*/;
+
+	/**
+	 * Returns the URL for this photo
+	 */
+	public native String getUrl() /*-{
+		return this.url;
 	}-*/;
 
 	/**
