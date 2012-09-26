@@ -23,3 +23,5 @@ war/grapher2/
 *.swp       # vim and some other programs
 *~          # emacs
 .DS_Store   # Mac OS
+/.DS_Store
+/war/.DS_Store
