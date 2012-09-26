@@ -806,6 +806,9 @@ public class GraphAxis implements Resizable {
 
 		// notify event listeners that the axis has changed
 		publishAxisChangeEvent(eventId);
+
+		// Even if there are no change listeners, should still update the UI
+		paint(eventId);
 	}
 
 	private void publishAxisChangeEvent(final int eventId) {
@@ -817,6 +820,9 @@ public class GraphAxis implements Resizable {
 	public void drag(final Vector2 from, final Vector2 to, final int eventId) {
 		final double motion = unproject(from) - unproject(to);
 		uncheckedDrag(motion, eventId);
+
+		// Even if there are no change listeners, should still update the UI
+		paint(eventId);
 	}
 
 	/**
