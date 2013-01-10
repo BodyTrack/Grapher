@@ -7,7 +7,7 @@ import com.google.gwt.core.client.JsArrayString;
  * Represents a single photo and all its parameters.
  *
  * <p>An overlay type for a generic photo description.  This data
- * type can be loaded from JSON using the
+ * type can be loaded from trusted JSON using the
  * {@link #buildDescription(String)} method.</p>
  *
  * <p>Note that this class is final because GWT requires that all method
@@ -86,9 +86,8 @@ public final class PhotoDescription extends JavaScriptObject {
 	 * 		or 1 otherwise
 	 */
 	public native int getCount() /*-{
-		if (!this.count) {
+		if (!this.count)
 			return 1;
-		}
 
 		return this.count;
 	}-*/;
@@ -100,23 +99,20 @@ public final class PhotoDescription extends JavaScriptObject {
 		return this.url;
 	}-*/;
 
+    public native Dynamic[] getThumbnails() /*-{
+        return this.thumbnails;
+    }-*/;
+
 	/**
-	 * Returns the tags for this <tt>PhotoDescription</tt>.
-	 *
-	 * @return
-	 * 		the tags for this <tt>PhotoDescription</tt>
+	 * Returns the tags for this {@link PhotoDescription}.
 	 */
-	public final native JsArrayString getTags() /*-{
+	public native JsArrayString getTags() /*-{
 		return this.tags;
 	}-*/;
 
 	/**
-	 * Returns <tt>true</tt> if and only if this photo is tagged with
-	 * the &quot;nsfw&quot; tag as true.
-	 *
-	 * @return
-	 * 		the value of the &quot;nsfw&quot; flag, or <tt>false</tt>
-	 * 		if that flag is not present
+	 * Returns <code>true</code> if and only if this photo is tagged as
+     * Not Safe For Work.
 	 */
 	public native boolean isNsfw() /*-{
 		return !!(this.nsfw);

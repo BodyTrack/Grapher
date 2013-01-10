@@ -22,6 +22,9 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 	private static final double IMAGE_Y_VALUE =
 		PhotoGraphAxis.PHOTO_CENTER_LOCATION;
 
+    private static final double MIN_PHOTO_SCALE = 0.51;
+    private static final double MAX_PHOTO_SCALE = 1.99;
+
 	private static final double COUNT_CIRCLE_SIZE = 20;
 
 	private final int userId;
@@ -119,9 +122,8 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 			if (idx < 0) {
 				// Since the download parameter is false, the photo isn't
 				// downloaded until absolutely necessary
-				PhotoGetter getter =
-					PhotoGetter.buildPhotoGetter(userId, desc,
-							loadListener, false);
+				final PhotoGetter getter =
+                    PhotoGetter.buildPhotoGetter(userId, desc, loadListener);
 				CollectionUtils.insertInOrder(images, getter);
 			} else {
 				// Update count to reflect closer neighbors from server
@@ -152,9 +154,7 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 			return lastPhoto;
 
 		if (lastPhoto == null || !overlaps(photo, lastPhoto)) {
-			// Actually load a photo that hasn't been downloaded yet
-			if (!photo.loadStarted())
-				photo.download();
+		    photo.downloadIfNecessary(getPhotoHeight(), MIN_PHOTO_SCALE, MAX_PHOTO_SCALE);
 
 			drawCount(drawing, lastPhoto, currentCount.get());
 			drawPhoto(drawing, getPhotoX(photo), getPhotoY(), photo);
@@ -263,24 +263,10 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 	}
 
 	/**
-	 * Finds the width at which the photo should be drawn, given its height
-	 *
-	 * @param photo
-	 * 	The photo for which we want the width
-	 * @param height
-	 * 	The height at which photo will be drawn
-	 * @return
-	 * 	The width at which photo should be drawn, maintaining the
-	 * 	aspect ratio of photo
+	 * Finds the width at which the photo should be drawn, given its height.
 	 */
-	private double getPhotoWidth(final PhotoGetter photo,
-			final double height) {
-		final double originalWidth = photo.getOriginalWidth();
-		final double originalHeight = photo.getOriginalHeight();
-
-		final double widthToHeight = originalWidth / originalHeight;
-
-		return height * widthToHeight;
+	private double getPhotoWidth(final PhotoGetter photo, final double height) {
+		return height * photo.getAspectRatio();
 	}
 
 	/**
@@ -516,12 +502,7 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 	 * An {@link Alertable} implementation that is specific to photo loading
 	 */
 	public final class PhotoAlertable implements Alertable<PhotoGetter> {
-		/**
-		 * Called every time a new image loads.
-		 *
-		 * @param photo
-		 * 	The <tt>PhotoGetter</tt> that just successfully loaded its image
-		 */
+
 		@Override
 		public void onSuccess(final PhotoGetter photo) {
 			signalRepaintOfPlotContainer();
