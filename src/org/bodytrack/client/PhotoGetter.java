@@ -188,6 +188,12 @@ public final class PhotoGetter extends JavaScriptObject implements Comparable<Ph
      * Begins downloading the full-size image or thumbnail closest to the
      * specified height.
      *
+     * <p>
+     * If any thumbnails are available, this downloads only thumbnails and never
+     * downloads the full-size image.  If no thumbnails are available, this
+     * downloads the full-size image when appropriate.
+     * </p>
+     *
      * @param preferredHeight
      *  The preferred height of the image to download
      * @param minScale
@@ -202,33 +208,68 @@ public final class PhotoGetter extends JavaScriptObject implements Comparable<Ph
      *  <code>true</code> if and only if calling this method actually
      * 	started a download
      */
-    public native boolean downloadIfNecessary(double preferredHeight, final double minScale, double maxScale) /*-{
-        if (this.isDummy || this.imageId < 0)
+    public boolean downloadIfNecessary(final double preferredHeight,
+            final double minScale,
+            final double maxScale) {
+        final int bestIdx = chooseDownloadIndex(preferredHeight, minScale, maxScale);
+        if (bestIdx < 0)
             return false;
+
+        downloadImage(bestIdx);
+        return true;
+    }
+
+    // Helper function for downloadIfNecessary, which chooses the index of the photo to
+    // download, returning -1 if no photo should be downloaded
+    private native int chooseDownloadIndex(final double preferredHeight,
+            final double minScale,
+            final double maxScale) /*-{
+        if (this.isDummy || this.imageId < 0)
+            return -1;
 
         var minHeight = preferredHeight * minScale;
         var maxHeight = preferredHeight * maxScale;
-        var bestIdx = 0; // Index of the height closest to preferredHeight
+        var bestIdx = -1; // Index of the height closest to preferredHeight
+        var bestDelta = Number.MAX_VALUE;
 
-        for (var i = 0; i < this.images.length; i++) {
-            if (this.heights[i] > 0 && this.heights[0] < minHeight)
+        // Don't want to touch the full-size image with this loop, so skip last item
+        for (var i = 0; i < this.images.length - 1; i++) {
+            if (this.heights[i] < minHeight || this.heights[i] > maxHeight)
                 continue;
-            if (this.heights[i] > maxHeight)
-                break;
             if (this.loadStarted[i])
-                return false;
-            if (Math.abs(this.heights[i] - preferredHeight) < Math.abs(this.heights[bestIdx] - preferredHeight))
+                return -1;
+            var delta = Math.abs(this.heights[i] - preferredHeight);
+            if (bestIdx < 0 || delta < bestDelta) {
                 bestIdx = i;
-            // Don't know the size of the full-size image, so we just assume it's the perfect
-            // size if all the known thumbnails are within the range (minHeight, maxHeight)
-            if (i == this.images.length - 1)
-                bestIdx = i;
+                bestDelta = delta;
+            }
         }
 
-        var idx = bestIdx;
+        // Don't download full-size image if any thumbnails are available
+        var anyThumbnails = this.images.length > 1;
+        if (anyThumbnails) {
+            if (bestIdx < 0) { // Didn't find any photos to download
+                // If any downloads have started, we don't initiate a download
+                if (this.imageLoaded.some(function (elem, _, __) { return !!elem; }))
+                    return -1;
+                // Else we download some thumbnail, at least
+                return 0;
+            }
+
+            return bestIdx;
+        }
+
+        return this.loadStarted[0] ? -1 : 0;
+    }-*/;
+
+    // Helper function for downloadIfNecessary, which initiates a download on the image at the
+    // specified index, keeping the bookkeeping information in this.loadStarted, this.loadFailed,
+    // and this.imageLoaded correct
+    private native void downloadImage(int idx) /*-{
         var getter = this;
         // If we used this keyword inside callbacks, would get wrong this because any
         // JavaScript function defines a new constructor
+
         this.images[idx].onload = function() {
             getter.imageLoaded[idx] = true;
             getter.loadFailed[idx] = false;
@@ -256,9 +297,8 @@ public final class PhotoGetter extends JavaScriptObject implements Comparable<Ph
             }
         };
 
-        this.loadStarted[bestIdx] = true;
-        this.images[bestIdx].src = this.urls[bestIdx];
-        return true;
+        this.loadStarted[idx] = true;
+        this.images[idx].src = this.urls[idx]; // Actually initiate download
     }-*/;
 
     /**
