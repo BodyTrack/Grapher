@@ -24,12 +24,6 @@ import com.google.gwt.json.client.JSONValue;
  * other types.  The concept is similar to the discriminated union or sum type
  * from ML-family languages.
  * </p>
- *
- * <p>
- * Since this almost always holds a reference to a JavaScript
- * overlay object, for efficiency we do not bother making copies of
- * return values, meaning that this class is <em>not</em> immutable.
- * </p>
  */
 public final class GrapherTile {
 	private final TileDescription description;
@@ -85,7 +79,6 @@ public final class GrapherTile {
 				final JSONArray arr = jsonTile.isArray();
 
 				for (int i = 0; i < arr.size(); i++) {
-					// TODO: This is a hack
 					final PhotoDescription desc =
 						PhotoDescription.buildDescription(arr.get(i).toString());
 					photoDescs.add(desc);
@@ -124,50 +117,25 @@ public final class GrapherTile {
 
 	/**
 	 * Returns a {@link PlottablePointTile} object representing any (x, y)
-	 * points in this <tt>GrapherTile</tt>, or <tt>null</tt> if this
-	 * <tt>GrapherTile</tt> contains no such information.
-	 *
-	 * @return
-	 * 	The <tt>PlottablePointTile</tt> that was parsed out of the json
-	 * 	parameter sent to the constructor when this object was
-	 * 	initialized, or <tt>null</tt> if json was not a
-	 * 	<tt>PlottablePointTile</tt>
+	 * points in this {@link GrapherTile}, or <code>null</code> if this
+	 * object contains no such information.
 	 */
 	public PlottablePointTile getPlottableTile() {
 		return tile;
 	}
 
 	/**
-	 * Returns a (possibly empty) list of available PhotoDescription objects
-	 * if this tile contains photo descriptions, or <tt>null</tt> otherwise.
+	 * Returns a (possibly empty) list of available {@link PhotoDescription} objects
+	 * if this tile contains photo descriptions, or <code>null</code> otherwise.
 	 */
 	public List<PhotoDescription> getPhotoDescriptions() {
 		return photoDescs;
 	}
 
 	/**
-	 * Returns <tt>true</tt> if and only if there is some data
-	 * available from this <tt>GrapherTile</tt> object.
-	 *
-	 * <p>
-	 * If this returns <tt>true</tt>, then exactly one of
-	 * {@link GrapherTile#getPlottableTile()} and
-	 * {@link GrapherTile#getPhotoDescriptions()} will return a
-	 * non-<tt>null</tt> value.  If this returns <tt>false</tt>,
-	 * both methods will return <tt>null</tt> if called.</p>
-	 *
-	 * @return
-	 * 	<tt>true</tt> if there is some data available from
-	 * 	this object, <tt>false</tt> otherwise
-	 */
-	public boolean containsData() {
-		return tile != null || photoDescs != null;
-	}
-
-	/**
 	 * Returns a list of plottable points found in the plottable
-	 * tile this stores, or <tt>null</tt> if
-	 * {@link #getPlottableTile()} returns <tt>null</tt>.
+	 * tile this stores, or <code>null</code> if
+	 * {@link #getPlottableTile()} returns <code>null</code>.
 	 *
 	 * <p>
 	 * This is exactly equivalent to
@@ -177,8 +145,8 @@ public final class GrapherTile {
 	 *
 	 * @return
 	 * 	A list of plottable points found in the plottable
-	 * 	tile this stores, or <tt>null</tt> if
-	 * 	{@link #getPlottableTile()} returns <tt>null</tt>.
+	 * 	tile this stores, or <code>null</code> if
+	 * 	{@link #getPlottableTile()} returns <code>null</code>.
 	 */
 	public List<PlottablePoint> getDataPoints() {
 		return (tile == null) ? null : tile.getDataPoints();

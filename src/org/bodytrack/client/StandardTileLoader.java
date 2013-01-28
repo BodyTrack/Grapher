@@ -366,7 +366,7 @@ public class StandardTileLoader implements TileLoader {
 		 * Called every time a new tile loads.
 		 *
 		 * @param tile
-		 * 	The <tt>GrapherTile</tt> representing the tile that loaded
+		 * 	The {@link GrapherTile} representing the tile that loaded
 		 */
 		@Override
 		public void onSuccess(final GrapherTile tile) {
