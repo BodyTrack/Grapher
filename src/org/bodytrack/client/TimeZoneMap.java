@@ -4,10 +4,10 @@ import java.util.Date;
 
 public abstract class TimeZoneMap {
 
-    protected static final long MILLIS_PER_SECOND = 1000;
-    protected static final long SECONDS_PER_MINUTE = 60;
-    protected static final long MINUTES_PER_HOUR = 60;
-    protected static final long HOURS_PER_DAY = 24;
+    public static final long MILLIS_PER_SECOND = 1000;
+    public static final long SECONDS_PER_MINUTE = 60;
+    public static final long MINUTES_PER_HOUR = 60;
+    public static final long HOURS_PER_DAY = 24;
 
     /**
      * Converts <code>utc</code> from UTC to local time, however a specific
