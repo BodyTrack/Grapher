@@ -186,10 +186,14 @@ public final class NativeInterface {
 		///		An non-null axis with horizontal orientation
 		/// @param verticalAxis
 		///		A non-null axis with vertical orientation
-		/// @param style
-		///		Optional parameter: a dictionary specifying the style of
-		///		the new plot
-		$wnd.DataSeriesPlot = function(datasource, horizontalAxis, verticalAxis, style) {
+		/// @param optionalParams
+		///		Optional parameter: a dictionary of optional parameters.  Supported keys:
+		///			localDisplay
+		///				True to display all data as though datastore time were equal to local
+		///				time, or false (default) to display data as the server presents it
+		///			style
+		///				A dictionary specifying the initial style of the new plot
+		$wnd.DataSeriesPlot = function(datasource, horizontalAxis, verticalAxis, optionalParams) {
 			if (datasource == null) {
 				throw 'Must pass in datasource';
 			}
@@ -198,10 +202,11 @@ public final class NativeInterface {
 				throw 'Must pass in both axes';
 			}
 
+			// Use the default localDisplay value of false if necessary
+			var localDisplay = !!(optionalParams['localDisplay']); // !!undefined is false
+
 			// create a default style if necessary
-			if (style == null) {
-				style = {};
-			}
+			var style = optionalParams['style'] || {}; // undefined || {} is {}
 
 			this.datasource = datasource;
 			this.getDatasource = function() {
@@ -211,7 +216,7 @@ public final class NativeInterface {
 				this.datasource = datasource;
 				this.__backingPlot.@org.bodytrack.client.DataSeriesPlot::setDatasource(Lcom/google/gwt/core/client/JavaScriptObject;)(datasource);
 			};
-			this.__backingPlot = @org.bodytrack.client.DataSeriesPlot::new(Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/core/client/JavaScriptObject;)(datasource, horizontalAxis, verticalAxis, style);
+			this.__backingPlot = @org.bodytrack.client.DataSeriesPlot::new(Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/core/client/JavaScriptObject;Z)(datasource, horizontalAxis, verticalAxis, style, localDisplay);
 			this.getHorizontalAxis = function() {
 				return this.__backingPlot.@org.bodytrack.client.DataSeriesPlot::getNativeXAxis()();
 			};
@@ -251,9 +256,14 @@ public final class NativeInterface {
 		///		A non-null axis with vertical orientation
 		/// @param userId
 		///		The ID of the current logged-in user
-		/// @param style
-		///		The style that determines how the photos should be drawn
-		$wnd.PhotoSeriesPlot = function(datasource, horizontalAxis, verticalAxis, userId, style) {
+		/// @param optionalParams
+		///		Optional parameter: a dictionary of optional parameters.  Supported keys:
+		///			localDisplay
+		///				True to display all data as though datastore time were equal to local
+		///				time, or false (default) to display data as the server presents it
+		///			style
+		///				The style that determines how the photos should be drawn
+		$wnd.PhotoSeriesPlot = function(datasource, horizontalAxis, verticalAxis, userId, optionalParams) {
 			if (datasource == null) {
 				throw 'Must pass in datasource';
 			}
@@ -262,7 +272,11 @@ public final class NativeInterface {
 				throw 'Must pass in both axes';
 			}
 
+			// Use the default localDisplay value of false if necessary
+			var localDisplay = !!(optionalParams['localDisplay']); // !!undefined is false
+
 			// create a default style if necessary
+			var style = optionalParams['style'];
 			if (style == null) {
 				style = {
 					"styles": [
@@ -280,7 +294,7 @@ public final class NativeInterface {
 				this.datasource = datasource;
 				this.__backingPlot.@org.bodytrack.client.PhotoSeriesPlot::setDatasource(Lcom/google/gwt/core/client/JavaScriptObject;)(datasource);
 			};
-			this.__backingPlot = @org.bodytrack.client.PhotoSeriesPlot::new(Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/core/client/JavaScriptObject;ILcom/google/gwt/core/client/JavaScriptObject;)(datasource, horizontalAxis, verticalAxis, userId, style);
+			this.__backingPlot = @org.bodytrack.client.PhotoSeriesPlot::new(Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/core/client/JavaScriptObject;ILcom/google/gwt/core/client/JavaScriptObject;Z)(datasource, horizontalAxis, verticalAxis, userId, style, localDisplay);
 			this.getHorizontalAxis = function() {
 				return this.__backingPlot.@org.bodytrack.client.PhotoSeriesPlot::getNativeXAxis()();
 			};

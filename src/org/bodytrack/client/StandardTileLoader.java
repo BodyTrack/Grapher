@@ -34,14 +34,23 @@ public class StandardTileLoader implements TileLoader {
 	// Determining whether or not we should retrieve more data from the server
 	private final JavaScriptObject datasource;
 	private final GraphAxis timeAxis;
+	private final ModalTimeZoneMap timeZoneMap;
 
 	private final Set<FilteredEventListener> eventListeners;
 	private final Alertable<GrapherTile> loadTileAlertable;
 
 	public StandardTileLoader(final JavaScriptObject datasource,
-			final GraphAxis timeAxis) {
+			final GraphAxis timeAxis,
+			final boolean localDisplay) {
 		this.datasource = datasource;
 		this.timeAxis = timeAxis;
+
+		// The ModalTimeZoneMap constructor takes a UTC mode parameter, which has the
+		// opposite value of localDisplay
+		if (timeAxis.getTimeZoneMap() == null)
+			timeZoneMap = new ModalTimeZoneMap(TimeZoneMap.IDENTITY_MAP, !localDisplay);
+		else
+			timeZoneMap = new ModalTimeZoneMap(timeAxis.getTimeZoneMap(), !localDisplay);
 
 		descriptions = new HashMap<TileDescription, GrapherTile>();
 		pendingDescriptions = new HashSet<TileDescription>();
@@ -103,6 +112,7 @@ public class StandardTileLoader implements TileLoader {
 		final List<TileDescription> tiles = new ArrayList<TileDescription>();
 
 		for (long offset = minOffset; offset <= maxOffset; offset++) {
+			// TODO: Need to skip any tile that begins after it starts (e.g. because of DST)
 			if (fetchFromServer(level, offset))
 				tiles.add(new TileDescription(level, offset));
 		}
@@ -127,9 +137,9 @@ public class StandardTileLoader implements TileLoader {
 		return MathEx.log2(dataPointWidth);
 	}
 
-	private long computeOffset(final double x, final int level) {
+	private long computeOffset(final double time, final int level) {
 		final double tileWidth = getTileWidth(level);
-		return (long)(x / tileWidth);
+		return (long)(timeZoneMap.convert(time) / tileWidth);
 	}
 
 	/**
@@ -322,12 +332,11 @@ public class StandardTileLoader implements TileLoader {
 	 *
 	 * <p>
 	 * Sends a tile retrieved from url to the {@link Alertable#onSuccess(Object)}
-	 * or {@link Alertable#onFailure(Object)} callback whenever that tile
-	 * arrives.
+	 * or {@link Alertable#onFailure(Object)} callback whenever that tile arrives.
 	 * </p>
 	 *
 	 * @param theDatasource
-	 * 	The theDatasource from which to retrieve the data
+	 * 	The datasource from which to retrieve the data
 	 * @param level
 	 * 	The level of the tile we are retrieving
 	 * @param offset
@@ -343,10 +352,12 @@ public class StandardTileLoader implements TileLoader {
 			final double offset,
 			final String offsetString,
 			final Alertable<GrapherTile> callback) /*-{
+        var timeZoneMap = this.@org.bodytrack.client.StandardTileLoader::timeZoneMap;
 		theDatasource(level,
 			offset,
 			function (tile) {
-				var successTile = @org.bodytrack.client.GrapherTile::new(ILjava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(level, offsetString, tile);
+				var shiftedTile = timeZoneMap.@org.bodytrack.client.ModalTimeZoneMap::reverseConvert(Ljava/lang/String;)(tile);
+				var successTile = @org.bodytrack.client.GrapherTile::new(ILjava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(level, offsetString, shiftedTile);
 
 				// The following call is generic in Java, but changing
 				// the parameter specification to Object seems to work, if
@@ -394,7 +405,7 @@ public class StandardTileLoader implements TileLoader {
 		 * <p>Tries to re-request the tile.</p>
 		 *
 		 * @param tile
-		 * 	The <tt>GrapherTile</tt> representing the tile that failed to load
+		 * 	The {@link GrapherTile} representing the tile that failed to load
 		 */
 		@Override
 		public void onFailure(final GrapherTile tile) {

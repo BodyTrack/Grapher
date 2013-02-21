@@ -46,6 +46,10 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 	 * 	The user ID of the current user
 	 * @param styleJson
 	 * 	The JSON style
+	 * @param localDisplay
+	 *	<code>true</code> if the data from the server should be shifted to
+	 *	pretend that all time offsets are local offsets, and <code>false</code>
+	 *	if the data from the server should be displayed as is
 	 * @throws NullPointerException
 	 * 	If any parameter is <tt>null</tt>
 	 */
@@ -53,8 +57,9 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 			final JavaScriptObject nativeXAxis,
 			final JavaScriptObject nativeYAxis,
 			final int userId,
-			final JavaScriptObject styleJson) {
-		super(datasource, nativeXAxis, nativeYAxis);
+			final JavaScriptObject styleJson,
+			final boolean localDisplay) {
+		super(datasource, nativeXAxis, nativeYAxis, localDisplay);
 
 		if (styleJson == null)
 			throw new NullPointerException();

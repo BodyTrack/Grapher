@@ -7,12 +7,20 @@ import com.google.gwt.i18n.client.NumberFormat;
 @SuppressWarnings("deprecation")
 public class TimeGraphAxis extends GraphAxis {
 
+	private final TimeZoneMap timeZoneMap;
+
 	public TimeGraphAxis(String divName, double min, double max, Basis basis,
 			double width, boolean isXAxis) {
 		super(divName, min, max, basis, width, isXAxis);
 		minRange = -2147483640;
 		maxRange = 2147483640;
 		hasMinRange = hasMaxRange = true;
+		timeZoneMap = new BrowserTimeZoneMap();
+	}
+
+	@Override
+	public TimeZoneMap getTimeZoneMap() {
+		return timeZoneMap;
 	}
 
 	private final long secondsInHour = 3600;

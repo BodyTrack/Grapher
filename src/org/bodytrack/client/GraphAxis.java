@@ -454,6 +454,14 @@ public class GraphAxis implements Resizable {
 		return isXAxis;
 	}
 
+	/**
+	 * Returns the time zone map that this uses to draw time labels, if applicable,
+	 * and <code>null</code> otherwise.
+	 */
+	public TimeZoneMap getTimeZoneMap() {
+		return null;
+	}
+
 	static abstract class LabelFormatter {
 		abstract String format(double value);
 	}

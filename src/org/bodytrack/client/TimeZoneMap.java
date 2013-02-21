@@ -2,7 +2,17 @@ package org.bodytrack.client;
 
 import java.util.Date;
 
+/**
+ * A stateless converter between local time and UTC.
+ *
+ * <p>
+ * If you need a stateful converter, which keeps track of whether or not it is
+ * in UTC mode, and converts accordingly, see {@link ModalTimeZoneMap}.
+ * </p>
+ */
 public abstract class TimeZoneMap {
+
+    public static final TimeZoneMap IDENTITY_MAP = new UTCTimeZoneMap();
 
     public static final long MILLIS_PER_SECOND = 1000;
     public static final long SECONDS_PER_MINUTE = 60;
@@ -51,24 +61,21 @@ public abstract class TimeZoneMap {
         return new Date((long)(utcSeconds * MILLIS_PER_SECOND));
     }
 
+
     /**
-     * Just a little wrapper that allows an outside class to persist the <code>utc</code>
-     * parameter to {@link TimeZoneMap#getDate(double, boolean)}.
+     * The simplest possible time zone map, which considers &quot;local time&quot;
+     * to be equal to UTC.
      */
-    public static final class DateBuilder {
-        private final TimeZoneMap map;
-        private final boolean utc;
+    private static final class UTCTimeZoneMap extends TimeZoneMap {
 
-        public DateBuilder(final TimeZoneMap map, final boolean utc) {
-            if (map == null)
-                throw new NullPointerException();
-
-            this.map = map;
-            this.utc = utc;
+        @Override
+        public double getLocalTime(final double utc) {
+            return utc;
         }
 
-        public Date getDate(final double seconds) {
-            return map.getDate(seconds, utc);
+        @Override
+        public double getUtcTime(final double local) {
+            return local;
         }
     }
 }

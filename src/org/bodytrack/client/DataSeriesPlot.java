@@ -59,6 +59,10 @@ public class DataSeriesPlot extends BaseSeriesPlot {
      *  The Y-axis along which this data set will be aligned when drawn
      * @param styleJson
      *  The JSON style
+     * @param localDisplay
+     *  <code>true</code> if the data from the server should be shifted to
+     *  pretend that all time offsets are local offsets, and <code>false</code>
+     *  if the data from the server should be displayed as is
      * @throws NullPointerException
      *  If datasource, nativeXAxis, nativeYAxis, or styleJson is <code>null</code>
      * @throws IllegalArgumentException
@@ -67,9 +71,10 @@ public class DataSeriesPlot extends BaseSeriesPlot {
     public DataSeriesPlot(final JavaScriptObject datasource,
             final JavaScriptObject nativeXAxis,
             final JavaScriptObject nativeYAxis,
-            final JavaScriptObject styleJson) {
+            final JavaScriptObject styleJson,
+            final boolean localDisplay) {
         // The superclass constructor checks for null in its parameters
-        super(datasource, nativeXAxis, nativeYAxis);
+        super(datasource, nativeXAxis, nativeYAxis, localDisplay);
         this.renderer = new DataSeriesPlotRenderer(styleJson.<StyleDescription>cast());
     }
 

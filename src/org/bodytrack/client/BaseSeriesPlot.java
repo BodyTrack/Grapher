@@ -23,6 +23,7 @@ public abstract class BaseSeriesPlot implements Plot {
    private final JavaScriptObject yAxisNative;
    private final GraphAxis xAxis;
    private final GraphAxis yAxis;
+   private final boolean localDisplay;
    private TileLoader tileLoader;
 
    private PlottablePoint publishedPoint = null;
@@ -52,6 +53,10 @@ public abstract class BaseSeriesPlot implements Plot {
     * 		the X-axis along which this data set will be aligned when drawn
     * @param nativeYAxis
     * 		the Y-axis along which this data set will be aligned when drawn
+    * @param localDisplay
+    * 		<code>true</code> if the data from the server should be shifted to
+    * 		pretend that all time offsets are local offsets, and <code>false</code>
+    * 		if the data from the server should be displayed as is
     * @throws NullPointerException
     * 		if datasource, nativeXAxis, or nativeYAxis is <code>null</code>
     * @throws IllegalArgumentException
@@ -59,7 +64,8 @@ public abstract class BaseSeriesPlot implements Plot {
     */
    protected BaseSeriesPlot(final JavaScriptObject datasource,
                             final JavaScriptObject nativeXAxis,
-                            final JavaScriptObject nativeYAxis) {
+                            final JavaScriptObject nativeYAxis,
+                            final boolean localDisplay) {
       if (datasource == null || nativeXAxis == null || nativeYAxis == null)
          throw new NullPointerException("Cannot have a null datasource or axis");
 
@@ -67,6 +73,7 @@ public abstract class BaseSeriesPlot implements Plot {
       this.yAxisNative = nativeYAxis;
       this.xAxis = GraphAxis.getAxis(this.xAxisNative);
       this.yAxis = GraphAxis.getAxis(this.yAxisNative);
+      this.localDisplay = localDisplay;
 
       if (!xAxis.isXAxis())
          throw new IllegalArgumentException("X-axis must be horizontal");
@@ -88,7 +95,7 @@ public abstract class BaseSeriesPlot implements Plot {
 
    // The method that should be called from within this class
    private TileLoader buildTileLoader(final JavaScriptObject datasource) {
-      TileLoader loader = buildTileLoader(datasource, xAxis);
+      TileLoader loader = buildTileLoader(datasource, xAxis, localDisplay);
       loader.checkForFetch();
 
       return loader;
@@ -125,8 +132,8 @@ public abstract class BaseSeriesPlot implements Plot {
     *  in order to load tiles
     */
    protected TileLoader buildTileLoader(final JavaScriptObject datasource,
-         final GraphAxis xAxis) {
-      TileLoader loader = new StandardTileLoader(datasource, xAxis);
+         final GraphAxis xAxis, final boolean localDisplay) {
+      TileLoader loader = new StandardTileLoader(datasource, xAxis, localDisplay);
       loader.addEventListener(new AlwaysRepaintListener());
 
       return loader;
