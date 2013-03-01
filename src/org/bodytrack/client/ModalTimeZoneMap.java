@@ -53,7 +53,7 @@ public final class ModalTimeZoneMap {
 
     public native String reverseConvert(final String tileString) /*-{
         if (this.@org.bodytrack.client.ModalTimeZoneMap::utcMode) {
-            return tile;
+            return tileString;
         }
 
         var map = this.@org.bodytrack.client.ModalTimeZoneMap::map;
