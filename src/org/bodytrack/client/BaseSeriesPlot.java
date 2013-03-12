@@ -1,7 +1,5 @@
 package org.bodytrack.client;
 
-import gwt.g2d.client.math.Vector2;
-
 import java.util.HashSet;
 import java.util.Set;
 

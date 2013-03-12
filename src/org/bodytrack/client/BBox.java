@@ -1,7 +1,5 @@
 package org.bodytrack.client;
 
-import gwt.g2d.client.math.Vector2;
-
 public class BBox {
 	Vector2 min, max;
 	BBox(Vector2 min, Vector2 max) {

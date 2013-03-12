@@ -2,7 +2,6 @@ package org.bodytrack.client;
 
 import gwt.g2d.client.graphics.Color;
 import gwt.g2d.client.graphics.canvas.Context;
-import gwt.g2d.client.math.Vector2;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -554,7 +553,7 @@ public final class BoundedDrawingBox {
 		}
 
 		// Now we have the line to draw across the box
-		getCanvas().getRenderer().drawLineSegment(
+		getCanvas().drawLineSegment(
 				inBoundsIntercepts.get(0),
 				inBoundsIntercepts.get(1));
 	}

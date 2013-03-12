@@ -1,7 +1,5 @@
 package org.bodytrack.client;
 
-import gwt.g2d.client.math.Vector2;
-
 /**
  * @author Chris Bartley (bartley@cmu.edu)
  */

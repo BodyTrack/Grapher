@@ -3,7 +3,6 @@ package org.bodytrack.client;
 import gwt.g2d.client.graphics.KnownColor;
 import gwt.g2d.client.graphics.TextAlign;
 import gwt.g2d.client.graphics.TextBaseline;
-import gwt.g2d.client.math.Vector2;
 
 import java.util.ArrayList;
 import java.util.List;

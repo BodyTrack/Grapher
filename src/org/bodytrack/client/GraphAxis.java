@@ -6,7 +6,6 @@ import gwt.g2d.client.graphics.KnownColor;
 import gwt.g2d.client.graphics.Surface;
 import gwt.g2d.client.graphics.TextAlign;
 import gwt.g2d.client.graphics.TextBaseline;
-import gwt.g2d.client.math.Vector2;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -404,14 +403,12 @@ public class GraphAxis implements Resizable {
 			return;
 		}
 
-		DirectShapeRenderer renderer = canvas.getRenderer();
-
 		canvas.getSurface().save();
 		double oldLineWidth = canvas.getSurface().getLineWidth();
 		canvas.getSurface().setLineWidth(HIGHLIGHTED_POINT_LINE_WIDTH);
 		canvas.getSurface().setStrokeStyle(HIGHLIGHTED_POINT_COLOR);
 
-		renderer.beginPath();
+		canvas.beginPath();
 
 		if (isXAxis) {
 			double time = point.getDate();
@@ -419,7 +416,7 @@ public class GraphAxis implements Resizable {
 			if (time >= min && time <= max) {
 				// top of the line to draw
 				Vector2 top = project2D(time);
-				renderer.drawLineSegment(top,
+				canvas.drawLineSegment(top,
 						new Vector2(top.getX(),
 								top.getY() + HIGHLIGHTED_POINT_LINE_LENGTH));
 			}
@@ -430,12 +427,12 @@ public class GraphAxis implements Resizable {
 				Vector2 left = project2D(value);
 				double size = Math.min(HIGHLIGHTED_POINT_LINE_LENGTH,
 						getWidth());
-				renderer.drawLineSegment(left,
+				canvas.drawLineSegment(left,
 						new Vector2(left.getX() + size, left.getY()));
 			}
 		}
 
-		renderer.stroke();
+		canvas.stroke();
 
 		// Clean up after ourselves
 		canvas.getSurface().restore();
@@ -583,7 +580,7 @@ public class GraphAxis implements Resizable {
 		}
 	}
 
-	protected double setupText(Surface surface, int justify) {
+	protected double setupText(Canvas canvas, int justify) {
 		boolean textParallelToAxis =
 			(Math.abs(basis.x.getX()) < Math.abs(basis.x.getY()));
 		double labelOffsetPixels = 0;
@@ -592,15 +589,15 @@ public class GraphAxis implements Resizable {
 			final TextAlign[] align =
 			{TextAlign.LEFT, TextAlign.CENTER, TextAlign.RIGHT};
 
-			surface.setTextAlign(align[justify]);
-			surface.setTextBaseline(TextBaseline.TOP);
+			canvas.setTextAlign(align[justify]);
+			canvas.setTextBaseline(TextBaseline.TOP);
 		} else {
-			surface.setTextAlign(TextAlign.LEFT);
+			canvas.setTextAlign(TextAlign.LEFT);
 
 			final TextBaseline[] baseline =
 			{TextBaseline.BOTTOM, TextBaseline.MIDDLE, TextBaseline.TOP};
 
-			surface.setTextBaseline(baseline[justify]);
+			canvas.setTextBaseline(baseline[justify]);
 			labelOffsetPixels = 3;
 		}
 
@@ -618,15 +615,15 @@ public class GraphAxis implements Resizable {
 		}
 
 		double labelOffsetPixels = formatter == null ? 0
-				: setupText(canvas.getSurface(), JUSTIFY_MED)
+				: setupText(canvas, JUSTIFY_MED)
 				+ offsetPixels + tickWidthPixels;
 
 		for (double tick : new IterableTickGenerator(tickGen, this.min, this.max)) {
-			renderTick(canvas.getRenderer(), tick,
+			renderTick(canvas, tick,
 					offsetPixels + tickWidthPixels);
 
 			if (formatter != null) {
-				renderTickLabel(canvas.getSurface(), tick,
+				renderTickLabel(canvas, tick,
 						labelOffsetPixels, formatter);
 			}
 		}
@@ -638,14 +635,12 @@ public class GraphAxis implements Resizable {
 			Canvas canvas,
 			double tickWidthPixels,
 			LabelFormatter formatter) {
-		Surface surface = canvas.getSurface();
-		DirectShapeRenderer renderer = canvas.getRenderer();
 
 		if (tickGen == null) {
 			tickGen = new TickGenerator(tickSize, 0);
 		}
 
-		double labelOffsetPixels = setupText(surface, JUSTIFY_MED)
+		double labelOffsetPixels = setupText(canvas, JUSTIFY_MED)
 		+ offsetPixels;
 
 		double tick = tickGen.nextTick(this.min);
@@ -653,7 +648,7 @@ public class GraphAxis implements Resizable {
 		if (tick > this.max) {
 			// No ticks are visible
 			// Draw one inline label in the middle
-			renderTickLabel(surface, (this.min + this.max) / 2.0,
+			renderTickLabel(canvas, (this.min + this.max) / 2.0,
 					labelOffsetPixels, formatter);
 			return;
 		}
@@ -662,20 +657,20 @@ public class GraphAxis implements Resizable {
 		if (project1D(tick) >= pixelMargin) {
 			// Draw label for before first tick, justified to the minimum
 			// of axis (left or bottom)
-			setupText(surface, JUSTIFY_MIN);
-			renderTickLabel(surface, this.min, labelOffsetPixels, formatter);
-			setupText(surface, JUSTIFY_MED);
+			setupText(canvas, JUSTIFY_MIN);
+			renderTickLabel(canvas, this.min, labelOffsetPixels, formatter);
+			setupText(canvas, JUSTIFY_MED);
 		}
 
 		while (true) {
-			renderTick(renderer, tick, tickWidthPixels + offsetPixels);
+			renderTick(canvas, tick, tickWidthPixels + offsetPixels);
 			double nextTick = tickGen.nextTick();
 
 			if (nextTick > this.max) {
 				break;
 			}
 
-			renderTickLabel(surface, (tick + nextTick) / 2.0,
+			renderTickLabel(canvas, (tick + nextTick) / 2.0,
 					labelOffsetPixels, formatter);
 			tick = nextTick;
 		}
@@ -684,8 +679,8 @@ public class GraphAxis implements Resizable {
 			// Draw label for after last tick, justified to maximum of
 			// axis (right or top)
 
-			setupText(surface, JUSTIFY_MAX);
-			renderTickLabel(surface, this.max, labelOffsetPixels, formatter);
+			setupText(canvas, JUSTIFY_MAX);
+			renderTickLabel(canvas, this.max, labelOffsetPixels, formatter);
 		}
 	}
 
@@ -703,25 +698,25 @@ public class GraphAxis implements Resizable {
 			tickGen = new TickGenerator(tickSize, 0);
 		}
 
-		double labelOffsetPixels = setupText(surface, JUSTIFY_MED)
+		double labelOffsetPixels = setupText(canvas, JUSTIFY_MED)
 		+ offsetPixels + tickWidthPixels;
 
 		double minTick = tickGen.nextTick(this.min - tickSize * 1.5);
 
 		while (minTick <= this.max) {
 			if (this.min <= minTick) {
-				renderTick(renderer, minTick, tickWidthPixels + offsetPixels);
+				renderTick(canvas, minTick, tickWidthPixels + offsetPixels);
 			}
 
 			endOfRangeGenerator.nextTick(minTick);
 			double maxTick = endOfRangeGenerator.nextTick();
 
 			if (this.min <= maxTick && maxTick <= this.max) {
-				renderTick(renderer, maxTick, tickWidthPixels + offsetPixels);
+				renderTick(canvas, maxTick, tickWidthPixels + offsetPixels);
 			}
 
 			if (this.min <= minTick && maxTick <= this.max) {
-				renderTickLabel(surface, (minTick + maxTick) / 2.0,
+				renderTickLabel(canvas, (minTick + maxTick) / 2.0,
 						labelOffsetPixels, formatter);
 			}
 
@@ -729,24 +724,24 @@ public class GraphAxis implements Resizable {
 		}
 	}
 
-	protected void renderTick(final DirectShapeRenderer renderer,
+	protected void renderTick(final Canvas canvas,
 			final double tick,
 			final double tickWidthPixels) {
 		final Vector2 fromPosition = project2D(tick);
 		final Vector2 toPosition = fromPosition.add(this.basis.x.scale(tickWidthPixels));
-		renderer.drawLineSegment(fromPosition, toPosition);
+		canvas.drawLineSegment(fromPosition, toPosition);
 	}
 
-	protected void renderTickLabel(Surface surface, double tick,
+	protected void renderTickLabel(Canvas canvas, double tick,
 			double labelOffsetPixels, LabelFormatter formatter) {
-		renderTickLabel(surface, tick, labelOffsetPixels,
+		renderTickLabel(canvas, tick, labelOffsetPixels,
 				formatter.format(tick));
 	}
 
-	protected void renderTickLabel(Surface surface, double y,
+	protected void renderTickLabel(Canvas canvas, double y,
 			double labelOffsetPixels, String label) {
 		// .setFont("italic 30px sans-serif")
-		surface.fillText(label,
+		canvas.fillText(label,
 				project2D(y).add(this.basis.x.scale(labelOffsetPixels)));
 	}
 

@@ -1,7 +1,5 @@
 package org.bodytrack.client;
 
-import gwt.g2d.client.math.Vector2;
-
 public class Basis {
 	public final Vector2 x;
 	public final Vector2 y;

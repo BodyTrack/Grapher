@@ -14,7 +14,6 @@ import gwt.g2d.client.graphics.KnownColor;
 import gwt.g2d.client.graphics.Surface;
 import gwt.g2d.client.graphics.TextAlign;
 import gwt.g2d.client.graphics.canvas.CanvasElement;
-import gwt.g2d.client.math.Vector2;
 
 import java.util.ArrayList;
 import java.util.HashSet;
