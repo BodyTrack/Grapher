@@ -80,7 +80,7 @@ public class MidnightLineRenderingStrategy implements DataIndependentRenderingSt
 	}
 
 	@Override
-	public void beforeRender(Canvas canvas, BoundedDrawingBox drawing,
+	public void beforeRender(GrapherCanvas canvas, BoundedDrawingBox drawing,
 			boolean isAnyPointHighlighted) {
 		canvas.setLineWidth(STROKE_WIDTH);
 		canvas.setStrokeStyle(STROKE_COLOR);
@@ -89,7 +89,7 @@ public class MidnightLineRenderingStrategy implements DataIndependentRenderingSt
 	}
 
 	@Override
-	public void afterRender(Canvas canvas, BoundedDrawingBox drawing) {
+	public void afterRender(GrapherCanvas canvas, BoundedDrawingBox drawing) {
 		drawing.strokeClippedPath();
 
 		// Clean up after ourselves

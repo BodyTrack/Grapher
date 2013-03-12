@@ -96,7 +96,7 @@ public class PhotoGraphAxis extends GraphAxis {
       if (previousPaintEventId != newPaintEventId) {
          previousPaintEventId = newPaintEventId;
 
-         final Canvas canvas = getDrawingCanvas();
+         final GrapherCanvas canvas = getDrawingCanvas();
          if (canvas == null) {
             return;
          }
@@ -143,13 +143,13 @@ public class PhotoGraphAxis extends GraphAxis {
          final double bottomY = projectY(bottomValue);
 
          // Now draw the vertical line
-         canvas.getRenderer().drawLineSegment(x, topY, x, bottomY);
+         canvas.drawLineSegment(x, topY, x, bottomY);
 
          // Actually render all our ticks and lines on the canvas
          canvas.stroke();
 
          // Clean up after ourselves
-         canvas.setStrokeStyle(Canvas.DEFAULT_COLOR);
+         canvas.setStrokeStyle(GrapherCanvas.DEFAULT_COLOR);
       }
    }
 
@@ -169,7 +169,7 @@ public class PhotoGraphAxis extends GraphAxis {
     * and to call {@code canvas.stroke()} after calling this method.</p>
     *
     * @param canvas
-    * 		a {@link Canvas} on which the tick will be drawn
+    * 		a {@link GrapherCanvas} on which the tick will be drawn
     * @param value
     * 		the location in which to draw the tick, specified
     * 		not in pixels but in terms of the
@@ -181,7 +181,7 @@ public class PhotoGraphAxis extends GraphAxis {
     * 		the width of this axis, <em>NOT</em> the width of
     * 		the tick
     */
-   private void drawTick(final Canvas canvas,
+   private void drawTick(final GrapherCanvas canvas,
                          final double value,
                          final double x,
                          final double width) {
@@ -195,6 +195,6 @@ public class PhotoGraphAxis extends GraphAxis {
       final double tickWidth = TICK_WIDTH_FACTOR * width;
       final double xRight = x + tickWidth;
 
-      canvas.getRenderer().drawLineSegment(x, y, xRight, y);
+      canvas.drawLineSegment(x, y, xRight, y);
    }
 }

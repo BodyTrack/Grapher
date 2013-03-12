@@ -261,7 +261,7 @@ public abstract class BaseSeriesPlot implements Plot {
     * <p>Does not draw the axes associated with this plot.</p>
     */
    @Override
-   public final void paint(final Canvas canvas, final int newPaintEventId) {
+   public final void paint(final GrapherCanvas canvas, final int newPaintEventId) {
       final SeriesPlotRenderer renderer = getRenderer();
       if (renderer != null) {
          // guard against redundant paints
@@ -296,7 +296,7 @@ public abstract class BaseSeriesPlot implements Plot {
     * 		a <tt>BoundedDrawingBox</tt> that will only allow drawing
     * 		within the axes
     */
-   protected final BoundedDrawingBox getDrawingBounds(final Canvas canvas) {
+   protected final BoundedDrawingBox getDrawingBounds(final GrapherCanvas canvas) {
       final double minX = getXAxis().project2D(getXAxis().getMin()).getX();
       final double maxX = getXAxis().project2D(getXAxis().getMax()).getX();
 

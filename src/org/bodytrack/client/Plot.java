@@ -21,7 +21,7 @@ public interface Plot {
     *
     * @see #registerPlotContainer(SeriesPlotContainer)
     */
-   void paint(Canvas canvas, int newPaintEventId);
+   void paint(GrapherCanvas canvas, int newPaintEventId);
 
    /**
     * Returns the X-Axis for this Plot.

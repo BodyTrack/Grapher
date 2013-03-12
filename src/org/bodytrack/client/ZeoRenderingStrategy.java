@@ -125,7 +125,7 @@ public class ZeoRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy {
    /**
     * Draws a rectangle with the specified corners, stretching down to 0.
     */
-   private void drawRectangle(final Canvas canvas,
+   private void drawRectangle(final GrapherCanvas canvas,
                               final GraphAxis yAxis,
                               final boolean isAnyPointHighlighted,
                               final ZeoState zeoState,
@@ -181,8 +181,8 @@ public class ZeoRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy {
       // enough and it's not the NO_DATA state
       final int widthInPixels = (int)Math.round(rightX - leftX);
       if (!isNoDataState && widthInPixels > 6) {
-         canvas.setGlobalAlpha(Canvas.DEFAULT_ALPHA);
-         canvas.setFillStyle(Canvas.DEFAULT_COLOR);
+         canvas.setGlobalAlpha(GrapherCanvas.DEFAULT_ALPHA);
+         canvas.setFillStyle(GrapherCanvas.DEFAULT_COLOR);
 
          // Stroke the outside of the rectangle
          // Round to nearest pixels so we draw the line in such a way that

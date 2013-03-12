@@ -302,7 +302,7 @@ public class SeriesPlotContainer extends BasePlotContainer {
          }
 
          // Now draw the data
-         final Canvas canvas = Canvas.buildCanvas(drawing);
+         final GrapherCanvas canvas = GrapherCanvas.buildCanvas(drawing);
          for (final Plot plot : containedPlots) {
             plot.paint(canvas, newPaintEventId);
          }
@@ -337,7 +337,7 @@ public class SeriesPlotContainer extends BasePlotContainer {
       // Restore old settings
       drawing.setTextAlign(oldTextAlign);
       drawing.setLineWidth(oldLineWidth);
-      drawing.setStrokeStyle(Canvas.DEFAULT_COLOR);
+      drawing.setStrokeStyle(GrapherCanvas.DEFAULT_COLOR);
    }
 
    /**
@@ -381,7 +381,7 @@ public class SeriesPlotContainer extends BasePlotContainer {
       // Restore old settings
       drawing.setTextAlign(oldTextAlign);
       drawing.setLineWidth(oldLineWidth);
-      drawing.setStrokeStyle(Canvas.DEFAULT_COLOR);
+      drawing.setStrokeStyle(GrapherCanvas.DEFAULT_COLOR);
    }
 
    /**

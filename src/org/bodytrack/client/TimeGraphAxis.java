@@ -291,7 +291,7 @@ public class TimeGraphAxis extends GraphAxis {
 	}
 
 	private void paint() {
-		Canvas canvas = getDrawingCanvas();
+		GrapherCanvas canvas = getDrawingCanvas();
 		if (canvas == null)
 			return;
 
@@ -416,6 +416,6 @@ public class TimeGraphAxis extends GraphAxis {
 		renderHighlight(canvas, getHighlightedPoint());
 
 		// Clean up after ourselves
-		canvas.setStrokeStyle(Canvas.DEFAULT_COLOR);
+		canvas.setStrokeStyle(GrapherCanvas.DEFAULT_COLOR);
 	}
 }

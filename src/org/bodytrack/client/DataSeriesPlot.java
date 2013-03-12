@@ -11,7 +11,7 @@ import com.google.gwt.core.client.JsArrayString;
  *
  * <p>
  * Has the ability to draw itself and its axes on a
- * {@link Canvas} object, and to update
+ * {@link GrapherCanvas} object, and to update
  * the positions of its dots based on the zoom level.  Also, if the
  * zoom level or position of the X-axis changes enough, this class will
  * automatically fetch the data from the server via Ajax and redraw

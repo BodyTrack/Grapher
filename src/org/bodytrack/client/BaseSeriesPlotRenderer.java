@@ -17,7 +17,7 @@ import com.google.gwt.user.client.ui.PopupPanel;
  * <p>A BaseSeriesPlotRenderer can render a highlighted point, as set by the
  * {@link Plot#setHighlightedPoint(PlottablePoint)} method.  If this value is
  * not null, that point is drawn at a larger radius whenever
- * {@link SeriesPlotRenderer#render(Canvas, BoundedDrawingBox, Iterable, GraphAxis, GraphAxis, PlottablePoint)}
+ * {@link SeriesPlotRenderer#render(GrapherCanvas, BoundedDrawingBox, Iterable, GraphAxis, GraphAxis, PlottablePoint)}
  * is called.  Hidden from the user of this
  * object is a mutable comment panel, which may be visible or invisible at
  * different points in time.  This mutable comment panel is never initialized
@@ -125,7 +125,7 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
 			final Double highlightLineWidth);
 
 	@Override
-	public final void render(final Canvas canvas,
+	public final void render(final GrapherCanvas canvas,
 			final BoundedDrawingBox drawing,
 			final Iterable<GrapherTile> tiles,
 			final GraphAxis xAxis,
@@ -141,7 +141,7 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
 				highlightedPoint);
 	}
 
-	private void renderDataIndependentStrategies(final Canvas canvas,
+	private void renderDataIndependentStrategies(final GrapherCanvas canvas,
 			final BoundedDrawingBox drawing,
 			final GraphAxis xAxis,
 			final GraphAxis yAxis,
@@ -153,7 +153,7 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
 		}
 	}
 
-	public void renderPlotStrategies(final Canvas canvas,
+	public void renderPlotStrategies(final GrapherCanvas canvas,
 			final BoundedDrawingBox drawing,
 			final Iterable<GrapherTile> tiles,
 			final GraphAxis xAxis,
@@ -168,7 +168,7 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
 	}
 
 	private void renderPlotTiles(final SeriesPlotRenderingStrategy renderingStrategy,
-			final Canvas canvas,
+			final GrapherCanvas canvas,
 			final BoundedDrawingBox drawing,
 			final Iterable<GrapherTile> tiles,
 			final GraphAxis xAxis,
@@ -213,7 +213,7 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
 		}
 	}
 
-	private void renderHighlightedPointsAndComments(final Canvas canvas,
+	private void renderHighlightedPointsAndComments(final GrapherCanvas canvas,
 			final BoundedDrawingBox drawing,
 			final Iterable<GrapherTile> tiles,
 			final GraphAxis xAxis,

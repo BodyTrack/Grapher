@@ -27,7 +27,7 @@ import com.google.gwt.user.client.Element;
  * <p>This class is instance-controlled for efficiency: under this
  * system, only one DirectShapeRenderer is created per Surface.</p>
  */
-public final class Canvas {
+public final class GrapherCanvas {
 
 	/**
 	 * The default color, which classes should set as the stroke color
@@ -46,16 +46,16 @@ public final class Canvas {
 	private final DirectShapeRenderer renderer;
 	private final Element nativeCanvasElement;
 
-	private static InstanceController<Surface, Canvas> instances;
+	private static InstanceController<Surface, GrapherCanvas> instances;
 
 	static {
-		instances = new InstanceController<Surface, Canvas>(
-			new InstanceProducer<Surface, Canvas>() {
+		instances = new InstanceController<Surface, GrapherCanvas>(
+			new InstanceProducer<Surface, GrapherCanvas>() {
 				@Override
-				public Canvas newInstance(Surface param) {
+				public GrapherCanvas newInstance(Surface param) {
 					// The constructor will throw the NullPointerException
 					// if param is null
-					return new Canvas(param);
+					return new GrapherCanvas(param);
 				}
 			});
 	}
@@ -64,13 +64,13 @@ public final class Canvas {
 	 * Creates a new <tt>Canvas</tt> that draws on the specified surface.
 	 *
 	 * @param s
-	 * 	The surface on which the new {@link Canvas} will draw
+	 * 	The surface on which the new {@link GrapherCanvas} will draw
 	 * @throws NullPointerException
 	 * 	If s is <code>null</code>
 	 * @throws IllegalArgumentException
 	 * 	If s has no native HTML canvas element inside its DOM tree
 	 */
-	private Canvas(Surface s) {
+	private GrapherCanvas(Surface s) {
 		if (s == null)
 			throw new NullPointerException("Can't draw on a null surface");
 
@@ -125,20 +125,12 @@ public final class Canvas {
 	 * 	{@link gwt.g2d.client.graphics.DirectShapeRenderer
 	 * 	DirectShapeRenderer}
 	 */
-	public static Canvas buildCanvas(Surface s) {
+	public static GrapherCanvas buildCanvas(Surface s) {
 		return instances.newInstance(s);
 	}
 
 	public Surface getSurface() {
 		return surface;
-	}
-
-	/**
-	 * Returns the DirectShapeRenderer derived from the Surface passed
-	 * in to this object's constructor.
-	 */
-	public DirectShapeRenderer getRenderer() {
-		return renderer;
 	}
 
 	/**
@@ -387,5 +379,13 @@ public final class Canvas {
 	public void fillText(String label, Vector2 add) {
 		gwt.g2d.client.math.Vector2 v = new gwt.g2d.client.math.Vector2(add.getX(),add.getY());
 		getSurface().fillText(label, v);		
+	}
+
+	public void drawLineSegment(double x1, double y1, double x2, double y2) {
+		drawLineSegment(new Vector2(x1,y1),new Vector2(x2,y2));
+	}
+
+	public void drawCircle(double x, double y, double radius) {
+		renderer.drawCircle(x,y,radius);		
 	}
 }

@@ -65,7 +65,7 @@ public class GraphAxis implements Resizable {
 	protected boolean hasMaxRange = false;
 	protected double maxRange = 1e+100;
 
-	private final Canvas drawingCanvas;
+	private final GrapherCanvas drawingCanvas;
 	protected Basis basis;
 	private Vector2 begin;
 	private double width;
@@ -159,7 +159,7 @@ public class GraphAxis implements Resizable {
 				}
 			});
 
-			drawingCanvas = Canvas.buildCanvas(drawing);
+			drawingCanvas = GrapherCanvas.buildCanvas(drawing);
 		} else {
 			drawingCanvas = null;
 		}
@@ -375,7 +375,7 @@ public class GraphAxis implements Resizable {
 			renderHighlight(drawingCanvas, highlightedPoint);
 
 			// Clean up after ourselves
-			drawingCanvas.setStrokeStyle(Canvas.DEFAULT_COLOR);
+			drawingCanvas.setStrokeStyle(GrapherCanvas.DEFAULT_COLOR);
 		}
 	}
 
@@ -388,12 +388,12 @@ public class GraphAxis implements Resizable {
 	 * <p>This is designed to be overridden by subclasses.</p>
 	 *
 	 * @param canvas
-	 * 	The {@link org.bodytrack.client.Canvas Canvas} we can
+	 * 	The {@link org.bodytrack.client.GrapherCanvas Canvas} we can
 	 * 	use to perform all rendering operations
 	 * @param point
 	 * 	The point to render on the axis
 	 */
-	protected void renderHighlight(Canvas canvas,
+	protected void renderHighlight(GrapherCanvas canvas,
 			PlottablePoint point) {
 		if (!isHighlighted()) {
 			return;
@@ -580,7 +580,7 @@ public class GraphAxis implements Resizable {
 		}
 	}
 
-	protected double setupText(Canvas canvas, int justify) {
+	protected double setupText(GrapherCanvas canvas, int justify) {
 		boolean textParallelToAxis =
 			(Math.abs(basis.x.getX()) < Math.abs(basis.x.getY()));
 		double labelOffsetPixels = 0;
@@ -607,7 +607,7 @@ public class GraphAxis implements Resizable {
 	protected void renderTicks(double offsetPixels,
 			double tickSize,
 			TickGenerator tickGen,
-			Canvas canvas,
+			GrapherCanvas canvas,
 			double tickWidthPixels,
 			LabelFormatter formatter) {
 		if (tickGen == null) {
@@ -632,7 +632,7 @@ public class GraphAxis implements Resizable {
 	protected void renderTicksRangeLabelInline(double offsetPixels,
 			double tickSize,
 			TickGenerator tickGen,
-			Canvas canvas,
+			GrapherCanvas canvas,
 			double tickWidthPixels,
 			LabelFormatter formatter) {
 
@@ -688,11 +688,9 @@ public class GraphAxis implements Resizable {
 			double tickSize,
 			TickGenerator tickGen,
 			TickGenerator endOfRangeGenerator,
-			Canvas canvas,
+			GrapherCanvas canvas,
 			double tickWidthPixels,
 			LabelFormatter formatter) {
-		Surface surface = canvas.getSurface();
-		DirectShapeRenderer renderer = canvas.getRenderer();
 
 		if (tickGen == null) {
 			tickGen = new TickGenerator(tickSize, 0);
@@ -724,7 +722,7 @@ public class GraphAxis implements Resizable {
 		}
 	}
 
-	protected void renderTick(final Canvas canvas,
+	protected void renderTick(final GrapherCanvas canvas,
 			final double tick,
 			final double tickWidthPixels) {
 		final Vector2 fromPosition = project2D(tick);
@@ -732,13 +730,13 @@ public class GraphAxis implements Resizable {
 		canvas.drawLineSegment(fromPosition, toPosition);
 	}
 
-	protected void renderTickLabel(Canvas canvas, double tick,
+	protected void renderTickLabel(GrapherCanvas canvas, double tick,
 			double labelOffsetPixels, LabelFormatter formatter) {
 		renderTickLabel(canvas, tick, labelOffsetPixels,
 				formatter.format(tick));
 	}
 
-	protected void renderTickLabel(Canvas canvas, double y,
+	protected void renderTickLabel(GrapherCanvas canvas, double y,
 			double labelOffsetPixels, String label) {
 		// .setFont("italic 30px sans-serif")
 		canvas.fillText(label,
@@ -774,7 +772,7 @@ public class GraphAxis implements Resizable {
 		return width;
 	}
 
-	public Canvas getDrawingCanvas() {
+	public GrapherCanvas getDrawingCanvas() {
 		return drawingCanvas;
 	}
 

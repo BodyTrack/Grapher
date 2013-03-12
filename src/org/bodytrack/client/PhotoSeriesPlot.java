@@ -200,7 +200,7 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 		drawing.fillCircle(circleX, circleY, COUNT_CIRCLE_SIZE / 2.0);
 		drawing.setFillStyle(KnownColor.WHITE);
 		drawing.fillText("" + count, circleX, circleY);
-		drawing.setFillStyle(Canvas.DEFAULT_COLOR);
+		drawing.setFillStyle(GrapherCanvas.DEFAULT_COLOR);
 	}
 
 	/**
@@ -403,13 +403,13 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 		private BoundedDrawingBox savedDrawing;
 
 		@Override
-		public void beforeRender(final Canvas canvas,
+		public void beforeRender(final GrapherCanvas canvas,
 				final BoundedDrawingBox drawing,
 				final boolean isAnyPointHighlighted) {
 			oldTextAlign = canvas.getTextAlign();
 			oldTextBaseline = canvas.getTextBaseline();
 
-			canvas.setStrokeStyle(Canvas.DEFAULT_COLOR);
+			canvas.setStrokeStyle(GrapherCanvas.DEFAULT_COLOR);
 			canvas.setTextAlign(TextAlign.CENTER);
 			canvas.setTextBaseline(TextBaseline.MIDDLE);
 
@@ -454,7 +454,7 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 		}
 
 		@Override
-		public void afterRender(final Canvas canvas, final BoundedDrawingBox drawing) {
+		public void afterRender(final GrapherCanvas canvas, final BoundedDrawingBox drawing) {
 			// One last count rendering before we finish, since drawPhoto
 			// only draws the count for earlier photos
 			drawCount(savedDrawing, lastPhoto, currentCount.get());
@@ -463,7 +463,7 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 
 			canvas.setTextBaseline(oldTextBaseline);
 			canvas.setTextAlign(oldTextAlign);
-			canvas.setStrokeStyle(Canvas.DEFAULT_COLOR);
+			canvas.setStrokeStyle(GrapherCanvas.DEFAULT_COLOR);
 
 			photoIndex = NOT_RENDERING;
 			lastPhoto = null;

@@ -15,10 +15,10 @@ public interface SeriesPlotRenderer {
 
    /**
     * Draws the supplied tiles on a canvas.  This method calls
-    * {@link RenderingStrategy#beforeRender(Canvas, BoundedDrawingBox, boolean)} immediately before rendering of a style begins and
-    * {@link RenderingStrategy#afterRender(Canvas, BoundedDrawingBox)} immediately after rendering of a style ends.
+    * {@link RenderingStrategy#beforeRender(GrapherCanvas, BoundedDrawingBox, boolean)} immediately before rendering of a style begins and
+    * {@link RenderingStrategy#afterRender(GrapherCanvas, BoundedDrawingBox)} immediately after rendering of a style ends.
     *
-    * @param canvas the {@link Canvas} upon which rendering will take place
+    * @param canvas the {@link GrapherCanvas} upon which rendering will take place
     * @param drawing
     * 	The {@link BoundedDrawingBox} that should constrain the drawing.
     * 	Forwarding graphics calls through drawing will ensure that everything
@@ -30,7 +30,7 @@ public interface SeriesPlotRenderer {
     * @param yAxis
     * @param highlightedPoint
     */
-   void render(Canvas canvas,
+   void render(GrapherCanvas canvas,
                BoundedDrawingBox drawing,
                Iterable<GrapherTile> tiles,
                GraphAxis xAxis,

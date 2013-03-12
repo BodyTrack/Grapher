@@ -16,13 +16,13 @@ import java.util.List;
  * counterparts if all parts of a structure are in bounds.</p>
  *
  * <p>Also note that none of these methods calls
- * {@link org.bodytrack.client.Canvas#beginPath() beginPath()} or
- * {@link org.bodytrack.client.Canvas#stroke() stroke()} on the
- * underlying {@link org.bodytrack.client.Canvas Canvas} object: it
+ * {@link org.bodytrack.client.GrapherCanvas#beginPath() beginPath()} or
+ * {@link org.bodytrack.client.GrapherCanvas#stroke() stroke()} on the
+ * underlying {@link org.bodytrack.client.GrapherCanvas Canvas} object: it
  * is up the the caller to call these methods.</p>
  */
 public final class BoundedDrawingBox {
-	private final Canvas canvas;
+	private final GrapherCanvas canvas;
 	private final double xMin;
 	private final double yMin;
 	private final double xMax;
@@ -37,7 +37,7 @@ public final class BoundedDrawingBox {
 	 * Creates a new BoundedDrawingBox.
 	 *
 	 * @param canvas
-	 * 		the {@link org.bodytrack.client.Canvas Canvas} on which this
+	 * 		the {@link org.bodytrack.client.GrapherCanvas Canvas} on which this
 	 * 		will draw
 	 * @param minX
 	 * 		the minimum X-value at which this object should draw a point
@@ -52,7 +52,7 @@ public final class BoundedDrawingBox {
 	 * @throws IllegalArgumentException
 	 * 		if minX is greater than maxX, or minY is greater than maxY
 	 */
-	public BoundedDrawingBox(Canvas canvas, double minX, double minY,
+	public BoundedDrawingBox(GrapherCanvas canvas, double minX, double minY,
 			double maxX, double maxY) {
 		if (canvas == null)
 			throw new NullPointerException("Cannot use null Canvas");
@@ -74,7 +74,7 @@ public final class BoundedDrawingBox {
 	 * @return
 	 * 	The Canvas used to construct this object
 	 */
-	public Canvas getCanvas() {
+	public GrapherCanvas getCanvas() {
 		return canvas;
 	}
 
@@ -142,7 +142,7 @@ public final class BoundedDrawingBox {
    }
 
    public void fillCircle(final double x, final double y, final double radius) {
-		canvas.getRenderer().drawCircle(x, y, radius);
+		canvas.drawCircle(x, y, radius);
 
 		// TODO: This and other BoundedDrawingBox methods should not stroke
 		// or fill directly
@@ -308,7 +308,7 @@ public final class BoundedDrawingBox {
 			double y2) {
 		if (contains(x1, y1) && contains(x2, y2)) {
 			// If everything is in bounds, we just draw the line
-			getCanvas().getRenderer().drawLineSegment(x1, y1, x2, y2);
+			getCanvas().drawLineSegment(x1, y1, x2, y2);
 			return;
 		}
 
@@ -321,7 +321,7 @@ public final class BoundedDrawingBox {
 
 			// Now we have a pair (x1, y1), (x2, y2) where both points are
 			// in bounds
-			getCanvas().getRenderer().drawLineSegment(x1, y1,
+			getCanvas().drawLineSegment(x1, y1,
 					secondEndpoint.getX(), secondEndpoint.getY());
 
 			return;
@@ -485,14 +485,14 @@ public final class BoundedDrawingBox {
 		double slope = (y2 - y1) / (x2 - x1);		
 		if (doubleEquals(x1, x2) || Double.isInfinite(slope)) {
 			// Vertical line
-			getCanvas().getRenderer().drawLineSegment(x1, yMin, x1, yMax);
+			getCanvas().drawLineSegment(x1, yMin, x1, yMax);
 			return;
 		}
 
 		if (doubleEquals(slope, 0.0)) {
 			// Optimization: don't do anything extra if the slope is 0
 
-			getCanvas().getRenderer().drawLineSegment(xMin, y1, xMax, y2);
+			getCanvas().drawLineSegment(xMin, y1, xMax, y2);
 			return;
 		}
 

@@ -71,7 +71,7 @@ public abstract class BaseDataSeriesPlotRenderingStrategy
     * either the that color or the {@link SeriesPlotRenderingStrategy#DEFAULT_FILL_COLOR} if no such field exists.</p>
     */
    @Override
-   public void beforeRender(final Canvas canvas,
+   public void beforeRender(final GrapherCanvas canvas,
                             final BoundedDrawingBox drawing,
                             final boolean isAnyPointHighlighted) {
       canvas.setLineWidth(isAnyPointHighlighted ? highlightLineWidth : lineWidth);
@@ -90,7 +90,7 @@ public abstract class BaseDataSeriesPlotRenderingStrategy
     * {@link SeriesPlotRenderingStrategy#DEFAULT_STROKE_WIDTH normal stroke width}.
     */
    @Override
-   public void afterRender(final Canvas canvas,
+   public void afterRender(final GrapherCanvas canvas,
                            final BoundedDrawingBox drawing) {
 
       if (willFill()) {
