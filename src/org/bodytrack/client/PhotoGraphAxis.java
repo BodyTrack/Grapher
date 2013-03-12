@@ -101,7 +101,7 @@ public class PhotoGraphAxis extends GraphAxis {
             return;
          }
 
-         canvas.getSurface().clear();
+         canvas.clear();
 
          // Pick the color to use, based on highlighting status
          if (isHighlighted()) {

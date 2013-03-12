@@ -224,8 +224,7 @@ public class GraphAxis implements Resizable {
 
 		if ((nativeCanvasElement.getClientWidth() != widthInPixels) ||
 				(nativeCanvasElement.getClientHeight() != heightInPixels)) {
-			final Surface surface = drawingCanvas.getSurface();
-			surface.setSize(widthInPixels, heightInPixels);
+			drawingCanvas.setSize(widthInPixels, heightInPixels);
 			layout();
 			paint(newPaintEventId);
 			publishAxisChangeEvent(newPaintEventId);
@@ -240,10 +239,10 @@ public class GraphAxis implements Resizable {
 		final double axisLength;
 		final Vector2 beginVector;
 		if (isXAxis) {
-			axisLength = (double)drawingCanvas.getSurface().getWidth();
+			axisLength = (double)drawingCanvas.getWidth();
 			beginVector = Vector2.ZERO;
 		} else {
-			final double elementHeight = drawingCanvas.getSurface().getHeight();
+			final double elementHeight = drawingCanvas.getHeight();
 			axisLength = elementHeight;
 			beginVector = new Vector2(0, elementHeight);
 		}
@@ -403,10 +402,10 @@ public class GraphAxis implements Resizable {
 			return;
 		}
 
-		canvas.getSurface().save();
-		double oldLineWidth = canvas.getSurface().getLineWidth();
-		canvas.getSurface().setLineWidth(HIGHLIGHTED_POINT_LINE_WIDTH);
-		canvas.getSurface().setStrokeStyle(HIGHLIGHTED_POINT_COLOR);
+		canvas.save();
+		double oldLineWidth = canvas.getLineWidth();
+		canvas.setLineWidth(HIGHLIGHTED_POINT_LINE_WIDTH);
+		canvas.setStrokeStyle(HIGHLIGHTED_POINT_COLOR);
 
 		canvas.beginPath();
 
@@ -435,8 +434,8 @@ public class GraphAxis implements Resizable {
 		canvas.stroke();
 
 		// Clean up after ourselves
-		canvas.getSurface().restore();
-		canvas.getSurface().setLineWidth(oldLineWidth);
+		canvas.restore();
+		canvas.setLineWidth(oldLineWidth);
 	}
 
 	public double getMin() {

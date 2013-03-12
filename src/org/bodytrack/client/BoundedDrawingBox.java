@@ -135,7 +135,7 @@ public final class BoundedDrawingBox {
                           final double y,
                           final double radius) {
       if (contains(x, y)) {
-         final Context ctx1 = canvas.getSurface().getContext();
+         final Context ctx1 = canvas.getContext();
          ctx1.moveTo(x + radius, y);
          ctx1.arc(x, y, radius, 0, TWO_PI, false);
       }
@@ -171,7 +171,7 @@ public final class BoundedDrawingBox {
                           final double y,
                           final double radius) {
       if (contains(x, y)) {
-         final Context ctx = canvas.getSurface().getContext();
+         final Context ctx = canvas.getContext();
          ctx.moveTo(x - radius, y - radius);
          ctx.rect(x - radius, y - radius, 2 * radius, 2 * radius);
       }
@@ -179,7 +179,7 @@ public final class BoundedDrawingBox {
 
 	public void fillText(final String text, final double x, final double y) {
 		// TODO: Same issue as fillCircle
-		canvas.getSurface().fillText(text, x, y);
+		canvas.fillText(text, x, y);
 	}
 
 	public void setStrokeStyle(final Color color) {
@@ -235,7 +235,7 @@ public final class BoundedDrawingBox {
 	 * 	by the line segment we are to draw)
 	 */
 	public void drawLineSegment(double x1, double y1, double x2, double y2) {
-		Context ctx = canvas.getSurface().getContext();
+		Context ctx = canvas.getContext();
 
 		ctx.moveTo(x1, y1);
 		ctx.lineTo(x2, y2);
@@ -252,7 +252,7 @@ public final class BoundedDrawingBox {
 	 * @see #beginClippedPath()
 	 */
 	public void strokeClippedPath() {
-		Context ctx = canvas.getSurface().getContext();
+		Context ctx = canvas.getContext();
 
 		ctx.stroke();
 		ctx.restore();
@@ -270,7 +270,7 @@ public final class BoundedDrawingBox {
 	 * @see #strokeClippedPath
 	 */
 	public void fillClippedPath() {
-		Context ctx = canvas.getSurface().getContext();
+		Context ctx = canvas.getContext();
 
 		ctx.fill();
 		ctx.restore();

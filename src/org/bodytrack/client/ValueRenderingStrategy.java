@@ -73,7 +73,7 @@ public class ValueRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy 
                           final double y,
                           final PlottablePoint rawDataPoint,
                           final boolean shouldConsiderPrevXValue) {
-      final Context ctx = drawing.getCanvas().getSurface().getContext();
+      final Context ctx = drawing.getCanvas().getContext();
 
       // get the current font so we can revert to it later
       final String originalFont = ctx.getFont();

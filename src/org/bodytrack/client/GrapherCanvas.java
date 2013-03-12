@@ -129,10 +129,6 @@ public final class GrapherCanvas {
 		return instances.newInstance(s);
 	}
 
-	public Surface getSurface() {
-		return surface;
-	}
-
 	/**
 	 * Returns the native HTML canvas element found in the DOM tree
 	 * rooted at the surface passed in to this object's constructor.
@@ -378,7 +374,7 @@ public final class GrapherCanvas {
 
 	public void fillText(String label, Vector2 add) {
 		gwt.g2d.client.math.Vector2 v = new gwt.g2d.client.math.Vector2(add.getX(),add.getY());
-		getSurface().fillText(label, v);		
+		surface.fillText(label, v);		
 	}
 
 	public void drawLineSegment(double x1, double y1, double x2, double y2) {
@@ -387,5 +383,13 @@ public final class GrapherCanvas {
 
 	public void drawCircle(double x, double y, double radius) {
 		renderer.drawCircle(x,y,radius);		
+	}
+
+	public void fillText(String text, double x, double y) {
+		fillText(text,new Vector2(x,y));
+	}
+
+	public void setSize(int width, int height) {
+		surface.setSize(width, height);		
 	}
 }
