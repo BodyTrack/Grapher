@@ -229,6 +229,6 @@ public final class ColorUtils {
 			return defaultColor;
 		Color trueColor = buildColor(name);
 		return (trueColor != null) ? trueColor : defaultColor;*/
-		return CssColor.make("name");
+		return CssColor.make(name);
 	}
 }
