@@ -1,10 +1,9 @@
 package org.bodytrack.client;
 
-import gwt.g2d.client.graphics.Color;
-import gwt.g2d.client.graphics.canvas.Context;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import com.google.gwt.canvas.dom.client.CssColor;
 
 /**
  * Provides a way for a class to ensure that it is drawing within
@@ -135,9 +134,8 @@ public final class BoundedDrawingBox {
                           final double y,
                           final double radius) {
       if (contains(x, y)) {
-         final Context ctx1 = canvas.getContext();
-         ctx1.moveTo(x + radius, y);
-         ctx1.arc(x, y, radius, 0, TWO_PI, false);
+    	  canvas.moveTo(x + radius, y);
+    	  canvas.arc(x, y, radius, 0, TWO_PI, false);
       }
    }
 
@@ -171,9 +169,8 @@ public final class BoundedDrawingBox {
                           final double y,
                           final double radius) {
       if (contains(x, y)) {
-         final Context ctx = canvas.getContext();
-         ctx.moveTo(x - radius, y - radius);
-         ctx.rect(x - radius, y - radius, 2 * radius, 2 * radius);
+    	  canvas.moveTo(x - radius, y - radius);
+    	  canvas.rect(x - radius, y - radius, 2 * radius, 2 * radius);
       }
    }
 
@@ -182,11 +179,11 @@ public final class BoundedDrawingBox {
 		canvas.fillText(text, x, y);
 	}
 
-	public void setStrokeStyle(final Color color) {
+	public void setStrokeStyle(final CssColor color) {
 		canvas.setStrokeStyle(color);
 	}
 
-	public void setFillStyle(final Color color) {
+	public void setFillStyle(final CssColor color) {
 		canvas.setFillStyle(color);
 	}
 
@@ -198,16 +195,15 @@ public final class BoundedDrawingBox {
 	 * @see #strokeClippedPath()
 	 */
 	public void beginClippedPath() {
-		Context ctx = canvas.getContext();
 
-		ctx.save();
+		canvas.save();
 		// Set up the path for clipping
-		ctx.beginPath();
-		ctx.rect(xMin, yMin, getWidth(), getHeight());
-		ctx.closePath();
-		ctx.clip();
+		canvas.beginPath();
+		canvas.rect(xMin, yMin, getWidth(), getHeight());
+		canvas.closePath();
+		canvas.clip();
 
-		ctx.beginPath();
+		canvas.beginPath();
 	}
 
 	/**
@@ -235,10 +231,8 @@ public final class BoundedDrawingBox {
 	 * 	by the line segment we are to draw)
 	 */
 	public void drawLineSegment(double x1, double y1, double x2, double y2) {
-		Context ctx = canvas.getContext();
-
-		ctx.moveTo(x1, y1);
-		ctx.lineTo(x2, y2);
+		canvas.moveTo(x1, y1);
+		canvas.lineTo(x2, y2);
 	}
 
 	/**
@@ -252,10 +246,8 @@ public final class BoundedDrawingBox {
 	 * @see #beginClippedPath()
 	 */
 	public void strokeClippedPath() {
-		Context ctx = canvas.getContext();
-
-		ctx.stroke();
-		ctx.restore();
+		canvas.stroke();
+		canvas.restore();
 	}
 
 	/**
@@ -270,10 +262,8 @@ public final class BoundedDrawingBox {
 	 * @see #strokeClippedPath
 	 */
 	public void fillClippedPath() {
-		Context ctx = canvas.getContext();
-
-		ctx.fill();
-		ctx.restore();
+		canvas.fill();
+		canvas.restore();
 	}
 
 	/**

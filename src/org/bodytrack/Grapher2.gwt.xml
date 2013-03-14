@@ -3,7 +3,6 @@
   <!-- Inherit the core Web Toolkit stuff.                        -->
   <inherits name='com.google.gwt.user.User'/>
 
-  <inherits name='gwt.g2d.g2d'/>
   <inherits name="com.google.gwt.json.JSON" />
    <inherits name='com.google.gwt.maps.Maps' />
 

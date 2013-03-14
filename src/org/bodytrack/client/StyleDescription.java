@@ -1,8 +1,8 @@
 package org.bodytrack.client;
 
+import com.google.gwt.canvas.dom.client.CssColor;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
-import gwt.g2d.client.graphics.Color;
 
 public final class StyleDescription extends JavaScriptObject {
    // JavaScript overlay types always have protected, no-arg constructors
@@ -54,7 +54,7 @@ public final class StyleDescription extends JavaScriptObject {
        * 	such field or has a color that {@link ColorUtils#buildColor(String)}
        * 	can't parse.
        */
-      public Color getColor(final Color defaultColor) {
+      public CssColor getColor(final CssColor defaultColor) {
          return getColorField("color", defaultColor);
       }
 
@@ -72,7 +72,7 @@ public final class StyleDescription extends JavaScriptObject {
        * 	such field or has a color that {@link ColorUtils#buildColor(String)}
        * 	can't parse.
        */
-      public Color getFillColor(final Color defaultColor) {
+      public CssColor getFillColor(final CssColor defaultColor) {
          return getColorField("fillColor", defaultColor);
       }
 
@@ -93,8 +93,8 @@ public final class StyleDescription extends JavaScriptObject {
        * 	such field or has a color that {@link ColorUtils#buildColor(String)}
        * 	can't parse.
        */
-      public Color getColorField(final String fieldName, final Color defaultColor) {
-         final Color color = ColorUtils.getColor(this.<String>getValue(fieldName), defaultColor);
+      public CssColor getColorField(final String fieldName, final CssColor defaultColor) {
+         final CssColor color = ColorUtils.getColor(this.<String>getValue(fieldName), defaultColor);
          return color;
       }
 

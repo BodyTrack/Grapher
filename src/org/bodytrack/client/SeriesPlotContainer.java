@@ -1,5 +1,11 @@
 package org.bodytrack.client;
 
+import com.google.gwt.canvas.client.Canvas;
+import com.google.gwt.canvas.dom.client.Context2d;
+import com.google.gwt.canvas.dom.client.CssColor;
+import com.google.gwt.dom.client.CanvasElement;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.canvas.dom.client.Context2d.TextAlign;
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.event.dom.client.MouseDownHandler;
 import com.google.gwt.event.dom.client.MouseMoveEvent;
@@ -9,11 +15,6 @@ import com.google.gwt.event.dom.client.MouseOutHandler;
 import com.google.gwt.event.dom.client.MouseUpEvent;
 import com.google.gwt.event.dom.client.MouseUpHandler;
 import com.google.gwt.user.client.ui.RootPanel;
-import gwt.g2d.client.graphics.Color;
-import gwt.g2d.client.graphics.KnownColor;
-import gwt.g2d.client.graphics.Surface;
-import gwt.g2d.client.graphics.TextAlign;
-import gwt.g2d.client.graphics.canvas.CanvasElement;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -45,7 +46,7 @@ public class SeriesPlotContainer extends BasePlotContainer {
    public static final int VALUE_MESSAGES_CAPACITY = 4;
 
    private static final int INITIAL_MESSAGE_ID = 1;
-   private static final Color LOADING_MSG_COLOR = KnownColor.DARK_GRAY;
+   private static final CssColor LOADING_MSG_COLOR = ColorUtils.DARK_GRAY;
    private static final double LOADING_MSG_X_MARGIN = 5;
    private static final double LOADING_MSG_Y_MARGIN = 3;
    private static final double VALUE_MSG_X_MARGIN = 5;
@@ -55,7 +56,7 @@ public class SeriesPlotContainer extends BasePlotContainer {
    private static final double TEXT_LINE_WIDTH = 0.75;
    private static final int MAX_DRAG_CLICK_EVENT = 3;
 
-   private final Surface drawing;
+   private final Canvas drawing;
 
    // For the loading message API, which shows one message at a time
    // on the bottom left, without regard to width
@@ -93,7 +94,9 @@ public class SeriesPlotContainer extends BasePlotContainer {
       final RootPanel placeholderElement = RootPanel.get(placeholderElementId);
       this.width = placeholderElement.getElement().getClientWidth();
       this.height = placeholderElement.getElement().getClientHeight();
-      drawing = new Surface(width, height);
+      drawing = Canvas.createIfSupported();
+      drawing.setCoordinateSpaceWidth(width);
+      drawing.setCoordinateSpaceHeight(height);
       placeholderElement.add(drawing);
 
       nextLoadingMessageId = INITIAL_MESSAGE_ID;
@@ -261,11 +264,12 @@ public class SeriesPlotContainer extends BasePlotContainer {
 
    @Override
    public void setSize(final int widthInPixels, final int heightInPixels, final int newPaintEventId) {
-      final CanvasElement canvas = drawing.getCanvas();
+      final Element canvas = drawing.getElement();
 
       if ((canvas.getClientWidth() != widthInPixels) ||
           (canvas.getClientHeight() != heightInPixels)) {
-         drawing.setSize(widthInPixels, heightInPixels);
+    	  drawing.setCoordinateSpaceHeight(height);
+    	  drawing.setCoordinateSpaceWidth(width);
          paint(newPaintEventId);
       }
    }
@@ -276,9 +280,10 @@ public class SeriesPlotContainer extends BasePlotContainer {
          previousPaintEventId = newPaintEventId;
 
          layout();
-         drawing.clear();
-         drawing.save();
-         drawing.translate(.5, .5);
+         Context2d context = drawing.getContext2d();
+         context.clearRect(0,0,drawing.getCoordinateSpaceWidth(),drawing.getCoordinateSpaceHeight());
+         context.save();
+         context.translate(.5, .5);
 
          // Draw any Loading... messages that might be requested
          if (loadingMessages.size() > 0) {
@@ -307,7 +312,7 @@ public class SeriesPlotContainer extends BasePlotContainer {
             plot.paint(canvas, newPaintEventId);
          }
 
-         drawing.restore();
+         context.restore();
       }
    }
 
@@ -321,23 +326,24 @@ public class SeriesPlotContainer extends BasePlotContainer {
     */
    private void showLoadingMessage(DisplayMessage msg) {
       // Save old data to be restored later
-      TextAlign oldTextAlign = drawing.getTextAlign();
-      double oldLineWidth = drawing.getLineWidth();
+	  Context2d context = drawing.getContext2d();
+      TextAlign oldTextAlign = TextAlign.valueOf(context.getTextAlign());
+      double oldLineWidth = context.getLineWidth();
 
       // Change settings
-      drawing.setTextAlign(TextAlign.LEFT);
-      drawing.setLineWidth(TEXT_LINE_WIDTH);
-      drawing.setStrokeStyle(msg.getColor());
+      context.setTextAlign(TextAlign.LEFT);
+      context.setLineWidth(TEXT_LINE_WIDTH);
+      context.setStrokeStyle(msg.getColor());
 
       // Actually write the text
       double bottom = height - LOADING_MSG_Y_MARGIN;
       double textTop = bottom - TEXT_HEIGHT;
-      drawing.strokeText(msg.getText(), LOADING_MSG_X_MARGIN, textTop);
+      context.strokeText(msg.getText(), LOADING_MSG_X_MARGIN, textTop);
 
       // Restore old settings
-      drawing.setTextAlign(oldTextAlign);
-      drawing.setLineWidth(oldLineWidth);
-      drawing.setStrokeStyle(GrapherCanvas.DEFAULT_COLOR);
+      context.setTextAlign(oldTextAlign);
+      context.setLineWidth(oldLineWidth);
+      context.setStrokeStyle(GrapherCanvas.DEFAULT_COLOR);
    }
 
    /**
@@ -352,12 +358,13 @@ public class SeriesPlotContainer extends BasePlotContainer {
     */
    private void showValueMessages(List<DisplayMessage> messages) {
       // Save old data to be restored later
-      TextAlign oldTextAlign = drawing.getTextAlign();
-      double oldLineWidth = drawing.getLineWidth();
+	   Context2d context = drawing.getContext2d();
+      TextAlign oldTextAlign = TextAlign.valueOf(context.getTextAlign());
+      double oldLineWidth = context.getLineWidth();
 
       // Change settings
-      drawing.setTextAlign(TextAlign.RIGHT);
-      drawing.setLineWidth(TEXT_LINE_WIDTH);
+      context.setTextAlign(TextAlign.RIGHT);
+      context.setLineWidth(TEXT_LINE_WIDTH);
 
       // Actually write the text
       double bottom = height - VALUE_MSG_Y_MARGIN;
@@ -365,13 +372,13 @@ public class SeriesPlotContainer extends BasePlotContainer {
       // Right edge X-value with right text alignment
 
       for (DisplayMessage msg : messages) {
-         drawing.setStrokeStyle(msg.getColor());
+    	  context.setStrokeStyle(msg.getColor());
 
          double textTop = bottom - TEXT_HEIGHT;
          String text = msg.getText();
 
          // Find left edge, given that we know right edge
-         drawing.strokeText(text, x, textTop);
+         context.strokeText(text, x, textTop);
 
          // Move upwards for next loop iteration
          bottom = textTop - VALUE_MSG_GAP;
@@ -379,9 +386,9 @@ public class SeriesPlotContainer extends BasePlotContainer {
       }
 
       // Restore old settings
-      drawing.setTextAlign(oldTextAlign);
-      drawing.setLineWidth(oldLineWidth);
-      drawing.setStrokeStyle(GrapherCanvas.DEFAULT_COLOR);
+      context.setTextAlign(oldTextAlign);
+      context.setLineWidth(oldLineWidth);
+      context.setStrokeStyle(GrapherCanvas.DEFAULT_COLOR);
    }
 
    /**
@@ -501,7 +508,7 @@ public class SeriesPlotContainer extends BasePlotContainer {
     * 		if message or color is <tt>null</tt>
     * @see #removeValueMessage(int)
     */
-   public final int addValueMessage(String message, Color color) {
+   public final int addValueMessage(String message, CssColor color) {
       if (message == null) {
          throw new NullPointerException(
                "Null value message not allowed");
@@ -571,7 +578,7 @@ public class SeriesPlotContainer extends BasePlotContainer {
          implements Comparable<DisplayMessage> {
       private final int id;
       private final String text;
-      private final Color color;
+      private final CssColor color;
 
       /**
        * Creates a new {@link DisplayMessage DisplayMessage} object
@@ -585,7 +592,7 @@ public class SeriesPlotContainer extends BasePlotContainer {
        * @throws NullPointerException
        * 		if either text or color is <tt>null</tt>
        */
-      public DisplayMessage(int id, String text, Color color) {
+      public DisplayMessage(int id, String text, CssColor color) {
          if (text == null || color == null) {
             throw new NullPointerException(
                   "Null constructor parameter not allowed");
@@ -625,7 +632,7 @@ public class SeriesPlotContainer extends BasePlotContainer {
        * @return
        * 		the color this object holds
        */
-      public Color getColor() {
+      public CssColor getColor() {
          return color;
       }
 

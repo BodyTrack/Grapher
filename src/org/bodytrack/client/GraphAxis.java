@@ -1,17 +1,14 @@
 package org.bodytrack.client;
 
-import gwt.g2d.client.graphics.Color;
-import gwt.g2d.client.graphics.DirectShapeRenderer;
-import gwt.g2d.client.graphics.KnownColor;
-import gwt.g2d.client.graphics.Surface;
-import gwt.g2d.client.graphics.TextAlign;
-import gwt.g2d.client.graphics.TextBaseline;
-
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
+import com.google.gwt.canvas.client.Canvas;
+import com.google.gwt.canvas.dom.client.Context2d.TextAlign;
+import com.google.gwt.canvas.dom.client.Context2d.TextBaseline;
+import com.google.gwt.canvas.dom.client.CssColor;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.event.dom.client.MouseDownHandler;
@@ -40,9 +37,9 @@ public class GraphAxis implements Resizable {
 	public static final PlottablePoint DARKEN_AXIS_ONLY =
 		new PlottablePoint(Long.MIN_VALUE, Long.MIN_VALUE);
 
-	protected static final Color NORMAL_COLOR = KnownColor.DARK_GRAY;
-	protected static final Color HIGHLIGHTED_COLOR = ColorUtils.BLACK;
-	protected static final Color HIGHLIGHTED_POINT_COLOR = ColorUtils.RED;
+	protected static final CssColor NORMAL_COLOR = ColorUtils.DARK_GRAY;
+	protected static final CssColor HIGHLIGHTED_COLOR = ColorUtils.BLACK;
+	protected static final CssColor HIGHLIGHTED_POINT_COLOR = ColorUtils.RED;
 	protected static final double HIGHLIGHTED_POINT_LINE_WIDTH = 3;
 	protected static final double HIGHLIGHTED_POINT_LINE_LENGTH = 15;
 
@@ -105,8 +102,9 @@ public class GraphAxis implements Resizable {
 				placeholderElement.getElement().getClientWidth();
 			final int placeholderElementHeight =
 				placeholderElement.getElement().getClientHeight();
-			final Surface drawing = new Surface(placeholderElementWidth,
-					placeholderElementHeight);
+			final Canvas drawing = Canvas.createIfSupported();
+			drawing.setCoordinateSpaceWidth(placeholderElementWidth);
+			drawing.setCoordinateSpaceHeight(placeholderElementHeight);
 			placeholderElement.add(drawing);
 
 			drawing.addMouseWheelHandler(new BaseMouseWheelHandler() {

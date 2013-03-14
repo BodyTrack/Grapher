@@ -1,6 +1,6 @@
 package org.bodytrack.client;
 
-import gwt.g2d.client.graphics.Color;
+import com.google.gwt.canvas.dom.client.CssColor;
 
 /**
  * <p>
@@ -16,9 +16,9 @@ public abstract class BaseDataSeriesPlotRenderingStrategy
    private StyleDescription.StyleType styleType;
    private final double lineWidth;
    private final double highlightLineWidth;
-   private final Color strokeColor;
+   private final CssColor strokeColor;
    private final boolean willFill;
-   private final Color fillColor;
+   private final CssColor fillColor;
 
    protected BaseDataSeriesPlotRenderingStrategy(final StyleDescription.StyleType styleType,
                                                  final Double theHighlightLineWidth) {
@@ -42,7 +42,7 @@ public abstract class BaseDataSeriesPlotRenderingStrategy
       return highlightLineWidth;
    }
 
-   protected final Color getStrokeColor() {
+   protected final CssColor getStrokeColor() {
       return strokeColor;
    }
 
@@ -50,7 +50,7 @@ public abstract class BaseDataSeriesPlotRenderingStrategy
       return willFill;
    }
 
-   protected final Color getFillColor() {
+   protected final CssColor getFillColor() {
       return fillColor;
    }
 

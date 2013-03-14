@@ -1,20 +1,20 @@
 package org.bodytrack.client;
 
-import gwt.g2d.client.graphics.Color;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+
+import com.google.gwt.canvas.dom.client.CssColor;
 
 public class ZeoRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy {
 
    /** Enumeration defining the various Zeo states. */
    private static enum ZeoState {
-      NO_DATA(0, "No Data", new Color(0, 0, 0)),
-      DEEP(1, "Deep", new Color(0x00, 0x66, 0x00)),
-      LIGHT(2, "Light", new Color(0x99, 0x99, 0x99)),
-      REM(3, "REM", new Color(0x00, 0xCC, 0x00)),
-      WAKE(4, "Wake", new Color(0xFF, 0x66, 0x33));
+	   NO_DATA(0, "No Data", ColorUtils.BLACK),
+       DEEP(1, "Deep", CssColor.make("#006600")),
+       LIGHT(2, "Light", CssColor.make("#9999999")),
+       REM(3, "REM", CssColor.make("#00CC00")),
+       WAKE(4, "Wake", CssColor.make("#FF6633"));
 
       private static final Map<Integer, ZeoState> VALUE_TO_STATE_MAP;
 
@@ -36,9 +36,9 @@ public class ZeoRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy {
 
       private final int value;
       private final String name;
-      private final Color color;
+      private final CssColor color;
 
-      ZeoState(final int value, final String name, final Color color) {
+      ZeoState(final int value, final String name, final CssColor color) {
          this.value = value;
          this.name = name;
          this.color = color;
@@ -53,7 +53,7 @@ public class ZeoRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy {
          return name;
       }
 
-      public Color getColor() {
+      public CssColor getColor() {
          return color;
       }
 
@@ -161,7 +161,7 @@ public class ZeoRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy {
          // Draw a line
          canvas.beginPath()
             .moveTo(leftX, bottomY)
-            .drawLineTo(rightX, bottomY)
+            .lineTo(rightX, bottomY)
             .closePath();
 
          canvas.stroke();

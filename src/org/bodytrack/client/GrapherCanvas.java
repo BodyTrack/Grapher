@@ -1,14 +1,11 @@
 package org.bodytrack.client;
 
-import gwt.g2d.client.graphics.Color;
-import gwt.g2d.client.graphics.DirectShapeRenderer;
-import gwt.g2d.client.graphics.Surface;
-import gwt.g2d.client.graphics.TextAlign;
-import gwt.g2d.client.graphics.TextBaseline;
-import gwt.g2d.client.graphics.canvas.Context;
-
 import org.bodytrack.client.InstanceController.InstanceProducer;
 
+import com.google.gwt.canvas.client.Canvas;
+import com.google.gwt.canvas.dom.client.Context2d.TextAlign;
+import com.google.gwt.canvas.dom.client.Context2d.TextBaseline;
+import com.google.gwt.canvas.dom.client.CssColor;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 
@@ -34,7 +31,7 @@ public final class GrapherCanvas {
 	 * if wishing to &quot;clean up after themselves&quot; when done
 	 * changing colors and drawing.
 	 */
-	public static final Color DEFAULT_COLOR = ColorUtils.BLACK;
+	public static final CssColor DEFAULT_COLOR = ColorUtils.BLACK;
 
 	/**
 	 * The default alpha value, which classes should <em>always</em>
@@ -42,17 +39,16 @@ public final class GrapherCanvas {
 	 */
 	public static final double DEFAULT_ALPHA = 1.0;
 
-	private final Surface surface;
-	private final DirectShapeRenderer renderer;
+	private final Canvas surface;
 	private final Element nativeCanvasElement;
 
-	private static InstanceController<Surface, GrapherCanvas> instances;
+	private static InstanceController<Canvas, GrapherCanvas> instances;
 
 	static {
-		instances = new InstanceController<Surface, GrapherCanvas>(
-			new InstanceProducer<Surface, GrapherCanvas>() {
+		instances = new InstanceController<Canvas, GrapherCanvas>(
+			new InstanceProducer<Canvas, GrapherCanvas>() {
 				@Override
-				public GrapherCanvas newInstance(Surface param) {
+				public GrapherCanvas newInstance(Canvas param) {
 					// The constructor will throw the NullPointerException
 					// if param is null
 					return new GrapherCanvas(param);
@@ -70,12 +66,11 @@ public final class GrapherCanvas {
 	 * @throws IllegalArgumentException
 	 * 	If s has no native HTML canvas element inside its DOM tree
 	 */
-	private GrapherCanvas(Surface s) {
+	private GrapherCanvas(Canvas s) {
 		if (s == null)
 			throw new NullPointerException("Can't draw on a null surface");
 
 		surface = s;
-		renderer = new DirectShapeRenderer(surface);
 		nativeCanvasElement = findCanvasElement(surface.getElement());
 		if (nativeCanvasElement == null)
 			throw new IllegalArgumentException(
@@ -125,7 +120,7 @@ public final class GrapherCanvas {
 	 * 	{@link gwt.g2d.client.graphics.DirectShapeRenderer
 	 * 	DirectShapeRenderer}
 	 */
-	public static GrapherCanvas buildCanvas(Surface s) {
+	public static GrapherCanvas buildCanvas(Canvas s) {
 		return instances.newInstance(s);
 	}
 
@@ -140,16 +135,6 @@ public final class GrapherCanvas {
 		return nativeCanvasElement;
 	}
 
-	/**
-	 * Returns the Context returned by {@code getSurface().getContext()}
-	 *
-	 * @return
-	 * 	The context for this canvas
-	 */
-	public Context getContext() {
-		return surface.getContext();
-	}
-
 	// --------------------------------------------------------------
 	// Wrappers for Surface methods
 	// --------------------------------------------------------------
@@ -161,7 +146,7 @@ public final class GrapherCanvas {
 	 * 	The width of this canvas
 	 */
 	public int getWidth() {
-		return surface.getWidth();
+		return surface.getCoordinateSpaceWidth();
 	}
 
 	/**
@@ -171,7 +156,7 @@ public final class GrapherCanvas {
 	 * 	The height of this canvas
 	 */
 	public int getHeight() {
-		return surface.getHeight();
+		return surface.getCoordinateSpaceHeight();
 	}
 
 	/**
@@ -182,8 +167,9 @@ public final class GrapherCanvas {
 	 * @return
 	 * 	The Surface used for the setStrokeStyle call
 	 */
-	public Surface setStrokeStyle(Color color) {
-		return surface.setStrokeStyle(color);
+	public Canvas setStrokeStyle(CssColor color) {
+		surface.getContext2d().setStrokeStyle(color);
+		return surface;
 	}
 
 	/**
@@ -194,15 +180,16 @@ public final class GrapherCanvas {
 	 * @return
 	 * 	The Surface used for the setFillStyle call
 	 */
-	public Surface setFillStyle(Color color) {
-		return surface.setFillStyle(color);
+	public Canvas setFillStyle(CssColor color) {
+		surface.getContext2d().setFillStyle(color);
+		return surface;
 	}
 
 	/**
 	 * Equivalent to <code>getSurface().getLineWidth()</code>
 	 */
 	public double getLineWidth() {
-		return surface.getLineWidth();
+		return surface.getContext2d().getLineWidth();
 	}
 
 	/**
@@ -213,15 +200,16 @@ public final class GrapherCanvas {
 	 * @return
 	 * 	The Surface used for the setLineWidth call
 	 */
-	public Surface setLineWidth(double width) {
-		return surface.setLineWidth(width);
+	public Canvas setLineWidth(double width) {
+		surface.getContext2d().setLineWidth(width);
+		return surface;
 	}
 
 	/**
 	 * Equivalent to <code>getSurface().getGlobalAlpha()</code>
 	 */
 	public double getGlobalAlpha() {
-		return surface.getGlobalAlpha();
+		return surface.getContext2d().getGlobalAlpha();
 	}
 
 	/**
@@ -232,8 +220,9 @@ public final class GrapherCanvas {
 	 * @return
 	 * 	The Surface used for the setGlobalAlpha call
 	 */
-	public Surface setGlobalAlpha(double alpha) {
-		return surface.setGlobalAlpha(alpha);
+	public Canvas setGlobalAlpha(double alpha) {
+		surface.getContext2d().setGlobalAlpha(alpha);
+		return surface;
 	}
 
 	/**
@@ -243,7 +232,7 @@ public final class GrapherCanvas {
 	 * 	The text alignment for this canvas
 	 */
 	public TextAlign getTextAlign() {
-		return surface.getTextAlign();
+		return TextAlign.valueOf(surface.getContext2d().getTextAlign());
 	}
 
 	/**
@@ -254,15 +243,16 @@ public final class GrapherCanvas {
 	 * @return
 	 * 	The Surface used for the setTextAlign call
 	 */
-	public Surface setTextAlign(TextAlign textAlign) {
-		return surface.setTextAlign(textAlign);
+	public Canvas setTextAlign(TextAlign textAlign) {
+		surface.getContext2d().setTextAlign(textAlign);
+		return surface;
 	}
 
 	/**
 	 * Equivalent to <code>getSurface().getTextBaseline()</code>
 	 */
 	public TextBaseline getTextBaseline() {
-		return surface.getTextBaseline();
+		return TextBaseline.valueOf(surface.getContext2d().getTextBaseline());
 	}
 
 	/**
@@ -273,29 +263,33 @@ public final class GrapherCanvas {
 	 * @return
 	 * 	The Surface used for the setTextBaseline call
 	 */
-	public Surface setTextBaseline(TextBaseline textBaseline) {
-		return surface.setTextBaseline(textBaseline);
+	public Canvas setTextBaseline(TextBaseline textBaseline) {
+		surface.getContext2d().setTextBaseline(textBaseline);
+		return surface;
 	}
 
 	/**
 	 * Equivalent to <code>getSurface().clear()</code>
 	 */
-	public Surface clear() {
-		return surface.clear();
+	public Canvas clear() {
+		surface.getContext2d().clearRect(0, 0, surface.getCoordinateSpaceWidth(), surface.getCoordinateSpaceHeight());
+		return surface;
 	}
 
 	/**
 	 * Equivalent to <code>getSurface().save()</code>
 	 */
-	public Surface save() {
-		return surface.save();
+	public Canvas save() {
+		surface.getContext2d().save();
+		return surface;
 	}
 
 	/**
 	 * Equivalent to <code>getSurface().restore()</code>
 	 */
-	public Surface restore() {
-		return surface.restore();
+	public Canvas restore() {
+		surface.getContext2d().restore();
+		return surface;
 	}
 
 	/**
@@ -313,9 +307,10 @@ public final class GrapherCanvas {
 	 * @return
 	 * 	The Surface used for the strokeRectangle call
 	 */
-	public Surface strokeRectangle(double x,
+	public Canvas strokeRectangle(double x,
 			double y, double width, double height) {
-		return surface.strokeRectangle(x, y, width, height);
+		surface.getContext2d().strokeRect(x, y, width, height);
+		return surface;
 	}
 
 	/**
@@ -333,9 +328,10 @@ public final class GrapherCanvas {
 	 * @return
 	 * 	The Surface used for the fillRectangle call
 	 */
-	public Surface fillRectangle(double x,
+	public Canvas fillRectangle(double x,
 			double y, double width, double height) {
-		return surface.fillRectangle(x, y, width, height);
+		surface.getContext2d().fillRect(x, y, width, height);
+		return surface;
 	}
 
 	// --------------------------------------------------------------
@@ -345,51 +341,98 @@ public final class GrapherCanvas {
 	/**
 	 * Equivalent to <code>getRenderer().beginPath()</code>
 	 */
-	public DirectShapeRenderer beginPath() {
-		return renderer.beginPath();
+	public GrapherCanvas beginPath() {
+		surface.getContext2d().beginPath();
+		return this;
 	}
 
 	/**
 	 * Equivalent to <code>getRenderer().stroke()</code>
 	 */
-	public DirectShapeRenderer stroke() {
-		return renderer.stroke();
+	public Canvas stroke() {
+		surface.getContext2d().stroke();
+		return surface;
 	}
 
 	/**
 	 * Equivalent to <code>getRenderer().fill()</code>
 	 */
-	public DirectShapeRenderer fill() {
-		return renderer.fill();
+	public Canvas fill() {
+		surface.getContext2d().fill();
+		return surface;
 	}
 
 	/**
 	 * Equivalent to <code>getRenderer().drawLineSegment(start, end)</code>
 	 */
-	public DirectShapeRenderer drawLineSegment(Vector2 start, Vector2 end) {
-		gwt.g2d.client.math.Vector2 start1 = new gwt.g2d.client.math.Vector2(start.getX(),start.getY());
-		gwt.g2d.client.math.Vector2 end1 = new gwt.g2d.client.math.Vector2(end.getX(),end.getY());
-		return renderer.drawLineSegment(start1, end1);
+	public Canvas drawLineSegment(Vector2 start, Vector2 end) {
+		return drawLineSegment(start.getX(),start.getY(),end.getX(),end.getY());
+	}
+	
+	public Canvas drawLineSegment(double x1, double y1, double x2, double y2) {
+		surface.getContext2d().moveTo(x1, y1);
+		surface.getContext2d().lineTo(x2, y2);
+		return surface;
 	}
 
-	public void fillText(String label, Vector2 add) {
-		gwt.g2d.client.math.Vector2 v = new gwt.g2d.client.math.Vector2(add.getX(),add.getY());
-		surface.fillText(label, v);		
+	public Canvas fillText(String label, Vector2 v) {
+		return fillText(label,v.getX(),v.getY());	
+	}
+	
+	public Canvas fillText(String text, double x, double y) {
+		surface.getContext2d().fillText(text, x, y);
+		return surface;
 	}
 
-	public void drawLineSegment(double x1, double y1, double x2, double y2) {
-		drawLineSegment(new Vector2(x1,y1),new Vector2(x2,y2));
-	}
+	
 
 	public void drawCircle(double x, double y, double radius) {
-		renderer.drawCircle(x,y,radius);		
+		arc(x,y,radius,0,Math.PI * 2,true);
 	}
 
-	public void fillText(String text, double x, double y) {
-		fillText(text,new Vector2(x,y));
-	}
+	
 
 	public void setSize(int width, int height) {
-		surface.setSize(width, height);		
+		surface.setCoordinateSpaceWidth(width);
+		surface.setCoordinateSpaceHeight(height);
+	}
+
+	public GrapherCanvas moveTo(double x, double y) {
+		surface.getContext2d().moveTo(x,y);
+		return this;
+	}
+
+	public GrapherCanvas lineTo(double x, double y) {
+		surface.getContext2d().lineTo(x,y);
+		return this;
+	}
+
+	public void arc(double x, double y, double radius, double startAngle, double endAngle,
+			boolean anticlockwise) {
+		surface.getContext2d().arc(x,y,radius,startAngle,endAngle,anticlockwise);
+	}
+
+	public void rect(double x, double y, double w, double h) {
+		surface.getContext2d().rect(x, y, w, h);
+	}
+
+	public void closePath() {
+		surface.getContext2d().closePath();
+	}
+
+	public void clip() {
+		surface.getContext2d().clip();
+	}
+
+	public String getFont() {
+		return surface.getContext2d().getFont();
+	}
+
+	public void setFont(String font) {
+		surface.getContext2d().setFont(font);
+	}
+
+	public double measureText(String string) {
+		return surface.getContext2d().measureText(string).getWidth();
 	}
 }

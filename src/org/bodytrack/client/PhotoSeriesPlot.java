@@ -1,9 +1,5 @@
 package org.bodytrack.client;
 
-import gwt.g2d.client.graphics.KnownColor;
-import gwt.g2d.client.graphics.TextAlign;
-import gwt.g2d.client.graphics.TextBaseline;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -11,6 +7,8 @@ import java.util.Set;
 import org.bodytrack.client.DataPointListener.TriggerAction;
 import org.bodytrack.client.StyleDescription.StyleType;
 
+import com.google.gwt.canvas.dom.client.Context2d.TextAlign;
+import com.google.gwt.canvas.dom.client.Context2d.TextBaseline;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 
@@ -196,9 +194,9 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 		drawing.strokeClippedPath();
 		drawing.beginClippedPath();
 
-		drawing.setFillStyle(KnownColor.RED);
+		drawing.setFillStyle(ColorUtils.RED);
 		drawing.fillCircle(circleX, circleY, COUNT_CIRCLE_SIZE / 2.0);
-		drawing.setFillStyle(KnownColor.WHITE);
+		drawing.setFillStyle(ColorUtils.WHITE);
 		drawing.fillText("" + count, circleX, circleY);
 		drawing.setFillStyle(GrapherCanvas.DEFAULT_COLOR);
 	}

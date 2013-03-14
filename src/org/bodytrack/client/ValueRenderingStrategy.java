@@ -1,7 +1,6 @@
 package org.bodytrack.client;
 
 import com.google.gwt.i18n.client.NumberFormat;
-import gwt.g2d.client.graphics.canvas.Context;
 
 public class ValueRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy implements DataPointRenderingStrategy {
    private static final String DEFAULT_FONT = "7pt Helvetica,Arial,Verdana,sans-serif";
@@ -73,24 +72,23 @@ public class ValueRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy 
                           final double y,
                           final PlottablePoint rawDataPoint,
                           final boolean shouldConsiderPrevXValue) {
-      final Context ctx = drawing.getCanvas().getContext();
 
       // get the current font so we can revert to it later
-      final String originalFont = ctx.getFont();
+      final String originalFont = drawing.getCanvas().getFont();
 
       // set the font and then measure the text so we can compute the desired x position
-      ctx.setFont(font);
+      drawing.getCanvas().setFont(font);
       final String valueAsString = numberFormat.format(rawDataPoint.getValue());
-      final double widthInPixels = ctx.measureText(valueAsString);
+      final double widthInPixels = drawing.getCanvas().measureText(valueAsString);
       final double desiredX = x - (widthInPixels / 2);
 
       // if we should be considering the previous x value, then check for overlap
       if (!shouldConsiderPrevXValue || desiredX >= (prevX + marginWidth)) {
          final double desiredY = y - verticalOffset;
-         ctx.fillText(valueAsString, desiredX, desiredY);
+         drawing.getCanvas().fillText(valueAsString, desiredX, desiredY);
       }
 
       // clean up after ourselves
-      ctx.setFont(originalFont);
+      drawing.getCanvas().setFont(originalFont);
    }
 }

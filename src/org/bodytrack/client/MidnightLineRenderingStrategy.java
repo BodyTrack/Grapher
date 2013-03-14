@@ -2,14 +2,14 @@ package org.bodytrack.client;
 
 import java.util.Date;
 
-import gwt.g2d.client.graphics.Color;
+import com.google.gwt.canvas.dom.client.CssColor;
 
 public class MidnightLineRenderingStrategy implements DataIndependentRenderingStrategy {
 	private static final int SECONDS_PER_DAY = 24 * 60 * 60;
 	private static final int MILLISECONDS_PER_DAY = SECONDS_PER_DAY * 1000;
 
 	private static final double STROKE_WIDTH = 0.5;
-	private static final Color STROKE_COLOR = ColorUtils.SILVER;
+	private static final CssColor STROKE_COLOR = ColorUtils.SILVER;
 
 	// Roughly the number of pixels between days whenever the time axis stops
 	// showing day bars
