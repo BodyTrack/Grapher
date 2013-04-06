@@ -232,7 +232,7 @@ public final class GrapherCanvas {
 	 * 	The text alignment for this canvas
 	 */
 	public TextAlign getTextAlign() {
-		return TextAlign.valueOf(surface.getContext2d().getTextAlign());
+		return TextAlign.valueOf(surface.getContext2d().getTextAlign().toUpperCase());
 	}
 
 	/**
@@ -252,7 +252,7 @@ public final class GrapherCanvas {
 	 * Equivalent to <code>getSurface().getTextBaseline()</code>
 	 */
 	public TextBaseline getTextBaseline() {
-		return TextBaseline.valueOf(surface.getContext2d().getTextBaseline());
+		return TextBaseline.valueOf(surface.getContext2d().getTextBaseline().toUpperCase());
 	}
 
 	/**
