@@ -95,8 +95,6 @@ public class SeriesPlotContainer extends BasePlotContainer {
       this.width = placeholderElement.getElement().getClientWidth();
       this.height = placeholderElement.getElement().getClientHeight();
       drawing = Canvas.createIfSupported();
-      drawing.setCoordinateSpaceWidth(width);
-      drawing.setCoordinateSpaceHeight(height);
       placeholderElement.add(drawing);
 
       nextLoadingMessageId = INITIAL_MESSAGE_ID;

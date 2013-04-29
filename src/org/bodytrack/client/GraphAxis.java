@@ -103,8 +103,6 @@ public class GraphAxis implements Resizable {
 			final int placeholderElementHeight =
 				placeholderElement.getElement().getClientHeight();
 			final Canvas drawing = Canvas.createIfSupported();
-			drawing.setCoordinateSpaceWidth(placeholderElementWidth);
-			drawing.setCoordinateSpaceHeight(placeholderElementHeight);
 			placeholderElement.add(drawing);
 
 			drawing.addMouseWheelHandler(new BaseMouseWheelHandler() {

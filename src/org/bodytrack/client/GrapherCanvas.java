@@ -330,8 +330,9 @@ public final class GrapherCanvas {
 	}
 
 	public void setSize(int width, int height) {
-		surface.setCoordinateSpaceWidth(width);
-		surface.setCoordinateSpaceHeight(height);
+		final CanvasElement nativeElement = surface.getCanvasElement();
+		nativeElement.setWidth(width);
+		nativeElement.setHeight(height);
 	}
 
 	public GrapherCanvas moveTo(double x, double y) {
