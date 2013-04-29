@@ -105,24 +105,21 @@ public class SeriesPlotContainer extends BasePlotContainer {
       nextValueMessageId = INITIAL_MESSAGE_ID;
       valueMessages = new ArrayList<DisplayMessage>();
       
-      if (!ignoreClickEvents){
+      if (!ignoreClickEvents) {
     	  drawing.addMouseDownHandler(new MouseDownHandler() {
     	         @Override
     	         public void onMouseDown(final MouseDownEvent event) {
     	            handleMouseDownEvent(event);
     	         }
     	      });
-    	  
+
     	  drawing.addMouseUpHandler(new MouseUpHandler() {
     	         @Override
     	         public void onMouseUp(final MouseUpEvent event) {
     	            handleMouseUpEvent(event);
     	         }
     	      });
-    	  
       }
-
-      
 
       drawing.addMouseMoveHandler(new MouseMoveHandler() {
          @Override

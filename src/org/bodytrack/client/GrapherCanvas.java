@@ -6,23 +6,16 @@ import com.google.gwt.canvas.client.Canvas;
 import com.google.gwt.canvas.dom.client.Context2d.TextAlign;
 import com.google.gwt.canvas.dom.client.Context2d.TextBaseline;
 import com.google.gwt.canvas.dom.client.CssColor;
+import com.google.gwt.dom.client.CanvasElement;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 
 /**
- * Wrapper for a G2D Surface/DirectShapeRenderer pair.
- *
- * <p>This is intended to collect many of the important methods of the
- * {@link gwt.g2d.client.graphics.Surface Surface} and its associated
- * {@link gwt.g2d.client.graphics.DirectShapeRenderer DirectShapeRenderer}
- * in one class.  Note that not all methods of the two classes are
- * represented here.  However, the important methods of the two classes are
- * wrapped here, and calls to {@link #getSurface()} and to
- * {@link #getRenderer()}, which simply return references to those two
- * objects, allow calls to the other methods.</p>
+ * Wrapper for common operations on a GWT
+ * {@link com.google.gwt.canvas.client.Canvas Canvas} object.
  *
  * <p>This class is instance-controlled for efficiency: under this
- * system, only one DirectShapeRenderer is created per Surface.</p>
+ * system, only one DirectShapeRenderer is created per underlying canvas.</p>
  */
 public final class GrapherCanvas {
 
@@ -276,95 +269,43 @@ public final class GrapherCanvas {
 		return surface;
 	}
 
-	/**
-	 * Equivalent to <code>getSurface().save()</code>
-	 */
 	public Canvas save() {
 		surface.getContext2d().save();
 		return surface;
 	}
 
-	/**
-	 * Equivalent to <code>getSurface().restore()</code>
-	 */
 	public Canvas restore() {
 		surface.getContext2d().restore();
 		return surface;
 	}
 
-	/**
-	 * Equivalent to
-	 * <code>getSurface().strokeRectangle(x, y, width, height)</code>
-	 *
-	 * @param x
-	 * 	The X-coordinate of the top left of the rectangle
-	 * @param y
-	 * 	The Y-coordinate of the top left of the rectangle
-	 * @param width
-	 * 	The width of the rectangle
-	 * @param height
-	 * 	The height of the rectangle
-	 * @return
-	 * 	The Surface used for the strokeRectangle call
-	 */
 	public Canvas strokeRectangle(double x,
 			double y, double width, double height) {
 		surface.getContext2d().strokeRect(x, y, width, height);
 		return surface;
 	}
 
-	/**
-	 * Is exactly equivalent to a call to
-	 * <code>getSurface().fillRectangle(x, y, width, height)</code>
-	 *
-	 * @param x
-	 * 	The X-coordinate of the top left of the rectangle
-	 * @param y
-	 * 	The Y-coordinate of the top left of the rectangle
-	 * @param width
-	 * 	The width of the rectangle
-	 * @param height
-	 * 	The height of the rectangle
-	 * @return
-	 * 	The Surface used for the fillRectangle call
-	 */
 	public Canvas fillRectangle(double x,
 			double y, double width, double height) {
 		surface.getContext2d().fillRect(x, y, width, height);
 		return surface;
 	}
 
-	// --------------------------------------------------------------
-	// Wrappers for DirectShapeRenderer methods
-	// --------------------------------------------------------------
-
-	/**
-	 * Equivalent to <code>getRenderer().beginPath()</code>
-	 */
 	public GrapherCanvas beginPath() {
 		surface.getContext2d().beginPath();
 		return this;
 	}
 
-	/**
-	 * Equivalent to <code>getRenderer().stroke()</code>
-	 */
 	public Canvas stroke() {
 		surface.getContext2d().stroke();
 		return surface;
 	}
 
-	/**
-	 * Equivalent to <code>getRenderer().fill()</code>
-	 */
 	public Canvas fill() {
 		surface.getContext2d().fill();
 		return surface;
 	}
 
-	/**
-	 * Equivalent to <code>getRenderer().drawLineSegment(start, end)</code>
-	 */
 	public Canvas drawLineSegment(Vector2 start, Vector2 end) {
 		return drawLineSegment(start.getX(),start.getY(),end.getX(),end.getY());
 	}
@@ -384,13 +325,9 @@ public final class GrapherCanvas {
 		return surface;
 	}
 
-	
-
 	public void drawCircle(double x, double y, double radius) {
 		arc(x,y,radius,0,Math.PI * 2,true);
 	}
-
-	
 
 	public void setSize(int width, int height) {
 		surface.setCoordinateSpaceWidth(width);
