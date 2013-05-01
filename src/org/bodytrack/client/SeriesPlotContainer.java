@@ -263,6 +263,8 @@ public class SeriesPlotContainer extends BasePlotContainer {
 
       if ((canvas.getClientWidth() != widthInPixels) ||
           (canvas.getClientHeight() != heightInPixels)) {
+    	  height = heightInPixels;
+    	  width = widthInPixels;
     	  drawing.setCoordinateSpaceHeight(height);
     	  drawing.setCoordinateSpaceWidth(width);
          paint(newPaintEventId);
