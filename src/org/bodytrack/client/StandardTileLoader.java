@@ -211,7 +211,6 @@ public class StandardTileLoader implements TileLoader {
 	@Override
 	public final List<GrapherTile> getBestResolutionTiles(final double minTime,
 			final double maxTime) {
-		printString("CalculatedLevel: " + computeLevel(maxTime-minTime));
 		return getBestResolutionTiles(minTime, maxTime,
 				computeLevel(maxTime - minTime));
 	}
@@ -231,8 +230,6 @@ public class StandardTileLoader implements TileLoader {
 		// this method stuck in an infinite loop
 		final double timespan = Math.max(maxTime - minTime,
 				MathEx.ulp(maxTime) * MIN_TILE_WIDTH_ULPS);
-		
-		printString("UsedLevel: " + computeLevel(timespan));
 
 		double maxCoveredTime = minTime;
 
@@ -246,8 +243,6 @@ public class StandardTileLoader implements TileLoader {
 				maxCoveredTime += timespan * MISSING_TILE_NUDGE_RATIO;
 			} else {
 				best.add(bestAtCurrTime);
-				
-				printString("tile: " + bestAtCurrTime.getLevel() + "." + bestAtCurrTime.getOffset());
 
 				maxCoveredTime = timeZoneMap.reverseConvert(bestAtCurrTime.getDescription().getMaxTime());
 			}
@@ -256,10 +251,6 @@ public class StandardTileLoader implements TileLoader {
 
 		return best;
 	}
-	
-	private native void printString(String tile)/*-{
-		console.log(tile);
-	}-*/;
 
 	@Override
 	public final GrapherTile getBestResolutionTileAt(final double time) {
@@ -292,8 +283,6 @@ public class StandardTileLoader implements TileLoader {
 			if (timeZoneMap.reverseConvert(desc.getMinTime()) > time || timeZoneMap.reverseConvert(desc.getMaxTime()) < time) {
 				continue;
 			}
-			
-			printString("ConsideringTile: " + desc.getLevel() + "." + desc.getOffset());
 
 			if (best == null) {
 				best = tile;
