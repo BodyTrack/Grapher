@@ -211,13 +211,14 @@ public class StandardTileLoader implements TileLoader {
 	@Override
 	public final List<GrapherTile> getBestResolutionTiles(final double minTime,
 			final double maxTime) {
+		printString("CalculatedLevel: " + computeLevel(maxTime-minTime));
 		return getBestResolutionTiles(minTime, maxTime,
 				computeLevel(maxTime - minTime));
 	}
 
 	@Override
-	public final List<GrapherTile> getBestResolutionTiles(final double minTime,
-			final double maxTime, final int currentLevel) {
+	public final List<GrapherTile> getBestResolutionTiles(double minTime,
+			double maxTime, final int currentLevel) {
 		if (minTime >= maxTime)
 			return new ArrayList<GrapherTile>();
 		if (currentLevel == Integer.MIN_VALUE)
@@ -230,6 +231,8 @@ public class StandardTileLoader implements TileLoader {
 		// this method stuck in an infinite loop
 		final double timespan = Math.max(maxTime - minTime,
 				MathEx.ulp(maxTime) * MIN_TILE_WIDTH_ULPS);
+		
+		printString("UsedLevel: " + computeLevel(timespan));
 
 		double maxCoveredTime = minTime;
 
@@ -243,13 +246,20 @@ public class StandardTileLoader implements TileLoader {
 				maxCoveredTime += timespan * MISSING_TILE_NUDGE_RATIO;
 			} else {
 				best.add(bestAtCurrTime);
+				
+				printString("tile: " + bestAtCurrTime.getLevel() + "." + bestAtCurrTime.getOffset());
 
-				maxCoveredTime = bestAtCurrTime.getDescription().getMaxTime();
+				maxCoveredTime = timeZoneMap.reverseConvert(bestAtCurrTime.getDescription().getMaxTime());
 			}
-		}
+		}	
+		
 
 		return best;
 	}
+	
+	private native void printString(String tile)/*-{
+		console.log(tile);
+	}-*/;
 
 	@Override
 	public final GrapherTile getBestResolutionTileAt(final double time) {
@@ -271,7 +281,7 @@ public class StandardTileLoader implements TileLoader {
 	 * 	exists
 	 */
 	@Override
-	public final GrapherTile getBestResolutionTileAt(final double time,
+	public final GrapherTile getBestResolutionTileAt(double time,
 			final int bestLevel) {
 		GrapherTile best = null;
 		TileDescription bestDesc = null;
@@ -279,9 +289,11 @@ public class StandardTileLoader implements TileLoader {
 		for (final GrapherTile tile : descriptions.values()) {
 			final TileDescription desc = tile.getDescription();
 
-			if (desc.getMinTime() > time || desc.getMaxTime() < time) {
+			if (timeZoneMap.reverseConvert(desc.getMinTime()) > time || timeZoneMap.reverseConvert(desc.getMaxTime()) < time) {
 				continue;
 			}
+			
+			printString("ConsideringTile: " + desc.getLevel() + "." + desc.getOffset());
 
 			if (best == null) {
 				best = tile;
