@@ -246,8 +246,7 @@ public class StandardTileLoader implements TileLoader {
 
 				maxCoveredTime = timeZoneMap.reverseConvert(bestAtCurrTime.getDescription().getMaxTime());
 			}
-		}	
-		
+		}
 
 		return best;
 	}
@@ -258,8 +257,7 @@ public class StandardTileLoader implements TileLoader {
 	}
 
 	/**
-	 * Returns the best-resolution tile that covers the specified
-	 * point.
+	 * Returns the best-resolution tile that covers the specified point.
 	 *
 	 * @param time
 	 * 	The time which must be covered by the tile
@@ -280,7 +278,8 @@ public class StandardTileLoader implements TileLoader {
 		for (final GrapherTile tile : descriptions.values()) {
 			final TileDescription desc = tile.getDescription();
 
-			if (timeZoneMap.reverseConvert(desc.getMinTime()) > time || timeZoneMap.reverseConvert(desc.getMaxTime()) < time) {
+			if (timeZoneMap.reverseConvert(desc.getMinTime()) > time
+					|| timeZoneMap.reverseConvert(desc.getMaxTime()) < time) {
 				continue;
 			}
 
