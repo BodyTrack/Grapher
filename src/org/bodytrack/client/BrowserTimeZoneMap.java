@@ -8,14 +8,9 @@ import java.util.Date;
  */
 public final class BrowserTimeZoneMap extends TimeZoneMap {
 
-    // In getUtcTime, the difference between local and utc must be no more than 2 hours
-    // different from getLocalOffset(local), since the offset between local and UTC is
-    // usually the same in both directions of transformation, and in the worst case there
-    // is a difference of one hour for DST, plus up to 120 (2 leap seconds are allowed
-    // per minute) leap seconds, plus I'm leaving a fudge factor in case that situation
-    // changes in the future.
-    private static final double MAX_REVERSE_DISCREPANCY =
-            2 * TimeZoneMap.MINUTES_PER_HOUR * TimeZoneMap.SECONDS_PER_MINUTE;
+    private static final int DATE_CONSTRUCTOR_START_YEAR = 1900;
+    private static final String[] TOGMTSTRING_MONTHS = {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 
     @Override
     public double getLocalTime(final double utc) {
@@ -54,31 +49,63 @@ public final class BrowserTimeZoneMap extends TimeZoneMap {
      */
     @Override
     public double getUtcTime(final double local) {
-        // Seed the local offset by noting that the time zone is usually the same
-        // in local and getUtcTime(local), in which case we never enter the loop.
-        // However, when DST is involved, we do have to adjust the utc value so that
-        // getLocalTime(getUtcTime(local)) == local always.
-
-        double min = local - getLocalOffset(local) - MAX_REVERSE_DISCREPANCY;
-        double max = local - getLocalOffset(local) + MAX_REVERSE_DISCREPANCY;
-        double median = (min + max) / 2.0;
-
-        assert (getLocalTime(min) <= local);
-        assert (getLocalTime(max) >= local);
-
-        // Binary search over the range [min, max] to find the correct UTC time
-        while ((long)Math.floor(getLocalTime(median)) != (long)Math.floor(local)) {
-            // Narrow the range of possible values
-            if (getLocalTime(median) < local)
-                min = median;
-            else
-                max = median;
-
-            median = (min + max) / 2.0;
-        }
-
         // Be sure to get the fractional seconds correct
-        return Math.floor(median) + (local - Math.floor(local));
+        return Math.floor(getUTCFloor(local)) + (local - Math.floor(local));
+    }
+
+    /*
+    // TODO: Use this method instead of string parsing.  However, this breaks testing code.
+    // It is possible to make BrowserTimeZoneMapTest inherit from GWTTestCase, but
+    // getting the tests to run under both the IDE and Ant is tricky.
+    private double getUTCFloor(final double local) {
+        final JsDate utcDate = JsDate.create(local * MILLIS_PER_SECOND);
+        final JsDate localDate = JsDate.create(utcDate.getUTCFullYear(),
+                utcDate.getUTCMonth(), utcDate.getUTCDate(), utcDate.getUTCHours(),
+                utcDate.getUTCMinutes(), utcDate.getUTCSeconds(),
+                utcDate.getUTCMilliseconds());
+        return localDate.getTime() / 1000.0;
+    }
+    */
+
+    private double getUTCFloor(final double local) {
+        final Date utcDate = new Date((long)(local * MILLIS_PER_SECOND));
+
+        @SuppressWarnings("deprecation")
+        final String[] utcParts = utcDate.toGMTString().split("\\s+");
+        assert (utcParts.length == 5);
+        assert (utcParts[4].equals("GMT"));
+
+        final int date = Integer.parseInt(utcParts[0]);
+        final int month = parseMonth(utcParts[1]);
+        final int year = Integer.parseInt(utcParts[2]) - DATE_CONSTRUCTOR_START_YEAR;
+
+        final String[] timeParts = utcParts[3].split(":");
+        assert (timeParts.length == 3);
+
+        final int hour = Integer.parseInt(timeParts[0]);
+        final int minute = Integer.parseInt(timeParts[1]);
+        final int second = Integer.parseInt(timeParts[2]);
+
+        @SuppressWarnings("deprecation")
+        final Date localDate = new Date(year, month, date, hour, minute, second);
+        return (double)localDate.getTime() / MILLIS_PER_SECOND;
+    }
+
+    /**
+     * Parses the given month into an integer from 0 to 11.
+     *
+     * <p>
+     * It is expected that <code>month</code> is an element of the list
+     * [Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec], which is the
+     * set of legal months that might be returned from {@link Date#toGMTString()}.
+     * </p>
+     */
+    private static int parseMonth(final String month) {
+        for (int i = 0; i < TOGMTSTRING_MONTHS.length; i++)
+            if (TOGMTSTRING_MONTHS[i].equals(month))
+                return i;
+
+        throw new IllegalArgumentException("Unexpected month " + month);
     }
 
 }

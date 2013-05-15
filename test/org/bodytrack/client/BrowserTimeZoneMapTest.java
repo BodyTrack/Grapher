@@ -110,4 +110,14 @@ public final class BrowserTimeZoneMapTest {
         assertTrue(deltaLocalUtc < 1
             || (deltaLocalUtc >= 3600 * absHours && deltaLocalUtc < (3601 * absHours) + 1));
     }
+
+    @Test
+    public void testJustAfterDaylightSavingsChange() {
+        assertEquals(1331413517, timeMap.getLocalTime(1331431517), 1.0);
+        assertEquals(1331431517, timeMap.getUtcTime(1331413517), 1.0);
+
+        assertEquals(1331431117, timeMap.getLocalTime(1331449117), 1.0);
+        assertEquals(1331449117, timeMap.getUtcTime(1331431117), 1.0);
+    }
+
 }
