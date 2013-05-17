@@ -12,7 +12,7 @@ public class ZeoRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy {
    private static enum ZeoState {
 	   NO_DATA(0, "No Data", ColorUtils.BLACK),
        DEEP(1, "Deep", CssColor.make("#006600")),
-       LIGHT(2, "Light", CssColor.make("#9999999")),
+       LIGHT(2, "Light", CssColor.make("#999999")),
        REM(3, "REM", CssColor.make("#00CC00")),
        WAKE(4, "Wake", CssColor.make("#FF6633"));
 
@@ -109,6 +109,7 @@ public class ZeoRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy {
                                     final double y,
                                     final PlottablePoint rawDataPoint) {
       // get the ZeoState
+	   
       final int val = (int)Math.round(rawDataPoint.getValue());
       final ZeoState zeoState = ZeoState.findByValue(val);
 
