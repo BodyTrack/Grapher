@@ -61,7 +61,7 @@ public final class ModalTimeZoneMap {
 
         var tile = JSON.parse(tileString);
 
-        if (!!tile.isArray && tile.isArray()) {
+        if (tile instanceof Array) {
             // Photo tile
             for (var i = 0; i < tile.length; i++) {
                 tile[i].begin_d = getUtcTime(tile[i].begin_d);
