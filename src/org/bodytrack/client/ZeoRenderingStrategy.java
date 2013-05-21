@@ -27,8 +27,8 @@ public class ZeoRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy {
       }
 
       /**
-       * Returns the <code>ZeoState</code> associated with the given <code>value</code>, or <code>null</code> if no such
-       * state exists.
+       * Returns the <code>ZeoState</code> associated with the given <code>value</code>, or
+       * <code>null</code> if no such state exists.
        */
       public static ZeoState findByValue(final int value) {
          return VALUE_TO_STATE_MAP.get(value);
@@ -68,16 +68,10 @@ public class ZeoRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy {
       }
    }
 
-   /**
-    * The alpha value used when drawing rectangles for Zeo plots.
-    */
-   //private static final double NORMAL_ALPHA = 0.4;
+   // The alpha value used when drawing rectangles for Zeo plots.
    private static final double NORMAL_ALPHA = 1.0;
 
-   /**
-    * The alpha used when drawing rectangles for highlighted Zeo plots.
-    */
-   //private static final double HIGHLIGHTED_ALPHA = 0.5;
+   // The alpha used when drawing rectangles for highlighted Zeo plots.
    private static final double HIGHLIGHTED_ALPHA = 1.0;
 
    public ZeoRenderingStrategy(final StyleDescription.StyleType styleType,
@@ -109,7 +103,6 @@ public class ZeoRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy {
                                     final double y,
                                     final PlottablePoint rawDataPoint) {
       // get the ZeoState
-	   
       final int val = (int)Math.round(rawDataPoint.getValue());
       final ZeoState zeoState = ZeoState.findByValue(val);
 
