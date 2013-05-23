@@ -135,8 +135,8 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 
 		// Fixes the issue in which a photo loaded at a higher level is not
 		// passed in a tile to a lower level, causing the count to go too high
-		final double minTime = tileDesc.getMinTime();
-		final double maxTime = tileDesc.getMaxTime();
+		final double minTime = timeZoneMap.reverseConvert(tileDesc.getMinTime());
+		final double maxTime = timeZoneMap.reverseConvert(tileDesc.getMaxTime());
 
 		for (final PhotoGetter image: images) {
 			if (image.getTime() > minTime && image.getTime() < maxTime) {

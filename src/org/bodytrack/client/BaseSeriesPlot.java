@@ -41,6 +41,8 @@ public abstract class BaseSeriesPlot implements Plot {
    };
 
    private int previousPaintEventId = 0;
+   
+   protected final ModalTimeZoneMap timeZoneMap;
 
    /**
     *
@@ -72,6 +74,11 @@ public abstract class BaseSeriesPlot implements Plot {
       this.xAxis = GraphAxis.getAxis(this.xAxisNative);
       this.yAxis = GraphAxis.getAxis(this.yAxisNative);
       this.localDisplay = localDisplay;
+      
+      if (xAxis.getTimeZoneMap() == null)
+			timeZoneMap = new ModalTimeZoneMap(TimeZoneMap.IDENTITY_MAP, !localDisplay);
+		else
+			timeZoneMap = new ModalTimeZoneMap(xAxis.getTimeZoneMap(), !localDisplay);
 
       if (!xAxis.isXAxis())
          throw new IllegalArgumentException("X-axis must be horizontal");
