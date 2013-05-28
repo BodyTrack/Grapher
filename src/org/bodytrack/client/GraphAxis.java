@@ -167,6 +167,8 @@ public class GraphAxis implements Resizable {
 		this.isXAxis = isXAxis;
 
 		highlightedPoint = null;
+		
+		layout();
 	}
 
 	/**
