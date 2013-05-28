@@ -167,7 +167,7 @@ public class GraphAxis implements Resizable {
 		this.isXAxis = isXAxis;
 
 		highlightedPoint = null;
-		
+
 		layout();
 	}
 
@@ -230,9 +230,8 @@ public class GraphAxis implements Resizable {
 	}
 
 	public void layout() {
-		if (drawingCanvas == null) {
+		if (drawingCanvas == null)
 			return;
-		}
 
 		final double axisLength;
 		final Vector2 beginVector;
@@ -271,15 +270,8 @@ public class GraphAxis implements Resizable {
 	}
 
 	/**
-	 * Returns a Vector2 with the correct X- or Y-coordinate (X-coordinate
-	 * if this is an X-axis, Y-coordinate if this is a Y-axis) for
-	 * drawing a point.
-	 *
-	 * @param value
-	 * 	The value the user sees on the axis
-	 * @return
-	 * 	A {@link Vector2 Vector2} with one coordinate correct for drawing
-	 * 	the specified value relative to this axis
+	 * Returns a Vector2 with the correct X- or Y-coordinate (X-coordinate if this
+	 * is an X-axis, Y-coordinate if this is a Y-axis) for drawing a point.
 	 */
 	public Vector2 project2D(double value) {
 		return begin.add(basis.y.scale(project1D(value)));
@@ -310,7 +302,7 @@ public class GraphAxis implements Resizable {
 	}
 
 	/**
-	 * Returns <tt>true</tt> if and only if this GraphAxis is marked as
+	 * Returns <code>true</code> if and only if this GraphAxis is marked as
 	 * highlighted.
 	 *
 	 * @return
@@ -343,18 +335,16 @@ public class GraphAxis implements Resizable {
 		if (previousPaintEventId != newPaintEventId) {
 			previousPaintEventId = newPaintEventId;
 
-			if (drawingCanvas == null) {
+			if (drawingCanvas == null)
 				return;
-			}
 
 			drawingCanvas.clear();
 
 			// Pick the color to use, based on highlighting status
-			if (isHighlighted()) {
+			if (isHighlighted())
 				drawingCanvas.setStrokeStyle(HIGHLIGHTED_COLOR);
-			} else {
+			else
 				drawingCanvas.setStrokeStyle(NORMAL_COLOR);
-			}
 
 			drawingCanvas.beginPath();
 			drawingCanvas.drawLineSegment(project2D(this.min), project2D(this.max));
@@ -392,13 +382,8 @@ public class GraphAxis implements Resizable {
 	 */
 	protected void renderHighlight(GrapherCanvas canvas,
 			PlottablePoint point) {
-		if (!isHighlighted()) {
+		if (!isHighlighted() || point.equals(DARKEN_AXIS_ONLY))
 			return;
-		}
-
-		if (point.equals(DARKEN_AXIS_ONLY)) {
-			return;
-		}
 
 		canvas.save();
 		double oldLineWidth = canvas.getLineWidth();
