@@ -176,9 +176,12 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
 			final boolean isAnyPointHighlighted) {
 		double prevX = -Double.MAX_VALUE;
 		double prevY = -Double.MAX_VALUE;
+		double prevValue = -Double.MAX_VALUE;
 
 		for (final GrapherTile tile: tiles) {
 			for (final PlottablePoint point: getDataPoints(tile)) {
+				if (point.getValue() < MIN_DRAWABLE_VALUE)
+					continue;
 				final double x = xAxis.project2D(point.getDate()).getX();
 				final double y = yAxis.project2D(point.getValue()).getY();
 
@@ -200,13 +203,12 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
 				// Draw this part of the line
 				if (prevX > MIN_DRAWABLE_VALUE
 						&& prevY > MIN_DRAWABLE_VALUE) {
-					renderingStrategy.paintDataPoint(drawing, tile, xAxis, yAxis,
-							isAnyPointHighlighted, prevX, prevY, x, y, point);
+						renderingStrategy.paintDataPoint(drawing, tile, xAxis, yAxis,
+								isAnyPointHighlighted, prevX, prevY, x, y, point);
 				} else {
 					renderingStrategy.paintEdgePoint(drawing, tile, xAxis, yAxis,
 							isAnyPointHighlighted, x, y, point);
 				}
-
 				prevX = x;
 				prevY = y;
 			}
