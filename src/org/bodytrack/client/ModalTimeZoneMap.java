@@ -67,13 +67,15 @@ public final class ModalTimeZoneMap {
                 tile[i].begin_d = getUtcTime(tile[i].begin_d);
                 tile[i].end_d = getUtcTime(tile[i].end_d);
             }
-        } else {
+        } else if (tile.hasOwnProperty("fields")) {
             // Normal tile
             var timeIdx = tile.fields.indexOf("time");
             for (var i = 0; i < tile.data.length; i++) {
                 tile.data[i][timeIdx] = getUtcTime(tile.data[i][timeIdx]);
             }
         }
+        // Don't need to touch a spectral (Fourier) tile, because shifting
+        // in time does not change the amplitude of any frequency
 
         return JSON.stringify(tile);
     }-*/;

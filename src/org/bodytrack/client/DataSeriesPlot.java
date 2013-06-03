@@ -105,7 +105,7 @@ public class DataSeriesPlot extends BaseSeriesPlot {
      * this DataSeriesPlot, within threshold pixels of pos.  Otherwise, returns
      * <code>null</code>.
      *
-     * <p></p>
+     * <p>
      * This actually builds a square of 2 * threshold pixels on each
      * side, centered at pos, and checks if there is a data point within
      * that square, but that is a minor detail that should not affect

@@ -320,6 +320,65 @@ public final class NativeInterface {
 			this.id = __getNextID();
 		};
 
+        /// Initializes a new SpectralSeriesPlot object
+        ///
+        /// @param datasource
+        ///		A function to be used as the data source for the new
+        ///		plot.  This parameter must not be null
+        /// @param horizontalAxis
+        ///		An non-null axis with horizontal orientation
+        /// @param verticalAxis
+        ///		A non-null axis with vertical orientation
+        /// @param optionalParams
+        ///		Optional parameter: a dictionary of optional parameters.  Supported keys:
+        ///			localDisplay
+        ///				True to display all data as though datastore time were equal to local
+        ///				time, or false (default) to display data as the server presents it
+        ///			style
+        ///				A dictionary specifying the initial style of the new plot
+        $wnd.SpectralSeriesPlot = function(datasource, horizontalAxis, verticalAxis, optionalParams) {
+            if (datasource == null) {
+                throw 'Must pass in datasource';
+            }
+
+            if (horizontalAxis == null || verticalAxis == null) {
+                throw 'Must pass in both axes';
+            }
+
+            // Use the default localDisplay value of false if necessary
+            var localDisplay = !!(optionalParams['localDisplay']); // !!undefined is false
+
+            // create a default style if necessary
+            var style = optionalParams['style'] || {}; // undefined || {} is {}
+
+            this.datasource = datasource;
+            this.getDatasource = function() {
+                return this.datasource;
+            };
+            this.setDatasource = function(datasource) {
+                this.datasource = datasource;
+                this.__backingPlot.@org.bodytrack.client.SpectralSeriesPlot::setDatasource(Lcom/google/gwt/core/client/JavaScriptObject;)(datasource);
+            };
+            this.__backingPlot = @org.bodytrack.client.SpectralSeriesPlot::new(Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/core/client/JavaScriptObject;Z)(datasource, horizontalAxis, verticalAxis, localDisplay);
+            this.getHorizontalAxis = function() {
+                return this.__backingPlot.@org.bodytrack.client.SpectralSeriesPlot::getNativeXAxis()();
+            };
+            this.getVerticalAxis = function() {
+                return this.__backingPlot.@org.bodytrack.client.SpectralSeriesPlot::getNativeYAxis()();
+            };
+            this.style = style;
+            this.getStyle = function() {
+                // stringify and then parse the style so that we return
+                // a COPY of the style, so the user can't mutate the one we store
+                return JSON.parse(JSON.stringify(this.style));
+            };
+            this.setStyle = function(new_style) {
+                this.style = new_style;
+                this.__backingPlot.@org.bodytrack.client.SpectralSeriesPlot::setStyle(Lcom/google/gwt/core/client/JavaScriptObject;)(new_style);
+            };
+            this.id = __getNextID();
+        };
+
 		/// Defines the SequenceNumber object
 		$wnd.SequenceNumber = function() {};
 		$wnd.SequenceNumber.getNext = function() { return @org.bodytrack.client.SequenceNumber::getNext()(); };

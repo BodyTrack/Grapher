@@ -51,34 +51,17 @@ public final class PlottablePointTile extends JavaScriptObject {
       return tile;
    }-*/;
 
-   /**
-    * Returns the level of resolution at which this tile operates.
-    *
-    * <p>Note that level 0 corresponds to data points 1 second apart,
-    * and that levels scale in powers of 2.  For instance, level 1
-    * corresponds to data points 2 seconds apart, level 2 corresponds
-    * to data points 4 seconds apart, etc.  Levels can be positive or
-    * negative.</p>
-    *
-    * @return
-    * 		the level of resolution at which this tile operates
-    */
+
    public native int getLevel() /*-{
       return this.level;
    }-*/;
 
-   /**
-    * Returns the offset from the epoch at which this tile is found.
-    *
-    * <p>If we consider a very larger array of tiles, each one at the same
-    * level as this one, and tile 0 beginning on midnight of 1/1/1970,
-    * the offset is the index in this array at which we can find this
-    * tile.</p>
-    *
-    * @return
-    * 		the offset value for this tile
-    */
-   public native int getOffset() /*-{
+
+   public long getOffset() {
+      return (long)getRawOffset();
+   }
+
+   private native double getRawOffset() /*-{
       return this.offset;
    }-*/;
 
