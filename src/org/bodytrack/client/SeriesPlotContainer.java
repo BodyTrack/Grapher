@@ -171,7 +171,7 @@ public class SeriesPlotContainer extends BasePlotContainer {
 
          // drag the axes
          for (final GraphAxis axis : axes) {
-            axis.drag(mouseDragLastPos, pos, SequenceNumber.getNextThrottled());
+            axis.drag(mouseDragLastPos, pos, false, SequenceNumber.getNextThrottled());
          }
 
          mouseDragLastPos = pos;

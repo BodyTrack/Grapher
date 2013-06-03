@@ -50,5 +50,9 @@ public class Vector2 {
 	public int getIntY(){
 		return (int) y;
 	}
+	
+	public boolean isInside(Vector2 topLeft, Vector2 bottomRight){
+		return x >= topLeft.x && x <= bottomRight.x && y >= topLeft.y && y <= bottomRight.y;
+	}
 
 }

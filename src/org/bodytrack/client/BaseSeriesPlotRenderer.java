@@ -66,6 +66,7 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
 		commentVerticalMargin = DEFAULT_COMMENT_VERTICAL_MARGIN;
 		commentContainerCssClass = null;
 		commentCssClass = null;
+		dataIndependentStrategies.clear();
 		plotRenderingStrategies.clear();
 		highlightRenderingStrategies.clear();
 		commentRenderingStrategies.clear();
@@ -114,6 +115,8 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
 
 		// Mandatory midnight lines
 		dataIndependentStrategies.add(new MidnightLineRenderingStrategy());
+		// Mandatory cursor lines
+		dataIndependentStrategies.add(new CursorRenderingStrategy());
 	}
 
 	protected abstract List<SeriesPlotRenderingStrategy> buildSeriesPlotRenderingStrategies(

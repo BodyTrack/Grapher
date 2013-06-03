@@ -9,6 +9,7 @@ import com.google.gwt.canvas.client.Canvas;
 import com.google.gwt.canvas.dom.client.Context2d.TextAlign;
 import com.google.gwt.canvas.dom.client.Context2d.TextBaseline;
 import com.google.gwt.canvas.dom.client.CssColor;
+import com.google.gwt.canvas.dom.client.FillStrokeStyle;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.event.dom.client.MouseDownHandler;
@@ -83,6 +84,8 @@ public class GraphAxis implements Resizable {
 	private Vector2 mouseDragLastPos;
 
 	private int previousPaintEventId = 0;
+	
+	private boolean isDraggingCursor = false;
 
 	public GraphAxis(final String placeholderElementId,
 			final double min,
@@ -119,7 +122,16 @@ public class GraphAxis implements Resizable {
 			drawing.addMouseDownHandler(new MouseDownHandler() {
 				@Override
 				public void onMouseDown(final MouseDownEvent event) {
+					isDraggingCursor = false;
 					mouseDragLastPos = new Vector2(event.getX(), event.getY());
+					
+					Double curCursorPosition = getCursorPosition();
+					if (curCursorPosition != null){
+						Vector2 bottom = project2D(curCursorPosition).add(new Vector2(0,drawingCanvas.getHeight()));
+						Vector2 topLeft = bottom.add(new Vector2(-8,-16));
+						Vector2 bottomRight = bottom.add(new Vector2(8,0));
+						isDraggingCursor = mouseDragLastPos.isInside(topLeft, bottomRight);
+					}
 				}
 			});
 
@@ -129,7 +141,7 @@ public class GraphAxis implements Resizable {
 					// ignore mouse moves if the mouse button isn't being held down
 					if (mouseDragLastPos != null) {
 						final Vector2 pos = new Vector2(event.getX(), event.getY());
-						drag(mouseDragLastPos, pos, SequenceNumber.getNextThrottled());
+						drag(mouseDragLastPos, pos, isDraggingCursor, SequenceNumber.getNextThrottled());
 						mouseDragLastPos = pos;
 					}
 				}
@@ -141,7 +153,9 @@ public class GraphAxis implements Resizable {
 					mouseDragLastPos = null;
 
 					// Want a guaranteed update of the plots
-					paint(SequenceNumber.getNext());
+					int eventId = SequenceNumber.getNext();
+					publishAxisChangeEvent(eventId);
+					paint(eventId);
 				}
 			});
 
@@ -149,9 +163,12 @@ public class GraphAxis implements Resizable {
 				@Override
 				public void onMouseOut(final MouseOutEvent event) {
 					mouseDragLastPos = null;
-
+					
+					
 					// Want a guaranteed update of the plots
-					paint(SequenceNumber.getNext());
+					int eventId = SequenceNumber.getNext();
+					publishAxisChangeEvent(eventId);
+					paint(eventId);
 				}
 			});
 
@@ -329,6 +346,27 @@ public class GraphAxis implements Resizable {
 	protected PlottablePoint getHighlightedPoint() {
 		return highlightedPoint;
 	}
+	
+	protected void renderCursor(GrapherCanvas canvas){
+		Double curPos = getCursorPosition();
+		if (curPos == null)
+			return;
+		FillStrokeStyle oldFill = canvas.getFillStyle();
+		canvas.beginPath();
+		canvas.setFillStyle(ColorUtils.RED);
+		Vector2 bottom = project2D(curPos).add(new Vector2(0,canvas.getHeight()));
+		
+		Vector2 left = bottom.add(new Vector2(-8,-16));
+		Vector2 right = bottom.add(new Vector2(8,-16));
+		
+		canvas.moveTo(bottom)
+			.lineTo(left)
+			.lineTo(right)
+			.lineTo(bottom)
+			.fill();
+		
+		canvas.setFillStyle(oldFill);
+	}
 
 	public void paint(final int newPaintEventId) {
 		// guard against redundant paints
@@ -360,6 +398,7 @@ public class GraphAxis implements Resizable {
 			drawingCanvas.stroke();
 
 			renderHighlight(drawingCanvas, highlightedPoint);
+			renderCursor(drawingCanvas);
 
 			// Clean up after ourselves
 			drawingCanvas.setStrokeStyle(GrapherCanvas.DEFAULT_COLOR);
@@ -800,12 +839,32 @@ public class GraphAxis implements Resizable {
 		}
 	}
 
-	public void drag(final Vector2 from, final Vector2 to, final int eventId) {
+	public void drag(final Vector2 from, final Vector2 to, final boolean isCursorDrag, final int eventId) {
 		final double motion = unproject(from) - unproject(to);
-		uncheckedDrag(motion, eventId);
+		
+		if (isCursorDrag){
+			dragCursor(-motion,eventId);			
+		}
+		else{
+			uncheckedDrag(motion, eventId);	
+			
+		}		
 
 		// Even if there are no change listeners, should still update the UI
 		paint(eventId);
+	}
+	
+	private native void consoleLog(String text)/*-{
+		console.log(text);
+	}-*/;
+	
+	private void consoleLog(double text){
+		consoleLog("" + text);
+	}
+	
+	private void dragCursor(final double motion, final int eventId){
+		setCursorPosition(getCursorPosition() + motion);	
+		publishAxisChangeEvent(eventId);
 	}
 
 	/**
@@ -861,6 +920,24 @@ public class GraphAxis implements Resizable {
 		//uncheckedDrag(newMin - getMin(), eventId);
 
 		paint(eventId);
+	}
+	
+	protected Double cursorPos = null;
+	
+	/**
+	 * Give the position of the cursor. A value of null signifies no cursor is present	
+	 * @return cursor's position or null if no cursor is present
+	 */
+	public Double getCursorPosition(){
+		return cursorPos;		
+	}
+	
+	public void setCursorPosition(Double position){
+		cursorPos = position;		
+	}
+	
+	public void setCursorPosition(double position){
+		setCursorPosition((Double) position);
 	}
 
 	// TODO: Removing a listener probably doesn't work

@@ -6,6 +6,7 @@ import com.google.gwt.canvas.client.Canvas;
 import com.google.gwt.canvas.dom.client.Context2d.TextAlign;
 import com.google.gwt.canvas.dom.client.Context2d.TextBaseline;
 import com.google.gwt.canvas.dom.client.CssColor;
+import com.google.gwt.canvas.dom.client.FillStrokeStyle;
 import com.google.gwt.dom.client.CanvasElement;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
@@ -160,9 +161,13 @@ public final class GrapherCanvas {
 	 * @return
 	 * 	The Surface used for the setStrokeStyle call
 	 */
-	public Canvas setStrokeStyle(CssColor color) {
-		surface.getContext2d().setStrokeStyle(color);
+	public Canvas setStrokeStyle(FillStrokeStyle strokeStyle) {
+		surface.getContext2d().setStrokeStyle(strokeStyle);
 		return surface;
+	}
+	
+	public FillStrokeStyle getStrokeStyle(){
+		return surface.getContext2d().getStrokeStyle();
 	}
 
 	/**
@@ -173,9 +178,13 @@ public final class GrapherCanvas {
 	 * @return
 	 * 	The Surface used for the setFillStyle call
 	 */
-	public Canvas setFillStyle(CssColor color) {
-		surface.getContext2d().setFillStyle(color);
+	public Canvas setFillStyle(FillStrokeStyle fillStyle) {
+		surface.getContext2d().setFillStyle(fillStyle);
 		return surface;
+	}
+	
+	public FillStrokeStyle getFillStyle(){
+		return surface.getContext2d().getFillStyle();
 	}
 
 	/**
@@ -339,10 +348,18 @@ public final class GrapherCanvas {
 		surface.getContext2d().moveTo(x,y);
 		return this;
 	}
+	
+	public GrapherCanvas moveTo(Vector2 v){
+		return moveTo(v.getX(),v.getY());
+	}
 
 	public GrapherCanvas lineTo(double x, double y) {
 		surface.getContext2d().lineTo(x,y);
 		return this;
+	}
+	
+	public GrapherCanvas lineTo(Vector2 v){
+		return lineTo(v.getX(), v.getY());
 	}
 
 	public void arc(double x, double y, double radius, double startAngle, double endAngle,

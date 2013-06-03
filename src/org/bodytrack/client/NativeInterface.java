@@ -134,6 +134,15 @@ public final class NativeInterface {
 				this.setTimeZoneMapping = function (mapping) {
 					// TODO: Not currently implemented
 				};
+				this.setCursorPosition = function(position){
+					if (position == null)
+						this.__backingAxis.@org.bodytrack.client.GraphAxis::setCursorPosition(Ljava/lang/Double;)(position);
+					else
+						this.__backingAxis.@org.bodytrack.client.GraphAxis::setCursorPosition(D)(position);
+				}
+				this.getCursorPosition = function(position){
+					return this.__backingAxis.@org.bodytrack.client.GraphAxis::getCursorPosition();
+				}
 				this.id = __getNextID();
 			};
 		};

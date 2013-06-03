@@ -2,6 +2,7 @@ package org.bodytrack.client;
 
 import java.util.Date;
 
+import com.google.gwt.canvas.dom.client.FillStrokeStyle;
 import com.google.gwt.i18n.client.NumberFormat;
 
 @SuppressWarnings("deprecation")
@@ -412,8 +413,12 @@ public class TimeGraphAxis extends GraphAxis {
 		}
 
 		canvas.stroke();
+		
+		
 
 		renderHighlight(canvas, getHighlightedPoint());
+		
+		renderCursor(canvas);
 
 		// Clean up after ourselves
 		canvas.setStrokeStyle(GrapherCanvas.DEFAULT_COLOR);
