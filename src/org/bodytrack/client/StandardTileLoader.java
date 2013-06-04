@@ -63,9 +63,8 @@ public class StandardTileLoader implements TileLoader {
 
 	@Override
 	public final void addEventListener(final EventListener listener) {
-		if (listener == null) {
+		if (listener == null)
 			throw new NullPointerException();
-		}
 
 		addFilteredEventListener(new FilteredEventListener(listener));
 	}
@@ -76,9 +75,8 @@ public class StandardTileLoader implements TileLoader {
 
 	@Override
 	public final void removeEventListener(final EventListener listener) {
-		if (listener == null) {
+		if (listener == null)
 			throw new NullPointerException();
-		}
 
 		removeFilteredEventListener(new FilteredEventListener(listener));
 	}
@@ -117,9 +115,8 @@ public class StandardTileLoader implements TileLoader {
 				tiles.add(new TileDescription(level, offset));
 		}
 
-		if (onload != null) {
+		if (onload != null)
 			addFilteredEventListener(new AllLoadEventListener(onload, tiles));
-		}
 
 		return !tiles.isEmpty();
 	}
