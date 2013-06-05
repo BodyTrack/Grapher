@@ -1,6 +1,7 @@
 package org.bodytrack.client;
 
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.JsArrayNumber;
 import com.google.gwt.json.client.JSONParser;
 import com.google.gwt.json.client.JSONValue;
 
@@ -54,7 +55,7 @@ public final class SpectralTile extends JavaScriptObject {
         return this.num_values;
     }-*/;
 
-    public native String getRawDFT() /*-{
+    public native JsArrayNumber getRawDFT() /*-{
         return this.dft;
     }-*/;
 
@@ -103,10 +104,10 @@ public final class SpectralTile extends JavaScriptObject {
     private List<Integer> computeDiscretizedDFT() {
         assert (getNumSteps() < Character.MAX_VALUE);
 
-        final String rawDFT = getRawDFT();
+        final JsArrayNumber rawDFT = getRawDFT();
         final List<Integer> result = new ArrayList<Integer>(rawDFT.length());
         for (int i = 0; i < rawDFT.length(); i++)
-            result.add((int)rawDFT.charAt(i));
+            result.add((int)rawDFT.get(i));
 
         return result;
     }

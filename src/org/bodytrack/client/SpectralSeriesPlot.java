@@ -6,6 +6,7 @@ import com.google.gwt.core.client.JavaScriptObject;
 
 public class SpectralSeriesPlot extends BaseSeriesPlot {
 
+    private static final int FETCH_LEVEL = 2; // Tiles of about 16 mins each
     private static final int MAX_COLOR_VALUE = 255;
 
     private final SpectralPlotRenderer renderer = new SpectralPlotRenderer();
@@ -15,6 +16,14 @@ public class SpectralSeriesPlot extends BaseSeriesPlot {
             final JavaScriptObject nativeYAxis,
             final boolean localDisplay) {
         super(datasource, nativeXAxis, nativeYAxis, localDisplay);
+    }
+
+    @Override
+    protected TileLoader buildTileLoader(final JavaScriptObject datasource,
+                                         final GraphAxis xAxis,
+                                         final boolean localDisplay) {
+        final TileLoader wrappedLoader = super.buildTileLoader(datasource, xAxis, localDisplay);
+        return new SpectralTileLoader(wrappedLoader, xAxis, FETCH_LEVEL);
     }
 
     @Override
@@ -51,6 +60,7 @@ public class SpectralSeriesPlot extends BaseSeriesPlot {
 
             final double minX = xAxis.project2D(desc.getMinTime()).getX();
             final double maxX = xAxis.project2D(desc.getMaxTime()).getX();
+            final double width = maxX - minX;
 
             final List<Integer> values = tile.getDFT();
 
@@ -59,16 +69,17 @@ public class SpectralSeriesPlot extends BaseSeriesPlot {
             final int endIdx = (int)Math.ceil(Math.min(values.size() - 1, yAxis.getMax()));
 
             // Actually draw the points
-            drawing.beginClippedPath();
+            final GrapherCanvas canvas = drawing.getCanvas();
             for (int i = startIdx; i <= endIdx; i++) {
-                final int v = values.get(i);
-                final double y = yAxis.project2D(v).getY();
-                final CssColor color = getColor(v, numSteps - 1);
+                final double topY = yAxis.project2D(i + 1).getY();
+                final double botY = yAxis.project2D(i).getY();
+                final CssColor color = getColor(values.get(i), numSteps - 1);
 
-                drawing.setStrokeStyle(color);
-                drawing.drawLineSegment(minX, y, maxX, y);
+                drawing.setFillStyle(color);
+                // Add an extra 0.5 pixels around the edge so there are no
+                // gaps between neighboring rectangles
+                canvas.fillRectangle(minX - 0.5, topY - 0.5, width + 1, botY - topY + 1);
             }
-            drawing.strokeClippedPath();
         }
 
         // TODO: Start allowing the style to set the colormap
@@ -87,6 +98,92 @@ public class SpectralSeriesPlot extends BaseSeriesPlot {
         public void setStyleDescription(final StyleDescription styleDescription) {
             // TODO: Stop ignoring styles
         }
+    }
 
+    private static final class SpectralTileLoader implements TileLoader {
+
+        private static final int MAX_WIDTH_RATIO = 256;
+
+        private final TileLoader loader;
+        private final GraphAxis xAxis;
+        private final int level;
+
+        public SpectralTileLoader(final TileLoader loader,
+                                  final GraphAxis xAxis,
+                                  final int level) {
+            this.loader = loader;
+            this.xAxis = xAxis;
+            this.level = level;
+        }
+
+        @Override
+        public void addEventListener(final EventListener listener) {
+            loader.addEventListener(listener);
+        }
+
+        @Override
+        public void removeEventListener(final EventListener listener) {
+            loader.removeEventListener(listener);
+        }
+
+        /**
+         * Checks for fetch at the correct level.
+         *
+         * <p>
+         * This is the only method that this class does not forward to the wrapped loader.
+         * Instead of fetching the right-size tile for the X-axis, this fetches at the
+         * required level.
+         * </p>
+         */
+        @Override
+        public boolean checkForFetch() {
+            final double tileWidth = Math.pow(2, level) * GrapherTile.TILE_WIDTH;
+
+            final double minTime = xAxis.getMin();
+            final double maxTime = xAxis.getMax() + tileWidth;
+
+            if (maxTime - minTime >= MAX_WIDTH_RATIO * tileWidth)
+                return loader.checkForFetch();
+
+            // Fetch at tile boundaries, taking advantage of the fact that StandardTileLoader
+            // fetches the biggest tile whose width is no bigger than the specified window
+            boolean anyFetched = false;
+            for (double time = minTime; time <= maxTime; time += tileWidth)
+                anyFetched |= loader.checkForFetch(time, MathEx.nextDouble(time + tileWidth), null);
+
+            return anyFetched;
+        }
+
+        @Override
+        public boolean checkForFetch(final double minTime, final double maxTime, final EventListener onload) {
+            return loader.checkForFetch(minTime, maxTime, onload);
+        }
+
+        @Override
+        public List<GrapherTile> getBestResolutionTiles() {
+            return loader.getBestResolutionTiles();
+        }
+
+        @Override
+        public List<GrapherTile> getBestResolutionTiles(final double minTime,
+                                                        final double maxTime,
+                                                        final int currentLevel) {
+            return loader.getBestResolutionTiles(minTime, maxTime, currentLevel);
+        }
+
+        @Override
+        public List<GrapherTile> getBestResolutionTiles(final double minTime, final double maxTime) {
+            return loader.getBestResolutionTiles(minTime, maxTime);
+        }
+
+        @Override
+        public GrapherTile getBestResolutionTileAt(final double time) {
+            return loader.getBestResolutionTileAt(time);
+        }
+
+        @Override
+        public GrapherTile getBestResolutionTileAt(final double time, final int bestLevel) {
+            return loader.getBestResolutionTileAt(time, bestLevel);
+        }
     }
 }

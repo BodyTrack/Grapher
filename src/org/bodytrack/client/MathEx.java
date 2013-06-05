@@ -45,6 +45,20 @@ public final class MathEx {
 		return next - d;
 	}
 
+    public static double nextDouble(final double d) {
+        if (Double.isNaN(d))
+            return Double.NaN;
+        if (Double.isInfinite(d))
+            return d;
+        if (d == 0.0 || d == -0.0)
+            return Double.MIN_VALUE;
+        if (d == Double.MAX_VALUE)
+            return Double.POSITIVE_INFINITY;
+
+        final long bits = doubleToLongBits(Math.abs(d));
+        return longBitsToDouble(bits + 1);
+    }
+
 	public static long doubleToLongBits(final double d) {
 		final Double dObj = Double.valueOf(d);
 		final double absd = Math.abs(d);
