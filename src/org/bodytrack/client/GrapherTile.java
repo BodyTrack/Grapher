@@ -149,6 +149,6 @@ public final class GrapherTile {
 	 * 	{@link #getPlottableTile()} returns <code>null</code>.
 	 */
 	public List<PlottablePoint> getDataPoints() {
-		return (tile == null) ? null : tile.getDataPoints();
+		return (tile == null) ? new ArrayList<PlottablePoint>() : tile.getDataPoints();
 	}
 }

@@ -136,12 +136,16 @@ public final class NativeInterface {
 				};
 				this.setCursorPosition = function(position){
 					if (position == null)
-						this.__backingAxis.@org.bodytrack.client.GraphAxis::setCursorPosition(Ljava/lang/Double;)(position);
+						this.__backingAxis.@org.bodytrack.client.GraphAxis::setCursorPosition(Ljava/lang/Double;Ljava/lang/Integer;)(position,null);
 					else
 						this.__backingAxis.@org.bodytrack.client.GraphAxis::setCursorPosition(D)(position);
 				}
 				this.getCursorPosition = function(position){
-					return this.__backingAxis.@org.bodytrack.client.GraphAxis::getCursorPosition();
+					var value = this.__backingAxis.@org.bodytrack.client.GraphAxis::getCursorPosition()();
+					if (value == null)
+						return null;
+					else
+						return value.@java.lang.Double::doubleValue()();
 				}
 				this.id = __getNextID();
 			};

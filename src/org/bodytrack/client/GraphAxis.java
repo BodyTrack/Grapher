@@ -863,8 +863,7 @@ public class GraphAxis implements Resizable {
 	}
 	
 	private void dragCursor(final double motion, final int eventId){
-		setCursorPosition(getCursorPosition() + motion);	
-		publishAxisChangeEvent(eventId);
+		setCursorPosition(getCursorPosition() + motion, eventId);
 	}
 
 	/**
@@ -932,12 +931,17 @@ public class GraphAxis implements Resizable {
 		return cursorPos;		
 	}
 	
-	public void setCursorPosition(Double position){
-		cursorPos = position;		
+	public void setCursorPosition(Double position, Integer eventId){
+		cursorPos = position;	
+		if (eventId == null){
+			eventId = SequenceNumber.getNext();
+		}
+		publishAxisChangeEvent(eventId);
+		paint(eventId);
 	}
 	
 	public void setCursorPosition(double position){
-		setCursorPosition((Double) position);
+		setCursorPosition((Double) position, null);
 	}
 
 	// TODO: Removing a listener probably doesn't work

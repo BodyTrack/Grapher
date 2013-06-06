@@ -203,7 +203,7 @@ public class SeriesPlotContainer extends BasePlotContainer {
          }
 
          // now highlight the axes of the highlighted plots
-         for (final Plot plot : highlightedPlots) {
+         for (final Plot plot : containedPlots) {
             final PlottablePoint highlightedPoint = plot.getHighlightedPoint();
             plot.getXAxis().highlight(highlightedPoint);
             plot.getYAxis().highlight(highlightedPoint);

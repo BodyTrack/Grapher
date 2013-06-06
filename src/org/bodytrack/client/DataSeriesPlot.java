@@ -215,8 +215,6 @@ public class DataSeriesPlot extends BaseSeriesPlot {
             return null;
 
         final List<PlottablePoint> points = getDataPoints(tile);
-        if (points == null)
-            return null;
 
         PlottablePoint closest = null;
         double shortestDistanceSq = Double.MAX_VALUE;
@@ -291,6 +289,7 @@ public class DataSeriesPlot extends BaseSeriesPlot {
      */
     @Override
     public boolean highlightIfNear(final Vector2 pos) {
+    	
         setHighlightedPoint(closest(pos, HIGHLIGHT_DISTANCE_THRESHOLD));
         publishHighlightedValue();
         return isHighlighted();

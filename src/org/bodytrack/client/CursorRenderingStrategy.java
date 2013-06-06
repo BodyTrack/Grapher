@@ -4,7 +4,7 @@ import com.google.gwt.canvas.dom.client.CssColor;
 
 public class CursorRenderingStrategy implements DataIndependentRenderingStrategy {
 
-	private static final double STROKE_WIDTH = 0.5;
+	private static final double STROKE_WIDTH = 2;
 	private static final CssColor STROKE_COLOR = ColorUtils.RED;
 
 	@Override

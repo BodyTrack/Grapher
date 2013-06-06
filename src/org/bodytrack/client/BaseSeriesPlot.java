@@ -1,6 +1,7 @@
 package org.bodytrack.client;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.bodytrack.client.DataPointListener.TriggerAction;
@@ -164,7 +165,7 @@ public abstract class BaseSeriesPlot implements Plot {
       boolean willPublish = false;
 
       if (isHighlighted()) {
-         final PlottablePoint newPublishedPoint = highlightedPoint;
+         final PlottablePoint newPublishedPoint = getHighlightedPoint();
          willPublish = (publishedPoint == null && newPublishedPoint != null) ||
                        (publishedPoint != null && !publishedPoint.equals(newPublishedPoint));
          publishedPoint = newPublishedPoint;
@@ -354,9 +355,54 @@ public abstract class BaseSeriesPlot implements Plot {
       return yAxisNative;
    }
 
+   private PlottablePoint prevHighlightedPoint = null;
    @Override
    public final PlottablePoint getHighlightedPoint() {
-      return highlightedPoint;
+	  PlottablePoint point = null;
+	  if (highlightedPoint != null || getXAxis() == null || getXAxis().getCursorPosition() == null)
+		  	point = highlightedPoint;
+	  else
+		  point = getPointClosestToXCursor();
+	  if ((prevHighlightedPoint != null && !prevHighlightedPoint.equals(point)) || (prevHighlightedPoint == null && point != null)){
+		  prevHighlightedPoint = point;
+		  publishHighlightedValue();
+	  }		  
+	  return point;
+   }
+   
+   public PlottablePoint getPointClosestToXCursor(){
+	   if (getXAxis() == null || getXAxis().getCursorPosition() == null)
+		   return null;
+	   return getClosestPointToXValue(getXAxis().getCursorPosition(),5);
+   }
+   
+   public PlottablePoint getClosestPointToXValue(double xValue, double threshHold){
+	   Vector2 projectedPosition = getXAxis().project2D(xValue);
+	   double xMin = getXAxis().unproject(projectedPosition.add(new Vector2(-threshHold,0)));
+	   double xMax = getXAxis().unproject(projectedPosition.add(new Vector2(threshHold,0)));
+	   
+	   double yMin = getYAxis().getMin();
+	   double yMax = getYAxis().getMax();
+	   
+	   List<GrapherTile> tiles = getTileLoader().getBestResolutionTiles(xMin, xMax);
+	   
+	   PlottablePoint bestPoint = null;
+	   double bestDistanceSquared = -1;
+	   
+	   for (GrapherTile tile : tiles){
+		   for (PlottablePoint point : tile.getDataPoints()){
+			   if (point.getDate() < xMin || point.getDate() > xMax || point.getValue() < yMin || point.getValue() > yMax)
+				   continue;
+			   double distance = xValue - point.getDate();
+			   double distanceSquared = distance * distance;
+			   if (bestDistanceSquared < 0 || distanceSquared < bestDistanceSquared){
+				   bestPoint = point;
+				   bestDistanceSquared = distanceSquared;
+			   }
+		   }
+	   }
+	   
+	   return bestPoint; 
    }
 
    public final void setHighlightedPoint(final PlottablePoint highlightedPoint) {
@@ -387,7 +433,7 @@ public abstract class BaseSeriesPlot implements Plot {
     */
    @Override
    public final boolean isHighlighted() {
-      return highlightedPoint != null;
+      return getHighlightedPoint() != null;
    }
 
    // Do-nothing implementation so subclasses don't have to worry about

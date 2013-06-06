@@ -65,7 +65,7 @@ public interface Plot {
     * 		<code>true</code> if and only if this highlights the axes
     */
    boolean highlightIfNear(final Vector2 pos);
-
+   
    /**
     * Returns the highlighted point maintained by this {@link Plot}.
     *
@@ -74,6 +74,9 @@ public interface Plot {
     * 		<code>null</code> if there is no highlighted point
     */
    PlottablePoint getHighlightedPoint();
+   
+   PlottablePoint getPointClosestToXCursor();
+   PlottablePoint getClosestPointToXValue(double xValue, double threshHold);
 
    void setHighlightedPoint(final PlottablePoint highlightedPoint);
 
