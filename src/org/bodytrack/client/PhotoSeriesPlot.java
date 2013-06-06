@@ -237,8 +237,11 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 
 		// Now draw the image itself, not allowing it to overflow onto
 		// the axes
+		//note: we have to end our old clipped path and start a new one or else we will lose our path
+		drawing.strokeClippedPath();
 		photo.drawImageBounded(drawing.getCanvas().getNativeCanvasElement(),
 				x, y, width, height, drawing);
+		drawing.beginClippedPath();
 
 		// Note that the borders are drawn after the image is, so the image
 		// doesn't obscure the borders
