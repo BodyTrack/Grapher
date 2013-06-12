@@ -192,13 +192,14 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 
 		// Finish out other drawing before filling a circle and text
 		drawing.strokeClippedPath();
-		drawing.beginClippedPath();
+		
 
 		drawing.setFillStyle(ColorUtils.RED);
 		drawing.fillCircle(circleX, circleY, COUNT_CIRCLE_SIZE / 2.0);
 		drawing.setFillStyle(ColorUtils.WHITE);
 		drawing.fillText("" + count, circleX, circleY);
 		drawing.setFillStyle(GrapherCanvas.DEFAULT_COLOR);
+		drawing.beginClippedPath();
 	}
 
 	/**
