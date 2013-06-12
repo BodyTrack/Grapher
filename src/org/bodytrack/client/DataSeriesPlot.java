@@ -180,6 +180,13 @@ public class DataSeriesPlot extends BaseSeriesPlot {
 
         return closest;
     }
+    
+    public void onClick(final Vector2 pos) { 
+    	if (highlightedPoint != null && getXAxis() != null){
+    		getXAxis().setCursorPosition(highlightedPoint.getDate());    		
+    	}
+    	
+    }
 
     /**
      * Helper method for {@link DataSeriesPlot#closest(Vector2, double)}.

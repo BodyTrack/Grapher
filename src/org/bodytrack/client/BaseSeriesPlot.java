@@ -30,7 +30,7 @@ public abstract class BaseSeriesPlot implements Plot {
 
    // If highlightedPoint is null, then this should not be highlighted.
    // Otherwise, this is the point to highlight on the axes
-   private PlottablePoint highlightedPoint = null;
+   protected PlottablePoint highlightedPoint = null;
 
    private final GraphAxis.EventListener graphAxisEventListener = new GraphAxis.EventListener() {
       @Override
