@@ -428,7 +428,7 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 				final GrapherTile tile,
 				final GraphAxis xAxis,
 				final GraphAxis yAxis,
-				final boolean isAnyPointHighlighted,
+				final PlottablePoint highlightedPoint,
 				final double x,
 				final double y,
 				final PlottablePoint rawDataPoint) {
@@ -440,7 +440,7 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 				final GrapherTile tile,
 				final GraphAxis xAxis,
 				final GraphAxis yAxis,
-				final boolean isAnyPointHighlighted,
+				final PlottablePoint highlightedPoint,
 				final double prevX,
 				final double prevY,
 				final double x,

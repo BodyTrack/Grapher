@@ -84,13 +84,13 @@ public class ZeoRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy {
                                     final GrapherTile tile,
                                     final GraphAxis xAxis,
                                     final GraphAxis yAxis,
-                                    final boolean isAnyPointHighlighted,
+                                    final PlottablePoint highlightedPoint,
                                     final double prevX,
                                     final double prevY,
                                     final double x,
                                     final double y,
                                     final PlottablePoint rawDataPoint) {
-      paintEdgePoint(drawing, tile, xAxis, yAxis, isAnyPointHighlighted, x, y, rawDataPoint);
+      paintEdgePoint(drawing, tile, xAxis, yAxis, highlightedPoint, x, y, rawDataPoint);
    }
 
    @Override
@@ -98,7 +98,7 @@ public class ZeoRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy {
                                     final GrapherTile tile,
                                     final GraphAxis xAxis,
                                     final GraphAxis yAxis,
-                                    final boolean isAnyPointHighlighted,
+                                    final PlottablePoint highlightedPoint,
                                     final double x,
                                     final double y,
                                     final PlottablePoint rawDataPoint) {
@@ -113,7 +113,7 @@ public class ZeoRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy {
       final double rightX = xAxis.project2D(rawDataPoint.getDate() + sampleHalfWidth).getX();
 
       // draw the rectangle
-      drawRectangle(drawing.getCanvas(), yAxis, isAnyPointHighlighted, zeoState, leftX, rightX, y);
+      drawRectangle(drawing.getCanvas(), yAxis, highlightedPoint, zeoState, leftX, rightX, y);
    }
 
    /**
@@ -121,7 +121,7 @@ public class ZeoRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy {
     */
    private void drawRectangle(final GrapherCanvas canvas,
                               final GraphAxis yAxis,
-                              final boolean isAnyPointHighlighted,
+                              final PlottablePoint highlightedPoint,
                               final ZeoState zeoState,
                               final double leftX,
                               final double rightX,
@@ -146,7 +146,7 @@ public class ZeoRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy {
       final double topY = y;
 
       // Draw the Zeo plot with the specified color
-      canvas.setGlobalAlpha(isAnyPointHighlighted ? HIGHLIGHTED_ALPHA : NORMAL_ALPHA);
+      canvas.setGlobalAlpha(highlightedPoint != null ? HIGHLIGHTED_ALPHA : NORMAL_ALPHA);
       canvas.setFillStyle(zeoState.getColor());
 
       final boolean isNoDataState = ZeoState.NO_DATA.equals(zeoState);

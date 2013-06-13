@@ -38,7 +38,7 @@ public interface SeriesPlotRenderingStrategy extends RenderingStrategy {
                        GrapherTile tile,
                        GraphAxis xAxis,
                        GraphAxis yAxis,
-                       boolean isAnyPointHighlighted,
+                       PlottablePoint highlightedPoint,
                        double x,
                        double y,
                        PlottablePoint rawDataPoint);
@@ -79,7 +79,7 @@ public interface SeriesPlotRenderingStrategy extends RenderingStrategy {
                        GrapherTile tile,
                        GraphAxis xAxis,
                        GraphAxis yAxis,
-                       boolean isAnyPointHighlighted,
+                       PlottablePoint highlightedPoint,
                        double prevX,
                        double prevY,
                        double x,

@@ -139,7 +139,7 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
 		renderDataIndependentStrategies(canvas, drawing, xAxis, yAxis,
 				isAnyPointHighlighted);
 		renderPlotStrategies(canvas, drawing, tiles, xAxis, yAxis,
-				isAnyPointHighlighted);
+				highlightedPoint);
 		renderHighlightedPointsAndComments(canvas, drawing, tiles, xAxis, yAxis,
 				highlightedPoint);
 	}
@@ -161,11 +161,11 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
 			final Iterable<GrapherTile> tiles,
 			final GraphAxis xAxis,
 			final GraphAxis yAxis,
-			final boolean isAnyPointHighlighted) {
+			final PlottablePoint highlightedPoint) {
 		for (final SeriesPlotRenderingStrategy renderingStrategy: plotRenderingStrategies) {
-			renderingStrategy.beforeRender(canvas, drawing, isAnyPointHighlighted);
+			renderingStrategy.beforeRender(canvas, drawing, highlightedPoint != null);
 			renderPlotTiles(renderingStrategy, canvas, drawing, tiles,
-					xAxis, yAxis, isAnyPointHighlighted);
+					xAxis, yAxis, highlightedPoint);
 			renderingStrategy.afterRender(canvas, drawing);
 		}
 	}
@@ -176,7 +176,7 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
 			final Iterable<GrapherTile> tiles,
 			final GraphAxis xAxis,
 			final GraphAxis yAxis,
-			final boolean isAnyPointHighlighted) {
+			final PlottablePoint highlightedPoint) {
 		double prevX = -Double.MAX_VALUE;
 		double prevY = -Double.MAX_VALUE;
 		double prevValue = -Double.MAX_VALUE;
@@ -207,10 +207,10 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
 				if (prevX > MIN_DRAWABLE_VALUE
 						&& prevY > MIN_DRAWABLE_VALUE) {
 						renderingStrategy.paintDataPoint(drawing, tile, xAxis, yAxis,
-								isAnyPointHighlighted, prevX, prevY, x, y, point);
+								highlightedPoint, prevX, prevY, x, y, point);
 				} else {
 					renderingStrategy.paintEdgePoint(drawing, tile, xAxis, yAxis,
-							isAnyPointHighlighted, x, y, point);
+							highlightedPoint, x, y, point);
 				}
 				prevX = x;
 				prevY = y;
@@ -235,7 +235,7 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
 						renderingStrategy.paintPoint(drawing, xAxis, yAxis,
 								xAxis.project2D(point.getDate()).getX(),
 								yAxis.project2D(point.getValue()).getY(),
-								highlightedPoint);
+								highlightedPoint, highlightedPoint);
 						renderingStrategy.afterRender(canvas, drawing);
 					}
 				}
@@ -255,7 +255,7 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
 						yAxis,
 						xAxis.project2D(highlightedPoint.getDate()).getX(),
 						yAxis.project2D(highlightedPoint.getValue()).getY(),
-						highlightedPoint);
+						highlightedPoint, highlightedPoint);
 				renderingStrategy.afterRender(canvas, drawing);
 			}
 

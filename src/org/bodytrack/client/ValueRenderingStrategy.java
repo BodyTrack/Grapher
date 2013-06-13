@@ -35,11 +35,11 @@ public class ValueRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy 
                                     final GrapherTile tile,
                                     final GraphAxis xAxis,
                                     final GraphAxis yAxis,
-                                    final boolean isAnyPointHighlighted,
+                                    final PlottablePoint highlightedPoint,
                                     final double x,
                                     final double y,
                                     final PlottablePoint rawDataPoint) {
-      paintPoint(drawing, xAxis, yAxis, x, y, rawDataPoint);
+      paintPoint(drawing, xAxis, yAxis, x, y, rawDataPoint, highlightedPoint);
    }
 
    @Override
@@ -47,7 +47,7 @@ public class ValueRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy 
                                     final GrapherTile tile,
                                     final GraphAxis xAxis,
                                     final GraphAxis yAxis,
-                                    final boolean isAnyPointHighlighted,
+                                    final PlottablePoint highlightedPoint,
                                     final double prevX,
                                     final double prevY,
                                     final double x,
@@ -62,7 +62,8 @@ public class ValueRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy 
                           final GraphAxis yAxis,
                           final double x,
                           final double y,
-                          final PlottablePoint rawDataPoint) {
+                          final PlottablePoint rawDataPoint,
+                          final PlottablePoint highlightedPoint) {
       drawValue(drawing, 0, x, y, rawDataPoint, false);
    }
 

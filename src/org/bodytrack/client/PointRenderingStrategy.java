@@ -18,11 +18,11 @@ public abstract class PointRenderingStrategy extends BaseDataSeriesPlotRendering
                                     final GrapherTile tile,
                                     final GraphAxis xAxis,
                                     final GraphAxis yAxis,
-                                    final boolean isAnyPointHighlighted,
+                                    final PlottablePoint highlightedPoint,
                                     final double x,
                                     final double y,
                                     final PlottablePoint rawDataPoint) {
-      paintPoint(drawing, xAxis, yAxis, x, y, rawDataPoint);
+      paintPoint(drawing, xAxis, yAxis, x, y, rawDataPoint, highlightedPoint);
    }
 
    @Override
@@ -30,13 +30,13 @@ public abstract class PointRenderingStrategy extends BaseDataSeriesPlotRendering
                                     final GrapherTile tile,
                                     final GraphAxis xAxis,
                                     final GraphAxis yAxis,
-                                    final boolean isAnyPointHighlighted,
+                                    final PlottablePoint highlightedPoint,
                                     final double prevX,
                                     final double prevY,
                                     final double x,
                                     final double y,
                                     final PlottablePoint rawDataPoint) {
-      paintPoint(drawing, xAxis, yAxis, x, y, rawDataPoint);
+      paintPoint(drawing, xAxis, yAxis, x, y, rawDataPoint, highlightedPoint);
    }
 
    /** Returns the radius of the dot. */

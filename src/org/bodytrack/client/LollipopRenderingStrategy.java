@@ -12,7 +12,8 @@ public class LollipopRenderingStrategy extends CircleRenderingStrategy {
                            final GraphAxis yAxis,
                            final double x,
                            final double y,
-                           final PlottablePoint rawDataPoint) {
+                           final PlottablePoint rawDataPoint,
+                           final PlottablePoint highlightedPoint) {
       // The Y-value in pixels corresponding to the lowest point to draw on the lollipop stick
       final double minDrawY = yAxis.project2D(0).getY();
 
@@ -24,6 +25,6 @@ public class LollipopRenderingStrategy extends CircleRenderingStrategy {
          drawing.drawLineSegment(x, minDrawY, x, maxDrawY);
       }
 
-      super.paintPoint(drawing, xAxis, yAxis, x, y, rawDataPoint);
+      super.paintPoint(drawing, xAxis, yAxis, x, y, rawDataPoint, highlightedPoint);
    }
 }
