@@ -14,11 +14,11 @@ import com.google.gwt.canvas.dom.client.CssColor;
 public abstract class BaseDataSeriesPlotRenderingStrategy
       implements SeriesPlotRenderingStrategy {
    private StyleDescription.StyleType styleType;
-   private final double lineWidth;
-   private final double highlightLineWidth;
-   private final CssColor strokeColor;
+   protected final double lineWidth;
+   protected final double highlightLineWidth;
+   protected final CssColor strokeColor;
    private final boolean willFill;
-   private final CssColor fillColor;
+   protected final CssColor fillColor;
 
    protected BaseDataSeriesPlotRenderingStrategy(final StyleDescription.StyleType styleType,
                                                  final Double theHighlightLineWidth) {
@@ -96,7 +96,6 @@ public abstract class BaseDataSeriesPlotRenderingStrategy
       if (willFill()) {
          drawing.fillClippedPath();
       }
-
       drawing.strokeClippedPath();
 
       // Clean up after ourselves

@@ -22,7 +22,30 @@ public abstract class PointRenderingStrategy extends BaseDataSeriesPlotRendering
                                     final double x,
                                     final double y,
                                     final PlottablePoint rawDataPoint) {
-      paintPoint(drawing, xAxis, yAxis, x, y, rawDataPoint, highlightedPoint);
+	   double oldWidth = drawing.getCanvas().getLineWidth();
+	   if (willFill()) {
+         drawing.fillClippedPath();
+      }
+      drawing.strokeClippedPath();
+      drawing.getCanvas().setLineWidth(rawDataPoint.equals(highlightedPoint) ? highlightLineWidth : lineWidth);
+      drawing.getCanvas().setStrokeStyle(strokeColor);
+      drawing.getCanvas().setFillStyle(fillColor);
+  	 drawing.beginClippedPath();
+  	
+  	 
+  	 paintPoint(drawing, xAxis, yAxis, x, y, rawDataPoint);
+  	 
+  	 
+  	if (willFill()) {
+        drawing.fillClippedPath();
+     }
+     drawing.strokeClippedPath();
+     drawing.getCanvas().setLineWidth(oldWidth);
+     drawing.getCanvas().setStrokeStyle(strokeColor);
+     drawing.getCanvas().setFillStyle(fillColor);
+   drawing.beginClippedPath();
+   drawing.getCanvas().setLineWidth(oldWidth);
+     
    }
 
    @Override
@@ -36,7 +59,7 @@ public abstract class PointRenderingStrategy extends BaseDataSeriesPlotRendering
                                     final double x,
                                     final double y,
                                     final PlottablePoint rawDataPoint) {
-      paintPoint(drawing, xAxis, yAxis, x, y, rawDataPoint, highlightedPoint);
+	   paintEdgePoint(drawing, tile,xAxis,yAxis,highlightedPoint,x,y,rawDataPoint);
    }
 
    /** Returns the radius of the dot. */

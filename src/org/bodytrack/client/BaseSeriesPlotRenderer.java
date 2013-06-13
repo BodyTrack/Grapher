@@ -235,7 +235,7 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
 						renderingStrategy.paintPoint(drawing, xAxis, yAxis,
 								xAxis.project2D(point.getDate()).getX(),
 								yAxis.project2D(point.getValue()).getY(),
-								highlightedPoint, highlightedPoint);
+								highlightedPoint);
 						renderingStrategy.afterRender(canvas, drawing);
 					}
 				}
@@ -255,7 +255,7 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
 						yAxis,
 						xAxis.project2D(highlightedPoint.getDate()).getX(),
 						yAxis.project2D(highlightedPoint.getValue()).getY(),
-						highlightedPoint, highlightedPoint);
+						highlightedPoint);
 				renderingStrategy.afterRender(canvas, drawing);
 			}
 

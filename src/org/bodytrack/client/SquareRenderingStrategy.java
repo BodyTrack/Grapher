@@ -15,8 +15,7 @@ public class SquareRenderingStrategy extends PointRenderingStrategy {
                           final GraphAxis yAxis,
                           final double x,
                           final double y,
-                          final PlottablePoint rawDataPoint,
-                          final PlottablePoint highlightedPoint) {
+                          final PlottablePoint rawDataPoint) {
       drawing.drawSquare(x, y, getRadius());
    }
 }

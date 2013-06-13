@@ -39,7 +39,7 @@ public class ValueRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy 
                                     final double x,
                                     final double y,
                                     final PlottablePoint rawDataPoint) {
-      paintPoint(drawing, xAxis, yAxis, x, y, rawDataPoint, highlightedPoint);
+      paintPoint(drawing, xAxis, yAxis, x, y, rawDataPoint);
    }
 
    @Override
@@ -62,8 +62,7 @@ public class ValueRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy 
                           final GraphAxis yAxis,
                           final double x,
                           final double y,
-                          final PlottablePoint rawDataPoint,
-                          final PlottablePoint highlightedPoint) {
+                          final PlottablePoint rawDataPoint) {
       drawValue(drawing, 0, x, y, rawDataPoint, false);
    }
 

@@ -13,8 +13,7 @@ public class CircleRenderingStrategy extends PointRenderingStrategy {
                           final GraphAxis yAxis,
                           final double x,
                           final double y,
-                          final PlottablePoint rawDataPoint,
-                          final PlottablePoint highlightedPoint) {
+                          final PlottablePoint rawDataPoint) {
       drawing.drawCircle(x, y, getRadius());
    }
 }

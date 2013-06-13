@@ -15,8 +15,7 @@ public class CrossRenderingStrategy extends PointRenderingStrategy {
                           final GraphAxis yAxis,
                           final double x,
                           final double y,
-                          final PlottablePoint rawDataPoint,
-                          final PlottablePoint highlightedPoint) {
+                          final PlottablePoint rawDataPoint) {
 
       final double radius = getRadius();
       final double x1 = x - radius;
