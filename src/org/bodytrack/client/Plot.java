@@ -81,4 +81,6 @@ public interface Plot {
    void setHighlightedPoint(final PlottablePoint highlightedPoint);
 
    void onClick(final Vector2 pos);
+   
+   void doCursorClick();
 }

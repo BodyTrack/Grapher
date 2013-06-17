@@ -34,7 +34,7 @@ public abstract class BaseSeriesPlot implements Plot {
 
    private final GraphAxis.EventListener graphAxisEventListener = new GraphAxis.EventListener() {
       @Override
-      public void onAxisChange(final int eventId) {
+      public void onAxisChange(final GraphAxis axis, final int eventId) {
          if (plotContainer != null) {
             plotContainer.paint(eventId);
          }
@@ -275,13 +275,18 @@ public abstract class BaseSeriesPlot implements Plot {
          // guard against redundant paints
          if (previousPaintEventId != newPaintEventId) {
             previousPaintEventId = newPaintEventId;
+            
+            PlottablePoint highlightPoint = getHighlightedPoint();
+            if (highlightPoint == null){
+            	highlightPoint = getCursorHighlightedPoint();
+            }
 
             renderer.render(canvas,
                             getDrawingBounds(canvas),
                             tileLoader.getBestResolutionTiles(),
                             getXAxis(),
                             getYAxis(),
-                            getHighlightedPoint());
+                            highlightPoint);
 
             // Make sure we shouldn't get any more info from the server
             tileLoader.checkForFetch();
@@ -354,20 +359,14 @@ public abstract class BaseSeriesPlot implements Plot {
    public final JavaScriptObject getNativeYAxis() {
       return yAxisNative;
    }
-
-   private PlottablePoint prevHighlightedPoint = null;
+   
    @Override
    public final PlottablePoint getHighlightedPoint() {
-	  PlottablePoint point = null;
-	  if (highlightedPoint != null || getXAxis() == null || getXAxis().getCursorPosition() == null)
-		  	point = highlightedPoint;
-	  else
-		  point = getPointClosestToXCursor();
-	  if ((prevHighlightedPoint != null && !prevHighlightedPoint.equals(point)) || (prevHighlightedPoint == null && point != null)){
-		  prevHighlightedPoint = point;
-		  publishHighlightedValue();
-	  }		  
-	  return point;
+	  return highlightedPoint;
+   }
+   
+   public final PlottablePoint getCursorHighlightedPoint(){
+	   return getPointClosestToXCursor();
    }
    
    public PlottablePoint getPointClosestToXCursor(){

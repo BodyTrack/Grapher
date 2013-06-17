@@ -2,6 +2,8 @@ package org.bodytrack.client;
 
 import java.util.List;
 
+import org.bodytrack.client.DataPointListener.TriggerAction;
+
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArrayString;
 
@@ -183,9 +185,17 @@ public class DataSeriesPlot extends BaseSeriesPlot {
     
     public void onClick(final Vector2 pos) { 
     	if (highlightedPoint != null && getXAxis() != null){
-    		getXAxis().setCursorPosition(highlightedPoint.getDate());    		
+    		getXAxis().setCursorPosition(highlightedPoint.getDate());    
+    		publishDataPoint(highlightedPoint, TriggerAction.CLICK);
     	}
     	
+    }
+    
+    public void doCursorClick(){
+    	PlottablePoint cursorPoint = getCursorHighlightedPoint();
+    	if (cursorPoint != null){
+    		publishDataPoint(cursorPoint, TriggerAction.CLICK);
+    	}
     }
 
     /**

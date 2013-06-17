@@ -536,4 +536,8 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 			signalRepaintOfPlotContainer();
 		}
 	}
+
+	@Override
+	public void doCursorClick() {
+	}
 }

@@ -255,6 +255,9 @@ public final class NativeInterface {
 			this.getStatistics = function(xMin, xMax, fieldnames, afterload) {
 				return this.__backingPlot.@org.bodytrack.client.DataSeriesPlot::getStatistics(DDLcom/google/gwt/core/client/JsArrayString;Lcom/google/gwt/core/client/JavaScriptObject;)(xMin, xMax, fieldnames, afterload);
 			};
+			this.doCursorClick = function(){
+				this.__backingPlot.@org.bodytrack.client.Plot::doCursorClick()();
+			}
 			this.id = __getNextID();
 		};
 
@@ -330,6 +333,9 @@ public final class NativeInterface {
 			this.removeDataPointListener = function(listenerFunction) {
 				return this.__backingPlot.@org.bodytrack.client.PhotoSeriesPlot::removeDataPointListener(Lcom/google/gwt/core/client/JavaScriptObject;)(listenerFunction);
 			};
+			this.doCursorClick = function(){
+				this.__backingPlot.@org.bodytrack.client.Plot::doCursorClick()();
+			}
 			this.id = __getNextID();
 		};
 

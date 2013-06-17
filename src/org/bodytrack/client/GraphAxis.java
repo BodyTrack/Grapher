@@ -27,7 +27,7 @@ import com.google.gwt.user.client.ui.RootPanel;
 public class GraphAxis implements Resizable {
 
 	public interface EventListener {
-		void onAxisChange(final int eventId);
+		void onAxisChange(final GraphAxis axis, final int eventId);
 	}
 
 	/**
@@ -841,7 +841,7 @@ public class GraphAxis implements Resizable {
 
 	private void publishAxisChangeEvent(final int eventId) {
 		for (final EventListener listener : eventListeners) {
-			listener.onAxisChange(eventId);
+			listener.onAxisChange(this, eventId);
 		}
 	}
 
@@ -937,6 +937,10 @@ public class GraphAxis implements Resizable {
 		return cursorPos;		
 	}
 	
+	public String getCursorPositionString(){
+		return null;
+	}
+	
 	public void setCursorPosition(Double position, Integer eventId){
 		cursorPos = position;	
 		if (eventId == null){
@@ -965,15 +969,24 @@ public class GraphAxis implements Resizable {
 		}
 
 		@Override
-		public void onAxisChange(int eventId) {
+		public void onAxisChange(GraphAxis axis, int eventId) {
 			if (eventId != prevEventId) {
-				makeCallback(callback, eventId);
+				makeCallback(callback, axis, eventId);
 				prevEventId = eventId;
 			}
 		}
 
-		private native void makeCallback(JavaScriptObject callback, int eventId) /*-{
-			callback(eventId);
+		private native void makeCallback(JavaScriptObject callback, GraphAxis axis, int eventId) /*-{
+			var cursorPos = axis.@org.bodytrack.client.GraphAxis::getCursorPosition()();
+			if (cursorPos != null)
+				cursorPos = cursorPos.@java.lang.Double::doubleValue()();
+			callback({
+				min: axis.@org.bodytrack.client.GraphAxis::getMin()(),
+				max: axis.@org.bodytrack.client.GraphAxis::getMax()(),
+				cursorPosition: cursorPos,
+				cursorPositionString: axis.@org.bodytrack.client.GraphAxis::getCursorPositionString()(),
+				eventId: eventId
+			});
 		}-*/;
 
 		@Override

@@ -280,6 +280,12 @@ public class TimeGraphAxis extends GraphAxis {
 			return Math.floor(timeDate.getTime() / 1000 + epsilon);
 		}
 	}
+	
+	public String getCursorPositionString(){
+		if (getCursorPosition() == null)
+			return null;
+		return DateUtils.getDateAsString(getCursorPosition());
+	}
 
 	@Override
 	public void paint(final int newPaintEventId) {

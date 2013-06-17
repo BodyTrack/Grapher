@@ -19,10 +19,8 @@ import com.google.gwt.i18n.client.NumberFormat;
 public final class PlottablePoint implements Comparable<PlottablePoint> {
 
    public static final String DEFAULT_VALUE_FORMAT_STRING = "###,##0.0##";
-   public static final String DATE_TIME_FORMAT_STRING =
-	   "EEE MMM dd yyyy, HH:mm:ss.SSS";
-   private static final DateTimeFormat DATE_TIME_FORMAT =
-	   DateTimeFormat.getFormat(DATE_TIME_FORMAT_STRING);
+   
+   
 
    private static final String ZERO_VALUE_STRING = "0.0";
    private static final NumberFormat SCIENTIFIC_VALUE_FORMAT =
@@ -82,7 +80,7 @@ public final class PlottablePoint implements Comparable<PlottablePoint> {
     * @see #DATE_TIME_FORMAT_STRING
     */
    public String getDateAsString() {
-      return DATE_TIME_FORMAT.format(new Date((long)(myDate * 1000)));
+      return DateUtils.getDateAsString(myDate);
    }
 
    /**
