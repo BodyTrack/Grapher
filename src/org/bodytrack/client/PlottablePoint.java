@@ -33,6 +33,8 @@ public final class PlottablePoint implements Comparable<PlottablePoint> {
    private double myDate;
    private double myValue;
    private String comment;
+   
+   private static final double COMPARISON_TOLLERANCE = 1e-6;
 
    /**
     * Saves copies of date and value in this PlottablePoint.
@@ -170,8 +172,9 @@ public final class PlottablePoint implements Comparable<PlottablePoint> {
       // are dealing with numbers that are outside the range
       // of values representable in a long
       return
-            Math.abs(Math.floor(myDate) -
-                     Math.floor(((PlottablePoint)obj).myDate)) < 0.5;
+            Math.abs(myDate - ((PlottablePoint)obj).myDate) < COMPARISON_TOLLERANCE &&
+                     Math.abs(myValue - ((PlottablePoint)obj).myValue) < COMPARISON_TOLLERANCE &&
+                     (comment == ((PlottablePoint) obj).comment || (comment != null && comment.equals(((PlottablePoint) obj).comment))) ;
    }
 
    @Override
