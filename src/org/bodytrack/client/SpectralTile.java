@@ -1,6 +1,7 @@
 package org.bodytrack.client;
 
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.JsArrayNumber;
 import com.google.gwt.json.client.JSONParser;
 import com.google.gwt.json.client.JSONValue;
@@ -55,7 +56,7 @@ public final class SpectralTile extends JavaScriptObject {
         return this.num_values;
     }-*/;
 
-    public native JsArrayNumber getRawDFT() /*-{
+    public native JsArray<JsArrayNumber> getRawDFT() /*-{
         return this.dft;
     }-*/;
 
@@ -74,11 +75,11 @@ public final class SpectralTile extends JavaScriptObject {
      * @return
      *  The discretized DFT, as an unmodifiable list of nonnegative integers
      */
-    public List<Integer> getDFT() {
+    public List<List<Integer>> getDFT() {
         if (!isCached("DFT"))
             addToCache("DFT", computeDiscretizedDFT());
 
-        return Collections.unmodifiableList((List<Integer>)getFromCache("DFT"));
+        return (List<List<Integer>>)getFromCache("DFT");
     }
 
     private native <T> void addToCache(final String key, final T value) /*-{
@@ -94,22 +95,26 @@ public final class SpectralTile extends JavaScriptObject {
             this.cache = {};
         }
 
-        return "key" in this.cache;
+        return key in this.cache;
     }-*/;
 
     private native <T> T getFromCache(final String key) /*-{
         return this.cache[key];
     }-*/;
 
-    private List<Integer> computeDiscretizedDFT() {
+    private List<List<Integer>> computeDiscretizedDFT() {
         assert (getNumSteps() < Character.MAX_VALUE);
 
-        final JsArrayNumber rawDFT = getRawDFT();
-        final List<Integer> result = new ArrayList<Integer>(rawDFT.length());
-        for (int i = 0; i < rawDFT.length(); i++)
-            result.add((int)rawDFT.get(i));
+        final JsArray<JsArrayNumber> rawDFT = getRawDFT();
+        final List<List<Integer>> result = new ArrayList<List<Integer>>(rawDFT.length());
+        for (int windowID = 0; windowID < rawDFT.length(); windowID++) {
+            final List<Integer> currItem = new ArrayList<Integer>();
+            for (int i = 0; i < rawDFT.get(windowID).length(); i++)
+                currItem.add((int)rawDFT.get(windowID).get(i));
+            result.add(Collections.unmodifiableList(currItem));
+        }
 
-        return result;
+        return Collections.unmodifiableList(result);
     }
 
     /**

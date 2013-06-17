@@ -6,7 +6,7 @@ import com.google.gwt.core.client.JavaScriptObject;
 
 public class SpectralSeriesPlot extends BaseSeriesPlot {
 
-    private static final int FETCH_LEVEL = 2; // Tiles of about 16 mins each
+    private static final int FETCH_LEVEL = -2; // Tiles of about 1 minute each
     private static final int MAX_COLOR_VALUE = 255;
 
     private final SpectralPlotRenderer renderer = new SpectralPlotRenderer();
@@ -36,7 +36,7 @@ public class SpectralSeriesPlot extends BaseSeriesPlot {
         return false;
     }
 
-    private final static class SpectralPlotRenderer implements SeriesPlotRenderer {
+    private static final class SpectralPlotRenderer implements SeriesPlotRenderer {
 
         @Override
         public void render(final GrapherCanvas canvas,
@@ -60,25 +60,30 @@ public class SpectralSeriesPlot extends BaseSeriesPlot {
 
             final double minX = xAxis.project2D(desc.getMinTime()).getX();
             final double maxX = xAxis.project2D(desc.getMaxTime()).getX();
-            final double width = maxX - minX;
 
-            final List<Integer> values = tile.getDFT();
+            final List<List<Integer>> allValues = tile.getDFT();
+            final double width = (maxX - minX) / allValues.size();
 
-            // Don't even consider drawing the points that won't show up
-            final int startIdx = (int)Math.floor(Math.max(0, yAxis.getMin()));
-            final int endIdx = (int)Math.ceil(Math.min(values.size() - 1, yAxis.getMax()));
+            for (int windowID = 0; windowID < allValues.size(); windowID++) {
+                final List<Integer> window = allValues.get(windowID);
+                final double startX = minX + width * windowID;
 
-            // Actually draw the points
-            final GrapherCanvas canvas = drawing.getCanvas();
-            for (int i = startIdx; i <= endIdx; i++) {
-                final double topY = yAxis.project2D(i + 1).getY();
-                final double botY = yAxis.project2D(i).getY();
-                final CssColor color = getColor(values.get(i), numSteps - 1);
+                // Don't even consider drawing the points that won't show up
+                final int startIdx = (int)Math.floor(Math.max(0, yAxis.getMin()));
+                final int endIdx = (int)Math.ceil(Math.min(window.size() - 1, yAxis.getMax()));
 
-                drawing.setFillStyle(color);
-                // Add an extra 0.5 pixels around the edge so there are no
-                // gaps between neighboring rectangles
-                canvas.fillRectangle(minX - 0.5, topY - 0.5, width + 1, botY - topY + 1);
+                // Actually draw the points
+                final GrapherCanvas canvas = drawing.getCanvas();
+                for (int i = startIdx; i <= endIdx; i++) {
+                    final double topY = yAxis.project2D(i + 1).getY();
+                    final double botY = yAxis.project2D(i).getY();
+                    final CssColor color = getColor(window.get(i), numSteps - 1);
+
+                    drawing.setFillStyle(color);
+                    // Add an extra 0.5 pixels around the edge so there are no
+                    // gaps between neighboring rectangles
+                    canvas.fillRectangle(startX - 0.5, topY - 0.5, width + 1, botY - topY + 1);
+                }
             }
         }
 
@@ -100,10 +105,10 @@ public class SpectralSeriesPlot extends BaseSeriesPlot {
         }
     }
 
+
     private static final class SpectralTileLoader implements TileLoader {
 
         private static final int MAX_WIDTH_RATIO = 256;
-
         private final TileLoader loader;
         private final GraphAxis xAxis;
         private final int level;
@@ -186,4 +191,5 @@ public class SpectralSeriesPlot extends BaseSeriesPlot {
             return loader.getBestResolutionTileAt(time, bestLevel);
         }
     }
+
 }
