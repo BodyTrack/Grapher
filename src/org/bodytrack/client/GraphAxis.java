@@ -167,7 +167,8 @@ public class GraphAxis implements Resizable {
 		this.isXAxis = isXAxis;
 
 		highlightedPoint = null;
-
+		
+		clampToRange();
 		layout();
 	}
 
@@ -771,6 +772,11 @@ public class GraphAxis implements Resizable {
 		// First, try to translate to put in range
 		uncheckedTranslate(Math.max(0, minRange - this.min));
 		uncheckedTranslate(Math.min(0, maxRange - this.max));
+		
+		if (this.min == Double.NEGATIVE_INFINITY || Double.isNaN(this.min))
+			this.min = Double.MIN_VALUE;
+		if (this.max == Double.POSITIVE_INFINITY || Double.isNaN(this.max))
+			this.max = Double.MAX_VALUE;
 
 		// Second, truncate to range
 		if (hasMinRange) {
