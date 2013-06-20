@@ -147,6 +147,9 @@ public final class NativeInterface {
 					else
 						return value.@java.lang.Double::doubleValue()();
 				}
+				this.setMaxRange = function(min,max){
+					this.__backingAxis.@org.bodytrack.client.GraphAxis::setMaxRange(DD)(min,max);
+				}
 				this.id = __getNextID();
 			};
 		};

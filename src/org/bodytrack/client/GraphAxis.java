@@ -950,6 +950,16 @@ public class GraphAxis implements Resizable {
 		paint(eventId);
 	}
 	
+	public void setMaxRange(double min, double max){
+		minRange = min;
+		maxRange = max;
+		hasMinRange = hasMaxRange = true;
+		clampToRange();
+		int eventId = SequenceNumber.getNext();
+		publishAxisChangeEvent(eventId);
+		paint(eventId);
+	}
+	
 	public void setCursorPosition(double position){
 		setCursorPosition((Double) position, null);
 	}

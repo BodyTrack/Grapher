@@ -13,8 +13,8 @@ public class TimeGraphAxis extends GraphAxis {
 	public TimeGraphAxis(String divName, double min, double max, Basis basis,
 			double width, boolean isXAxis) {
 		super(divName, min, max, basis, width, isXAxis);
-		minRange = -2147483640;
-		maxRange = 2147483640;
+		minRange = -21474836400.0;
+		maxRange = 21474836400.0;
 		hasMinRange = hasMaxRange = true;
 		timeZoneMap = new BrowserTimeZoneMap();
 	}
