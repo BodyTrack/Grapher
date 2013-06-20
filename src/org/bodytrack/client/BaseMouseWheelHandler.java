@@ -96,13 +96,13 @@ abstract class BaseMouseWheelHandler implements MouseWheelHandler {
 		// Based roughly on the jQeury mousehweel plugin (recalling
 		// that MOUSE_SCALE_FACTOR = 40 except on a Mac)
 		// Also, this flips signs from jQuery mousewheel in order to match GWT behavior
-		if (event.wheelDeltaY) {
+		if (event.wheelDeltaY != null) {
 			return -event.wheelDeltaY / MOUSE_SCALE_FACTOR;
 		}
-		if (event.detail) {
+		if (event.detail != null) {
 			return event.detail;
 		}
-		if (event.wheelDelta) {
+		if (event.wheelDelta != null) {
 			return -event.wheelDelta / MOUSE_SCALE_FACTOR;
 		}
 
