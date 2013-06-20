@@ -90,25 +90,65 @@ abstract class BaseMouseWheelHandler implements MouseWheelHandler {
 		event.stopPropagation();
 	}
 
-	private native double getWheelDelta(final NativeEvent event) /*-{
+	private native WheelEvent getWheelDelta(final NativeEvent event) /*-{
 		var MOUSE_SCALE_FACTOR = @org.bodytrack.client.BaseMouseWheelHandler::MOUSE_SCALE_FACTOR;
+		
+		var delta = 0, deltaX = 0, deltaY = 0, deltaZ = 0;
 
 		// Based roughly on the jQeury mousehweel plugin (recalling
 		// that MOUSE_SCALE_FACTOR = 40 except on a Mac)
 		// Also, this flips signs from jQuery mousewheel in order to match GWT behavior
-		if (event.wheelDeltaY != null) {
-			return -event.wheelDeltaY / MOUSE_SCALE_FACTOR;
+		if (event.wheelDeltaX != null) {
+			deltaX = -event.wheelDeltaX / MOUSE_SCALE_FACTOR;
 		}
-		if (event.detail != null) {
-			return event.detail;
+		if (event.wheelDeltaY != null) {
+			deltaY = -event.wheelDeltaY / MOUSE_SCALE_FACTOR;
+		}
+		if (event.wheelDeltaZ != null) {
+			deltaZ = -event.wheelDeltaZ / MOUSE_SCALE_FACTOR;
 		}
 		if (event.wheelDelta != null) {
-			return -event.wheelDelta / MOUSE_SCALE_FACTOR;
+			delta = -event.wheelDelta / MOUSE_SCALE_FACTOR;
 		}
-
-		return 0.0;
+		else if (event.detail != null) {
+			delta = event.detail;
+		}
+		return @org.bodytrack.client.BaseMouseWheelHandler.WheelEvent::new(DDDD)(delta,deltaX,deltaY,deltaZ);
 	}-*/;
+	
+	public static class WheelEvent{
+		private double delta;
+		private double deltaX;
+		private double deltaY;
+		private double deltaZ;
+		
+		public WheelEvent(double delta, double deltaX, double deltaY, double deltaZ){
+			this.delta = delta;
+			this.deltaX = deltaX;
+			this.deltaY = deltaY;
+			this.deltaZ = deltaZ;
+			if (deltaX == 0 && deltaY == 0 && deltaZ == 0){
+				this.deltaX = this.deltaY = this.deltaZ = this.delta;
+			}
+		}
+		
+		public double getDelta(){
+			return delta;
+		}
+		
+		public double getDeltaX(){
+			return deltaX;
+		}
+		
+		public double getDeltaY(){
+			return deltaY;
+		}
+		
+		public double getDeltaZ(){
+			return deltaZ;
+		}
+	}
 
 	protected abstract void handleMouseWheelEvent(final MouseWheelEvent event,
-			final double wheelDelta);
+			final WheelEvent wheelDelta);
 }
