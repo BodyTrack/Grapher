@@ -292,6 +292,10 @@ public class GraphAxis implements Resizable {
 	private double project1D(final double value) {
 		return (value - this.min) * scale;
 	}
+	
+	public double getScale(){
+		return scale;
+	}
 
 	/**
 	 * Returns a Vector2 with the correct X- or Y-coordinate (X-coordinate if this

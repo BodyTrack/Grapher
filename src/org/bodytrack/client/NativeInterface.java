@@ -140,7 +140,7 @@ public final class NativeInterface {
 					else
 						this.__backingAxis.@org.bodytrack.client.GraphAxis::setCursorPosition(D)(position);
 				}
-				this.getCursorPosition = function(position){
+				this.getCursorPosition = function(){
 					var value = this.__backingAxis.@org.bodytrack.client.GraphAxis::getCursorPosition()();
 					if (value == null)
 						return null;
@@ -149,6 +149,9 @@ public final class NativeInterface {
 				}
 				this.setMaxRange = function(min,max){
 					this.__backingAxis.@org.bodytrack.client.GraphAxis::setMaxRange(DD)(min,max);
+				}
+				this.getScale = function(){
+					return 1 / this.__backingAxis.@org.bodytrack.client.GraphAxis::getScale()();
 				}
 				this.id = __getNextID();
 			};
