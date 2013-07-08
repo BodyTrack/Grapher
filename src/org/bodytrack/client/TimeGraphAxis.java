@@ -357,7 +357,7 @@ public class TimeGraphAxis extends GraphAxis {
 			pixelOffset += 12 + timeLabelHeight;
 		}
 
-		double inlineTickWidthPixels = 15;
+		/*double inlineTickWidthPixels = 15;
 
 		double dayMajorPixels = 50;
 		double dayMinorPixels = 7;
@@ -416,7 +416,7 @@ public class TimeGraphAxis extends GraphAxis {
 					createDateTickGenerator(secondsInYear), canvas,
 					majorTickWidthPixels, new YearLabelFormatter());
 			pixelOffset += 22;			
-		}
+		}*/
 
 		canvas.stroke();
 		
