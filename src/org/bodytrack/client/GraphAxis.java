@@ -757,8 +757,17 @@ public class GraphAxis implements Resizable {
 	protected void renderTick(final GrapherCanvas canvas,
 			final double tick,
 			final double tickWidthPixels) {
-		final Vector2 fromPosition = project2D(tick);
-		final Vector2 toPosition = fromPosition.add(this.basis.x.scale(tickWidthPixels));
+		Vector2 fromPosition, toPosition;
+		if (isXAxis){
+			fromPosition = project2D(tick).add(this.basis.x.scale(canvas.getHeight()));
+			toPosition = fromPosition.subtract(this.basis.x.scale(tickWidthPixels));
+			
+		}
+		else{
+			fromPosition = project2D(tick);
+			toPosition = fromPosition.add(this.basis.x.scale(tickWidthPixels));
+			
+		}
 		canvas.drawLineSegment(fromPosition, toPosition);
 	}
 

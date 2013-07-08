@@ -311,7 +311,7 @@ public class TimeGraphAxis extends GraphAxis {
 			canvas.setStrokeStyle(NORMAL_COLOR);
 
 		canvas.beginPath();
-		canvas.drawLineSegment(project2D(this.min), project2D(this.max));
+		canvas.drawLineSegment(project2D(this.min).add(this.basis.x.scale(canvas.getHeight())), project2D(this.max).add(this.basis.x.scale(canvas.getHeight())));
 		double epsilon = 1e-10;
 
 		// Year out of line
