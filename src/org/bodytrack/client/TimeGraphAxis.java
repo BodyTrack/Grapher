@@ -213,6 +213,9 @@ private class VerboseMonthLabelFormatter extends LabelFormatter {
 		String format(double time) {
 			Date d = new Date((long) Math.round(time * 1000.0));
 			int year = d.getYear() % 100;
+			if (year < 0){
+				year += 100;				
+			}
 			return (year < 10 ? "'0" : "'") + year;
 		}
 	}	
@@ -220,7 +223,7 @@ private class VerboseMonthLabelFormatter extends LabelFormatter {
 	private class DecadeLabelFormatter extends LabelFormatter {
 		String format(double time) {
 			Date d = new Date((long) Math.round(time * 1000.0));
-			int decadeStart = d.getYear() / 10 * 10 + 1900;
+			int decadeStart = (d.getYear() + 1900) / 10 * 10;
 			int decadeEnd = decadeStart + 9;
 			return decadeStart + " - " + decadeEnd;
 		}
@@ -229,7 +232,10 @@ private class VerboseMonthLabelFormatter extends LabelFormatter {
 	private class DecadeSmallLabelFormatter extends LabelFormatter {
 		String format(double time) {
 			Date d = new Date((long) Math.round(time * 1000.0));
-			int decadeStart = (d.getYear() % 100) / 10 * 10;
+			int decadeStart = (d.getYear() % 100);
+			if (decadeStart < 0)
+				decadeStart += 100;
+			decadeStart = decadeStart / 10 * 10;
 			return (decadeStart == 0 ? "'0" : "'") + decadeStart + "s";
 		}
 	}
