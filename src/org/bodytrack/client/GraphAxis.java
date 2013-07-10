@@ -660,6 +660,84 @@ public class GraphAxis implements Resizable {
 			}
 		}
 	}
+	
+	protected void renderLabels(double offsetPixels,
+			double tickSize,
+			TickGenerator tickGen,
+			GrapherCanvas canvas,
+			double tickWidthPixels,
+			LabelFormatter formatter) {
+		if (tickGen == null) {
+			tickGen = new TickGenerator(tickSize, 0);
+		}
+
+		double labelOffsetPixels = formatter == null ? 0
+				: setupText(canvas, JUSTIFY_MED)
+				+ offsetPixels + tickWidthPixels;
+
+		for (double tick : new IterableTickGenerator(tickGen, this.min, this.max)) {
+			if (formatter != null) {
+				renderTickLabel(canvas, tick,
+						labelOffsetPixels, formatter);
+			}
+		}
+	}
+	
+	protected void renderRangeLabelInline(double offsetPixels,
+			double tickSize,
+			TickGenerator tickGen,
+			GrapherCanvas canvas,
+			double tickWidthPixels,
+			LabelFormatter formatter) {
+		if (formatter == null)
+			return;
+
+		if (tickGen == null) {
+			tickGen = new TickGenerator(tickSize, 0);
+		}
+
+		double labelOffsetPixels = setupText(canvas, JUSTIFY_MED)
+		+ offsetPixels;
+
+		double tick = tickGen.nextTick(this.min);
+
+		if (tick > this.max) {
+			// No ticks are visible
+			// Draw one inline label in the middle
+			renderTickLabel(canvas, (this.min + this.max) / 2.0,
+					labelOffsetPixels, formatter);
+			return;
+		}
+
+		int pixelMargin = 100;  // TODO: fix this
+		if (project1D(tick) >= pixelMargin) {
+			// Draw label for before first tick, justified to the minimum
+			// of axis (left or bottom)
+			setupText(canvas, JUSTIFY_MIN);
+			renderTickLabel(canvas, this.min, labelOffsetPixels, formatter);
+			setupText(canvas, JUSTIFY_MED);
+		}
+
+		while (true) {
+			double nextTick = tickGen.nextTick();
+
+			if (nextTick > this.max) {
+				break;
+			}
+
+			renderTickLabel(canvas, (tick + nextTick) / 2.0,
+					labelOffsetPixels, formatter);
+			tick = nextTick;
+		}
+
+		if (length - project1D(tick) >= pixelMargin) {
+			// Draw label for after last tick, justified to maximum of
+			// axis (right or top)
+
+			setupText(canvas, JUSTIFY_MAX);
+			renderTickLabel(canvas, this.max, labelOffsetPixels, formatter);
+		}
+	}
 
 	protected void renderTicksRangeLabelInline(double offsetPixels,
 			double tickSize,
@@ -807,6 +885,10 @@ public class GraphAxis implements Resizable {
 		}
 
 		return minDelta * (actualDeltaMantissa / minDeltaMantissa);
+	}
+	
+	public double computeTickWidth(double unitSize){
+		return project2D(unitSize).distance(project2D(0));
 	}
 
 	public double getWidth() {

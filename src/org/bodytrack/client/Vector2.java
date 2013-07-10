@@ -43,6 +43,18 @@ public class Vector2 {
 		return Math.pow(x - v.x, 2) + Math.pow(y - v.y, 2);
 	}
 	
+	public double distance(Vector2 v){
+		return Math.sqrt(distanceSquared(v));
+	}
+	
+	public double magnitudeSquared(){
+		return Math.pow(x, 2) + Math.pow(y,2);
+	}
+	
+	public double magnitude(){
+		return Math.sqrt(magnitudeSquared());
+	}
+	
 	public int getIntX(){
 		return (int) x;
 	}

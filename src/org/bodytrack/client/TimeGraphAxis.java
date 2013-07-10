@@ -28,6 +28,8 @@ public class TimeGraphAxis extends GraphAxis {
 	private final long secondsInDay = secondsInHour * 24;
 	private final long secondsInWeek = secondsInDay * 7;
 	private final long secondsInYear = 31556926;
+	private final long secondsInDecade = secondsInYear * 10;
+	private final long secondsInCentury = secondsInDecade * 10;
 	private final long secondsInMonth = (long)Math.round(secondsInYear / 12.);
 
 	private final double timeTickSizes[][] = {
@@ -112,22 +114,91 @@ public class TimeGraphAxis extends GraphAxis {
 			return ret;
 		}
 	}
-
-	private class DayLabelFormatter extends LabelFormatter {
-		final String[] days = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+	
+	final static String[] days = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+	final static String[] verboseDays = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
+	
+	final static String[] months = {"Jan", "Feb", "Mar", "Apr", "May",
+			"Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+	final static String[] verboseMonths = {"January", "February", "March", "April", "May",
+		"June", "July", "August", "September", "October", "November", "December"};
+	
+	private class VerboseDateLabelFormatter extends LabelFormatter{
+		private LabelFormatter dayFormatter = new VerboseDayLabelFormatter();
+		private LabelFormatter monthFormatter = new VerboseMonthLabelFormatter(true);
+		
+		String format(double time){
+			return dayFormatter.format(time) + " " + monthFormatter.format(time);
+		}
+		
+	}
+	
+	private class DateLabelFormatter extends LabelFormatter{
+		private LabelFormatter dayFormatter = new DayLabelFormatter();
+		private LabelFormatter monthFormatter = new MonthLabelFormatter(true);
+		
+		String format(double time){
+			return dayFormatter.format(time) + " " + monthFormatter.format(time);
+		}
+		
+	}
+	
+	private class DateNumberLabelFormatter extends LabelFormatter{
 		String format(double time) {
 			Date d = new Date((long) Math.round(time*1000.));
-			String ret = days[d.getDay()] + " " + d.getDate();
+			String ret = String.valueOf(d.getDate());
+			return ret;
+		}		
+	}
+	
+	
+	private class DayLabelFormatter extends LabelFormatter {
+		private LabelFormatter dateNumberFormatter = new DateNumberLabelFormatter();
+		
+		String format(double time) {
+			Date d = new Date((long) Math.round(time*1000.));
+			String ret = days[d.getDay()] + " " + dateNumberFormatter.format(time);
 			return ret;
 		}
-	}	
+	}
+	
+	private class VerboseDayLabelFormatter extends LabelFormatter {
+		String format(double time) {
+			Date d = new Date((long) Math.round(time*1000.));
+			String ret = verboseDays[d.getDay()] + " " + d.getDate();
+			return ret;
+		}
+	}
 
 	private class MonthLabelFormatter extends LabelFormatter {
-		final String[] months = {"Jan", "Feb", "Mar", "Apr", "May",
-				"Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+		
+		private boolean includeYear;
+		
+		public MonthLabelFormatter(boolean includeYear){
+			this.includeYear = includeYear;
+		}
+		
+		private LabelFormatter YearLabelFormatter = new YearLabelFormatter();
+		
 		String format(double time) {
 			Date d = new Date((long) Math.round(time * 1000.0));
-			return months[d.getMonth()];
+			return months[d.getMonth()] + (includeYear ? " " + YearLabelFormatter.format(time) : "");
+		}
+	}	
+	
+private class VerboseMonthLabelFormatter extends LabelFormatter {
+	
+		private boolean includeYear;
+	
+		public VerboseMonthLabelFormatter(boolean includeYear){
+			this.includeYear = includeYear;
+		}
+	
+		private LabelFormatter YearLabelFormatter = new YearLabelFormatter();
+		
+		String format(double time) {
+			Date d = new Date((long) Math.round(time * 1000.0));
+			return verboseMonths[d.getMonth()] + (includeYear ? " " + YearLabelFormatter.format(time) : "");
 		}
 	}	
 
@@ -135,6 +206,48 @@ public class TimeGraphAxis extends GraphAxis {
 		String format(double time) {
 			Date d = new Date((long) Math.round(time * 1000.0));
 			return String.valueOf(d.getYear() + 1900);
+		}
+	}	
+	
+	private class YearSmallLabelFormatter extends LabelFormatter {
+		String format(double time) {
+			Date d = new Date((long) Math.round(time * 1000.0));
+			int year = d.getYear() % 100;
+			return (year < 10 ? "'0" : "'") + year;
+		}
+	}	
+	
+	private class DecadeLabelFormatter extends LabelFormatter {
+		String format(double time) {
+			Date d = new Date((long) Math.round(time * 1000.0));
+			int decadeStart = d.getYear() / 10 * 10 + 1900;
+			int decadeEnd = decadeStart + 9;
+			return decadeStart + " - " + decadeEnd;
+		}
+	}
+	
+	private class DecadeSmallLabelFormatter extends LabelFormatter {
+		String format(double time) {
+			Date d = new Date((long) Math.round(time * 1000.0));
+			int decadeStart = (d.getYear() % 100) / 10 * 10;
+			return (decadeStart == 0 ? "'0" : "'") + decadeStart + "s";
+		}
+	}
+	
+	private class CenturyLabelFormatter extends LabelFormatter {
+		String format(double time) {
+			Date d = new Date((long) Math.round(time * 1000.0));
+			int centuryStart = d.getYear() / 100 * 100 + 1900;
+			int centuryEnd = centuryStart + 99;
+			return centuryStart + " - " + centuryEnd;
+		}
+	}	
+	
+	private class CenturySmallLabelFormatter extends LabelFormatter {
+		String format(double time) {
+			Date d = new Date((long) Math.round(time * 1000.0));
+			int centuryStart = d.getYear() / 100 * 100 + 1900;
+			return centuryStart + "s";
 		}
 	}	
 
@@ -310,8 +423,12 @@ public class TimeGraphAxis extends GraphAxis {
 		else
 			canvas.setStrokeStyle(NORMAL_COLOR);
 
+		
+		int height = canvas.getHeight();
+		
 		canvas.beginPath();
-		canvas.drawLineSegment(project2D(this.min).add(this.basis.x.scale(canvas.getHeight())), project2D(this.max).add(this.basis.x.scale(canvas.getHeight())));
+		canvas.drawLineSegment(project2D(this.min).add(this.basis.x.scale(height)), project2D(this.max).add(this.basis.x.scale(height)));
+		canvas.drawLineSegment(project2D(this.min).add(this.basis.x.scale(height/2)), project2D(this.max).add(this.basis.x.scale(height/2)));
 		double epsilon = 1e-10;
 
 		// Year out of line
@@ -322,7 +439,6 @@ public class TimeGraphAxis extends GraphAxis {
 		// DOW DOM inline ; Month inline ; Year inline
 		// HH:MM[:SS[.NNN]] on tick ; DOW DOM inline ;  Month inline ; Year inline 
 
-		double pixelOffset = 0;
 
 		double timeMajorPixels = 50;
 		double timeMajorNoLabelPixels = 10;
@@ -331,92 +447,159 @@ public class TimeGraphAxis extends GraphAxis {
 		double timeMajorNoLabelTickSize =
 			computeTimeTickSize(timeMajorNoLabelPixels);
 
-		if (timeMajorNoLabelTickSize <= 3600*12 + epsilon) {
-			double timeLabelHeight;
-			if (timeMajorTickSize <= 3600*12 + epsilon) {
-				renderTicks(pixelOffset, timeMajorTickSize,
-						createDateTickGenerator(timeMajorTickSize), canvas,
-						majorTickWidthPixels, new TimeLabelFormatter());
-				timeLabelHeight = 10;
-			} else {
-				timeMajorTickSize = 3600*12;
-				renderTicks(pixelOffset, timeMajorTickSize,
-						createDateTickGenerator(timeMajorTickSize), canvas,
-						majorTickWidthPixels, null);
-				timeLabelHeight = 0;
-			}
+		
 
-			double timeMinorTickSize =
-				computeTimeMinorTickSize(timeMinorPixels, timeMajorTickSize);
+		double inlineTickWidthPixels = 15;
 
-			//double timeMinorTickSize = computeTimeTickSize(timeMinorPixels);
-
-			renderTicks(pixelOffset, timeMinorTickSize,
-					createDateTickGenerator(timeMinorTickSize), canvas,
-					minorTickWidthPixels, null);
-			pixelOffset += 12 + timeLabelHeight;
-		}
-
-		/*double inlineTickWidthPixels = 15;
-
-		double dayMajorPixels = 50;
+		double dayMajorPixels = 120;
 		double dayMinorPixels = 7;
-		double dayMajorTickSize = Math.max(secondsInDay,
-				computeTimeTickSize(dayMajorPixels));
-		double dayMinorTickSize = Math.max(secondsInDay,
-				computeTimeTickSize(dayMinorPixels));
-
-		if (dayMajorTickSize == secondsInDay) {
-			renderTicksRangeLabelInline(pixelOffset, dayMajorTickSize,
+		double dayMajorTickSize = secondsInDay /*Math.max(secondsInDay,
+				computeTimeTickSize(dayMajorPixels))*/;
+		double dayMajorTickWidth = computeTickWidth(dayMajorTickSize);
+		
+		double monthMajorTickSize = secondsInMonth;
+		double monthMajorTickWidth = computeTickWidth(monthMajorTickSize);
+		
+		double yearMajorTickSize = secondsInYear;
+		double yearMajorTickWidth = computeTickWidth(yearMajorTickSize);
+		
+		double decadeMajorTickSize = secondsInDecade;
+		double decadeMajorTickWidth = computeTickWidth(decadeMajorTickSize);
+		
+		double centuryMajorTickSize = secondsInCentury;
+		double centuryMajorTickWidth = computeTickWidth(centuryMajorTickSize);
+		
+		if (dayMajorTickWidth >= 80){
+			
+			LabelFormatter formatter;
+			
+			if (dayMajorTickWidth >= 120){
+				formatter = new VerboseDateLabelFormatter();
+			}
+			else{
+				formatter = new DateLabelFormatter();				
+			}
+			
+			renderTicksRangeLabelInline(0, dayMajorTickSize,
 					createDateTickGenerator(dayMajorTickSize), canvas,
-					inlineTickWidthPixels, new DayLabelFormatter());
-			renderTicks(pixelOffset, dayMinorTickSize,
-					createDateTickGenerator(dayMinorTickSize), canvas,
-					minorTickWidthPixels, null);
-			pixelOffset += inlineTickWidthPixels;
-		} else if (dayMajorTickSize == secondsInWeek) {
-			renderTicksRangeLabel(pixelOffset, dayMajorTickSize,
-					createDateTickGenerator(dayMajorTickSize),
-					createDateTickGenerator(secondsInDay), canvas,
-					majorTickWidthPixels, new DayLabelFormatter());
-			renderTicks(pixelOffset, dayMinorTickSize,
-					createDateTickGenerator(dayMinorTickSize), canvas,
-					minorTickWidthPixels, null);
-			pixelOffset += 22;
+					height, formatter);
+			
+			
+			if (timeMajorNoLabelTickSize <= 3600*12 + epsilon) {
+					renderTicks(0, timeMajorTickSize,
+							createDateTickGenerator(timeMajorTickSize), canvas,
+							majorTickWidthPixels, null);
+					
+					renderLabels(height / 2, timeMajorTickSize,
+							createDateTickGenerator(timeMajorTickSize), canvas,
+							0, new TimeLabelFormatter());
+
+				double timeMinorTickSize =
+					computeTimeMinorTickSize(timeMinorPixels, timeMajorTickSize);
+
+				renderTicks(0, timeMinorTickSize,
+						createDateTickGenerator(timeMinorTickSize), canvas,
+						minorTickWidthPixels, null);
+			}
 		}
-
-		double monthPixels = 30;
-		double monthTickSize =
-			Math.max(secondsInMonth, computeTimeTickSize(monthPixels));
-
-		if (monthTickSize == secondsInMonth) {
-			renderTicksRangeLabelInline(pixelOffset, monthTickSize,
-					createDateTickGenerator(monthTickSize), canvas,
-					inlineTickWidthPixels, new MonthLabelFormatter());
-			pixelOffset += inlineTickWidthPixels;
-		} else if (monthTickSize < secondsInYear - epsilon) {
-			renderTicksRangeLabel(pixelOffset, monthTickSize,
-					createDateTickGenerator(monthTickSize),
-					createDateTickGenerator(secondsInMonth), canvas,
-					majorTickWidthPixels, new MonthLabelFormatter());
-			pixelOffset += 22;			
+		else if (monthMajorTickWidth >= 150){
+			renderTicks(0, dayMajorTickSize,
+					createDateTickGenerator(dayMajorTickSize), canvas,
+					majorTickWidthPixels, null);
+			
+			LabelFormatter dayFormatter = null;
+			
+			if (dayMajorTickWidth >= 40){
+				dayFormatter = new DayLabelFormatter();
+			}
+			else if (dayMajorTickWidth >= 15){
+				dayFormatter = new DateNumberLabelFormatter();
+			}
+			renderRangeLabelInline(height / 2, dayMajorTickSize,
+					createDateTickGenerator(dayMajorTickSize), canvas,
+					0, dayFormatter);
+			
+			renderTicksRangeLabelInline(0, monthMajorTickSize,
+					createDateTickGenerator(monthMajorTickSize), canvas,
+					height, new VerboseMonthLabelFormatter(true));
+						
 		}
-
-		double yearPixels = 40;
-		double yearTickSize =
-			Math.max(secondsInYear, computeTimeTickSize(yearPixels));
-		if (yearTickSize == secondsInYear) {
-			renderTicksRangeLabelInline(pixelOffset, yearTickSize,
-					createDateTickGenerator(yearTickSize), canvas,
-					inlineTickWidthPixels, new YearLabelFormatter());
-			pixelOffset += inlineTickWidthPixels;
-		} else {
-			renderTicksRangeLabel(pixelOffset, yearTickSize,
-					createDateTickGenerator(yearTickSize),
-					createDateTickGenerator(secondsInYear), canvas,
-					majorTickWidthPixels, new YearLabelFormatter());
-			pixelOffset += 22;			
-		}*/
+		else if (yearMajorTickWidth >= 80){
+			renderTicks(0, monthMajorTickSize,
+					createDateTickGenerator(monthMajorTickSize), canvas,
+					majorTickWidthPixels, null);
+			
+			LabelFormatter monthFormatter = null;
+			
+			if (monthMajorTickWidth >= 55){
+				monthFormatter = new VerboseMonthLabelFormatter(false);
+			}
+			else if (monthMajorTickWidth >= 20){
+				monthFormatter = new MonthLabelFormatter(false);				
+			}
+			
+			renderRangeLabelInline(height / 2, monthMajorTickSize,
+					createDateTickGenerator(monthMajorTickSize), canvas,
+					0, monthFormatter);
+			
+			renderTicksRangeLabelInline(0, yearMajorTickSize,
+					createDateTickGenerator(yearMajorTickSize), canvas,
+					height, new YearLabelFormatter());
+			
+		}
+		else if (decadeMajorTickWidth >= 150){
+			renderTicks(0, yearMajorTickSize,
+					createDateTickGenerator(yearMajorTickSize), canvas,
+					majorTickWidthPixels, null);
+			
+			LabelFormatter yearFormatter = null;
+			
+			
+			
+			if (yearMajorTickWidth >= 30)
+				yearFormatter = new YearLabelFormatter();
+			else if (yearMajorTickWidth >= 15)
+				yearFormatter = new YearSmallLabelFormatter();
+			
+			renderRangeLabelInline(height / 2, yearMajorTickSize,
+					createDateTickGenerator(yearMajorTickSize), canvas,
+					0, yearFormatter);
+			
+			renderTicksRangeLabelInline(0, decadeMajorTickSize,
+					createDateTickGenerator(decadeMajorTickSize), canvas,
+					height, new DecadeLabelFormatter());
+			
+		}
+		else{
+			renderTicks(0, decadeMajorTickSize,
+					createDateTickGenerator(decadeMajorTickSize), canvas,
+					majorTickWidthPixels, null);
+			
+			LabelFormatter decadeFormatter = null;
+			
+			if (decadeMajorTickWidth >= 65){
+				decadeFormatter = new DecadeLabelFormatter();
+			}
+			else if (decadeMajorTickWidth >= 25){
+				decadeFormatter = new DecadeSmallLabelFormatter();
+			}
+			
+			renderRangeLabelInline(height / 2, decadeMajorTickSize,
+					createDateTickGenerator(decadeMajorTickSize), canvas,
+					0, decadeFormatter);
+			
+			LabelFormatter centuryFormatter = new CenturySmallLabelFormatter();
+			if (centuryMajorTickWidth >= 65){
+				centuryFormatter = new CenturyLabelFormatter();
+			}
+			
+			renderTicksRangeLabelInline(0, centuryMajorTickSize,
+					createDateTickGenerator(centuryMajorTickSize), canvas,
+					height, centuryFormatter);
+			
+		}
+		
+		Console.log(centuryMajorTickWidth);
 
 		canvas.stroke();
 		
