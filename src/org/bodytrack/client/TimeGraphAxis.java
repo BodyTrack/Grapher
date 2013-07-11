@@ -455,10 +455,9 @@ public class TimeGraphAxis extends GraphAxis {
 
 		
 
-		double inlineTickWidthPixels = 15;
-
-		double dayMajorPixels = 120;
-		double dayMinorPixels = 7;
+		double topLabelPixelOffset = 2;
+		
+		
 		double dayMajorTickSize = secondsInDay /*Math.max(secondsInDay,
 				computeTimeTickSize(dayMajorPixels))*/;
 		double dayMajorTickWidth = computeTickWidth(dayMajorTickSize);
@@ -486,7 +485,7 @@ public class TimeGraphAxis extends GraphAxis {
 				formatter = new DateLabelFormatter();				
 			}
 			
-			renderTicksRangeLabelInline(0, dayMajorTickSize,
+			renderTicksRangeLabelInline(topLabelPixelOffset, dayMajorTickSize,
 					createDateTickGenerator(dayMajorTickSize), canvas,
 					height, formatter);
 			
@@ -604,8 +603,6 @@ public class TimeGraphAxis extends GraphAxis {
 					height, centuryFormatter);
 			
 		}
-		
-		Console.log(centuryMajorTickWidth);
 
 		canvas.stroke();
 		
