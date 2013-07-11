@@ -7,6 +7,7 @@ import com.google.gwt.canvas.dom.client.Context2d.TextAlign;
 import com.google.gwt.canvas.dom.client.Context2d.TextBaseline;
 import com.google.gwt.canvas.dom.client.CssColor;
 import com.google.gwt.canvas.dom.client.FillStrokeStyle;
+import com.google.gwt.canvas.dom.client.TextMetrics;
 import com.google.gwt.dom.client.CanvasElement;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
@@ -256,6 +257,10 @@ public final class GrapherCanvas {
 	public TextBaseline getTextBaseline() {
 		return TextBaseline.valueOf(surface.getContext2d().getTextBaseline().toUpperCase());
 	}
+	
+	public TextMetrics measureText(String text){
+		return surface.getContext2d().measureText(text);
+	}
 
 	/**
 	 * Equivalent to <code>getSurface().setTextBaseline(textBaseline)</code>
@@ -385,9 +390,5 @@ public final class GrapherCanvas {
 
 	public void setFont(String font) {
 		surface.getContext2d().setFont(font);
-	}
-
-	public double measureText(String string) {
-		return surface.getContext2d().measureText(string).getWidth();
 	}
 }

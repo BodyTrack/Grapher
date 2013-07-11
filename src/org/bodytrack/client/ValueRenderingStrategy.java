@@ -79,7 +79,7 @@ public class ValueRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy 
       // set the font and then measure the text so we can compute the desired x position
       drawing.getCanvas().setFont(font);
       final String valueAsString = numberFormat.format(rawDataPoint.getValue());
-      final double widthInPixels = drawing.getCanvas().measureText(valueAsString);
+      final double widthInPixels = drawing.getCanvas().measureText(valueAsString).getWidth();
       final double desiredX = x - (widthInPixels / 2);
 
       // if we should be considering the previous x value, then check for overlap

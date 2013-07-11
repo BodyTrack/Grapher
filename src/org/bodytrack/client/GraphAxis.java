@@ -708,34 +708,22 @@ public class GraphAxis implements Resizable {
 					labelOffsetPixels, formatter);
 			return;
 		}
-
-		int pixelMargin = 100;  // TODO: fix this
-		if (project1D(tick) >= pixelMargin) {
-			// Draw label for before first tick, justified to the minimum
-			// of axis (left or bottom)
-			setupText(canvas, JUSTIFY_MIN);
-			renderTickLabel(canvas, this.min, labelOffsetPixels, formatter);
-			setupText(canvas, JUSTIFY_MED);
-		}
+		tick = tickGen.nextTick(this.min - tickSize);
 
 		while (true) {
 			double nextTick = tickGen.nextTick();
 
-			if (nextTick > this.max) {
+			if (nextTick > this.max + tickSize) {
 				break;
 			}
+			double min = tick;
+			double max = nextTick;
+			if (min < this.min) min = this.min;
+			if (max > this.max) max = this.max; 
 
-			renderTickLabel(canvas, (tick + nextTick) / 2.0,
+			renderTickLabelWithinBounds(canvas, (min + max) / 2.0, min, max,
 					labelOffsetPixels, formatter);
 			tick = nextTick;
-		}
-
-		if (length - project1D(tick) >= pixelMargin) {
-			// Draw label for after last tick, justified to maximum of
-			// axis (right or top)
-
-			setupText(canvas, JUSTIFY_MAX);
-			renderTickLabel(canvas, this.max, labelOffsetPixels, formatter);
 		}
 	}
 
@@ -762,35 +750,23 @@ public class GraphAxis implements Resizable {
 					labelOffsetPixels, formatter);
 			return;
 		}
-
-		int pixelMargin = 100;  // TODO: fix this
-		if (project1D(tick) >= pixelMargin) {
-			// Draw label for before first tick, justified to the minimum
-			// of axis (left or bottom)
-			setupText(canvas, JUSTIFY_MIN);
-			renderTickLabel(canvas, this.min, labelOffsetPixels, formatter);
-			setupText(canvas, JUSTIFY_MED);
-		}
+		tick = tickGen.nextTick(this.min - tickSize);
 
 		while (true) {
 			renderTick(canvas, tick, tickWidthPixels + offsetPixels);
 			double nextTick = tickGen.nextTick();
 
-			if (nextTick > this.max) {
+			if (nextTick > this.max + tickSize) {
 				break;
 			}
+			double min = tick;
+			double max = nextTick;
+			if (min < this.min) min = this.min;
+			if (max > this.max) max = this.max; 
 
-			renderTickLabel(canvas, (tick + nextTick) / 2.0,
+			renderTickLabelWithinBounds(canvas, (min + max) / 2.0, min, max,
 					labelOffsetPixels, formatter);
 			tick = nextTick;
-		}
-
-		if (length - project1D(tick) >= pixelMargin) {
-			// Draw label for after last tick, justified to maximum of
-			// axis (right or top)
-
-			setupText(canvas, JUSTIFY_MAX);
-			renderTickLabel(canvas, this.max, labelOffsetPixels, formatter);
 		}
 	}
 
@@ -853,6 +829,50 @@ public class GraphAxis implements Resizable {
 			double labelOffsetPixels, LabelFormatter formatter) {
 		renderTickLabel(canvas, tick, labelOffsetPixels,
 				formatter.format(tick));
+	}
+	
+	protected void renderTickLabelWithinBounds(GrapherCanvas canvas, double tick, double min, double max,
+			double labelOffsetPixels, LabelFormatter formatter) {
+		String text = formatter.format(tick);
+		if (Math.abs(basis.x.getX()) < Math.abs(basis.x.getY())){//parallel text
+			double width = canvas.measureText(text).getWidth();
+			double target = project2D(tick).getX();
+			double boundsMin = project2D(min).getX();
+			double boundsMax = project2D(max).getX();
+			if (width >= (boundsMax - boundsMin))
+				return;
+			double drawMin = target;
+			double drawMax = target;
+			
+			TextAlign originalAlign = canvas.getTextAlign();
+			
+			if (originalAlign.equals(TextAlign.CENTER)){
+				drawMin -= width / 2;
+				drawMax += width / 2;
+				if (drawMin <= boundsMin){
+					canvas.setTextAlign(TextAlign.LEFT);
+					renderTickLabel(canvas,min,labelOffsetPixels,text);
+					canvas.setTextAlign(TextAlign.CENTER);
+				}
+				else if (drawMax >= boundsMax){
+					canvas.setTextAlign(TextAlign.RIGHT);
+					renderTickLabel(canvas,max,labelOffsetPixels,text);
+					canvas.setTextAlign(TextAlign.CENTER);
+				}
+				else{
+					renderTickLabel(canvas,tick,labelOffsetPixels,text);
+				}
+			}
+			else{
+				renderTickLabel(canvas,tick,labelOffsetPixels,text);
+			}
+						
+		}
+		else{//not parallel text
+			renderTickLabel(canvas, tick, labelOffsetPixels,
+					formatter.format(tick));			
+		}
+		
 	}
 
 	protected void renderTickLabel(GrapherCanvas canvas, double y,
