@@ -186,7 +186,7 @@ public class TimeGraphAxis extends GraphAxis {
 		}
 	}	
 	
-private class VerboseMonthLabelFormatter extends LabelFormatter {
+	private class VerboseMonthLabelFormatter extends LabelFormatter {
 	
 		private boolean includeYear;
 	
@@ -243,7 +243,7 @@ private class VerboseMonthLabelFormatter extends LabelFormatter {
 	private class CenturyLabelFormatter extends LabelFormatter {
 		String format(double time) {
 			Date d = new Date((long) Math.round(time * 1000.0));
-			int centuryStart = d.getYear() / 100 * 100 + 1900;
+			int centuryStart = (d.getYear() + 1900) / 100 * 100;
 			int centuryEnd = centuryStart + 99;
 			return centuryStart + " - " + centuryEnd;
 		}
@@ -252,7 +252,7 @@ private class VerboseMonthLabelFormatter extends LabelFormatter {
 	private class CenturySmallLabelFormatter extends LabelFormatter {
 		String format(double time) {
 			Date d = new Date((long) Math.round(time * 1000.0));
-			int centuryStart = d.getYear() / 100 * 100 + 1900;
+			int centuryStart = (d.getYear() + 1900) / 100 * 100;
 			return centuryStart + "s";
 		}
 	}	
