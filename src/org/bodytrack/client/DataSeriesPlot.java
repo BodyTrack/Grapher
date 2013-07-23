@@ -331,7 +331,8 @@ public class DataSeriesPlot extends BaseSeriesPlot {
                     }
 
                     private native void callAfterload(final JavaScriptObject arg) /*-{
-                        afterload(arg);
+                    	if (typeof afterload == "function")
+                        	afterload(arg);
                     }-*/;
                 });
 

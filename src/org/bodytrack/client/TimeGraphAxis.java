@@ -524,7 +524,7 @@ public class TimeGraphAxis extends GraphAxis {
 					createDateTickGenerator(dayMajorTickSize), canvas,
 					0, dayFormatter);
 			
-			renderTicksRangeLabelInline(0, monthMajorTickSize,
+			renderTicksRangeLabelInline(topLabelPixelOffset, monthMajorTickSize,
 					createDateTickGenerator(monthMajorTickSize), canvas,
 					height, new VerboseMonthLabelFormatter(true));
 						
@@ -547,7 +547,7 @@ public class TimeGraphAxis extends GraphAxis {
 					createDateTickGenerator(monthMajorTickSize), canvas,
 					0, monthFormatter);
 			
-			renderTicksRangeLabelInline(0, yearMajorTickSize,
+			renderTicksRangeLabelInline(topLabelPixelOffset, yearMajorTickSize,
 					createDateTickGenerator(yearMajorTickSize), canvas,
 					height, new YearLabelFormatter());
 			
@@ -570,7 +570,7 @@ public class TimeGraphAxis extends GraphAxis {
 					createDateTickGenerator(yearMajorTickSize), canvas,
 					0, yearFormatter);
 			
-			renderTicksRangeLabelInline(0, decadeMajorTickSize,
+			renderTicksRangeLabelInline(topLabelPixelOffset, decadeMajorTickSize,
 					createDateTickGenerator(decadeMajorTickSize), canvas,
 					height, new DecadeLabelFormatter());
 			
@@ -598,7 +598,7 @@ public class TimeGraphAxis extends GraphAxis {
 				centuryFormatter = new CenturyLabelFormatter();
 			}
 			
-			renderTicksRangeLabelInline(0, centuryMajorTickSize,
+			renderTicksRangeLabelInline(topLabelPixelOffset, centuryMajorTickSize,
 					createDateTickGenerator(centuryMajorTickSize), canvas,
 					height, centuryFormatter);
 			
