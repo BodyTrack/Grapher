@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.bodytrack.client.StyleDescription.StyleType;
+import org.bodytrack.client.StyleDescription.TimespanStyle;
+import org.bodytrack.client.StyleDescription.TimespanStyles;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
@@ -69,7 +71,12 @@ public class TimespanSeriesPlot extends BaseSeriesPlot {
 		
 	}
 	
+	private TimespanStyles style;
+	
 	private class TimespanRenderingStrategy implements SeriesPlotRenderingStrategy {
+		
+		public TimespanRenderingStrategy(){
+		}
 
 		@Override
 		public void beforeRender(GrapherCanvas canvas,
@@ -103,10 +110,21 @@ public class TimespanSeriesPlot extends BaseSeriesPlot {
 		}
 		
 		public void paintPoint(BoundedDrawingBox drawing, TimespanPoint point){
-			drawing.getCanvas().setFillStyle(ColorUtils.GREEN);
+			TimespanStyle styling = style.getStyle("blah");
+			double borderWidth = styling.getBorderWidth();
+			drawing.getCanvas().setFillStyle(styling.getFillColor());
+			drawing.getCanvas().setStrokeStyle(styling.getBorderColor());
+			drawing.getCanvas().setLineWidth(borderWidth);
 			double startX = getXAxis().project2D(point.getStart()).getX();
 			double endX = getXAxis().project2D(point.getEnd()).getX();
-			drawing.getCanvas().fillRectangle(startX, 0, endX - startX, drawing.getHeight());
+			
+			double height = drawing.getHeight();
+			double top = styling.getTop() * height;
+			double bottom = styling.getBottom() * height;
+			
+			drawing.getCanvas().fillRectangle(startX, top, endX - startX, bottom - top);
+			//subtract borderwidth/2 to make sure that we don't draw the box wider than it should be
+			drawing.getCanvas().strokeRectangle(startX + borderWidth / 2, top + borderWidth / 2, endX - startX - borderWidth, bottom - top- borderWidth);
 			
 		}
 		
@@ -116,6 +134,7 @@ public class TimespanSeriesPlot extends BaseSeriesPlot {
 
 		private TimespanRenderer(final StyleDescription styleDescription) {
 			super(styleDescription);
+			style = styleDescription.getTimespanStyles();
 		}
 
 		@Override

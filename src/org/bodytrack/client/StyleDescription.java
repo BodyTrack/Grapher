@@ -25,6 +25,10 @@ public final class StyleDescription extends JavaScriptObject {
       final CommentsDescription commentsDescription = getCommentsDescription();
       return commentsDescription != null && commentsDescription.willShow();
    }
+   
+   public native TimespanStyles getTimespanStyles()/*-{
+   		return this.timespanStyles;
+   }-*/;
 
    public static final class StyleType extends JavaScriptObject {
       // JavaScript overlay types always have protected, no-arg constructors
@@ -167,6 +171,63 @@ public final class StyleDescription extends JavaScriptObject {
       public native JsArray<StyleType> getStyleTypes() /*-{
          return this['styles'];
       }-*/;
+   }
+   
+   public static final class TimespanStyles extends JavaScriptObject{
+	   
+	   protected TimespanStyles(){}
+	   
+	   public native TimespanStyle getDefault()/*-{
+	   		return this["default"];
+	   }-*/;
+	   
+	   public native TimespanStyle getStyle(String value)/*-{
+	  		var d = this["default"];
+	  		var style = this.values[value];
+	  		if (style == null) style = {};
+	  		var result = {};
+	  		for (var member in d){
+	  			result[member] = d[member];
+	  		}
+	  		for (var member in style){
+	  			result[member] = style[member];
+	  		}
+	  		return result;	
+  	   }-*/;
+   }
+   
+   public static final class TimespanStyle extends JavaScriptObject{
+	   
+	   protected TimespanStyle(){}
+	   
+	   public native double getTop()/*-{
+	   		return this.top;
+	   }-*/;
+	   public native double getBottom()/*-{
+	  		return this.bottom;
+	  }-*/;
+	   
+	   public native double getBorderWidth()/*-{
+ 			return this.borderWidth;
+		}-*/;
+	   
+	   private native String get(String element)/*-{
+	  		return this[element];
+	  }-*/;
+	   
+	   public CssColor getFillColor(){
+		   String fillColor = get("fillColor");
+		   if (fillColor == null)
+			   return null;
+		   return CssColor.make(fillColor);
+	   }
+	   
+	   public CssColor getBorderColor(){
+		   String borderColor = get("borderColor");
+		   if (borderColor == null)
+			   return null;
+		   return CssColor.make(borderColor);
+	   }
    }
 
    public static final class HighlightDescription extends JavaScriptObject {
