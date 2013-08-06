@@ -344,6 +344,58 @@ public final class NativeInterface {
 			}
 			this.id = __getNextID();
 		};
+		
+		$wnd.TimespanSeriesPlot = function(datasource, horizontalAxis, verticalAxis, optionalParams){
+			if (datasource == null) {
+				throw 'Must pass in datasource';
+			}
+
+			if (horizontalAxis == null || verticalAxis == null) {
+				throw 'Must pass in both axes';
+			}
+
+			// Use the default localDisplay value of false if necessary
+			var localDisplay = !!(optionalParams['localDisplay']); // !!undefined is false
+
+			// create a default style if necessary
+			var style = optionalParams['style'] || {}; // undefined || {} is {}
+
+			this.datasource = datasource;
+			this.getDatasource = function() {
+				return this.datasource;
+			};
+			this.setDatasource = function(datasource) {
+				this.datasource = datasource;
+				this.__backingPlot.@org.bodytrack.client.TimespanSeriesPlot::setDatasource(Lcom/google/gwt/core/client/JavaScriptObject;)(datasource);
+			};
+			this.__backingPlot = @org.bodytrack.client.TimespanSeriesPlot::new(Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/core/client/JavaScriptObject;Z)(datasource, horizontalAxis, verticalAxis, style, localDisplay);
+			this.getHorizontalAxis = function() {
+				return this.__backingPlot.@org.bodytrack.client.TimespanSeriesPlot::getNativeXAxis()();
+			};
+			this.getVerticalAxis = function() {
+				return this.__backingPlot.@org.bodytrack.client.TimespanSeriesPlot::getNativeYAxis()();
+			};
+			this.style = style;
+			this.getStyle = function() {
+				// stringify and then parse the style so that we return
+				// a COPY of the style, so the user can't mutate the one we store
+				return JSON.parse(JSON.stringify(this.style));
+			};
+			this.setStyle = function(new_style) {
+				this.style = new_style;
+				this.__backingPlot.@org.bodytrack.client.TimespanSeriesPlot::setStyle(Lcom/google/gwt/core/client/JavaScriptObject;)(new_style);
+			};
+			this.addDataPointListener = function(listenerFunction) {
+				return this.__backingPlot.@org.bodytrack.client.TimespanSeriesPlot::addDataPointListener(Lcom/google/gwt/core/client/JavaScriptObject;)(listenerFunction);
+			};
+			this.removeDataPointListener = function(listenerFunction) {
+				return this.__backingPlot.@org.bodytrack.client.TimespanSeriesPlot::removeDataPointListener(Lcom/google/gwt/core/client/JavaScriptObject;)(listenerFunction);
+			};
+			this.doCursorClick = function(){
+				this.__backingPlot.@org.bodytrack.client.Plot::doCursorClick()();
+			}
+			this.id = __getNextID();
+		}
 
 		/// Defines the SequenceNumber object
 		$wnd.SequenceNumber = function() {};

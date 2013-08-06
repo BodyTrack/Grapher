@@ -23,7 +23,7 @@ public final class ColorUtils {
 	public static final CssColor RED = CssColor.make("red");
 	public static final CssColor PURPLE = CssColor.make("purple");
 	public static final CssColor FUCHSIA = CssColor.make("fuchsia");
-	public static final CssColor GREEN = CssColor.make("fuchsia");
+	public static final CssColor GREEN = CssColor.make("green");
 	public static final CssColor LIME = CssColor.make("lime");
 	public static final CssColor OLIVE = CssColor.make("olive");
 	public static final CssColor YELLOW = CssColor.make("yellow");

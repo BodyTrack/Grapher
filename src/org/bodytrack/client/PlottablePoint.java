@@ -16,7 +16,7 @@ import com.google.gwt.i18n.client.NumberFormat;
  * subject to change if an attacker can exploit a cross-site scripting
  * vulnerability.</p>
  */
-public final class PlottablePoint implements Comparable<PlottablePoint> {
+public class PlottablePoint implements Comparable<PlottablePoint> {
 
    public static final String DEFAULT_VALUE_FORMAT_STRING = "###,##0.0##";
    

@@ -47,8 +47,7 @@ public final class PlottablePointTile extends JavaScriptObject {
     * 		in json
     */
    public static native PlottablePointTile buildTile(String json) /*-{
-      eval("var tile = " + json);
-      return tile;
+      return JSON.parse(json);
    }-*/;
 
    /**

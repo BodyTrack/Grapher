@@ -41,8 +41,7 @@ public final class PhotoDescription extends JavaScriptObject {
 	 * 		a PhotoDescription object with the same data as is found in json
 	 */
 	public static native PhotoDescription buildDescription(String json) /*-{
-		eval("var desc = " + json);
-		return desc;
+		return JSON.parse(json);
 	}-*/;
 
 	/**

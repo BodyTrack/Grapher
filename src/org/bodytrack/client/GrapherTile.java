@@ -29,6 +29,7 @@ public final class GrapherTile {
 	private final TileDescription description;
 	private final PlottablePointTile tile;
 	private final List<PhotoDescription> photoDescs;
+	private final List<TimespanDescription> timespanDescs;
 
 	/**
 	 * The width of a tile, in data points.
@@ -58,22 +59,44 @@ public final class GrapherTile {
 			final JSONValue jsonTile = JSONParser.parseStrict(tileObj.toString());
 			if (jsonTile.isObject() != null) {
 				photoDescs = null;
-				this.tile = PlottablePointTile.buildTile(jsonTile.toString());
-
-				// Use the tile's actual level and offset in this case only
-				// Only in this case will the server ever return a level
-				// different from the level requested
-				if (this.tile != null) {
-					this.description = new TileDescription(
-							this.tile.getLevel(),
-							this.tile.getOffset());
-				} else {
+				String type = jsonTile.isObject().get("type").isString().stringValue();
+				if (type.equals("value")){
+					this.tile = PlottablePointTile.buildTile(jsonTile.toString());
+					timespanDescs = null;
+	
+					// Use the tile's actual level and offset in this case only
+					// Only in this case will the server ever return a level
+					// different from the level requested
+					if (this.tile != null) {
+						this.description = new TileDescription(
+								this.tile.getLevel(),
+								this.tile.getOffset());
+					} else {
+						this.description = new TileDescription(level, offset);
+					}
+				}
+				else if (type.equals("timespan")){
+					this.description = new TileDescription(level, offset);
+					tile = null;
+					timespanDescs = new ArrayList<TimespanDescription>();
+					
+					final JSONArray arr = jsonTile.isObject().get("data").isArray();
+					
+					for (int i = 0; i < arr.size(); i++){
+						timespanDescs.add(TimespanDescription.buildDescription(arr.get(i).toString()));
+					}
+				}
+				else{
+					// unknown type, so just treat it as null
+					this.tile = null;
+					timespanDescs = null;
 					this.description = new TileDescription(level, offset);
 				}
 			} else if (jsonTile.isArray() != null) {
 				this.description = new TileDescription(level, offset);
 
 				this.tile = null;
+				timespanDescs = null;
 				photoDescs = new ArrayList<PhotoDescription>();
 
 				final JSONArray arr = jsonTile.isArray();
@@ -87,11 +110,13 @@ public final class GrapherTile {
 				// unknown type, so just treat it as null
 				this.tile = null;
 				photoDescs = null;
+				timespanDescs = null;
 				this.description = new TileDescription(level, offset);
 			}
 		} else {
 			this.tile = null;
 			photoDescs = null;
+			timespanDescs = null;
 			this.description = new TileDescription(level, offset);
 		}
 	}
@@ -130,6 +155,10 @@ public final class GrapherTile {
 	 */
 	public List<PhotoDescription> getPhotoDescriptions() {
 		return photoDescs;
+	}
+	
+	public List<TimespanDescription> getTimespanDescriptions(){
+		return timespanDescs;
 	}
 
 	/**
