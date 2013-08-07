@@ -2,7 +2,7 @@ package org.bodytrack.client;
 
 import com.google.gwt.core.client.JavaScriptObject;
 
-public class TimespanDescription extends JavaScriptObject {
+public final class TimespanDescription extends JavaScriptObject {
 	
 	protected TimespanDescription(){}
 	
@@ -10,13 +10,17 @@ public class TimespanDescription extends JavaScriptObject {
 		return JSON.parse(json);
 	}-*/;
 	
-	public final native double getStart() /*-{
+	public native double getStart() /*-{
 		return this.start;
 	}-*/;
 	
-	public final native double getEnd() /*-{
+	public native double getEnd() /*-{
 		return this.end;
 	}-*/;
 	
+	
+	public native String getValue() /*-{
+		return this.value;
+	}-*/;
 	
 }

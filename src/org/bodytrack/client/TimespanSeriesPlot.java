@@ -28,7 +28,7 @@ public class TimespanSeriesPlot extends BaseSeriesPlot {
 		ArrayList<PlottablePoint> points = new ArrayList<PlottablePoint>();
 		if (tile.getTimespanDescriptions() != null){
 			for (TimespanDescription desc : tile.getTimespanDescriptions()){
-				points.add(new TimespanPoint(desc.getStart(),desc.getEnd(),0));
+				points.add(new TimespanPoint(desc.getStart(),desc.getEnd(),desc.getValue()));
 			}
 		}
 		return points;
@@ -54,11 +54,13 @@ public class TimespanSeriesPlot extends BaseSeriesPlot {
 	private static class TimespanPoint extends PlottablePoint{
 		
 		private double start, end;
+		private String timespanValue;
 
-		public TimespanPoint(double start, double end, double value) {
-			super((start / 2) + (end / 2), value);
+		public TimespanPoint(double start, double end, String timespanValue) {
+			super((start / 2) + (end / 2), 0);
 			this.start = start;
 			this.end = end;
+			this.timespanValue = timespanValue;
 		}
 		
 		public double getStart(){
@@ -67,6 +69,10 @@ public class TimespanSeriesPlot extends BaseSeriesPlot {
 		
 		public double getEnd(){
 			return end;
+		}
+		
+		public String getTimespanValue(){
+			return timespanValue;
 		}
 		
 	}
@@ -110,7 +116,7 @@ public class TimespanSeriesPlot extends BaseSeriesPlot {
 		}
 		
 		public void paintPoint(BoundedDrawingBox drawing, TimespanPoint point){
-			TimespanStyle styling = style.getStyle("blah");
+			TimespanStyle styling = style.getStyle(point.getTimespanValue());
 			double borderWidth = styling.getBorderWidth();
 			drawing.getCanvas().setFillStyle(styling.getFillColor());
 			drawing.getCanvas().setStrokeStyle(styling.getBorderColor());
@@ -124,7 +130,8 @@ public class TimespanSeriesPlot extends BaseSeriesPlot {
 			
 			drawing.getCanvas().fillRectangle(startX, top, endX - startX, bottom - top);
 			//subtract borderwidth/2 to make sure that we don't draw the box wider than it should be
-			drawing.getCanvas().strokeRectangle(startX + borderWidth / 2, top + borderWidth / 2, endX - startX - borderWidth, bottom - top- borderWidth);
+			if (borderWidth > 0)
+				drawing.getCanvas().strokeRectangle(startX + borderWidth / 2, top + borderWidth / 2, endX - startX - borderWidth, bottom - top- borderWidth);
 			
 		}
 		
