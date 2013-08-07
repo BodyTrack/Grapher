@@ -1,6 +1,8 @@
 package org.bodytrack.client;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.bodytrack.client.StyleDescription.StyleType;
@@ -31,6 +33,19 @@ public class TimespanSeriesPlot extends BaseSeriesPlot {
 				points.add(new TimespanPoint(desc.getStart(),desc.getEnd(),desc.getValue()));
 			}
 		}
+		Collections.sort(points, new Comparator<PlottablePoint>(){
+
+			@Override
+			public int compare(PlottablePoint o1, PlottablePoint o2) {
+				double value = o1.getDate() - o2.getDate();
+				if (value < 0)
+					return -1;
+				else if (value > 0)
+					return 1;
+				return 0;
+			}
+			
+		});
 		return points;
 	}
 
@@ -116,6 +131,7 @@ public class TimespanSeriesPlot extends BaseSeriesPlot {
 		}
 		
 		public void paintPoint(BoundedDrawingBox drawing, TimespanPoint point){
+			drawing.getCanvas().beginPath();
 			TimespanStyle styling = style.getStyle(point.getTimespanValue());
 			double borderWidth = styling.getBorderWidth();
 			drawing.getCanvas().setFillStyle(styling.getFillColor());
@@ -132,6 +148,7 @@ public class TimespanSeriesPlot extends BaseSeriesPlot {
 			//subtract borderwidth/2 to make sure that we don't draw the box wider than it should be
 			if (borderWidth > 0)
 				drawing.getCanvas().strokeRectangle(startX + borderWidth / 2, top + borderWidth / 2, endX - startX - borderWidth, bottom - top- borderWidth);
+			drawing.getCanvas().closePath();
 			
 		}
 		
