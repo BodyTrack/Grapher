@@ -131,11 +131,11 @@ public class TimespanSeriesPlot extends BaseSeriesPlot {
 		}
 		
 		public void paintPoint(BoundedDrawingBox drawing, TimespanPoint point){
-			drawing.getCanvas().beginPath();
 			TimespanStyle styling = style.getStyle(point.getTimespanValue());
 			double borderWidth = styling.getBorderWidth();
+			if (borderWidth < 0) borderWidth = 0;
 			drawing.getCanvas().setFillStyle(styling.getFillColor());
-			drawing.getCanvas().setStrokeStyle(styling.getBorderColor());
+			
 			drawing.getCanvas().setLineWidth(borderWidth);
 			double startX = getXAxis().project2D(point.getStart()).getX();
 			double endX = getXAxis().project2D(point.getEnd()).getX();
@@ -144,15 +144,22 @@ public class TimespanSeriesPlot extends BaseSeriesPlot {
 			double top = styling.getTop() * height;
 			double bottom = styling.getBottom() * height;
 			
-			drawing.getCanvas().fillRectangle(startX, top, endX - startX, bottom - top);
-			//subtract borderwidth/2 to make sure that we don't draw the box wider than it should be
-			if (borderWidth > 0)
-				drawing.getCanvas().strokeRectangle(startX + borderWidth / 2, top + borderWidth / 2, endX - startX - borderWidth, bottom - top- borderWidth);
-			drawing.getCanvas().closePath();
+			
+			if (borderWidth > 0){
+				drawing.getCanvas().setFillStyle(styling.getBorderColor());
+				drawing.getCanvas().fillRectangle(startX, top, endX - startX, bottom - top);				
+			}
+			if (endX - startX - borderWidth * 2 > 0){
+				drawing.getCanvas().setFillStyle(styling.getFillColor());
+				drawing.getCanvas().fillRectangle(startX + borderWidth, top + borderWidth, endX - startX - borderWidth * 2, bottom - top - borderWidth * 2);
+				
+			}
 			
 		}
 		
 	}
+	
+	
 	
 	private final class TimespanRenderer extends BaseSeriesPlotRenderer {
 
