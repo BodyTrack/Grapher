@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import org.bodytrack.client.DataPointListener.TriggerAction;
 import org.bodytrack.client.StyleDescription.StyleType;
 import org.bodytrack.client.StyleDescription.TimespanStyle;
 import org.bodytrack.client.StyleDescription.TimespanStyles;
@@ -26,27 +27,33 @@ public class TimespanSeriesPlot extends BaseSeriesPlot {
 		
 	}
 	
-	public List<PlottablePoint> getDataPoints(GrapherTile tile) {
+	public List<PlottablePoint> getDataPoints(GrapherTile tile,boolean sort) {
 		ArrayList<PlottablePoint> points = new ArrayList<PlottablePoint>();
 		if (tile.getTimespanDescriptions() != null){
 			for (TimespanDescription desc : tile.getTimespanDescriptions()){
-				points.add(new TimespanPoint(desc.getStart(),desc.getEnd(),desc.getValue()));
+				points.add(new TimespanPoint(desc));
 			}
 		}
-		Collections.sort(points, new Comparator<PlottablePoint>(){
-
-			@Override
-			public int compare(PlottablePoint o1, PlottablePoint o2) {
-				double value = o1.getDate() - o2.getDate();
-				if (value < 0)
-					return -1;
-				else if (value > 0)
-					return 1;
-				return 0;
-			}
-			
-		});
+		if (sort){
+			Collections.sort(points, new Comparator<PlottablePoint>(){
+	
+				@Override
+				public int compare(PlottablePoint o1, PlottablePoint o2) {
+					double value = o1.getDate() - o2.getDate();
+					if (value < 0)
+						return -1;
+					else if (value > 0)
+						return 1;
+					return 0;
+				}
+				
+			});
+		}
 		return points;
+	}
+	
+	public List<PlottablePoint> getDataPoints(GrapherTile tile) {
+		return getDataPoints(tile,true);
 	}
 
 	@Override
@@ -68,26 +75,31 @@ public class TimespanSeriesPlot extends BaseSeriesPlot {
 	
 	private static class TimespanPoint extends PlottablePoint{
 		
-		private double start, end;
-		private String timespanValue;
+		private TimespanDescription desc;
 
-		public TimespanPoint(double start, double end, String timespanValue) {
-			super((start / 2) + (end / 2), 0);
-			this.start = start;
-			this.end = end;
-			this.timespanValue = timespanValue;
+		public TimespanPoint(TimespanDescription description) {
+			super((description.getStart() / 2) + (description.getEnd() / 2), 0);
+			desc = description;
 		}
 		
 		public double getStart(){
-			return start;
+			return desc.getStart();
 		}
 		
 		public double getEnd(){
-			return end;
+			return desc.getEnd();
 		}
 		
 		public String getTimespanValue(){
-			return timespanValue;
+			return desc.getValue();
+		}
+		
+		public TimespanStyle getStyle(){
+			return desc.getStyle();
+		}
+		
+		public TimespanDescription getDescription(){
+			return desc;
 		}
 		
 	}
@@ -131,7 +143,7 @@ public class TimespanSeriesPlot extends BaseSeriesPlot {
 		}
 		
 		public void paintPoint(BoundedDrawingBox drawing, TimespanPoint point){
-			TimespanStyle styling = style.getStyle(point.getTimespanValue());
+			TimespanStyle styling = style.getStyle(point.getTimespanValue(), point.getStyle());
 			double borderWidth = styling.getBorderWidth();
 			if (borderWidth < 0) borderWidth = 0;
 			drawing.getCanvas().setFillStyle(styling.getFillColor());
@@ -157,6 +169,20 @@ public class TimespanSeriesPlot extends BaseSeriesPlot {
 			
 		}
 		
+	}
+	
+	public void onClick(final Vector2 pos){
+		double targetTime = getXAxis().unproject(pos);
+		outerloop: for (GrapherTile tile : getBestResolutionTiles(getXAxis().getMin(),getXAxis().getMax())){
+			for (PlottablePoint point : getDataPoints(tile,false)){
+				TimespanPoint timespan = (TimespanPoint) point;
+				if (timespan.getStart() <= targetTime && timespan.getEnd() >= targetTime){
+					publishDataPoint(timespan, TriggerAction.CLICK,timespan.getDescription());
+					break outerloop;
+				}
+				
+			}
+		}
 	}
 	
 	

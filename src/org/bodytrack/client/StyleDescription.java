@@ -181,16 +181,20 @@ public final class StyleDescription extends JavaScriptObject {
 	   		return this["default"];
 	   }-*/;
 	   
-	   public native TimespanStyle getStyle(String value)/*-{
+	   public native TimespanStyle getStyle(String value, TimespanStyle pointStyle)/*-{
 	  		var d = this["default"];
 	  		var style = this.values[value];
 	  		if (style == null) style = {};
+	  		if (pointStyle == null) pointStyle = {};
 	  		var result = {};
 	  		for (var member in d){
 	  			result[member] = d[member];
 	  		}
 	  		for (var member in style){
 	  			result[member] = style[member];
+	  		}
+	  		for (var member in pointStyle){
+	  			result[member] = pointStyle[member];
 	  		}
 	  		return result;	
   	   }-*/;

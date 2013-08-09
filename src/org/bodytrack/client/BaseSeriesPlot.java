@@ -443,6 +443,10 @@ public abstract class BaseSeriesPlot implements Plot {
    protected final GrapherTile getBestResolutionTileAt(final double time) {
       return tileLoader.getBestResolutionTileAt(time);
    }
+   
+   protected final List<GrapherTile> getBestResolutionTiles(final double start, final double end){
+	   return tileLoader.getBestResolutionTiles(start, end);
+   }
 
    /**
     * A class that always repaints the plot container whenever any event is fired

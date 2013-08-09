@@ -1,5 +1,7 @@
 package org.bodytrack.client;
 
+import org.bodytrack.client.StyleDescription.TimespanStyle;
+
 import com.google.gwt.core.client.JavaScriptObject;
 
 public final class TimespanDescription extends JavaScriptObject {
@@ -21,6 +23,10 @@ public final class TimespanDescription extends JavaScriptObject {
 	
 	public native String getValue() /*-{
 		return this.value;
+	}-*/;
+	
+	public native TimespanStyle getStyle()/*-{
+		return this.style;
 	}-*/;
 	
 }
