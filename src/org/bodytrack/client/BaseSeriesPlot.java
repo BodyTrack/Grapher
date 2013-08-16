@@ -16,7 +16,7 @@ import com.google.gwt.core.client.JavaScriptObject;
  * @author Chris Bartley (bartley@cmu.edu)
  */
 public abstract class BaseSeriesPlot implements Plot {
-   private PlotContainer plotContainer = null;
+   protected PlotContainer plotContainer = null;
 
    private final JavaScriptObject xAxisNative;
    private final JavaScriptObject yAxisNative;

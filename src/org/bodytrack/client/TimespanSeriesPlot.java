@@ -171,13 +171,41 @@ public class TimespanSeriesPlot extends BaseSeriesPlot {
 		
 	}
 	
+	private final static class ClickInfo extends JavaScriptObject{
+		
+		private static native ClickInfo construct(TimespanDescription desc, double x, double y, String color)/*-{
+			var newObject = {};
+			newObject.timespanInfo = desc;
+			newObject.position = {
+				x: x,
+				y: y
+			};
+			newObject.color = color;
+			return newObject;
+		}-*/;
+		 
+		protected ClickInfo(){
+			
+		}
+		
+		public static ClickInfo construct(TimespanDescription desc, Vector2 pos,String color){
+			return construct(desc,pos.getX(),pos.getY(), color);			
+		}
+		
+	}
+	
 	public void onClick(final Vector2 pos){
 		double targetTime = getXAxis().unproject(pos);
 		outerloop: for (GrapherTile tile : getBestResolutionTiles(getXAxis().getMin(),getXAxis().getMax())){
 			for (PlottablePoint point : getDataPoints(tile,false)){
 				TimespanPoint timespan = (TimespanPoint) point;
-				if (timespan.getStart() <= targetTime && timespan.getEnd() >= targetTime){
-					publishDataPoint(timespan, TriggerAction.CLICK,timespan.getDescription());
+				TimespanStyle styling = style.getStyle(timespan.getTimespanValue(), timespan.getStyle());
+				double height = ((SeriesPlotContainer) this.plotContainer).getHeight();
+				double top = styling.getTop() * height;
+				double bottom = styling.getBottom() * height;
+				if (timespan.getStart() <= targetTime && timespan.getEnd() >= targetTime && pos.getY() >= top && pos.getY() <= bottom){
+					publishDataPoint(timespan, TriggerAction.CLICK,ClickInfo.construct(timespan.getDescription(),pos,
+													style.getStyle(timespan.getTimespanValue(), timespan.getStyle()).getFillColor().toString()));
 					break outerloop;
 				}
 				

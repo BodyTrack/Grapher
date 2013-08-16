@@ -562,6 +562,14 @@ public class SeriesPlotContainer extends BasePlotContainer {
    public final int countValueMessages() {
       return valueMessages.size();
    }
+   
+   public int getHeight(){
+	   return height;
+   }
+   
+   public int getWidth(){
+	   return width;
+   }
 
    /**
     * A class representing a message ID and loading message.
