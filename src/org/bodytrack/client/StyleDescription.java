@@ -178,12 +178,14 @@ public final class StyleDescription extends JavaScriptObject {
 	   protected TimespanStyles(){}
 	   
 	   public native TimespanStyle getDefault()/*-{
-	   		return this["default"];
+	   		return this.defaultStyle;
 	   }-*/;
 	   
 	   public native TimespanStyle getStyle(String value, TimespanStyle pointStyle)/*-{
-	  		var d = this["default"];
-	  		var style = this.values[value];
+	  		var d = this.defaultStyle;
+	  		var style = {};
+	  		if (this.values != null)
+	  			var style = this.values[value];
 	  		if (style == null) style = {};
 	  		if (pointStyle == null) pointStyle = {};
 	  		var result = {};
