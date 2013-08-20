@@ -86,6 +86,7 @@ public class GraphAxis implements Resizable {
 	private int previousPaintEventId = 0;
 	
 	private boolean isDraggingCursor = false;
+	private boolean wasDragged = false;
 
 	public GraphAxis(final String placeholderElementId,
 			final double min,
@@ -130,6 +131,7 @@ public class GraphAxis implements Resizable {
 				public void onMouseDown(final MouseDownEvent event) {
 					isDraggingCursor = false;
 					mouseDragLastPos = new Vector2(event.getX(), event.getY());
+					wasDragged = false;
 					
 					Double curCursorPosition = getCursorPosition();
 					if (curCursorPosition != null){
@@ -148,8 +150,12 @@ public class GraphAxis implements Resizable {
 					if (mouseDragLastPos != null) {
 						final Vector2 pos = new Vector2(event.getX(), event.getY());
 						drag(mouseDragLastPos, pos, isDraggingCursor, SequenceNumber.getNextThrottled());
+						if (!wasDragged && pos.distance(mouseDragLastPos) > 1){
+							wasDragged = true;
+						}
 						mouseDragLastPos = pos;
 					}
+					
 				}
 			});
 
@@ -162,6 +168,10 @@ public class GraphAxis implements Resizable {
 					int eventId = SequenceNumber.getNext();
 					publishAxisChangeEvent(eventId);
 					paint(eventId);
+					
+					if (!wasDragged && getCursorPosition() != null){
+						setCursorPosition(unproject(new Vector2(event.getX(),event.getY())));
+					}
 				}
 			});
 
