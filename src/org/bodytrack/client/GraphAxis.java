@@ -130,7 +130,7 @@ public class GraphAxis implements Resizable {
 				@Override
 				public void onMouseDown(final MouseDownEvent event) {
 					isDraggingCursor = false;
-					mouseDragLastPos = new Vector2(event.getX(), event.getY());
+					mouseDragLastPos = new Vector2(event.getScreenX(), event.getScreenY());
 					wasDragged = false;
 					
 					Double curCursorPosition = getCursorPosition();
@@ -142,13 +142,13 @@ public class GraphAxis implements Resizable {
 					}
 				}
 			});
-
-			drawing.addMouseMoveHandler(new MouseMoveHandler() {
+			
+			RootPanel.get().addDomHandler(new MouseMoveHandler() {
 				@Override
-				public void onMouseMove(final MouseMoveEvent event) {
+				public void onMouseMove(final MouseMoveEvent event){ 
 					// ignore mouse moves if the mouse button isn't being held down
 					if (mouseDragLastPos != null) {
-						final Vector2 pos = new Vector2(event.getX(), event.getY());
+						final Vector2 pos = new Vector2(event.getScreenX(), event.getScreenY());
 						drag(mouseDragLastPos, pos, isDraggingCursor, SequenceNumber.getNextThrottled());
 						if (!wasDragged && pos.distance(mouseDragLastPos) > 1){
 							wasDragged = true;
@@ -157,9 +157,46 @@ public class GraphAxis implements Resizable {
 					}
 					
 				}
+			}, MouseMoveEvent.getType());
+			
+			drawing.addMouseUpHandler(new MouseUpHandler(){
+				public void onMouseUp(final MouseUpEvent event){
+					int eventId = SequenceNumber.getNext();
+					publishAxisChangeEvent(eventId);
+					paint(eventId);
+					
+					if (!wasDragged && getCursorPosition() != null){
+						setCursorPosition(unproject(new Vector2(event.getX(),event.getY())));
+					}
+				}				
 			});
+			
+			RootPanel.get().addDomHandler(new MouseUpHandler() {
+				@Override
+				public void onMouseUp(final MouseUpEvent event) {
+					mouseDragLastPos = null;
 
-			drawing.addMouseUpHandler(new MouseUpHandler() {
+					// Want a guaranteed update of the plots
+					int eventId = SequenceNumber.getNext();
+					publishAxisChangeEvent(eventId);
+					paint(eventId);
+				}
+			}, MouseUpEvent.getType());
+			
+			RootPanel.get().addDomHandler(new MouseOutHandler() {
+				@Override
+				public void onMouseOut(final MouseOutEvent event) {
+					mouseDragLastPos = null;
+					
+					
+					// Want a guaranteed update of the plots
+					int eventId = SequenceNumber.getNext();
+					publishAxisChangeEvent(eventId);
+					paint(eventId);
+				}
+			},MouseOutEvent.getType());
+
+			/*drawing.addMouseUpHandler(new MouseUpHandler() {
 				@Override
 				public void onMouseUp(final MouseUpEvent event) {
 					mouseDragLastPos = null;
@@ -186,7 +223,7 @@ public class GraphAxis implements Resizable {
 					publishAxisChangeEvent(eventId);
 					paint(eventId);
 				}
-			});
+			});*/
 
 			drawingCanvas = GrapherCanvas.buildCanvas(drawing);
 		} else {
