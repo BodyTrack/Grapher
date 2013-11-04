@@ -138,7 +138,7 @@ public class GraphAxis implements Resizable {
 						Vector2 bottom = project2D(curCursorPosition).add(new Vector2(0,drawingCanvas.getHeight()));
 						Vector2 topLeft = bottom.add(new Vector2(-8,-16));
 						Vector2 bottomRight = bottom.add(new Vector2(8,0));
-						isDraggingCursor = mouseDragLastPos.isInside(topLeft, bottomRight);
+						isDraggingCursor = new Vector2(event.getX(),event.getY()).isInside(topLeft, bottomRight);
 					}
 				}
 			});
