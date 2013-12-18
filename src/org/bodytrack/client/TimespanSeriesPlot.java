@@ -152,10 +152,15 @@ public class TimespanSeriesPlot extends BaseSeriesPlot {
 			double startX = getXAxis().project2D(point.getStart()).getX();
 			double endX = getXAxis().project2D(point.getEnd()).getX();
 			
+			///*
+			double bottom = getYAxis().project2D(styling.getTop()).getY();
+			double top = getYAxis().project2D(styling.getBottom()).getY();
+			//*/
+			/*
 			double height = drawing.getHeight();
 			double top = styling.getTop() * height;
 			double bottom = styling.getBottom() * height;
-			
+			//*/
 			
 			if (borderWidth > 0){
 				drawing.getCanvas().setFillStyle(styling.getBorderColor());
@@ -200,9 +205,9 @@ public class TimespanSeriesPlot extends BaseSeriesPlot {
 			for (PlottablePoint point : getDataPoints(tile,false)){
 				TimespanPoint timespan = (TimespanPoint) point;
 				TimespanStyle styling = style.getStyle(timespan.getTimespanValue(), timespan.getStyle());
-				double height = ((SeriesPlotContainer) this.plotContainer).getHeight();
-				double top = styling.getTop() * height;
-				double bottom = styling.getBottom() * height;
+				
+				double bottom = getYAxis().project2D(styling.getTop()).getY();
+				double top = getYAxis().project2D(styling.getBottom()).getY();
 				if (timespan.getStart() <= targetTime && timespan.getEnd() >= targetTime && pos.getY() >= top && pos.getY() <= bottom){
 					publishDataPoint(timespan, TriggerAction.CLICK,ClickInfo.construct(timespan.getDescription(),pos,
 													style.getStyle(timespan.getTimespanValue(), timespan.getStyle()).getFillColor().toString()));
