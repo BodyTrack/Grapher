@@ -352,6 +352,7 @@ public class PhotoSeriesPlot extends BaseSeriesPlot {
 		final PhotoGetter closestImage = getVisibleImageAt(pos);
 
 		if (closestImage != null) {
+			getXAxis().setCursorPosition(closestImage.getTime()); 
 			publishDataPoint(new PlottablePoint(closestImage.getTime(), IMAGE_Y_VALUE),
 					TriggerAction.CLICK,
 					buildClickInfo(closestImage));

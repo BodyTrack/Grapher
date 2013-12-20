@@ -209,6 +209,7 @@ public class TimespanSeriesPlot extends BaseSeriesPlot {
 				double bottom = getYAxis().project2D(styling.getTop()).getY();
 				double top = getYAxis().project2D(styling.getBottom()).getY();
 				if (timespan.getStart() <= targetTime && timespan.getEnd() >= targetTime && pos.getY() >= top && pos.getY() <= bottom){
+					getXAxis().setCursorPosition(getXAxis().unproject(pos)); 
 					publishDataPoint(timespan, TriggerAction.CLICK,ClickInfo.construct(timespan.getDescription(),pos,
 													style.getStyle(timespan.getTimespanValue(), timespan.getStyle()).getFillColor().toString()));
 					break outerloop;
