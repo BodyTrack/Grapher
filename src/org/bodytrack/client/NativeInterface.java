@@ -134,6 +134,14 @@ public final class NativeInterface {
 				this.setTimeZoneMapping = function (mapping) {
 					// TODO: Not currently implemented
 				};
+				this.localTimeToUTC = function(value){
+					var timeZoneMap;
+					if (this.__backingAxis.@org.bodytrack.client.GraphAxis::getTimeZoneMap()() == null)
+						timeZoneMap = @org.bodytrack.client.ModalTimeZoneMap::new(Lorg/bodytrack/client/TimeZoneMap;Z)(@org.bodytrack.client.TimeZoneMap::IDENTITY_MAP, false);
+					else
+						timeZoneMap = @org.bodytrack.client.ModalTimeZoneMap::new(Lorg/bodytrack/client/TimeZoneMap;Z)(this.__backingAxis.@org.bodytrack.client.GraphAxis::getTimeZoneMap()(), false);
+					return timeZoneMap.@org.bodytrack.client.ModalTimeZoneMap::reverseConvert(D)(value);
+				}
 				this.setCursorPosition = function(position){
 					if (position == null)
 						this.__backingAxis.@org.bodytrack.client.GraphAxis::setCursorPosition(Ljava/lang/Double;Ljava/lang/Integer;)(position,null);
