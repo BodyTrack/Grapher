@@ -61,10 +61,70 @@ public class TimespanSeriesPlot extends BaseSeriesPlot {
 		// TODO Auto-generated method stub
 		return false;
 	}
+	
+	public PlottablePoint getPointClosestToXCursor(){
+ 	   if (getXAxis() == null || getXAxis().getCursorPosition() == null)
+ 		   return null;
+ 	   return getClosestPointToXValue(getXAxis().getCursorPosition(),5);
+    }
+	
+	
+	public PlottablePoint getClosestPointToXValue(double xValue, double threshHold){
+		   Vector2 projectedPosition = getXAxis().project2D(xValue);
+		   double xMin = getXAxis().unproject(projectedPosition.add(new Vector2(-threshHold,0)));
+		   double xMax = getXAxis().unproject(projectedPosition.add(new Vector2(threshHold,0)));
+		   
+		   double yMin = getYAxis().getMin();
+		   double yMax = getYAxis().getMax();
+		   
+		   List<GrapherTile> tiles = getTileLoader().getBestResolutionTiles(xMin, xMax);
+		   
+		   PlottablePoint bestPoint = null;
+		   double bestDistanceSquared = -1;
+		   
+		   for (GrapherTile tile : tiles){
+			   for (PlottablePoint point : getDataPoints(tile,false)){
+				   TimespanPoint tsPoint = (TimespanPoint) point;
+				   double end = tsPoint.desc.getEnd();
+				   double start = tsPoint.desc.getStart();
+				   TimespanStyle styling = style.getStyle(tsPoint.getTimespanValue(), tsPoint.getStyle());
+				   if (styling.getBottom() >= yMin && styling.getTop() <= yMax && end >= xMin && start <= xMax){
+					   double distance = xValue - (xMin + xMax) / 2;
+					   double distanceSquared = distance * distance;
+					   if (bestDistanceSquared < 0 || distanceSquared < bestDistanceSquared){
+						   bestPoint = point;
+						   bestDistanceSquared = distanceSquared;
+					   }
+				   }
+				  
+				  
+			   }
+		   }
+		   
+		   return bestPoint; 
+	   }
 
 	@Override
 	public void doCursorClick() {
-		// TODO Auto-generated method stub
+		PlottablePoint point = getPointClosestToXCursor();
+		if (point != null){
+			TimespanPoint tsPoint = (TimespanPoint) point;
+			TimespanDescription desc = tsPoint.desc;
+			double yMin = getYAxis().getMin();
+			double yMax = getYAxis().getMax();
+			double xMin = getXAxis().getMin();
+			double xMax = getXAxis().getMax();
+			double end = tsPoint.desc.getEnd();
+			double start = tsPoint.desc.getStart();
+			TimespanStyle styling = style.getStyle(tsPoint.getTimespanValue(), tsPoint.getStyle());
+			double usableXMin = Math.max(xMin, start);
+			double usableXMax = Math.min(xMax,end);
+			double usableYMin = Math.max(yMin,styling.getTop());
+			double usableYMax = Math.min(yMax,styling.getBottom());
+			Vector2 xPoint = getXAxis().project2D((usableXMin + usableXMax) / 2);
+			Vector2 yPoint = getYAxis().project2D((usableYMin + usableYMax) / 2);
+			publishDataPoint(tsPoint,TriggerAction.CLICK,ClickInfo.construct(desc,new Vector2(xPoint.getX(),yPoint.getY()),styling.getFillColor().toString()));
+		}
 
 	}
 
