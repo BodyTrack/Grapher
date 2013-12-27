@@ -70,6 +70,8 @@ public class GraphAxis implements Resizable {
 	protected double length;
 	private double scale;
 	private BBox bounds;
+	
+	private boolean mouseDownInside;
 
 	private final boolean isXAxis;
 
@@ -94,6 +96,7 @@ public class GraphAxis implements Resizable {
 			final Basis basis,
 			final double width,
 			final boolean isXAxis) {
+		mouseDownInside = false;
 		this.placeholderElementId = placeholderElementId;
 		if (basis == null)
 			throw new NullPointerException("Null basis");
@@ -132,6 +135,7 @@ public class GraphAxis implements Resizable {
 					isDraggingCursor = false;
 					mouseDragLastPos = new Vector2(event.getScreenX(), event.getScreenY());
 					wasDragged = false;
+					mouseDownInside = true;
 					
 					Double curCursorPosition = getCursorPosition();
 					if (curCursorPosition != null){
@@ -165,7 +169,7 @@ public class GraphAxis implements Resizable {
 					publishAxisChangeEvent(eventId);
 					paint(eventId);
 					
-					if (!wasDragged && getCursorPosition() != null){
+					if (mouseDownInside && !wasDragged && getCursorPosition() != null){
 						setCursorPosition(unproject(new Vector2(event.getX(),event.getY())));
 					}
 				}				
@@ -175,6 +179,7 @@ public class GraphAxis implements Resizable {
 				@Override
 				public void onMouseUp(final MouseUpEvent event) {
 					mouseDragLastPos = null;
+					mouseDownInside = false;
 
 					// Want a guaranteed update of the plots
 					int eventId = SequenceNumber.getNext();
@@ -187,6 +192,7 @@ public class GraphAxis implements Resizable {
 				@Override
 				public void onMouseOut(final MouseOutEvent event) {
 					mouseDragLastPos = null;
+					mouseDownInside = false;
 					
 					
 					// Want a guaranteed update of the plots
