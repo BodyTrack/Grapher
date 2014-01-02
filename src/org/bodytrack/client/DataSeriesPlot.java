@@ -311,59 +311,68 @@ public class DataSeriesPlot extends BaseSeriesPlot {
         publishHighlightedValue();
         return isHighlighted();
     }
+    
+    private native void callAfterload(final JavaScriptObject afterload, final JavaScriptObject arg)/*-{
+    	if (typeof afterload == "function")
+    		afterload(arg);
+    	
+    }-*/;
 
     public final JavaScriptObject getStatistics(final double xMin, final double xMax,
             final JsArrayString fieldnames, final JavaScriptObject afterload) {
         if (xMin > xMax) {
             return JavaScriptObject.createObject();
         }
+        
+        
 
         final boolean dataPending = checkForData(xMin, xMax,
                 new TileLoader.EventListener() {
                     @Override
                     public void handleLoadSuccess() {
-                        callAfterload(calculateStatistics(xMin, xMax, fieldnames));
+                        callAfterload(afterload,calculateStatistics(xMin, xMax, fieldnames));
                     }
 
                     @Override
                     public void handleLoadFailure() {
-                        callAfterload(null);
+                        callAfterload(afterload,null);
                     }
-
-                    private native void callAfterload(final JavaScriptObject arg) /*-{
-                    	if (typeof afterload == "function")
-                        	afterload(arg);
-                    }-*/;
                 });
 
         final Dynamic result = (Dynamic)calculateStatistics(xMin, xMax, fieldnames);
         result.set("data_pending", JsUtils.convertBoolean(dataPending));
+        if (!dataPending){
+        	callAfterload(afterload,result);        	
+        }
+        
         return result;
     }
 
     private JavaScriptObject calculateStatistics(final double xMin, final double xMax,
             final JsArrayString fieldnames) {
-        final TwoTuple<Double, Double> yRange = getYMinMax(xMin, xMax);
-        final boolean hasData = yRange.getItem1() <= yRange.getItem2();
+        final ThreeTuple<Double, Double, Double> stats = getYMinMaxAndCount(xMin, xMax);
+        final boolean hasData = stats.getItem3() > 0;
 
-        return fillStatisticsDictionary(hasData, yRange.getItem1(), yRange.getItem2());
+        return fillStatisticsDictionary(hasData, stats.getItem1(), stats.getItem2(), stats.getItem3());
     }
 
     private native JavaScriptObject fillStatisticsDictionary(final boolean hasData,
-            final double yMin, final double yMax) /*-{
+            final double yMin, final double yMax, final double count) /*-{
         var result = {"has_data" : hasData};
         if (hasData) {
             result["y_min"] = yMin;
             result["y_max"] = yMax;
+            result["count"] = count;
         }
         return result;
     }-*/;
 
-    private TwoTuple<Double, Double> getYMinMax(final double xMin, final double xMax) {
+    private ThreeTuple<Double, Double, Double> getYMinMaxAndCount(final double xMin, final double xMax) {
         final List<GrapherTile> tiles = getTileLoader().getBestResolutionTiles(xMin, xMax);
 
         double yMin = Double.MAX_VALUE;
         double yMax = -Double.MIN_VALUE;
+        double count = 0;
 
         for (final GrapherTile tile : tiles) {
             for (final PlottablePoint pt : getDataPoints(tile)) {
@@ -381,9 +390,10 @@ public class DataSeriesPlot extends BaseSeriesPlot {
                 if (val > yMax) {
                     yMax = val;
                 }
+                count++;
             }
         }
 
-        return TwoTuple.create(yMin, yMax);
+        return ThreeTuple.create(yMin, yMax, count);
     }
 }
