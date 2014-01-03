@@ -33,6 +33,7 @@ public class PlottablePoint implements Comparable<PlottablePoint> {
    private double myDate;
    private double myValue;
    private String comment;
+   private int myCount;
    
    private static final double COMPARISON_TOLLERANCE = 1e-6;
 
@@ -46,7 +47,7 @@ public class PlottablePoint implements Comparable<PlottablePoint> {
     * 		the value of this PlottablePoint
     */
    public PlottablePoint(double date, double value) {
-      this(date, value, null);
+      this(date, value, null,0);
    }
 
    /**
@@ -60,9 +61,10 @@ public class PlottablePoint implements Comparable<PlottablePoint> {
     * @param comment
     * 		the comment for this PlottablePoint
     */
-   public PlottablePoint(final double date, final double value, final String comment) {
+   public PlottablePoint(final double date, final double value, final String comment, final int count) {
       myDate = date;
       myValue = value;
+      myCount = count;
       this.comment = comment;
    }
 
@@ -128,6 +130,10 @@ public class PlottablePoint implements Comparable<PlottablePoint> {
     */
    public String getComment() {
       return comment;
+   }
+   
+   public int getCount(){
+	   return myCount;
    }
 
    @Override

@@ -136,6 +136,7 @@ public final class PlottablePointTile extends JavaScriptObject {
       int timeIndex = -1;
       int meanIndex = -1;
       int commentIndex = -1;
+      int countIndex = -1;
 
       final JsArrayString fieldNames = getFields();
 
@@ -148,6 +149,9 @@ public final class PlottablePointTile extends JavaScriptObject {
          }
          else if ("comment".equalsIgnoreCase(fieldNames.get(i))) {
             commentIndex = i;
+         }
+         else if ("count".equalsIgnoreCase(fieldNames.get(i))){
+        	 countIndex = i;
          }
       }
 
@@ -163,6 +167,7 @@ public final class PlottablePointTile extends JavaScriptObject {
 
          final double time = dataPoint.getNumber(timeIndex);
          final double mean = dataPoint.getNumber(meanIndex);
+         final int count = (int) dataPoint.getNumber(countIndex);
          String comment = null;
          if (commentIndex >= 0) {
             final String commentTemp = dataPoint.getString(commentIndex);
@@ -171,7 +176,7 @@ public final class PlottablePointTile extends JavaScriptObject {
             }
          }
 
-         result.add(new PlottablePoint(time, mean, comment));
+         result.add(new PlottablePoint(time, mean, comment, count));
       }
 
       return result;

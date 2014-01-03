@@ -362,8 +362,8 @@ public class DataSeriesPlot extends BaseSeriesPlot {
         if (hasData) {
             result["y_min"] = yMin;
             result["y_max"] = yMax;
-            result["count"] = count;
         }
+        result["count"] = count;
         return result;
     }-*/;
 
@@ -376,6 +376,7 @@ public class DataSeriesPlot extends BaseSeriesPlot {
 
         for (final GrapherTile tile : tiles) {
             for (final PlottablePoint pt : getDataPoints(tile)) {
+            	count += pt.getCount();
                 final double time = pt.getDate();
                 if (time < xMin || time > xMax) {
                     continue;
@@ -390,7 +391,6 @@ public class DataSeriesPlot extends BaseSeriesPlot {
                 if (val > yMax) {
                     yMax = val;
                 }
-                count++;
             }
         }
 
