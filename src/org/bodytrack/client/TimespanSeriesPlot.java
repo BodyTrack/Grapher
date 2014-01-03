@@ -3,7 +3,9 @@ package org.bodytrack.client;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.bodytrack.client.DataPointListener.TriggerAction;
 import org.bodytrack.client.StyleDescription.StyleType;
@@ -12,10 +14,55 @@ import org.bodytrack.client.StyleDescription.TimespanStyles;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
+import com.google.gwt.dom.client.ImageElement;
+import com.google.gwt.event.dom.client.LoadEvent;
+import com.google.gwt.event.dom.client.LoadHandler;
+import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.Image;
+import com.google.gwt.user.client.ui.RootPanel;
 
 public class TimespanSeriesPlot extends BaseSeriesPlot {
 	
 	private SeriesPlotRenderer renderer;
+	
+	private static Map<String,ImageElement> imageMap = new HashMap<String,ImageElement>();
+	
+	private static FlowPanel prefetcher = null;
+	
+	private static ImageElement getImage(String url,final TimespanSeriesPlot caller){
+		ImageElement element = imageMap.get(url);
+		if (element != null){
+			return element;
+		}
+		else{
+			if (prefetcher == null){
+				prefetcher = new FlowPanel();
+				prefetcher.getElement().setAttribute("style", "display:none;");
+				RootPanel.get().add(prefetcher);
+			}
+			final Image image = new Image();
+			
+			image.addLoadHandler(new LoadHandler(){
+
+				@Override
+				public void onLoad(LoadEvent event) {
+					image.removeFromParent();
+					caller.plotContainer.paint();
+				}
+				
+			});
+			
+			
+			image.setUrl(url);
+			imageMap.put(url,ImageElement.as(image.getElement()));
+			
+			prefetcher.add(image);
+			
+			return ImageElement.as(image.getElement());
+		}
+	}
+	
+	
 
 	protected TimespanSeriesPlot(JavaScriptObject datasource,
 			JavaScriptObject nativeXAxis, 
@@ -229,6 +276,45 @@ public class TimespanSeriesPlot extends BaseSeriesPlot {
 			if (endX - startX - borderWidth * 2 > 0){
 				drawing.getCanvas().setFillStyle(styling.getFillColor());
 				drawing.getCanvas().fillRectangle(startX + borderWidth, top + borderWidth, endX - startX - borderWidth * 2, bottom - top - borderWidth * 2);
+			}
+			
+			String iconURL = styling.getIconURL();
+			if (iconURL != null){
+				ImageElement icon = getImage(iconURL,TimespanSeriesPlot.this);
+				startX = Math.max(startX,0);
+				top = Math.max(top,0);
+				endX = Math.min(endX, drawing.getCanvas().getWidth());
+				bottom = Math.min(bottom, drawing.getCanvas().getHeight());
+				
+				double availableWidth = endX - startX;
+				double availableHeight = bottom - top;
+				if (availableWidth > 0 && availableHeight > 0){//if we don't have anywhere to draw it don't waste our time
+					double drawWidth = icon.getWidth();
+					double drawHeight = icon.getHeight();
+					double iconWidth = drawWidth;
+					double iconHeight = drawHeight;
+					
+					if (iconWidth > 0 && iconHeight > 0){//if what we're drawing doesn't exist don't waste our time
+						double iconRatio = iconWidth / iconHeight;
+						double spaceRatio = availableWidth / availableHeight;
+						if (iconRatio < spaceRatio){
+							if (availableHeight < iconHeight){
+								drawHeight = availableHeight;
+								drawWidth = iconRatio * drawHeight;
+							}
+						}
+						else{
+							if (availableWidth < iconWidth){
+								drawWidth = availableWidth;
+								drawHeight = availableWidth / iconRatio;
+							}
+						}
+						double drawX = (startX + endX - drawWidth) / 2;
+						double drawY = (bottom + top - drawHeight) / 2;
+						drawing.getCanvas().drawImage(icon, drawX, drawY, drawWidth, drawHeight);
+					}
+								
+				}
 				
 			}
 			

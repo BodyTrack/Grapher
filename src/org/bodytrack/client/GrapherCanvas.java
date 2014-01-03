@@ -9,6 +9,7 @@ import com.google.gwt.canvas.dom.client.CssColor;
 import com.google.gwt.canvas.dom.client.FillStrokeStyle;
 import com.google.gwt.canvas.dom.client.TextMetrics;
 import com.google.gwt.dom.client.CanvasElement;
+import com.google.gwt.dom.client.ImageElement;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 
@@ -390,5 +391,13 @@ public final class GrapherCanvas {
 
 	public void setFont(String font) {
 		surface.getContext2d().setFont(font);
+	}
+	
+	public void drawImage(ImageElement image, double x, double y){
+		surface.getContext2d().drawImage(image,x,y);
+	}
+	
+	public void drawImage(ImageElement image, double x, double y, double w, double h){
+		surface.getContext2d().drawImage(image,x,y,w,h);
 	}
 }
