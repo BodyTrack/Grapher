@@ -11,6 +11,8 @@ import com.google.gwt.canvas.dom.client.Context2d.TextBaseline;
 import com.google.gwt.canvas.dom.client.CssColor;
 import com.google.gwt.canvas.dom.client.FillStrokeStyle;
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.event.dom.client.DoubleClickEvent;
+import com.google.gwt.event.dom.client.DoubleClickHandler;
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.event.dom.client.MouseDownHandler;
 import com.google.gwt.event.dom.client.MouseMoveEvent;
@@ -128,6 +130,18 @@ public class GraphAxis implements Resizable {
 					paint(eventId);
 				}
 			});
+			
+			drawing.addDoubleClickHandler(new DoubleClickHandler(){
+
+				@Override
+				public void onDoubleClick(DoubleClickEvent event) {
+					final Vector2 pos = new Vector2(event.getX(), event.getY());
+					int eventId = SequenceNumber.getNextThrottled();					
+					zoom(0.5, unproject(pos), eventId);
+					paint(eventId);				
+				}
+				
+			});
 
 			drawing.addMouseDownHandler(new MouseDownHandler() {
 				@Override
@@ -201,35 +215,6 @@ public class GraphAxis implements Resizable {
 					paint(eventId);
 				}
 			},MouseOutEvent.getType());
-
-			/*drawing.addMouseUpHandler(new MouseUpHandler() {
-				@Override
-				public void onMouseUp(final MouseUpEvent event) {
-					mouseDragLastPos = null;
-
-					// Want a guaranteed update of the plots
-					int eventId = SequenceNumber.getNext();
-					publishAxisChangeEvent(eventId);
-					paint(eventId);
-					
-					if (!wasDragged && getCursorPosition() != null){
-						setCursorPosition(unproject(new Vector2(event.getX(),event.getY())));
-					}
-				}
-			});
-
-			drawing.addMouseOutHandler(new MouseOutHandler() {
-				@Override
-				public void onMouseOut(final MouseOutEvent event) {
-					mouseDragLastPos = null;
-					
-					
-					// Want a guaranteed update of the plots
-					int eventId = SequenceNumber.getNext();
-					publishAxisChangeEvent(eventId);
-					paint(eventId);
-				}
-			});*/
 
 			drawingCanvas = GrapherCanvas.buildCanvas(drawing);
 		} else {
