@@ -139,6 +139,9 @@ public final class PlottablePointTile extends JavaScriptObject {
       int countIndex = -1;
 
       final JsArrayString fieldNames = getFields();
+      
+      List<String> sideChannelNames = new ArrayList<String>();
+      List<Integer> sideChannelIndices = new ArrayList<Integer>();
 
       for (int i = 0; i < fieldNames.length(); i++) {
          if ("time".equalsIgnoreCase(fieldNames.get(i))) {
@@ -152,6 +155,13 @@ public final class PlottablePointTile extends JavaScriptObject {
          }
          else if ("count".equalsIgnoreCase(fieldNames.get(i))){
         	 countIndex = i;
+         }
+         else if ("stddev".equalsIgnoreCase(fieldNames.get(i))){
+        	 //we don't do anything with standard deviation yet, but it should be hidden from the sidechannel list
+         }
+         else{
+        	 sideChannelNames.add(fieldNames.get(i));
+        	 sideChannelIndices.add(i);
          }
       }
 
@@ -175,8 +185,14 @@ public final class PlottablePointTile extends JavaScriptObject {
                comment = commentTemp;
             }
          }
+         
+         List<Object> sideChannelData = new ArrayList<Object>();
+         
+         for (int j = 0, lj = sideChannelNames.size(); j < lj; j++){
+        	 sideChannelData.add(dataPoint.getObject(sideChannelIndices.get(j)));        	 
+         }
 
-         result.add(new PlottablePoint(time, mean, comment, count));
+         result.add(new PlottablePoint(time, mean, comment, count,sideChannelNames.toArray(new String[]{}),sideChannelData.toArray()));
       }
 
       return result;

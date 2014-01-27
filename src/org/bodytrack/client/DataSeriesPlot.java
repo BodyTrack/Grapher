@@ -1,6 +1,8 @@
 package org.bodytrack.client;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.bodytrack.client.DataPointListener.TriggerAction;
 
@@ -350,33 +352,46 @@ public class DataSeriesPlot extends BaseSeriesPlot {
 
     private JavaScriptObject calculateStatistics(final double xMin, final double xMax,
             final JsArrayString fieldnames) {
-        final ThreeTuple<Double, Double, Double> stats = getYMinMaxAndCount(xMin, xMax);
-        final boolean hasData = stats.getItem3() > 0;
-
-        return fillStatisticsDictionary(hasData, stats.getItem1(), stats.getItem2(), stats.getItem3());
+        final Map<String,Object> stats = getStatsForTimespan(xMin, xMax);
+        
+		return fillStatisticsDictionary(stats);
     }
 
-    private native JavaScriptObject fillStatisticsDictionary(final boolean hasData,
-            final double yMin, final double yMax, final double count) /*-{
-        var result = {"has_data" : hasData};
-        if (hasData) {
-            result["y_min"] = yMin;
-            result["y_max"] = yMax;
-        }
-        result["count"] = count;
+    private native JavaScriptObject fillStatisticsDictionary(Map<String,Object> stats) /*-{
+    	
+    	var result = {};
+    	result.count = stats.@java.util.Map::get(Ljava/lang/Object;)("count").@java.lang.Integer::intValue()();
+    	result.has_data = result.count != 0;
+    	if (result.has_data){
+    		result.y_min = stats.@java.util.Map::get(Ljava/lang/Object;)("yMin").@java.lang.Double::doubleValue()();
+    		result.y_max = stats.@java.util.Map::get(Ljava/lang/Object;)("yMax").@java.lang.Double::doubleValue()();
+    	} 
+    	
+    	var sideChannelCounts = stats.@java.util.Map::get(Ljava/lang/Object;)("sideChannelCounts");
+    	var sideChannelKeys = sideChannelCounts.@java.util.Map::keySet()();
+    	sideChannelKeys = sideChannelKeys.@java.util.Set::toArray()();
+    	result.sideChannelCounts = {};
+    	for (var i = 0, li = sideChannelKeys.length; i < li; i++){
+    		result.sideChannelCounts[sideChannelKeys[i]] = sideChannelCounts.@java.util.Map::get(Ljava/lang/Object;)(sideChannelKeys[i]).@java.lang.Integer::intValue()();
+    	}
+    	
+    	
         return result;
     }-*/;
 
-    private ThreeTuple<Double, Double, Double> getYMinMaxAndCount(final double xMin, final double xMax) {
+    private Map<String,Object> getStatsForTimespan(final double xMin, final double xMax) {
         final List<GrapherTile> tiles = getTileLoader().getBestResolutionTiles(xMin, xMax);
+        
+        Map<String,Object> stats = new HashMap<String,Object>();
+        Map<String,Integer> extraCounts = new HashMap<String,Integer>();
 
         double yMin = Double.MAX_VALUE;
         double yMax = -Double.MIN_VALUE;
-        double count = 0;
+        int count = 0;
 
         for (final GrapherTile tile : tiles) {
             for (final PlottablePoint pt : getDataPoints(tile)) {
-            	count += pt.getCount();
+            	
                 final double time = pt.getDate();
                 if (time < xMin || time > xMax) {
                     continue;
@@ -385,15 +400,31 @@ public class DataSeriesPlot extends BaseSeriesPlot {
                 if (val < SeriesPlotRenderer.MIN_DRAWABLE_VALUE || Double.isInfinite(val)) {
                     continue;
                 }
+                count += pt.getCount();
                 if (val < yMin) {
                     yMin = val;
                 }
                 if (val > yMax) {
                     yMax = val;
                 }
+                if (pt.getComment() != null){
+                	Integer value = extraCounts.get("comment");
+                	if (value == null) value = 0;
+                	extraCounts.put("comment", value + pt.getCount());
+                }
+                for (String sideChannel : pt.getSideChannelNames()){
+                	Integer value = extraCounts.get(sideChannel);
+                	if (value == null) value = 0;
+                	extraCounts.put(sideChannel,value + pt.getCount());
+                }
             }
         }
+        
+        stats.put("yMin", yMin);
+        stats.put("yMax", yMax);
+        stats.put("count", count);
+        stats.put("sideChannelCounts",extraCounts);
 
-        return ThreeTuple.create(yMin, yMax, count);
+        return stats;
     }
 }

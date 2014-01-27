@@ -2,6 +2,7 @@ package org.bodytrack.client;
 
 import java.util.Comparator;
 import java.util.Date;
+import java.util.List;
 
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.NumberFormat;
@@ -35,6 +36,18 @@ public class PlottablePoint implements Comparable<PlottablePoint> {
    private String comment;
    private int myCount;
    
+   private String[] sideChannelNames = null;
+   private Object[] sideChannelData = null;
+   
+   
+   public String[] getSideChannelNames(){
+	   return sideChannelNames;
+   }
+   
+   public Object[] getSideChannelData(){
+	   return sideChannelData;
+   }
+   
    private static final double COMPARISON_TOLLERANCE = 1e-6;
 
    /**
@@ -67,8 +80,14 @@ public class PlottablePoint implements Comparable<PlottablePoint> {
       myCount = count;
       this.comment = comment;
    }
+public PlottablePoint(double date, double value, String comment, int count,
+		String[] sideChannelNames, Object[] sideChannelData) {
+	this(date,value,comment,count);
+	this.sideChannelNames = sideChannelNames;
+	this.sideChannelData = sideChannelData;
+}
 
-   /**
+/**
     * Returns the date for this PlottablePoint.
     *
     * @return
