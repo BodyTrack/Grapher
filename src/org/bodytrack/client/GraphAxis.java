@@ -128,6 +128,7 @@ public class GraphAxis implements Resizable {
 					zoom(zoomFactor, unproject(pos), eventId);
 					uncheckedDrag(panAmmount, eventId);
 					paint(eventId);
+					event.preventDefault();
 				}
 			});
 			
@@ -138,7 +139,8 @@ public class GraphAxis implements Resizable {
 					final Vector2 pos = new Vector2(event.getX(), event.getY());
 					int eventId = SequenceNumber.getNextThrottled();					
 					zoom(0.5, unproject(pos), eventId);
-					paint(eventId);				
+					paint(eventId);		
+					event.preventDefault();
 				}
 				
 			});
@@ -158,6 +160,7 @@ public class GraphAxis implements Resizable {
 						Vector2 bottomRight = bottom.add(new Vector2(8,0));
 						isDraggingCursor = new Vector2(event.getX(),event.getY()).isInside(topLeft, bottomRight);
 					}
+					event.preventDefault();
 				}
 			});
 			
@@ -172,6 +175,7 @@ public class GraphAxis implements Resizable {
 							wasDragged = true;
 						}
 						mouseDragLastPos = pos;
+						event.preventDefault();
 					}
 					
 				}
@@ -186,19 +190,25 @@ public class GraphAxis implements Resizable {
 					if (mouseDownInside && !wasDragged && getCursorPosition() != null){
 						setCursorPosition(unproject(new Vector2(event.getX(),event.getY())));
 					}
+					event.preventDefault();
 				}				
 			});
 			
 			RootPanel.get().addDomHandler(new MouseUpHandler() {
 				@Override
 				public void onMouseUp(final MouseUpEvent event) {
-					mouseDragLastPos = null;
-					mouseDownInside = false;
+					if (mouseDownInside){
+						mouseDragLastPos = null;
+						mouseDownInside = false;
 
-					// Want a guaranteed update of the plots
-					int eventId = SequenceNumber.getNext();
-					publishAxisChangeEvent(eventId);
-					paint(eventId);
+						// Want a guaranteed update of the plots
+						int eventId = SequenceNumber.getNext();
+						publishAxisChangeEvent(eventId);
+						paint(eventId);
+						
+						event.preventDefault();
+					}
+					
 				}
 			}, MouseUpEvent.getType());
 			

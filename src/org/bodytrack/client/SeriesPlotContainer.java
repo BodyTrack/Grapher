@@ -167,6 +167,7 @@ public class SeriesPlotContainer extends BasePlotContainer {
       mouseDragStartPos = new Vector2(event.getScreenX(), event.getScreenY());
       mouseDragLastPos = new Vector2(event.getScreenX(), event.getScreenY());
       mouseDownInside = true;
+      event.preventDefault();
    }
    
    private void handleWindowMouseMoveEvent(final MouseMoveEvent event){
@@ -202,6 +203,7 @@ public class SeriesPlotContainer extends BasePlotContainer {
 	 for (final GraphAxis axis : axes) {
 	    axis.drag(mouseDragLastPos, pos, false, SequenceNumber.getNextThrottled());
 	 }
+	 event.preventDefault();
 	
 	 mouseDragLastPos = pos;
   }
@@ -243,6 +245,7 @@ public class SeriesPlotContainer extends BasePlotContainer {
             plot.getXAxis().highlight(highlightedPoint);
             plot.getYAxis().highlight(highlightedPoint);
          }
+         event.preventDefault();
 
          paint(SequenceNumber.getNextThrottled());
       }
@@ -278,6 +281,7 @@ public class SeriesPlotContainer extends BasePlotContainer {
 		 for (final GraphAxis axis : axes) {
 		    axis.drag(mouseDragLastPos, mouseDragLastPos, false, SequenceNumber.getNextThrottled());
 		 }
+		 event.preventDefault();
 	   }
 	   mouseDragStartPos = null;
       mouseDragLastPos = null;
@@ -285,6 +289,8 @@ public class SeriesPlotContainer extends BasePlotContainer {
    }
 
    private void handleMouseUpEvent(final MouseUpEvent event) {
+	   if (mouseDownInside)
+		   event.preventDefault();
       final Vector2 pos = new Vector2(event.getX(), event.getY());
       final Vector2 screenPos = new Vector2(event.getScreenX(),event.getScreenY());
       final boolean isClickEvent = mouseDownInside && ((mouseDragStartPos == null)
@@ -330,6 +336,7 @@ public class SeriesPlotContainer extends BasePlotContainer {
 		 for (final GraphAxis axis : axes) {
 		    axis.drag(mouseDragLastPos, mouseDragLastPos, false, SequenceNumber.getNextThrottled());
 		 }
+		 event.preventDefault();
 	   }
 	   mouseDownInside = false;
 	   mouseDragLastPos = null;
