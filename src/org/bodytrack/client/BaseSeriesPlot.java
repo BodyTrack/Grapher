@@ -462,4 +462,11 @@ public abstract class BaseSeriesPlot implements Plot {
          signalRepaintOfPlotContainer();
       }
    }
+   
+   public void invalidateTilesForRange(double start, double end){
+	   tileLoader.invalidateTilesForRange(start, end);	
+	   if (plotContainer != null){
+		   plotContainer.paint();
+	   }
+   }
 }

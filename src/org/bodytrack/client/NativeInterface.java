@@ -272,6 +272,9 @@ public final class NativeInterface {
 			this.doCursorClick = function(){
 				this.__backingPlot.@org.bodytrack.client.Plot::doCursorClick()();
 			}
+			this.invalidateTiles = function(start,end){
+				this.__backingPlot.@org.bodytrack.client.Plot::invalidateTilesForRange(DD)(start,end);
+			}
 			this.id = __getNextID();
 		};
 

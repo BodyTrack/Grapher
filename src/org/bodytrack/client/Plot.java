@@ -83,4 +83,6 @@ public interface Plot {
    void onClick(final Vector2 pos);
    
    void doCursorClick();
+   
+   void invalidateTilesForRange(final double minTime, final double maxTime);
 }

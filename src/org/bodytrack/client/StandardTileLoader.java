@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Iterator;
 
 import com.google.gwt.core.client.JavaScriptObject;
 
@@ -300,6 +301,27 @@ public class StandardTileLoader implements TileLoader {
 		}
 
 		return best;
+	}
+	
+	/**
+	 * Removes tiles form the cache that may contain data in the time range.
+	 * @param minTime
+	 * 	The minimum time of the time range to invalidate for
+	 * @param maxTime
+	 * 	The maximum time of the time range to invalidate for
+	 */
+	public final void invalidateTilesForRange(double minTime, double maxTime){
+		checkForNewData();
+		for (Iterator<Map.Entry<TileDescription, GrapherTile>> iter = descriptions.entrySet().iterator(); iter.hasNext();){
+			Map.Entry<TileDescription, GrapherTile> entry = iter.next();
+			TileDescription desc = entry.getValue().getDescription();
+			double tileMinTime = timeZoneMap.reverseConvert(desc.getMinTime());
+			double tileMaxTime = timeZoneMap.reverseConvert(desc.getMaxTime());
+			if ((tileMinTime <= maxTime && tileMinTime >= minTime) || (tileMaxTime <= maxTime && tileMaxTime >= minTime) ||
+					(tileMinTime <= minTime && tileMaxTime >= maxTime)){
+				iter.remove();				
+			}
+		}
 	}
 
 	/**

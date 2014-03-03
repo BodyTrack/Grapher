@@ -23,6 +23,8 @@ public interface TileLoader {
 			final double maxTime, final int currentLevel);
 	List<GrapherTile> getBestResolutionTiles(final double minTime,
 			final double maxTime);
+	
+	void invalidateTilesForRange(final double minTime, final double maxTime);
 
 	GrapherTile getBestResolutionTileAt(final double time);
 	GrapherTile getBestResolutionTileAt(final double time, final int bestLevel);
