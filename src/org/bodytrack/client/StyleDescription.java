@@ -132,7 +132,11 @@ public final class StyleDescription extends JavaScriptObject {
 			return (typeof this[fieldName] === 'undefined') ? defaultValue
 					: this[fieldName];
 		}-*/;
-	}
+
+      public native boolean isDefined(final String fieldName) /*-{
+         return (typeof this[fieldName] !== 'undefined');
+      }-*/;
+   }
 
 	public static final class CommentsDescription extends JavaScriptObject {
 		// JavaScript overlay types always have protected, no-arg constructors

@@ -158,6 +158,13 @@ public final class DataSeriesPlotRenderer extends BaseSeriesPlotRenderer {
                                                    final Double highlightLineWidth) {
             return new ZeoRenderingStrategy(styleType, highlightLineWidth);
          }
+      }),
+      STRIP("strip", new SeriesPlotRenderingStrategyFactory() {
+         @Override
+         public SeriesPlotRenderingStrategy create(final StyleDescription.StyleType styleType,
+                                                   final Double highlightLineWidth) {
+            return new StripRenderingStrategy(styleType, highlightLineWidth);
+         }
       });
 
       private interface SeriesPlotRenderingStrategyFactory extends Serializable {
