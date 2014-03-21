@@ -74,6 +74,8 @@ public class ZeoRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy {
    // The alpha used when drawing rectangles for highlighted Zeo plots.
    private static final double HIGHLIGHTED_ALPHA = 1.0;
 
+   private static final int UNBINNED_ZEO_SAMPLE_WIDTH_SECS = 30;
+
    public ZeoRenderingStrategy(final StyleDescription.StyleType styleType,
                                final Double highlightLineWidth) {
       super(styleType, highlightLineWidth);
@@ -108,7 +110,7 @@ public class ZeoRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy {
 
       // use the sample width to compute the left and right x values for the bar (we want the data point to be in the
       // center of the bar)
-      final double sampleHalfWidth = tile.getPlottableTile().getSampleWidth() / 2;
+      final double sampleHalfWidth = Math.max(UNBINNED_ZEO_SAMPLE_WIDTH_SECS, tile.getPlottableTile().getSampleWidth()) / 2;
       final double leftX = xAxis.project2D(rawDataPoint.getDate() - sampleHalfWidth).getX();
       final double rightX = xAxis.project2D(rawDataPoint.getDate() + sampleHalfWidth).getX();
 

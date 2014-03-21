@@ -105,8 +105,6 @@ public final class PlottablePointTile extends JavaScriptObject {
    /**
     * Returns the value of the optional sample_width parameter in a tile.
     *
-    * <p>Currently, this is a field only used by the Zeo data.</p>
-    *
     * @return
     * 		the value of the sample_width field for this tile, or a
     * 		negative number if such a field is not present
