@@ -43,11 +43,12 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="Commons File Upload" level="project" />
-    <orderEntry type="library" name="GWT G2D" level="project" />
     <orderEntry type="library" name="GWT Dev" level="project" />
     <orderEntry type="library" name="GWT User" level="project" />
     <orderEntry type="library" name="JUnit" level="project" />
     <orderEntry type="library" name="GWT Log" level="project" />
+    <orderEntry type="library" name="GWT Maps" level="project" />
+    <orderEntry type="library" name="gwt-2.3" level="project" />
   </component>
 </module>
 
