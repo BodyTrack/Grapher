@@ -71,7 +71,8 @@ public class StripRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy 
    }
 
    private double getStripWidth(final GrapherTile tile) {
-      return (stripWidthSecs == null) ? tile.getPlottableTile().getSampleWidth() : stripWidthSecs;
+      final double sampleWidth = tile.getPlottableTile().getSampleWidth();
+      return (stripWidthSecs == null) ? sampleWidth : Math.max(sampleWidth, stripWidthSecs);
    }
 
    @Override
