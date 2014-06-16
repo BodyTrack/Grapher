@@ -30,4 +30,6 @@
   <source path='client'/>
   <source path='shared'/>
 
+  <!-- Fix problems with Same Origin Policy.  See http://www.gwtproject.org/doc/latest/FAQ_Server.html -->
+  <add-linker name="xsiframe"/>
 </module>
