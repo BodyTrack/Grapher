@@ -14,10 +14,18 @@ public class StripRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy 
    private final RangedColors rangedColors;
    private final Double stripWidthSecs;
    private final boolean isStripCentered;
+   private final boolean willRenderValueAsHeight;
 
    public StripRenderingStrategy(final StyleDescription.StyleType styleType,
                                  final Double highlightLineWidth) {
+      this(styleType, highlightLineWidth, false);
+   }
+
+   public StripRenderingStrategy(final StyleDescription.StyleType styleType,
+                                 final Double highlightLineWidth,
+                                 final boolean willRenderValueAsHeight) {
       super(styleType, highlightLineWidth);
+      this.willRenderValueAsHeight = willRenderValueAsHeight;
       rangedColors = new RangedColors(styleType.<String>getValue(FIELD_RANGED_COLORS));
 
       if (styleType.isDefined(FIELD_STRIP_WIDTH_SECS)) {
@@ -101,7 +109,16 @@ public class StripRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy 
       // draw the rectangle
       final CssColor color = rangedColors.getColorForValue(rawDataPoint.getValue());
       if (color != null) {
-         drawRectangle(drawing.getCanvas(), yAxis, color, leftX, rightX);
+         if (willRenderValueAsHeight) {
+            final double zeroY = yAxis.project2D(0).getY();
+            drawRectangle(drawing.getCanvas(), yAxis, color, leftX, rightX,
+                          Math.max(y, zeroY),
+                          Math.min(y, zeroY));
+         } else {
+            drawRectangle(drawing.getCanvas(), yAxis, color, leftX, rightX,
+                          yAxis.project2D(yAxis.getMin()).getY(),
+                          yAxis.project2D(yAxis.getMax()).getY());
+         }
       }
    }
 
@@ -112,11 +129,9 @@ public class StripRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy 
                               final GraphAxis yAxis,
                               final CssColor color,
                               final double leftX,
-                              final double rightX) {
-
-      // Get the bottom and top Y values
-      final double bottomY = yAxis.project2D(yAxis.getMin()).getY();
-      final double topY = yAxis.project2D(yAxis.getMax()).getY();
+                              final double rightX,
+                              final double bottomY,
+                              final double topY) {
 
       // Draw the Zeo plot with the specified color
       canvas.setGlobalAlpha(NORMAL_ALPHA);
