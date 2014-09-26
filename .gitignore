@@ -22,6 +22,4 @@ war/grapher2/
 # Things that the OS or an editor might leave in a directory
 *.swp       # vim and some other programs
 *~          # emacs
-.DS_Store   # Mac OS
-/.DS_Store
-/war/.DS_Store
+*.DS_Store
