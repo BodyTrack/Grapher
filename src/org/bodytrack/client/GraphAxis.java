@@ -449,11 +449,11 @@ public class GraphAxis implements Resizable {
 
 			final double majorTickSize = computeTickSize(majorTickMinSpacingPixels);
 			renderTicks(0, majorTickSize, null, drawingCanvas,
-					majorTickWidthPixels, new DefaultLabelFormatter());
+					majorTickWidthPixels, new DefaultLabelFormatter(), isXAxis ? null : new AbbreviatedlabelFormatter());
 			//renderTickLabels(surface, majorTickSize, majorTickWidthPixels+3);
 
 			final double minorTickSize = computeTickSize(minorTickMinSpacingPixels);
-			renderTicks(0, minorTickSize, null, drawingCanvas,minorTickWidthPixels, null);
+			renderTicks(0, minorTickSize, null, drawingCanvas,minorTickWidthPixels, null, null);
 
 			drawingCanvas.stroke();
 
@@ -555,6 +555,26 @@ public class GraphAxis implements Resizable {
 
 			return label;
 		}
+	}
+	
+	static class AbbreviatedlabelFormatter extends DefaultLabelFormatter {
+
+		@Override
+		String format(double value) {
+			if (value < 1000){
+				return super.format(value);
+			}
+			else if (value < 1000000) {
+				return super.format(value / 1000) + "K";
+			}
+			else if (value < 1000000000) {
+				return super.format(value / 1000000) + "M";
+			}
+			else {
+				return super.format(value / 1000000000) + "G";
+			}
+		}
+		
 	}
 
 	static class TickGenerator {
@@ -691,7 +711,8 @@ public class GraphAxis implements Resizable {
 			TickGenerator tickGen,
 			GrapherCanvas canvas,
 			double tickWidthPixels,
-			LabelFormatter formatter) {
+			LabelFormatter formatter,
+			LabelFormatter abbreviatedFormatter) {
 		if (tickGen == null) {
 			tickGen = new TickGenerator(tickSize, 0);
 		}
@@ -706,7 +727,7 @@ public class GraphAxis implements Resizable {
 
 			if (formatter != null) {
 				renderTickLabel(canvas, tick,
-						labelOffsetPixels, formatter);
+						labelOffsetPixels, formatter, abbreviatedFormatter);
 			}
 		}
 	}
@@ -728,7 +749,7 @@ public class GraphAxis implements Resizable {
 		for (double tick : new IterableTickGenerator(tickGen, this.min, this.max)) {
 			if (formatter != null) {
 				renderTickLabel(canvas, tick,
-						labelOffsetPixels, formatter);
+						labelOffsetPixels, formatter, null);
 			}
 		}
 	}
@@ -755,7 +776,7 @@ public class GraphAxis implements Resizable {
 			// No ticks are visible
 			// Draw one inline label in the middle
 			renderTickLabel(canvas, (this.min + this.max) / 2.0,
-					labelOffsetPixels, formatter);
+					labelOffsetPixels, formatter, null);
 			return;
 		}
 		tick = tickGen.nextTick(this.min - tickSize);
@@ -797,7 +818,7 @@ public class GraphAxis implements Resizable {
 			// No ticks are visible
 			// Draw one inline label in the middle
 			renderTickLabel(canvas, (this.min + this.max) / 2.0,
-					labelOffsetPixels, formatter);
+					labelOffsetPixels, formatter, null);
 			return;
 		}
 		tick = tickGen.nextTick(this.min - tickSize);
@@ -851,7 +872,7 @@ public class GraphAxis implements Resizable {
 
 			if (this.min <= minTick && maxTick <= this.max) {
 				renderTickLabel(canvas, (minTick + maxTick) / 2.0,
-						labelOffsetPixels, formatter);
+						labelOffsetPixels, formatter, null);
 			}
 
 			minTick = tickGen.nextTick();
@@ -876,9 +897,17 @@ public class GraphAxis implements Resizable {
 	}
 
 	protected void renderTickLabel(GrapherCanvas canvas, double tick,
-			double labelOffsetPixels, LabelFormatter formatter) {
-		renderTickLabel(canvas, tick, labelOffsetPixels,
-				formatter.format(tick));
+			double labelOffsetPixels, LabelFormatter formatter, LabelFormatter abbreviatedFormatter) {
+		String text = formatter.format(tick);
+		if (abbreviatedFormatter != null){
+			double textWidth = canvas.measureText(text).getWidth();
+			double xOffset = project2D(tick).add(this.basis.x.scale(labelOffsetPixels)).getX();
+			if (canvas.getWidth() - textWidth - xOffset < 0) {
+				text = abbreviatedFormatter.format(tick);				
+			}
+			
+		}
+		renderTickLabel(canvas, tick, labelOffsetPixels, text);
 	}
 
 	protected void renderTickLabelWithinBounds(GrapherCanvas canvas, double tick, double min, double max,
