@@ -559,17 +559,24 @@ public class GraphAxis implements Resizable {
 
 		@Override
 		String format(double value) {
-			if (value < 1000){
+			double absoluteValue = Math.abs(value);
+			if (absoluteValue < 1000){
 				return super.format(value);
 			}
-			else if (value < 1000000) {
-				return super.format(value / 1000) + "K";
+			else if (absoluteValue < 1000000 && !super.format(absoluteValue / 1000).equals("1,000")) {
+				return super.format(value / 1000) + "k";
 			}
-			else if (value < 1000000000) {
+			else if (absoluteValue < 1000000000 && !super.format(absoluteValue / 1000000).equals("1,000")) {
 				return super.format(value / 1000000) + "M";
 			}
-			else {
+			else if (absoluteValue < 1000000000000L && !super.format(absoluteValue / 1000000000).equals("1,000")){
 				return super.format(value / 1000000000) + "G";
+			}
+			else if (absoluteValue < 1000000000000000L &&  !super.format(absoluteValue / 1000000000000L).equals("1,000")){
+				return super.format(value / 1000000000000L) + "T";				
+			}
+			else{
+				return super.format(value / 1000000000000000L) + "P";
 			}
 		}
 		
