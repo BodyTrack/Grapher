@@ -493,7 +493,7 @@ public class TimeGraphAxis extends GraphAxis {
 			if (timeMajorNoLabelTickSize <= 3600*12 + epsilon) {
 					renderTicks(0, timeMajorTickSize,
 							createDateTickGenerator(timeMajorTickSize), canvas,
-							majorTickWidthPixels, null);
+							majorTickWidthPixels, null, null);
 					
 					renderLabels(height / 2, timeMajorTickSize,
 							createDateTickGenerator(timeMajorTickSize), canvas,
@@ -504,13 +504,13 @@ public class TimeGraphAxis extends GraphAxis {
 
 				renderTicks(0, timeMinorTickSize,
 						createDateTickGenerator(timeMinorTickSize), canvas,
-						minorTickWidthPixels, null);
+						minorTickWidthPixels, null, null);
 			}
 		}
 		else if (monthMajorTickWidth >= 150){
 			renderTicks(0, dayMajorTickSize,
 					createDateTickGenerator(dayMajorTickSize), canvas,
-					majorTickWidthPixels, null);
+					majorTickWidthPixels, null, null);
 			
 			LabelFormatter dayFormatter = null;
 			
@@ -532,7 +532,7 @@ public class TimeGraphAxis extends GraphAxis {
 		else if (yearMajorTickWidth >= 80){
 			renderTicks(0, monthMajorTickSize,
 					createDateTickGenerator(monthMajorTickSize), canvas,
-					majorTickWidthPixels, null);
+					majorTickWidthPixels, null, null);
 			
 			LabelFormatter monthFormatter = null;
 			
@@ -555,7 +555,7 @@ public class TimeGraphAxis extends GraphAxis {
 		else if (decadeMajorTickWidth >= 150){
 			renderTicks(0, yearMajorTickSize,
 					createDateTickGenerator(yearMajorTickSize), canvas,
-					majorTickWidthPixels, null);
+					majorTickWidthPixels, null, null);
 			
 			LabelFormatter yearFormatter = null;
 			
@@ -578,7 +578,7 @@ public class TimeGraphAxis extends GraphAxis {
 		else{
 			renderTicks(0, decadeMajorTickSize,
 					createDateTickGenerator(decadeMajorTickSize), canvas,
-					majorTickWidthPixels, null);
+					majorTickWidthPixels, null, null);
 			
 			LabelFormatter decadeFormatter = null;
 			
