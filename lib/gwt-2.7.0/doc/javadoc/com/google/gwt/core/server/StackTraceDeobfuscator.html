@@ -1,0 +1,479 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--NewPage-->
+<HTML>
+<HEAD>
+<TITLE>
+StackTraceDeobfuscator (GWT Javadoc)
+</TITLE>
+
+
+<LINK REL ="stylesheet" TYPE="text/css" HREF="../../../../../stylesheet.css" TITLE="Style">
+
+<SCRIPT type="text/javascript">
+function windowTitle()
+{
+    if (location.href.indexOf('is-external=true') == -1) {
+        parent.document.title="StackTraceDeobfuscator (GWT Javadoc)";
+    }
+}
+</SCRIPT>
+<NOSCRIPT>
+</NOSCRIPT>
+
+</HEAD>
+
+<BODY BGCOLOR="white" onload="windowTitle();">
+<HR>
+
+
+<!-- ========= START OF TOP NAVBAR ======= -->
+<A NAME="navbar_top"><!-- --></A>
+<A HREF="#skip-navbar_top" title="Skip navigation links"></A>
+<TABLE BORDER="0" WIDTH="100%" CELLPADDING="1" CELLSPACING="0" SUMMARY="">
+<TR>
+<TD COLSPAN=2 BGCOLOR="#EEEEFF" CLASS="NavBarCell1">
+<A NAME="navbar_top_firstrow"><!-- --></A>
+<TABLE BORDER="0" CELLPADDING="0" CELLSPACING="3" SUMMARY="">
+  <TR ALIGN="center" VALIGN="top">
+  <TD BGCOLOR="#EEEEFF" CLASS="NavBarCell1">    <A HREF="../../../../../overview-summary.html"><FONT CLASS="NavBarFont1"><B>Overview</B></FONT></A>&nbsp;</TD>
+  <TD BGCOLOR="#EEEEFF" CLASS="NavBarCell1">    <A HREF="package-summary.html"><FONT CLASS="NavBarFont1"><B>Package</B></FONT></A>&nbsp;</TD>
+  <TD BGCOLOR="#FFFFFF" CLASS="NavBarCell1Rev"> &nbsp;<FONT CLASS="NavBarFont1Rev"><B>Class</B></FONT>&nbsp;</TD>
+  <TD BGCOLOR="#EEEEFF" CLASS="NavBarCell1">    <A HREF="class-use/StackTraceDeobfuscator.html"><FONT CLASS="NavBarFont1"><B>Use</B></FONT></A>&nbsp;</TD>
+  <TD BGCOLOR="#EEEEFF" CLASS="NavBarCell1">    <A HREF="../../../../../deprecated-list.html"><FONT CLASS="NavBarFont1"><B>Deprecated</B></FONT></A>&nbsp;</TD>
+  <TD BGCOLOR="#EEEEFF" CLASS="NavBarCell1">    <A HREF="../../../../../help-doc.html"><FONT CLASS="NavBarFont1"><B>Help</B></FONT></A>&nbsp;</TD>
+  </TR>
+</TABLE>
+</TD>
+<TD ALIGN="right" VALIGN="top" ROWSPAN=3><EM>
+GWT 2.7.0</EM>
+</TD>
+</TR>
+
+<TR>
+<TD BGCOLOR="white" CLASS="NavBarCell2"><FONT SIZE="-2">
+&nbsp;<A HREF="../../../../../com/google/gwt/core/server/ServerGwtBridge.Properties.html" title="interface in com.google.gwt.core.server"><B>PREV CLASS</B></A>&nbsp;
+&nbsp;NEXT CLASS</FONT></TD>
+<TD BGCOLOR="white" CLASS="NavBarCell2"><FONT SIZE="-2">
+  <A HREF="../../../../../index.html?com/google/gwt/core/server/StackTraceDeobfuscator.html" target="_top"><B>FRAMES</B></A>  &nbsp;
+&nbsp;<A HREF="StackTraceDeobfuscator.html" target="_top"><B>NO FRAMES</B></A>  &nbsp;
+&nbsp;<SCRIPT type="text/javascript">
+  <!--
+  if(window==top) {
+    document.writeln('<A HREF="../../../../../allclasses-noframe.html"><B>All Classes</B></A>');
+  }
+  //-->
+</SCRIPT>
+<NOSCRIPT>
+  <A HREF="../../../../../allclasses-noframe.html"><B>All Classes</B></A>
+</NOSCRIPT>
+
+
+</FONT></TD>
+</TR>
+<TR>
+<TD VALIGN="top" CLASS="NavBarCell3"><FONT SIZE="-2">
+  SUMMARY:&nbsp;NESTED&nbsp;|&nbsp;FIELD&nbsp;|&nbsp;<A HREF="#constructor_summary">CONSTR</A>&nbsp;|&nbsp;<A HREF="#method_summary">METHOD</A></FONT></TD>
+<TD VALIGN="top" CLASS="NavBarCell3"><FONT SIZE="-2">
+DETAIL:&nbsp;FIELD&nbsp;|&nbsp;<A HREF="#constructor_detail">CONSTR</A>&nbsp;|&nbsp;<A HREF="#method_detail">METHOD</A></FONT></TD>
+</TR>
+</TABLE>
+<A NAME="skip-navbar_top"></A>
+<!-- ========= END OF TOP NAVBAR ========= -->
+
+<HR>
+<!-- ======== START OF CLASS DATA ======== -->
+<H2>
+<FONT SIZE="-1">
+com.google.gwt.core.server</FONT>
+<BR>
+Class StackTraceDeobfuscator</H2>
+<PRE>
+java.lang.Object
+  <IMG SRC="../../../../../resources/inherit.gif" ALT="extended by "><B>com.google.gwt.core.server.StackTraceDeobfuscator</B>
+</PRE>
+<DL>
+<DT><B>Direct Known Subclasses:</B> <DD><A HREF="../../../../../com/google/gwt/logging/server/StackTraceDeobfuscator.html" title="class in com.google.gwt.logging.server">StackTraceDeobfuscator</A></DD>
+</DL>
+<HR>
+<DL>
+<DT><PRE>public abstract class <B>StackTraceDeobfuscator</B><DT>extends java.lang.Object</DL>
+</PRE>
+
+<P>
+Deobfuscates stack traces on the server side. This class requires that you have turned on
+ emulated stack traces, via <code>&lt;set-property name="compiler.stackMode" value="emulated"
+ /&gt;</code> in your <code>.gwt.xml</code> module file for browsers that don't support
+ sourcemaps or <code>&lt;set-property name="compiler.useSourceMaps" value="true"/&gt;</code> for
+ browsers that support it (e.g. Chrome), and moved your symbol map files to a location accessible
+ by your server-side code. You can use the GWT compiler <code>-deploy</code> command line
+ argument to specify the location of the folder into which the generated <code>symbolMaps</code>
+ directory is written. By default, the final <code>symbolMaps</code> directory is
+ <code>war/WEB-INF/deploy/<i>yourmodulename</i>/symbolMaps/</code>.
+<P>
+
+<P>
+<HR>
+
+<P>
+
+<!-- ======== CONSTRUCTOR SUMMARY ======== -->
+
+<A NAME="constructor_summary"><!-- --></A>
+<TABLE BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" SUMMARY="">
+<TR BGCOLOR="#CCCCFF" CLASS="TableHeadingColor">
+<TH ALIGN="left" COLSPAN="2"><FONT SIZE="+2">
+<B>Constructor Summary</B></FONT></TH>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="../../../../../com/google/gwt/core/server/StackTraceDeobfuscator.html#StackTraceDeobfuscator()">StackTraceDeobfuscator</A></B>()</CODE>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</TD>
+</TR>
+</TABLE>
+&nbsp;
+<!-- ========== METHOD SUMMARY =========== -->
+
+<A NAME="method_summary"><!-- --></A>
+<TABLE BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" SUMMARY="">
+<TR BGCOLOR="#CCCCFF" CLASS="TableHeadingColor">
+<TH ALIGN="left" COLSPAN="2"><FONT SIZE="+2">
+<B>Method Summary</B></FONT></TH>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
+<CODE>&nbsp;void</CODE></FONT></TD>
+<TD><CODE><B><A HREF="../../../../../com/google/gwt/core/server/StackTraceDeobfuscator.html#deobfuscateStackTrace(java.lang.Throwable, java.lang.String)">deobfuscateStackTrace</A></B>(java.lang.Throwable&nbsp;throwable,
+                      java.lang.String&nbsp;strongName)</CODE>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Replaces the stack traces in the given Throwable and its causes with deobfuscated stack traces
+ wherever possible.</TD>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
+<CODE>static&nbsp;<A HREF="../../../../../com/google/gwt/core/server/StackTraceDeobfuscator.html" title="class in com.google.gwt.core.server">StackTraceDeobfuscator</A></CODE></FONT></TD>
+<TD><CODE><B><A HREF="../../../../../com/google/gwt/core/server/StackTraceDeobfuscator.html#fromFileSystem(java.lang.String)">fromFileSystem</A></B>(java.lang.String&nbsp;symbolMapsDirectory)</CODE>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Creates a deobfuscator that loads symbol and source map files from the given directory.</TD>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
+<CODE>static&nbsp;<A HREF="../../../../../com/google/gwt/core/server/StackTraceDeobfuscator.html" title="class in com.google.gwt.core.server">StackTraceDeobfuscator</A></CODE></FONT></TD>
+<TD><CODE><B><A HREF="../../../../../com/google/gwt/core/server/StackTraceDeobfuscator.html#fromResource(java.lang.String)">fromResource</A></B>(java.lang.String&nbsp;symbolMapsPath)</CODE>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Creates a deobfuscator that loads symbol and source map files under given resource path.</TD>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
+<CODE>static&nbsp;<A HREF="../../../../../com/google/gwt/core/server/StackTraceDeobfuscator.html" title="class in com.google.gwt.core.server">StackTraceDeobfuscator</A></CODE></FONT></TD>
+<TD><CODE><B><A HREF="../../../../../com/google/gwt/core/server/StackTraceDeobfuscator.html#fromUrl(java.net.URL)">fromUrl</A></B>(java.net.URL&nbsp;urlPath)</CODE>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Creates a deobfuscator that loads symbol and source map files beneath the given URL.</TD>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
+<CODE>protected &nbsp;java.io.InputStream</CODE></FONT></TD>
+<TD><CODE><B><A HREF="../../../../../com/google/gwt/core/server/StackTraceDeobfuscator.html#getSourceMapInputStream(java.lang.String, int)">getSourceMapInputStream</A></B>(java.lang.String&nbsp;permutationStrongName,
+                        int&nbsp;fragmentNumber)</CODE>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</TD>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
+<CODE>protected &nbsp;java.io.InputStream</CODE></FONT></TD>
+<TD><CODE><B><A HREF="../../../../../com/google/gwt/core/server/StackTraceDeobfuscator.html#getSymbolMapInputStream(java.lang.String)">getSymbolMapInputStream</A></B>(java.lang.String&nbsp;permutationStrongName)</CODE>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Retrieves a new <CODE>InputStream</CODE> for the given permutation strong name.</TD>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
+<CODE>protected abstract &nbsp;java.io.InputStream</CODE></FONT></TD>
+<TD><CODE><B><A HREF="../../../../../com/google/gwt/core/server/StackTraceDeobfuscator.html#openInputStream(java.lang.String)">openInputStream</A></B>(java.lang.String&nbsp;fileName)</CODE>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Opens a new <CODE>InputStream</CODE> for a symbol or source map file.</TD>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
+<CODE>&nbsp;java.lang.StackTraceElement[]</CODE></FONT></TD>
+<TD><CODE><B><A HREF="../../../../../com/google/gwt/core/server/StackTraceDeobfuscator.html#resymbolize(java.lang.StackTraceElement[], java.lang.String)">resymbolize</A></B>(java.lang.StackTraceElement[]&nbsp;st,
+            java.lang.String&nbsp;strongName)</CODE>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Convenience method which resymbolizes an entire stack trace to extent possible.</TD>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
+<CODE>&nbsp;java.lang.StackTraceElement</CODE></FONT></TD>
+<TD><CODE><B><A HREF="../../../../../com/google/gwt/core/server/StackTraceDeobfuscator.html#resymbolize(java.lang.StackTraceElement, java.lang.String)">resymbolize</A></B>(java.lang.StackTraceElement&nbsp;ste,
+            java.lang.String&nbsp;strongName)</CODE>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Best effort resymbolization of a single stack trace element.</TD>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
+<CODE>&nbsp;void</CODE></FONT></TD>
+<TD><CODE><B><A HREF="../../../../../com/google/gwt/core/server/StackTraceDeobfuscator.html#setLazyLoad(boolean)">setLazyLoad</A></B>(boolean&nbsp;lazyLoad)</CODE>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If set to <code>true</code>, only symbols requested to be deobfuscated are cached and the rest is
+ discarded.</TD>
+</TR>
+</TABLE>
+&nbsp;<A NAME="methods_inherited_from_class_java.lang.Object"><!-- --></A>
+<TABLE BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" SUMMARY="">
+<TR BGCOLOR="#EEEEFF" CLASS="TableSubHeadingColor">
+<TH ALIGN="left"><B>Methods inherited from class java.lang.Object</B></TH>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE>clone, equals, finalize, getClass, hashCode, notify, notifyAll, toString, wait, wait, wait</CODE></TD>
+</TR>
+</TABLE>
+&nbsp;
+<P>
+
+<!-- ========= CONSTRUCTOR DETAIL ======== -->
+
+<A NAME="constructor_detail"><!-- --></A>
+<TABLE BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" SUMMARY="">
+<TR BGCOLOR="#CCCCFF" CLASS="TableHeadingColor">
+<TH ALIGN="left" COLSPAN="1"><FONT SIZE="+2">
+<B>Constructor Detail</B></FONT></TH>
+</TR>
+</TABLE>
+
+<A NAME="StackTraceDeobfuscator()"><!-- --></A><H3>
+StackTraceDeobfuscator</H3>
+<PRE>
+public <B>StackTraceDeobfuscator</B>()</PRE>
+<DL>
+</DL>
+
+<!-- ============ METHOD DETAIL ========== -->
+
+<A NAME="method_detail"><!-- --></A>
+<TABLE BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" SUMMARY="">
+<TR BGCOLOR="#CCCCFF" CLASS="TableHeadingColor">
+<TH ALIGN="left" COLSPAN="1"><FONT SIZE="+2">
+<B>Method Detail</B></FONT></TH>
+</TR>
+</TABLE>
+
+<A NAME="fromResource(java.lang.String)"><!-- --></A><H3>
+fromResource</H3>
+<PRE>
+public static <A HREF="../../../../../com/google/gwt/core/server/StackTraceDeobfuscator.html" title="class in com.google.gwt.core.server">StackTraceDeobfuscator</A> <B>fromResource</B>(java.lang.String&nbsp;symbolMapsPath)</PRE>
+<DL>
+<DD>Creates a deobfuscator that loads symbol and source map files under given resource path. Uses
+ StackTraceObfuscator's <CODE>ClassLoader</CODE>.
+<P>
+<DD><DL>
+</DL>
+</DD>
+</DL>
+<HR>
+
+<A NAME="fromFileSystem(java.lang.String)"><!-- --></A><H3>
+fromFileSystem</H3>
+<PRE>
+public static <A HREF="../../../../../com/google/gwt/core/server/StackTraceDeobfuscator.html" title="class in com.google.gwt.core.server">StackTraceDeobfuscator</A> <B>fromFileSystem</B>(java.lang.String&nbsp;symbolMapsDirectory)</PRE>
+<DL>
+<DD>Creates a deobfuscator that loads symbol and source map files from the given directory.
+<P>
+<DD><DL>
+</DL>
+</DD>
+</DL>
+<HR>
+
+<A NAME="fromUrl(java.net.URL)"><!-- --></A><H3>
+fromUrl</H3>
+<PRE>
+public static <A HREF="../../../../../com/google/gwt/core/server/StackTraceDeobfuscator.html" title="class in com.google.gwt.core.server">StackTraceDeobfuscator</A> <B>fromUrl</B>(java.net.URL&nbsp;urlPath)</PRE>
+<DL>
+<DD>Creates a deobfuscator that loads symbol and source map files beneath the given URL.
+<P>
+<DD><DL>
+</DL>
+</DD>
+</DL>
+<HR>
+
+<A NAME="setLazyLoad(boolean)"><!-- --></A><H3>
+setLazyLoad</H3>
+<PRE>
+public void <B>setLazyLoad</B>(boolean&nbsp;lazyLoad)</PRE>
+<DL>
+<DD>If set to <code>true</code>, only symbols requested to be deobfuscated are cached and the rest is
+ discarded. This provides a large memory savings at the expense of occasional extra disk reads.
+ Note that, this will only have effect on symbol maps that haven't been fully loaded yet.
+<P>
+<DD><DL>
+</DL>
+</DD>
+</DL>
+<HR>
+
+<A NAME="deobfuscateStackTrace(java.lang.Throwable, java.lang.String)"><!-- --></A><H3>
+deobfuscateStackTrace</H3>
+<PRE>
+public final void <B>deobfuscateStackTrace</B>(java.lang.Throwable&nbsp;throwable,
+                                        java.lang.String&nbsp;strongName)</PRE>
+<DL>
+<DD>Replaces the stack traces in the given Throwable and its causes with deobfuscated stack traces
+ wherever possible.
+<P>
+<DD><DL>
+<DT><B>Parameters:</B><DD><CODE>throwable</CODE> - the Throwable that needs its stack trace to be deobfuscated<DD><CODE>strongName</CODE> - the GWT permutation strong name</DL>
+</DD>
+</DL>
+<HR>
+
+<A NAME="resymbolize(java.lang.StackTraceElement[], java.lang.String)"><!-- --></A><H3>
+resymbolize</H3>
+<PRE>
+public final java.lang.StackTraceElement[] <B>resymbolize</B>(java.lang.StackTraceElement[]&nbsp;st,
+                                                       java.lang.String&nbsp;strongName)</PRE>
+<DL>
+<DD>Convenience method which resymbolizes an entire stack trace to extent possible.
+<P>
+<DD><DL>
+<DT><B>Parameters:</B><DD><CODE>st</CODE> - the stack trace to resymbolize<DD><CODE>strongName</CODE> - the GWT permutation strong name
+<DT><B>Returns:</B><DD>a best effort resymbolized stack trace</DL>
+</DD>
+</DL>
+<HR>
+
+<A NAME="resymbolize(java.lang.StackTraceElement, java.lang.String)"><!-- --></A><H3>
+resymbolize</H3>
+<PRE>
+public final java.lang.StackTraceElement <B>resymbolize</B>(java.lang.StackTraceElement&nbsp;ste,
+                                                     java.lang.String&nbsp;strongName)</PRE>
+<DL>
+<DD>Best effort resymbolization of a single stack trace element.
+<P>
+<DD><DL>
+<DT><B>Parameters:</B><DD><CODE>ste</CODE> - the stack trace element to resymbolize<DD><CODE>strongName</CODE> - the GWT permutation strong name
+<DT><B>Returns:</B><DD>the best effort resymbolized stack trace element</DL>
+</DD>
+</DL>
+<HR>
+
+<A NAME="getSourceMapInputStream(java.lang.String, int)"><!-- --></A><H3>
+getSourceMapInputStream</H3>
+<PRE>
+protected java.io.InputStream <B>getSourceMapInputStream</B>(java.lang.String&nbsp;permutationStrongName,
+                                                      int&nbsp;fragmentNumber)
+                                               throws java.io.IOException</PRE>
+<DL>
+<DD><DL>
+
+<DT><B>Throws:</B>
+<DD><CODE>java.io.IOException</CODE></DL>
+</DD>
+</DL>
+<HR>
+
+<A NAME="getSymbolMapInputStream(java.lang.String)"><!-- --></A><H3>
+getSymbolMapInputStream</H3>
+<PRE>
+protected java.io.InputStream <B>getSymbolMapInputStream</B>(java.lang.String&nbsp;permutationStrongName)
+                                               throws java.io.IOException</PRE>
+<DL>
+<DD>Retrieves a new <CODE>InputStream</CODE> for the given permutation strong name. This implementation,
+ which subclasses may override, returns a <CODE>InputStream</CODE> for the <code>
+ <i>permutation-strong-name</i>.symbolMap</code> file.
+<P>
+<DD><DL>
+<DT><B>Parameters:</B><DD><CODE>permutationStrongName</CODE> - the GWT permutation strong name
+<DT><B>Returns:</B><DD>a new <CODE>InputStream</CODE>
+<DT><B>Throws:</B>
+<DD><CODE>java.io.IOException</CODE></DL>
+</DD>
+</DL>
+<HR>
+
+<A NAME="openInputStream(java.lang.String)"><!-- --></A><H3>
+openInputStream</H3>
+<PRE>
+protected abstract java.io.InputStream <B>openInputStream</B>(java.lang.String&nbsp;fileName)
+                                                throws java.io.IOException</PRE>
+<DL>
+<DD>Opens a new <CODE>InputStream</CODE> for a symbol or source map file.
+<P>
+<DD><DL>
+<DT><B>Parameters:</B><DD><CODE>fileName</CODE> - name of the symbol or source map file
+<DT><B>Returns:</B><DD>an input stream for reading the file (doesn't need to be buffered).
+<DT><B>Throws:</B>
+<DD><CODE>java.io.IOException</CODE> - if an I/O error occurs while creating the input stream.</DL>
+</DD>
+</DL>
+<!-- ========= END OF CLASS DATA ========= -->
+<HR>
+
+
+<!-- ======= START OF BOTTOM NAVBAR ====== -->
+<A NAME="navbar_bottom"><!-- --></A>
+<A HREF="#skip-navbar_bottom" title="Skip navigation links"></A>
+<TABLE BORDER="0" WIDTH="100%" CELLPADDING="1" CELLSPACING="0" SUMMARY="">
+<TR>
+<TD COLSPAN=2 BGCOLOR="#EEEEFF" CLASS="NavBarCell1">
+<A NAME="navbar_bottom_firstrow"><!-- --></A>
+<TABLE BORDER="0" CELLPADDING="0" CELLSPACING="3" SUMMARY="">
+  <TR ALIGN="center" VALIGN="top">
+  <TD BGCOLOR="#EEEEFF" CLASS="NavBarCell1">    <A HREF="../../../../../overview-summary.html"><FONT CLASS="NavBarFont1"><B>Overview</B></FONT></A>&nbsp;</TD>
+  <TD BGCOLOR="#EEEEFF" CLASS="NavBarCell1">    <A HREF="package-summary.html"><FONT CLASS="NavBarFont1"><B>Package</B></FONT></A>&nbsp;</TD>
+  <TD BGCOLOR="#FFFFFF" CLASS="NavBarCell1Rev"> &nbsp;<FONT CLASS="NavBarFont1Rev"><B>Class</B></FONT>&nbsp;</TD>
+  <TD BGCOLOR="#EEEEFF" CLASS="NavBarCell1">    <A HREF="class-use/StackTraceDeobfuscator.html"><FONT CLASS="NavBarFont1"><B>Use</B></FONT></A>&nbsp;</TD>
+  <TD BGCOLOR="#EEEEFF" CLASS="NavBarCell1">    <A HREF="../../../../../deprecated-list.html"><FONT CLASS="NavBarFont1"><B>Deprecated</B></FONT></A>&nbsp;</TD>
+  <TD BGCOLOR="#EEEEFF" CLASS="NavBarCell1">    <A HREF="../../../../../help-doc.html"><FONT CLASS="NavBarFont1"><B>Help</B></FONT></A>&nbsp;</TD>
+  </TR>
+</TABLE>
+</TD>
+<TD ALIGN="right" VALIGN="top" ROWSPAN=3><EM>
+GWT 2.7.0</EM>
+</TD>
+</TR>
+
+<TR>
+<TD BGCOLOR="white" CLASS="NavBarCell2"><FONT SIZE="-2">
+&nbsp;<A HREF="../../../../../com/google/gwt/core/server/ServerGwtBridge.Properties.html" title="interface in com.google.gwt.core.server"><B>PREV CLASS</B></A>&nbsp;
+&nbsp;NEXT CLASS</FONT></TD>
+<TD BGCOLOR="white" CLASS="NavBarCell2"><FONT SIZE="-2">
+  <A HREF="../../../../../index.html?com/google/gwt/core/server/StackTraceDeobfuscator.html" target="_top"><B>FRAMES</B></A>  &nbsp;
+&nbsp;<A HREF="StackTraceDeobfuscator.html" target="_top"><B>NO FRAMES</B></A>  &nbsp;
+&nbsp;<SCRIPT type="text/javascript">
+  <!--
+  if(window==top) {
+    document.writeln('<A HREF="../../../../../allclasses-noframe.html"><B>All Classes</B></A>');
+  }
+  //-->
+</SCRIPT>
+<NOSCRIPT>
+  <A HREF="../../../../../allclasses-noframe.html"><B>All Classes</B></A>
+</NOSCRIPT>
+
+
+</FONT></TD>
+</TR>
+<TR>
+<TD VALIGN="top" CLASS="NavBarCell3"><FONT SIZE="-2">
+  SUMMARY:&nbsp;NESTED&nbsp;|&nbsp;FIELD&nbsp;|&nbsp;<A HREF="#constructor_summary">CONSTR</A>&nbsp;|&nbsp;<A HREF="#method_summary">METHOD</A></FONT></TD>
+<TD VALIGN="top" CLASS="NavBarCell3"><FONT SIZE="-2">
+DETAIL:&nbsp;FIELD&nbsp;|&nbsp;<A HREF="#constructor_detail">CONSTR</A>&nbsp;|&nbsp;<A HREF="#method_detail">METHOD</A></FONT></TD>
+</TR>
+</TABLE>
+<A NAME="skip-navbar_bottom"></A>
+<!-- ======== END OF BOTTOM NAVBAR ======= -->
+
+<HR>
+
+</BODY>
+</HTML>

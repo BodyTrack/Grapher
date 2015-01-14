@@ -1,0 +1,434 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--NewPage-->
+<HTML>
+<HEAD>
+<TITLE>
+ResponseImpl (GWT Javadoc)
+</TITLE>
+
+
+<LINK REL ="stylesheet" TYPE="text/css" HREF="../../../../../stylesheet.css" TITLE="Style">
+
+<SCRIPT type="text/javascript">
+function windowTitle()
+{
+    if (location.href.indexOf('is-external=true') == -1) {
+        parent.document.title="ResponseImpl (GWT Javadoc)";
+    }
+}
+</SCRIPT>
+<NOSCRIPT>
+</NOSCRIPT>
+
+</HEAD>
+
+<BODY BGCOLOR="white" onload="windowTitle();">
+<HR>
+
+
+<!-- ========= START OF TOP NAVBAR ======= -->
+<A NAME="navbar_top"><!-- --></A>
+<A HREF="#skip-navbar_top" title="Skip navigation links"></A>
+<TABLE BORDER="0" WIDTH="100%" CELLPADDING="1" CELLSPACING="0" SUMMARY="">
+<TR>
+<TD COLSPAN=2 BGCOLOR="#EEEEFF" CLASS="NavBarCell1">
+<A NAME="navbar_top_firstrow"><!-- --></A>
+<TABLE BORDER="0" CELLPADDING="0" CELLSPACING="3" SUMMARY="">
+  <TR ALIGN="center" VALIGN="top">
+  <TD BGCOLOR="#EEEEFF" CLASS="NavBarCell1">    <A HREF="../../../../../overview-summary.html"><FONT CLASS="NavBarFont1"><B>Overview</B></FONT></A>&nbsp;</TD>
+  <TD BGCOLOR="#EEEEFF" CLASS="NavBarCell1">    <A HREF="package-summary.html"><FONT CLASS="NavBarFont1"><B>Package</B></FONT></A>&nbsp;</TD>
+  <TD BGCOLOR="#FFFFFF" CLASS="NavBarCell1Rev"> &nbsp;<FONT CLASS="NavBarFont1Rev"><B>Class</B></FONT>&nbsp;</TD>
+  <TD BGCOLOR="#EEEEFF" CLASS="NavBarCell1">    <A HREF="class-use/ResponseImpl.html"><FONT CLASS="NavBarFont1"><B>Use</B></FONT></A>&nbsp;</TD>
+  <TD BGCOLOR="#EEEEFF" CLASS="NavBarCell1">    <A HREF="../../../../../deprecated-list.html"><FONT CLASS="NavBarFont1"><B>Deprecated</B></FONT></A>&nbsp;</TD>
+  <TD BGCOLOR="#EEEEFF" CLASS="NavBarCell1">    <A HREF="../../../../../help-doc.html"><FONT CLASS="NavBarFont1"><B>Help</B></FONT></A>&nbsp;</TD>
+  </TR>
+</TABLE>
+</TD>
+<TD ALIGN="right" VALIGN="top" ROWSPAN=3><EM>
+GWT 2.7.0</EM>
+</TD>
+</TR>
+
+<TR>
+<TD BGCOLOR="white" CLASS="NavBarCell2"><FONT SIZE="-2">
+&nbsp;<A HREF="../../../../../com/google/gwt/http/client/Response.html" title="class in com.google.gwt.http.client"><B>PREV CLASS</B></A>&nbsp;
+&nbsp;<A HREF="../../../../../com/google/gwt/http/client/StringValidator.html" title="class in com.google.gwt.http.client"><B>NEXT CLASS</B></A></FONT></TD>
+<TD BGCOLOR="white" CLASS="NavBarCell2"><FONT SIZE="-2">
+  <A HREF="../../../../../index.html?com/google/gwt/http/client/ResponseImpl.html" target="_top"><B>FRAMES</B></A>  &nbsp;
+&nbsp;<A HREF="ResponseImpl.html" target="_top"><B>NO FRAMES</B></A>  &nbsp;
+&nbsp;<SCRIPT type="text/javascript">
+  <!--
+  if(window==top) {
+    document.writeln('<A HREF="../../../../../allclasses-noframe.html"><B>All Classes</B></A>');
+  }
+  //-->
+</SCRIPT>
+<NOSCRIPT>
+  <A HREF="../../../../../allclasses-noframe.html"><B>All Classes</B></A>
+</NOSCRIPT>
+
+
+</FONT></TD>
+</TR>
+<TR>
+<TD VALIGN="top" CLASS="NavBarCell3"><FONT SIZE="-2">
+  SUMMARY:&nbsp;NESTED&nbsp;|&nbsp;<A HREF="#fields_inherited_from_class_com.google.gwt.http.client.Response">FIELD</A>&nbsp;|&nbsp;<A HREF="#constructor_summary">CONSTR</A>&nbsp;|&nbsp;<A HREF="#method_summary">METHOD</A></FONT></TD>
+<TD VALIGN="top" CLASS="NavBarCell3"><FONT SIZE="-2">
+DETAIL:&nbsp;FIELD&nbsp;|&nbsp;<A HREF="#constructor_detail">CONSTR</A>&nbsp;|&nbsp;<A HREF="#method_detail">METHOD</A></FONT></TD>
+</TR>
+</TABLE>
+<A NAME="skip-navbar_top"></A>
+<!-- ========= END OF TOP NAVBAR ========= -->
+
+<HR>
+<!-- ======== START OF CLASS DATA ======== -->
+<H2>
+<FONT SIZE="-1">
+com.google.gwt.http.client</FONT>
+<BR>
+Class ResponseImpl</H2>
+<PRE>
+java.lang.Object
+  <IMG SRC="../../../../../resources/inherit.gif" ALT="extended by "><A HREF="../../../../../com/google/gwt/http/client/Response.html" title="class in com.google.gwt.http.client">com.google.gwt.http.client.Response</A>
+      <IMG SRC="../../../../../resources/inherit.gif" ALT="extended by "><B>com.google.gwt.http.client.ResponseImpl</B>
+</PRE>
+<HR>
+<DL>
+<DT><PRE> class <B>ResponseImpl</B><DT>extends <A HREF="../../../../../com/google/gwt/http/client/Response.html" title="class in com.google.gwt.http.client">Response</A></DL>
+</PRE>
+
+<P>
+A <A HREF="../../../../../com/google/gwt/http/client/Response.html" title="class in com.google.gwt.http.client"><CODE>Response</CODE></A> implementation based on a <A HREF="../../../../../com/google/gwt/xhr/client/XMLHttpRequest.html" title="class in com.google.gwt.xhr.client"><CODE>XMLHttpRequest</CODE></A>.
+<P>
+
+<P>
+<HR>
+
+<P>
+<!-- =========== FIELD SUMMARY =========== -->
+
+<A NAME="field_summary"><!-- --></A>
+<TABLE BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" SUMMARY="">
+<TR BGCOLOR="#CCCCFF" CLASS="TableHeadingColor">
+<TH ALIGN="left" COLSPAN="2"><FONT SIZE="+2">
+<B>Field Summary</B></FONT></TH>
+</TR>
+</TABLE>
+&nbsp;<A NAME="fields_inherited_from_class_com.google.gwt.http.client.Response"><!-- --></A>
+<TABLE BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" SUMMARY="">
+<TR BGCOLOR="#EEEEFF" CLASS="TableSubHeadingColor">
+<TH ALIGN="left"><B>Fields inherited from class com.google.gwt.http.client.<A HREF="../../../../../com/google/gwt/http/client/Response.html" title="class in com.google.gwt.http.client">Response</A></B></TH>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><A HREF="../../../../../com/google/gwt/http/client/Response.html#SC_ACCEPTED">SC_ACCEPTED</A>, <A HREF="../../../../../com/google/gwt/http/client/Response.html#SC_BAD_GATEWAY">SC_BAD_GATEWAY</A>, <A HREF="../../../../../com/google/gwt/http/client/Response.html#SC_BAD_REQUEST">SC_BAD_REQUEST</A>, <A HREF="../../../../../com/google/gwt/http/client/Response.html#SC_CONFLICT">SC_CONFLICT</A>, <A HREF="../../../../../com/google/gwt/http/client/Response.html#SC_CONTINUE">SC_CONTINUE</A>, <A HREF="../../../../../com/google/gwt/http/client/Response.html#SC_CREATED">SC_CREATED</A>, <A HREF="../../../../../com/google/gwt/http/client/Response.html#SC_EXPECTATION_FAILED">SC_EXPECTATION_FAILED</A>, <A HREF="../../../../../com/google/gwt/http/client/Response.html#SC_FORBIDDEN">SC_FORBIDDEN</A>, <A HREF="../../../../../com/google/gwt/http/client/Response.html#SC_GATEWAY_TIMEOUT">SC_GATEWAY_TIMEOUT</A>, <A HREF="../../../../../com/google/gwt/http/client/Response.html#SC_GONE">SC_GONE</A>, <A HREF="../../../../../com/google/gwt/http/client/Response.html#SC_HTTP_VERSION_NOT_SUPPORTED">SC_HTTP_VERSION_NOT_SUPPORTED</A>, <A HREF="../../../../../com/google/gwt/http/client/Response.html#SC_INTERNAL_SERVER_ERROR">SC_INTERNAL_SERVER_ERROR</A>, <A HREF="../../../../../com/google/gwt/http/client/Response.html#SC_LENGTH_REQUIRED">SC_LENGTH_REQUIRED</A>, <A HREF="../../../../../com/google/gwt/http/client/Response.html#SC_METHOD_NOT_ALLOWED">SC_METHOD_NOT_ALLOWED</A>, <A HREF="../../../../../com/google/gwt/http/client/Response.html#SC_MOVED_PERMANENTLY">SC_MOVED_PERMANENTLY</A>, <A HREF="../../../../../com/google/gwt/http/client/Response.html#SC_MOVED_TEMPORARILY">SC_MOVED_TEMPORARILY</A>, <A HREF="../../../../../com/google/gwt/http/client/Response.html#SC_MULTIPLE_CHOICES">SC_MULTIPLE_CHOICES</A>, <A HREF="../../../../../com/google/gwt/http/client/Response.html#SC_NO_CONTENT">SC_NO_CONTENT</A>, <A HREF="../../../../../com/google/gwt/http/client/Response.html#SC_NON_AUTHORITATIVE_INFORMATION">SC_NON_AUTHORITATIVE_INFORMATION</A>, <A HREF="../../../../../com/google/gwt/http/client/Response.html#SC_NOT_ACCEPTABLE">SC_NOT_ACCEPTABLE</A>, <A HREF="../../../../../com/google/gwt/http/client/Response.html#SC_NOT_FOUND">SC_NOT_FOUND</A>, <A HREF="../../../../../com/google/gwt/http/client/Response.html#SC_NOT_IMPLEMENTED">SC_NOT_IMPLEMENTED</A>, <A HREF="../../../../../com/google/gwt/http/client/Response.html#SC_NOT_MODIFIED">SC_NOT_MODIFIED</A>, <A HREF="../../../../../com/google/gwt/http/client/Response.html#SC_OK">SC_OK</A>, <A HREF="../../../../../com/google/gwt/http/client/Response.html#SC_PARTIAL_CONTENT">SC_PARTIAL_CONTENT</A>, <A HREF="../../../../../com/google/gwt/http/client/Response.html#SC_PAYMENT_REQUIRED">SC_PAYMENT_REQUIRED</A>, <A HREF="../../../../../com/google/gwt/http/client/Response.html#SC_PRECONDITION_FAILED">SC_PRECONDITION_FAILED</A>, <A HREF="../../../../../com/google/gwt/http/client/Response.html#SC_PROXY_AUTHENTICATION_REQUIRED">SC_PROXY_AUTHENTICATION_REQUIRED</A>, <A HREF="../../../../../com/google/gwt/http/client/Response.html#SC_REQUEST_ENTITY_TOO_LARGE">SC_REQUEST_ENTITY_TOO_LARGE</A>, <A HREF="../../../../../com/google/gwt/http/client/Response.html#SC_REQUESTED_RANGE_NOT_SATISFIABLE">SC_REQUESTED_RANGE_NOT_SATISFIABLE</A>, <A HREF="../../../../../com/google/gwt/http/client/Response.html#SC_RESET_CONTENT">SC_RESET_CONTENT</A>, <A HREF="../../../../../com/google/gwt/http/client/Response.html#SC_SEE_OTHER">SC_SEE_OTHER</A>, <A HREF="../../../../../com/google/gwt/http/client/Response.html#SC_SERVICE_UNAVAILABLE">SC_SERVICE_UNAVAILABLE</A>, <A HREF="../../../../../com/google/gwt/http/client/Response.html#SC_SWITCHING_PROTOCOLS">SC_SWITCHING_PROTOCOLS</A>, <A HREF="../../../../../com/google/gwt/http/client/Response.html#SC_TEMPORARY_REDIRECT">SC_TEMPORARY_REDIRECT</A>, <A HREF="../../../../../com/google/gwt/http/client/Response.html#SC_UNAUTHORIZED">SC_UNAUTHORIZED</A>, <A HREF="../../../../../com/google/gwt/http/client/Response.html#SC_UNSUPPORTED_MEDIA_TYPE">SC_UNSUPPORTED_MEDIA_TYPE</A>, <A HREF="../../../../../com/google/gwt/http/client/Response.html#SC_USE_PROXY">SC_USE_PROXY</A></CODE></TD>
+</TR>
+</TABLE>
+&nbsp;
+<!-- ======== CONSTRUCTOR SUMMARY ======== -->
+
+<A NAME="constructor_summary"><!-- --></A>
+<TABLE BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" SUMMARY="">
+<TR BGCOLOR="#CCCCFF" CLASS="TableHeadingColor">
+<TH ALIGN="left" COLSPAN="2"><FONT SIZE="+2">
+<B>Constructor Summary</B></FONT></TH>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="../../../../../com/google/gwt/http/client/ResponseImpl.html#ResponseImpl(com.google.gwt.xhr.client.XMLHttpRequest)">ResponseImpl</A></B>(<A HREF="../../../../../com/google/gwt/xhr/client/XMLHttpRequest.html" title="class in com.google.gwt.xhr.client">XMLHttpRequest</A>&nbsp;xmlHttpRequest)</CODE>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</TD>
+</TR>
+</TABLE>
+&nbsp;
+<!-- ========== METHOD SUMMARY =========== -->
+
+<A NAME="method_summary"><!-- --></A>
+<TABLE BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" SUMMARY="">
+<TR BGCOLOR="#CCCCFF" CLASS="TableHeadingColor">
+<TH ALIGN="left" COLSPAN="2"><FONT SIZE="+2">
+<B>Method Summary</B></FONT></TH>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
+<CODE>&nbsp;java.lang.String</CODE></FONT></TD>
+<TD><CODE><B><A HREF="../../../../../com/google/gwt/http/client/ResponseImpl.html#getHeader(java.lang.String)">getHeader</A></B>(java.lang.String&nbsp;header)</CODE>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns the value of the requested header or null if the header was not
+ specified.</TD>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
+<CODE>&nbsp;<A HREF="../../../../../com/google/gwt/http/client/Header.html" title="class in com.google.gwt.http.client">Header</A>[]</CODE></FONT></TD>
+<TD><CODE><B><A HREF="../../../../../com/google/gwt/http/client/ResponseImpl.html#getHeaders()">getHeaders</A></B>()</CODE>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns an array of HTTP headers associated with this response.</TD>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
+<CODE>&nbsp;java.lang.String</CODE></FONT></TD>
+<TD><CODE><B><A HREF="../../../../../com/google/gwt/http/client/ResponseImpl.html#getHeadersAsString()">getHeadersAsString</A></B>()</CODE>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns all headers as a single string.</TD>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
+<CODE>&nbsp;int</CODE></FONT></TD>
+<TD><CODE><B><A HREF="../../../../../com/google/gwt/http/client/ResponseImpl.html#getStatusCode()">getStatusCode</A></B>()</CODE>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns the HTTP status code that is part of this response.</TD>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
+<CODE>&nbsp;java.lang.String</CODE></FONT></TD>
+<TD><CODE><B><A HREF="../../../../../com/google/gwt/http/client/ResponseImpl.html#getStatusText()">getStatusText</A></B>()</CODE>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns the HTTP status message text.</TD>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
+<CODE>&nbsp;java.lang.String</CODE></FONT></TD>
+<TD><CODE><B><A HREF="../../../../../com/google/gwt/http/client/ResponseImpl.html#getText()">getText</A></B>()</CODE>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns the text associated with the response.</TD>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
+<CODE>protected &nbsp;boolean</CODE></FONT></TD>
+<TD><CODE><B><A HREF="../../../../../com/google/gwt/http/client/ResponseImpl.html#isResponseReady()">isResponseReady</A></B>()</CODE>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</TD>
+</TR>
+</TABLE>
+&nbsp;<A NAME="methods_inherited_from_class_java.lang.Object"><!-- --></A>
+<TABLE BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" SUMMARY="">
+<TR BGCOLOR="#EEEEFF" CLASS="TableSubHeadingColor">
+<TH ALIGN="left"><B>Methods inherited from class java.lang.Object</B></TH>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE>clone, equals, finalize, getClass, hashCode, notify, notifyAll, toString, wait, wait, wait</CODE></TD>
+</TR>
+</TABLE>
+&nbsp;
+<P>
+
+<!-- ========= CONSTRUCTOR DETAIL ======== -->
+
+<A NAME="constructor_detail"><!-- --></A>
+<TABLE BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" SUMMARY="">
+<TR BGCOLOR="#CCCCFF" CLASS="TableHeadingColor">
+<TH ALIGN="left" COLSPAN="1"><FONT SIZE="+2">
+<B>Constructor Detail</B></FONT></TH>
+</TR>
+</TABLE>
+
+<A NAME="ResponseImpl(com.google.gwt.xhr.client.XMLHttpRequest)"><!-- --></A><H3>
+ResponseImpl</H3>
+<PRE>
+public <B>ResponseImpl</B>(<A HREF="../../../../../com/google/gwt/xhr/client/XMLHttpRequest.html" title="class in com.google.gwt.xhr.client">XMLHttpRequest</A>&nbsp;xmlHttpRequest)</PRE>
+<DL>
+</DL>
+
+<!-- ============ METHOD DETAIL ========== -->
+
+<A NAME="method_detail"><!-- --></A>
+<TABLE BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" SUMMARY="">
+<TR BGCOLOR="#CCCCFF" CLASS="TableHeadingColor">
+<TH ALIGN="left" COLSPAN="1"><FONT SIZE="+2">
+<B>Method Detail</B></FONT></TH>
+</TR>
+</TABLE>
+
+<A NAME="getHeader(java.lang.String)"><!-- --></A><H3>
+getHeader</H3>
+<PRE>
+public java.lang.String <B>getHeader</B>(java.lang.String&nbsp;header)</PRE>
+<DL>
+<DD><B>Description copied from class: <CODE><A HREF="../../../../../com/google/gwt/http/client/Response.html#getHeader(java.lang.String)">Response</A></CODE></B></DD>
+<DD>Returns the value of the requested header or null if the header was not
+ specified.
+<P>
+<DD><DL>
+<DT><B>Specified by:</B><DD><CODE><A HREF="../../../../../com/google/gwt/http/client/Response.html#getHeader(java.lang.String)">getHeader</A></CODE> in class <CODE><A HREF="../../../../../com/google/gwt/http/client/Response.html" title="class in com.google.gwt.http.client">Response</A></CODE></DL>
+</DD>
+<DD><DL>
+<DT><B>Parameters:</B><DD><CODE>header</CODE> - the header to query for
+<DT><B>Returns:</B><DD>the value of response header</DL>
+</DD>
+</DL>
+<HR>
+
+<A NAME="getHeaders()"><!-- --></A><H3>
+getHeaders</H3>
+<PRE>
+public <A HREF="../../../../../com/google/gwt/http/client/Header.html" title="class in com.google.gwt.http.client">Header</A>[] <B>getHeaders</B>()</PRE>
+<DL>
+<DD><B>Description copied from class: <CODE><A HREF="../../../../../com/google/gwt/http/client/Response.html#getHeaders()">Response</A></CODE></B></DD>
+<DD>Returns an array of HTTP headers associated with this response.
+<P>
+<DD><DL>
+<DT><B>Specified by:</B><DD><CODE><A HREF="../../../../../com/google/gwt/http/client/Response.html#getHeaders()">getHeaders</A></CODE> in class <CODE><A HREF="../../../../../com/google/gwt/http/client/Response.html" title="class in com.google.gwt.http.client">Response</A></CODE></DL>
+</DD>
+<DD><DL>
+
+<DT><B>Returns:</B><DD>array of HTTP headers; returns zero length array if there are no
+         headers</DL>
+</DD>
+</DL>
+<HR>
+
+<A NAME="getHeadersAsString()"><!-- --></A><H3>
+getHeadersAsString</H3>
+<PRE>
+public java.lang.String <B>getHeadersAsString</B>()</PRE>
+<DL>
+<DD><B>Description copied from class: <CODE><A HREF="../../../../../com/google/gwt/http/client/Response.html#getHeadersAsString()">Response</A></CODE></B></DD>
+<DD>Returns all headers as a single string. The individual headers are
+ delimited by a CR (U+000D) LF (U+000A) pair. An individual header is
+ formatted according to <a href="http://ietf.org/rfc/rfc2616"> RFC 2616</a>.
+<P>
+<DD><DL>
+<DT><B>Specified by:</B><DD><CODE><A HREF="../../../../../com/google/gwt/http/client/Response.html#getHeadersAsString()">getHeadersAsString</A></CODE> in class <CODE><A HREF="../../../../../com/google/gwt/http/client/Response.html" title="class in com.google.gwt.http.client">Response</A></CODE></DL>
+</DD>
+<DD><DL>
+
+<DT><B>Returns:</B><DD>all headers as a single string delimited by CRLF pairs</DL>
+</DD>
+</DL>
+<HR>
+
+<A NAME="getStatusCode()"><!-- --></A><H3>
+getStatusCode</H3>
+<PRE>
+public int <B>getStatusCode</B>()</PRE>
+<DL>
+<DD><B>Description copied from class: <CODE><A HREF="../../../../../com/google/gwt/http/client/Response.html#getStatusCode()">Response</A></CODE></B></DD>
+<DD>Returns the HTTP status code that is part of this response.
+ <p>
+ The value will be 0 if the request failed (e.g. network error, or the
+ server <a href="http://www.w3.org/TR/cors">disallowed the request</a>) or
+ has been aborted (this will generally be the case when leaving the page).
+<P>
+<DD><DL>
+<DT><B>Specified by:</B><DD><CODE><A HREF="../../../../../com/google/gwt/http/client/Response.html#getStatusCode()">getStatusCode</A></CODE> in class <CODE><A HREF="../../../../../com/google/gwt/http/client/Response.html" title="class in com.google.gwt.http.client">Response</A></CODE></DL>
+</DD>
+<DD><DL>
+
+<DT><B>Returns:</B><DD>the HTTP status code or 0</DL>
+</DD>
+</DL>
+<HR>
+
+<A NAME="getStatusText()"><!-- --></A><H3>
+getStatusText</H3>
+<PRE>
+public java.lang.String <B>getStatusText</B>()</PRE>
+<DL>
+<DD><B>Description copied from class: <CODE><A HREF="../../../../../com/google/gwt/http/client/Response.html#getStatusText()">Response</A></CODE></B></DD>
+<DD>Returns the HTTP status message text.
+<P>
+<DD><DL>
+<DT><B>Specified by:</B><DD><CODE><A HREF="../../../../../com/google/gwt/http/client/Response.html#getStatusText()">getStatusText</A></CODE> in class <CODE><A HREF="../../../../../com/google/gwt/http/client/Response.html" title="class in com.google.gwt.http.client">Response</A></CODE></DL>
+</DD>
+<DD><DL>
+
+<DT><B>Returns:</B><DD>the HTTP status message text</DL>
+</DD>
+</DL>
+<HR>
+
+<A NAME="getText()"><!-- --></A><H3>
+getText</H3>
+<PRE>
+public java.lang.String <B>getText</B>()</PRE>
+<DL>
+<DD><B>Description copied from class: <CODE><A HREF="../../../../../com/google/gwt/http/client/Response.html#getText()">Response</A></CODE></B></DD>
+<DD>Returns the text associated with the response.
+<P>
+<DD><DL>
+<DT><B>Specified by:</B><DD><CODE><A HREF="../../../../../com/google/gwt/http/client/Response.html#getText()">getText</A></CODE> in class <CODE><A HREF="../../../../../com/google/gwt/http/client/Response.html" title="class in com.google.gwt.http.client">Response</A></CODE></DL>
+</DD>
+<DD><DL>
+
+<DT><B>Returns:</B><DD>the response text</DL>
+</DD>
+</DL>
+<HR>
+
+<A NAME="isResponseReady()"><!-- --></A><H3>
+isResponseReady</H3>
+<PRE>
+protected boolean <B>isResponseReady</B>()</PRE>
+<DL>
+<DD><DL>
+</DL>
+</DD>
+</DL>
+<!-- ========= END OF CLASS DATA ========= -->
+<HR>
+
+
+<!-- ======= START OF BOTTOM NAVBAR ====== -->
+<A NAME="navbar_bottom"><!-- --></A>
+<A HREF="#skip-navbar_bottom" title="Skip navigation links"></A>
+<TABLE BORDER="0" WIDTH="100%" CELLPADDING="1" CELLSPACING="0" SUMMARY="">
+<TR>
+<TD COLSPAN=2 BGCOLOR="#EEEEFF" CLASS="NavBarCell1">
+<A NAME="navbar_bottom_firstrow"><!-- --></A>
+<TABLE BORDER="0" CELLPADDING="0" CELLSPACING="3" SUMMARY="">
+  <TR ALIGN="center" VALIGN="top">
+  <TD BGCOLOR="#EEEEFF" CLASS="NavBarCell1">    <A HREF="../../../../../overview-summary.html"><FONT CLASS="NavBarFont1"><B>Overview</B></FONT></A>&nbsp;</TD>
+  <TD BGCOLOR="#EEEEFF" CLASS="NavBarCell1">    <A HREF="package-summary.html"><FONT CLASS="NavBarFont1"><B>Package</B></FONT></A>&nbsp;</TD>
+  <TD BGCOLOR="#FFFFFF" CLASS="NavBarCell1Rev"> &nbsp;<FONT CLASS="NavBarFont1Rev"><B>Class</B></FONT>&nbsp;</TD>
+  <TD BGCOLOR="#EEEEFF" CLASS="NavBarCell1">    <A HREF="class-use/ResponseImpl.html"><FONT CLASS="NavBarFont1"><B>Use</B></FONT></A>&nbsp;</TD>
+  <TD BGCOLOR="#EEEEFF" CLASS="NavBarCell1">    <A HREF="../../../../../deprecated-list.html"><FONT CLASS="NavBarFont1"><B>Deprecated</B></FONT></A>&nbsp;</TD>
+  <TD BGCOLOR="#EEEEFF" CLASS="NavBarCell1">    <A HREF="../../../../../help-doc.html"><FONT CLASS="NavBarFont1"><B>Help</B></FONT></A>&nbsp;</TD>
+  </TR>
+</TABLE>
+</TD>
+<TD ALIGN="right" VALIGN="top" ROWSPAN=3><EM>
+GWT 2.7.0</EM>
+</TD>
+</TR>
+
+<TR>
+<TD BGCOLOR="white" CLASS="NavBarCell2"><FONT SIZE="-2">
+&nbsp;<A HREF="../../../../../com/google/gwt/http/client/Response.html" title="class in com.google.gwt.http.client"><B>PREV CLASS</B></A>&nbsp;
+&nbsp;<A HREF="../../../../../com/google/gwt/http/client/StringValidator.html" title="class in com.google.gwt.http.client"><B>NEXT CLASS</B></A></FONT></TD>
+<TD BGCOLOR="white" CLASS="NavBarCell2"><FONT SIZE="-2">
+  <A HREF="../../../../../index.html?com/google/gwt/http/client/ResponseImpl.html" target="_top"><B>FRAMES</B></A>  &nbsp;
+&nbsp;<A HREF="ResponseImpl.html" target="_top"><B>NO FRAMES</B></A>  &nbsp;
+&nbsp;<SCRIPT type="text/javascript">
+  <!--
+  if(window==top) {
+    document.writeln('<A HREF="../../../../../allclasses-noframe.html"><B>All Classes</B></A>');
+  }
+  //-->
+</SCRIPT>
+<NOSCRIPT>
+  <A HREF="../../../../../allclasses-noframe.html"><B>All Classes</B></A>
+</NOSCRIPT>
+
+
+</FONT></TD>
+</TR>
+<TR>
+<TD VALIGN="top" CLASS="NavBarCell3"><FONT SIZE="-2">
+  SUMMARY:&nbsp;NESTED&nbsp;|&nbsp;<A HREF="#fields_inherited_from_class_com.google.gwt.http.client.Response">FIELD</A>&nbsp;|&nbsp;<A HREF="#constructor_summary">CONSTR</A>&nbsp;|&nbsp;<A HREF="#method_summary">METHOD</A></FONT></TD>
+<TD VALIGN="top" CLASS="NavBarCell3"><FONT SIZE="-2">
+DETAIL:&nbsp;FIELD&nbsp;|&nbsp;<A HREF="#constructor_detail">CONSTR</A>&nbsp;|&nbsp;<A HREF="#method_detail">METHOD</A></FONT></TD>
+</TR>
+</TABLE>
+<A NAME="skip-navbar_bottom"></A>
+<!-- ======== END OF BOTTOM NAVBAR ======= -->
+
+<HR>
+
+</BODY>
+</HTML>

@@ -14,8 +14,17 @@ import com.google.gwt.event.dom.client.MouseOutEvent;
 import com.google.gwt.event.dom.client.MouseOutHandler;
 import com.google.gwt.event.dom.client.MouseUpEvent;
 import com.google.gwt.event.dom.client.MouseUpHandler;
+import com.google.gwt.event.dom.client.TouchStartEvent;
+import com.google.gwt.event.dom.client.TouchStartHandler;
+import com.google.gwt.event.dom.client.TouchEndEvent;
+import com.google.gwt.event.dom.client.TouchEndHandler;
+import com.google.gwt.event.dom.client.TouchCancelEvent;
+import com.google.gwt.event.dom.client.TouchCancelHandler;
+import com.google.gwt.event.dom.client.TouchMoveEvent;
+import com.google.gwt.event.dom.client.TouchMoveHandler;
 import com.google.gwt.user.client.ui.RootPanel;
-
+import com.google.gwt.core.client.JsArray;
+import  com.google.gwt.dom.client.Touch;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -80,19 +89,23 @@ public class SeriesPlotContainer extends BasePlotContainer {
    private Vector2 mouseDragLastPos;
    private Vector2 mouseDragStartPos;
    
+   private Vector2 touchDragLastPos;
+   private Vector2 touchDragStartPos;
+   
    private boolean mouseDownInside;
-
+   private boolean touchStartInside;
+   
    private int previousPaintEventId = 0;
 
    @SuppressWarnings("unused")
    private final String placeholderElementId;
-
+   
    public SeriesPlotContainer(final String placeholderElementId, boolean ignoreClickEvents) {
       if (placeholderElementId == null) {
          throw new NullPointerException("The placeholder element ID cannot be null");
       }
       this.placeholderElementId = placeholderElementId;
-
+      
       final RootPanel placeholderElement = RootPanel.get(placeholderElementId);
       this.width = placeholderElement.getElement().getClientWidth();
       this.height = placeholderElement.getElement().getClientHeight();
@@ -105,111 +118,207 @@ public class SeriesPlotContainer extends BasePlotContainer {
       nextValueMessageId = INITIAL_MESSAGE_ID;
       valueMessages = new ArrayList<DisplayMessage>();
       mouseDownInside = false;
-      
+
       if (!ignoreClickEvents) {
     	  drawing.addMouseDownHandler(new MouseDownHandler() {
     	         @Override
     	         public void onMouseDown(final MouseDownEvent event) {
     	            handleMouseDownEvent(event);
     	         }
-    	      });
-
+    	  });
+          
+    	  drawing.addTouchStartHandler(new TouchStartHandler() {
+    	         @Override
+    	         public void onTouchStart(final TouchStartEvent event) {
+    	            handleTouchStartEvent(event);
+    	         }
+    	  });
+          
     	  drawing.addMouseUpHandler(new MouseUpHandler() {
     	         @Override
     	         public void onMouseUp(final MouseUpEvent event) {
     	            handleMouseUpEvent(event);
     	         }
-    	      });
-    	  RootPanel.get().addDomHandler(new MouseUpHandler(){
+    	  });
 
-    			@Override
-    			public void onMouseUp(MouseUpEvent event) {
-    				handleWindowMouseUpEvent(event);
+    	  drawing.addTouchEndHandler(new TouchEndHandler() {
+    	         @Override
+    	         public void onTouchEnd(final TouchEndEvent event) {
+    	            handleTouchEndEvent(event);
+    	         }
+    	  });
+
+    	  RootPanel.get().addDomHandler(new MouseUpHandler(){
+    		 @Override
+    		 public void onMouseUp(MouseUpEvent event) {
+                    handleWindowMouseUpEvent(event);
     				
-    			}
-    	    	  
-    	      },MouseUpEvent.getType());
-    	  
+    		 }
+    	  }, MouseUpEvent.getType());
+
+    	  RootPanel.get().addDomHandler(new TouchEndHandler(){
+    		 @Override
+    		 public void onTouchEnd(TouchEndEvent event) {
+                    handleWindowTouchEndEvent(event);
+    		 }
+    	  }, TouchEndEvent.getType());
+          
     	  RootPanel.get().addDomHandler(new MouseMoveHandler(){
-        	  public void onMouseMove(final MouseMoveEvent event){
-        		  handleWindowMouseMoveEvent(event);
-        	  }
+        	 public void onMouseMove(final MouseMoveEvent event){
+        	    handleWindowMouseMoveEvent(event);
+        	 }
         	  
           }, MouseMoveEvent.getType());
+
+    	  RootPanel.get().addDomHandler(new TouchMoveHandler(){
+    		 @Override
+    		 public void onTouchMove(TouchMoveEvent event) {
+                    handleWindowTouchMoveEvent(event);
+    		 }
+    	  }, TouchMoveEvent.getType());          
           
           RootPanel.get().addDomHandler(new MouseOutHandler(){
+    		 @Override
+    		 public void onMouseOut(MouseOutEvent event) {
+    		    handleWindowMouseOutHandler(event);			
+    		 }	  
+          }, MouseOutEvent.getType());
 
-    		@Override
-    		public void onMouseOut(MouseOutEvent event) {
-    			handleWindowMouseOutHandler(event);			
-    		}
-        	  
-          },MouseOutEvent.getType());
+    	  RootPanel.get().addDomHandler(new TouchCancelHandler(){
+    		 @Override
+    		 public void onTouchCancel(TouchCancelEvent event) {
+                    handleWindowTouchCancelEvent(event);
+    		 }
+    	  }, TouchCancelEvent.getType());            
       }
 
       drawing.addMouseMoveHandler(new MouseMoveHandler() {
          @Override
          public void onMouseMove(final MouseMoveEvent event) {
-            handleMouseMoveEvent(event);
+           handleMouseMoveEvent(event);
          }
       });
 
-
+      drawing.addTouchMoveHandler(new TouchMoveHandler() {
+         @Override
+         public void onTouchMove(final TouchMoveEvent event) {
+           handleTouchMoveEvent(event);
+         }
+      });
+      
       drawing.addMouseOutHandler(new MouseOutHandler() {
          @Override
          public void onMouseOut(final MouseOutEvent event) {
             handleMouseOutEvent(event);
          }
       });
+      
+      drawing.addTouchCancelHandler(new TouchCancelHandler() {
+         @Override
+         public void onTouchCancel(final TouchCancelEvent event) {
+            handleTouchCancelEvent(event);
+         }
+      });    
    }
 
+   private void debug(String str) {
+      RootPanel.get("title").getElement().setInnerHTML(str);
+   }
+   
    private void handleMouseDownEvent(final MouseDownEvent event) {
       mouseDragStartPos = new Vector2(event.getScreenX(), event.getScreenY());
       mouseDragLastPos = new Vector2(event.getScreenX(), event.getScreenY());
       mouseDownInside = true;
       event.preventDefault();
    }
+
+   private void handleTouchStartEvent(final TouchStartEvent event) {
+      JsArray<Touch> touches = event.getTouches();
+      Touch firstTouch = touches.get(0);
+      touchDragStartPos = new Vector2(firstTouch.getScreenX(), firstTouch.getScreenY());
+      touchDragLastPos = new Vector2(firstTouch.getScreenX(), firstTouch.getScreenY());
+      touchStartInside = true;
+      event.preventDefault();
+   }
    
    private void handleWindowMouseMoveEvent(final MouseMoveEvent event){
-   final Vector2 pos = new Vector2(event.getScreenX(), event.getScreenY());
+      final Vector2 pos = new Vector2(event.getScreenX(), event.getScreenY());
+      // We can be dragging exactly one of: one or
+      // more plots, the whole viewing window, and nothing
+      if (mouseDragLastPos != null) {
+         // We are either dragging either one or more plots,
+         // or the whole viewing window. If there's one or more
+         // highlighted plot, then just drag the axes
+         // for those plots.  Otherwise, drag all axes.
 
-  // We can be dragging exactly one of: one or
-  // more plots, the whole viewing window, and nothing
-  if (mouseDragLastPos != null) {
-	     // We are either dragging either one or more plots,
-	 // or the whole viewing window. If there's one or more
-	 // highlighted plot, then just drag the axes
-	 // for those plots.  Otherwise, drag all axes.
-	
-	 // build a set of the highlighted plots
-	 final Set<Plot> highlightedPlots = new HashSet<Plot>();
-	 for (final Plot plot : containedPlots) {
-	    if (plot.isHighlighted()) {
-	       highlightedPlots.add(plot);
-	    }
-	 }
-	
-	 // determine whether we're dragging only the highlighted plots
-	 final Set<Plot> plots = (highlightedPlots.size() > 0) ? highlightedPlots : containedPlots;
-	
-	 // build a Set of axes to eliminate dupes
-	 final Set<GraphAxis> axes = new HashSet<GraphAxis>();
-	 for (final Plot plot : plots) {
-	    axes.add(plot.getXAxis());
-	    axes.add(plot.getYAxis());
-	 }
-	
-	 // drag the axes
-	 for (final GraphAxis axis : axes) {
-	    axis.drag(mouseDragLastPos, pos, false, SequenceNumber.getNextThrottled());
-	 }
-	 event.preventDefault();
-	
-	 mouseDragLastPos = pos;
-  }
-	   
+         // build a set of the highlighted plots
+         final Set<Plot> highlightedPlots = new HashSet<Plot>();
+         for (final Plot plot : containedPlots) {
+            if (plot.isHighlighted()) {
+               highlightedPlots.add(plot);
+            }
+         }
+
+         // determine whether we're dragging only the highlighted plots
+         final Set<Plot> plots = (highlightedPlots.size() > 0) ? highlightedPlots : containedPlots;
+
+         // build a Set of axes to eliminate dupes
+         final Set<GraphAxis> axes = new HashSet<GraphAxis>();
+         for (final Plot plot : plots) {
+            axes.add(plot.getXAxis());
+            axes.add(plot.getYAxis());
+         }
+
+         // drag the axes
+         for (final GraphAxis axis : axes) {
+            axis.drag(mouseDragLastPos, pos, false, SequenceNumber.getNextThrottled());
+         }
+         event.preventDefault();
+
+         mouseDragLastPos = pos;
+      }
    }
 
+   private void handleWindowTouchMoveEvent(final TouchMoveEvent event){
+      JsArray<Touch> touches = event.getTouches();
+      Touch firstTouch = touches.get(0);       
+      final Vector2 pos = new Vector2(firstTouch.getScreenX(), firstTouch.getScreenY());
+      // We can be dragging exactly one of: one or
+      // more plots, the whole viewing window, and nothing
+      if (touchDragLastPos != null) {
+         // We are either dragging either one or more plots,
+         // or the whole viewing window. If there's one or more
+         // highlighted plot, then just drag the axes
+         // for those plots.  Otherwise, drag all axes.
+
+         // build a set of the highlighted plots
+         final Set<Plot> highlightedPlots = new HashSet<Plot>();
+         for (final Plot plot : containedPlots) {
+            if (plot.isHighlighted()) {
+               highlightedPlots.add(plot);
+            }
+         }
+
+         // determine whether we're dragging only the highlighted plots
+         final Set<Plot> plots = (highlightedPlots.size() > 0) ? highlightedPlots : containedPlots;
+
+         // build a Set of axes to eliminate dupes
+         final Set<GraphAxis> axes = new HashSet<GraphAxis>();
+         for (final Plot plot : plots) {
+            axes.add(plot.getXAxis());
+            axes.add(plot.getYAxis());
+         }
+
+         // drag the axes
+         for (final GraphAxis axis : axes) {
+            axis.drag(touchDragLastPos, pos, false, SequenceNumber.getNextThrottled());
+         }
+         event.preventDefault();
+
+         touchDragLastPos = pos;
+      }
+   }
+   
    private void handleMouseMoveEvent(final MouseMoveEvent event) {
       final Vector2 pos = new Vector2(event.getX(), event.getY());
       if (mouseDragLastPos == null) {
@@ -250,47 +359,86 @@ public class SeriesPlotContainer extends BasePlotContainer {
          paint(SequenceNumber.getNextThrottled());
       }
    }
+
+   private void handleTouchMoveEvent(final TouchMoveEvent event) {
+
+   }   
    
    private void handleWindowMouseUpEvent(final MouseUpEvent event){
-	   mouseDownInside = false;
-	   if (mouseDragLastPos != null) {
-		     // We are either dragging either one or more plots,
-		 // or the whole viewing window. If there's one or more
-		 // highlighted plot, then just drag the axes
-		 // for those plots.  Otherwise, drag all axes.
+         mouseDownInside = false;
+         if (mouseDragLastPos != null) {
+            // We are either dragging either one or more plots,
+	    // or the whole viewing window. If there's one or more
+	    // highlighted plot, then just drag the axes
+	    // for those plots.  Otherwise, drag all axes.
 		
-		 // build a set of the highlighted plots
-		 final Set<Plot> highlightedPlots = new HashSet<Plot>();
-		 for (final Plot plot : containedPlots) {
-		    if (plot.isHighlighted()) {
-		       highlightedPlots.add(plot);
-		    }
-		 }
+	    // build a set of the highlighted plots
+	    final Set<Plot> highlightedPlots = new HashSet<Plot>();
+	    for (final Plot plot : containedPlots) {
+	    if (plot.isHighlighted()) {
+               highlightedPlots.add(plot);
+	    }
+	 }
 		
-		 // determine whether we're dragging only the highlighted plots
-		 final Set<Plot> plots = (highlightedPlots.size() > 0) ? highlightedPlots : containedPlots;
+	 // determine whether we're dragging only the highlighted plots
+	 final Set<Plot> plots = (highlightedPlots.size() > 0) ? highlightedPlots : containedPlots;
 		
-		 // build a Set of axes to eliminate dupes
-		 final Set<GraphAxis> axes = new HashSet<GraphAxis>();
-		 for (final Plot plot : plots) {
-		    axes.add(plot.getXAxis());
-		    axes.add(plot.getYAxis());
-		 }
+	 // build a Set of axes to eliminate dupes
+	 final Set<GraphAxis> axes = new HashSet<GraphAxis>();
+	 for (final Plot plot : plots) {
+	    axes.add(plot.getXAxis());
+	    axes.add(plot.getYAxis());
+	 }
 		
-		 // drag the axes
-		 for (final GraphAxis axis : axes) {
-		    axis.drag(mouseDragLastPos, mouseDragLastPos, false, SequenceNumber.getNextThrottled());
-		 }
-		 event.preventDefault();
-	   }
-	   mouseDragStartPos = null;
-      mouseDragLastPos = null;
-	   
+	 // drag the axes
+	 for (final GraphAxis axis : axes) {
+	    axis.drag(mouseDragLastPos, mouseDragLastPos, false, SequenceNumber.getNextThrottled());
+	 }
+         event.preventDefault();
+      }
+      mouseDragStartPos = null;
+      mouseDragLastPos = null;   
+   }
+   
+   private void handleWindowTouchEndEvent(final TouchEndEvent event){
+      touchStartInside = false;
+      if (touchDragLastPos != null) {
+         // We are either dragging either one or more plots,
+         // or the whole viewing window. If there's one or more
+	 // highlighted plot, then just drag the axes
+	 // for those plots.  Otherwise, drag all axes.
+		
+	 // build a set of the highlighted plots
+	 final Set<Plot> highlightedPlots = new HashSet<Plot>();
+	 for (final Plot plot : containedPlots) {
+	    if (plot.isHighlighted()) {
+               highlightedPlots.add(plot);
+	    }
+	 }
+		
+	 // determine whether we're dragging only the highlighted plots
+	 final Set<Plot> plots = (highlightedPlots.size() > 0) ? highlightedPlots : containedPlots;
+		
+	 // build a Set of axes to eliminate dupes
+	 final Set<GraphAxis> axes = new HashSet<GraphAxis>();
+	 for (final Plot plot : plots) {
+	    axes.add(plot.getXAxis());
+	    axes.add(plot.getYAxis());
+	 }
+		
+	 // drag the axes
+	 for (final GraphAxis axis : axes) {
+	    axis.drag(touchDragLastPos, touchDragLastPos, false, SequenceNumber.getNextThrottled());
+	 }
+         event.preventDefault();
+      }
+      touchDragStartPos = null;
+      touchDragLastPos = null;         
    }
 
    private void handleMouseUpEvent(final MouseUpEvent event) {
-	   if (mouseDownInside)
-		   event.preventDefault();
+      if (mouseDownInside)
+         event.preventDefault();
       final Vector2 pos = new Vector2(event.getX(), event.getY());
       final Vector2 screenPos = new Vector2(event.getScreenX(),event.getScreenY());
       final boolean isClickEvent = mouseDownInside && ((mouseDragStartPos == null)
@@ -306,46 +454,84 @@ public class SeriesPlotContainer extends BasePlotContainer {
       // Want guaranteed update for the axes
       paint(SequenceNumber.getNext());
    }
+
+   private void handleTouchEndEvent(final TouchEndEvent event) {
+
+   }
    
    private void handleWindowMouseOutHandler(final MouseOutEvent event){
-	   if (mouseDragLastPos != null) {
-		     // We are either dragging either one or more plots,
-		 // or the whole viewing window. If there's one or more
-		 // highlighted plot, then just drag the axes
-		 // for those plots.  Otherwise, drag all axes.
+      if (mouseDragLastPos != null) {
+         // We are either dragging either one or more plots,
+	 // or the whole viewing window. If there's one or more
+	 // highlighted plot, then just drag the axes
+	 // for those plots.  Otherwise, drag all axes.
 		
-		 // build a set of the highlighted plots
-		 final Set<Plot> highlightedPlots = new HashSet<Plot>();
-		 for (final Plot plot : containedPlots) {
-		    if (plot.isHighlighted()) {
-		       highlightedPlots.add(plot);
-		    }
-		 }
+	 // build a set of the highlighted plots
+	 final Set<Plot> highlightedPlots = new HashSet<Plot>();
+	 for (final Plot plot : containedPlots) {
+	    if (plot.isHighlighted()) {
+	       highlightedPlots.add(plot);
+	    }
+	 }
 		
-		 // determine whether we're dragging only the highlighted plots
-		 final Set<Plot> plots = (highlightedPlots.size() > 0) ? highlightedPlots : containedPlots;
+	 // determine whether we're dragging only the highlighted plots
+	 final Set<Plot> plots = (highlightedPlots.size() > 0) ? highlightedPlots : containedPlots;
 		
-		 // build a Set of axes to eliminate dupes
-		 final Set<GraphAxis> axes = new HashSet<GraphAxis>();
-		 for (final Plot plot : plots) {
-		    axes.add(plot.getXAxis());
-		    axes.add(plot.getYAxis());
-		 }
+	 // build a Set of axes to eliminate dupes
+	 final Set<GraphAxis> axes = new HashSet<GraphAxis>();
+	 for (final Plot plot : plots) {
+	    axes.add(plot.getXAxis());
+	    axes.add(plot.getYAxis());
+	 }
 		
-		 // drag the axes
-		 for (final GraphAxis axis : axes) {
-		    axis.drag(mouseDragLastPos, mouseDragLastPos, false, SequenceNumber.getNextThrottled());
-		 }
-		 event.preventDefault();
-	   }
-	   mouseDownInside = false;
-	   mouseDragLastPos = null;
-	   mouseDragStartPos = null;
-	   
+	 // drag the axes
+	 for (final GraphAxis axis : axes) {
+	    axis.drag(mouseDragLastPos, mouseDragLastPos, false, SequenceNumber.getNextThrottled());
+	 }
+	 event.preventDefault();
+      }
+      mouseDownInside = false;
+      mouseDragLastPos = null;
+      mouseDragStartPos = null;
    }
-
+   
+   private void handleWindowTouchCancelEvent(final TouchCancelEvent event){
+      if (touchDragLastPos != null) {
+         // We are either dragging either one or more plots,
+	 // or the whole viewing window. If there's one or more
+	 // highlighted plot, then just drag the axes
+	 // for those plots.  Otherwise, drag all axes.
+		
+	 // build a set of the highlighted plots
+	 final Set<Plot> highlightedPlots = new HashSet<Plot>();
+	 for (final Plot plot : containedPlots) {
+	    if (plot.isHighlighted()) {
+	       highlightedPlots.add(plot);
+	    }
+	 }
+		
+	 // determine whether we're dragging only the highlighted plots
+	 final Set<Plot> plots = (highlightedPlots.size() > 0) ? highlightedPlots : containedPlots;
+		
+	 // build a Set of axes to eliminate dupes
+	 final Set<GraphAxis> axes = new HashSet<GraphAxis>();
+	 for (final Plot plot : plots) {
+	    axes.add(plot.getXAxis());
+	    axes.add(plot.getYAxis());
+	 }
+		
+	 // drag the axes
+	 for (final GraphAxis axis : axes) {
+	    axis.drag(touchDragLastPos, touchDragLastPos, false, SequenceNumber.getNextThrottled());
+	 }
+	 event.preventDefault();
+      }
+      touchStartInside = false;
+      touchDragLastPos = null;
+      touchDragStartPos = null;       
+   }
+   
    private void handleMouseOutEvent(final MouseOutEvent event) {
-
       // Ensure that all plots are unhighlighted, as are all axes
       for (final Plot plot : containedPlots) {
          plot.unhighlight();
@@ -357,6 +543,10 @@ public class SeriesPlotContainer extends BasePlotContainer {
       paint(SequenceNumber.getNext());
    }
 
+   private void handleTouchCancelEvent(final TouchCancelEvent event) {
+
+   }
+   
    private void layout() {
       final Set<GraphAxis> axes = new HashSet<GraphAxis>();
       for (final Plot plot : containedPlots) {
