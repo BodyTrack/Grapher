@@ -1,0 +1,51 @@
+<!-- 
+Copyright 2014 Daniel Kurka 
+
+Licensed under the Apache License, Version 2.0 (the "License"); 
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at  http://www.apache.org/licenses/LICENSE-2.0
+	
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS, WITHOUT 
+WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the 
+License for the specific language governing permissions and limitations 
+under the License.
+-->
+<module>
+  <define-property name="mgwt.os" values="android, ios" />
+  <property-provider name="mgwt.os"><![CDATA[
+    // Detect mgwt.os from user agent.
+    var ua = navigator.userAgent.toLowerCase();
+    if (ua.indexOf("iphone") != -1 || ua.indexOf("ipod") != -1) {
+      // iphone and ipod.
+        return "ios";
+    } else if (ua.indexOf("ipad") != -1) {
+      // ipad.
+      return "ios";
+    } else if (ua.indexOf("android") != -1) {
+      return "android";  
+    }
+    return "ios";
+    ]]></property-provider>
+
+  <inherits name="com.googlecode.mgwt.ui.client.theme.platform.main.MainResource" />
+  <inherits name="com.googlecode.mgwt.ui.client.theme.platform.button.Button" />
+  <inherits name="com.googlecode.mgwt.ui.client.theme.platform.buttonbar.ButtonBar" />
+  <inherits name="com.googlecode.mgwt.ui.client.theme.platform.carousel.Carousel" />
+  <inherits name="com.googlecode.mgwt.ui.client.theme.platform.dialog.Dialog" />
+  <inherits name="com.googlecode.mgwt.ui.client.theme.platform.form.Form" />
+  <inherits name="com.googlecode.mgwt.ui.client.theme.platform.header.Header" />
+  <inherits name="com.googlecode.mgwt.ui.client.theme.platform.input.Input" />
+  <inherits name="com.googlecode.mgwt.ui.client.theme.platform.input.checkbox.MCheckBox" />
+  <inherits name="com.googlecode.mgwt.ui.client.theme.platform.input.listbox.MListBox" />
+  <inherits name="com.googlecode.mgwt.ui.client.theme.platform.input.radio.MRadioButton" />
+  <inherits name="com.googlecode.mgwt.ui.client.theme.platform.input.search.MSearchBox" />
+  <inherits name="com.googlecode.mgwt.ui.client.theme.platform.input.slider.Slider" />
+  <inherits name="com.googlecode.mgwt.ui.client.theme.platform.list.celllist.CellList" />
+  <inherits name="com.googlecode.mgwt.ui.client.theme.platform.list.celllist.GroupingCellList" />
+  <inherits name="com.googlecode.mgwt.ui.client.theme.platform.list.widgetlist.WidgetList" />
+  <inherits name="com.googlecode.mgwt.ui.client.theme.platform.panel.Panel" />
+  <inherits name="com.googlecode.mgwt.ui.client.theme.platform.panel.pull.PullPanel" />
+  <inherits name="com.googlecode.mgwt.ui.client.theme.platform.progress.Progress" />
+  <inherits name="com.googlecode.mgwt.ui.client.theme.platform.tabbar.TabBar" />
+</module>

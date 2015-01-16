@@ -24,7 +24,11 @@ import com.google.gwt.event.dom.client.TouchMoveEvent;
 import com.google.gwt.event.dom.client.TouchMoveHandler;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.core.client.JsArray;
-import  com.google.gwt.dom.client.Touch;
+import com.google.gwt.dom.client.Touch;
+import com.googlecode.mgwt.ui.client.widget.touch.TouchDelegate;
+import com.googlecode.mgwt.dom.client.recognizer.pinch.PinchEvent;
+import com.googlecode.mgwt.dom.client.recognizer.pinch.PinchHandler;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -66,6 +70,8 @@ public class SeriesPlotContainer extends BasePlotContainer {
    private static final int MAX_DRAG_CLICK_EVENT = 3;
 
    private final Canvas drawing;
+   private TouchDelegate touchDelegateCanvas;
+   private TouchDelegate touchDelegateRootPanel;
 
    // For the loading message API, which shows one message at a time
    // on the bottom left, without regard to width
@@ -110,6 +116,8 @@ public class SeriesPlotContainer extends BasePlotContainer {
       this.width = placeholderElement.getElement().getClientWidth();
       this.height = placeholderElement.getElement().getClientHeight();
       drawing = Canvas.createIfSupported();
+      touchDelegateCanvas = new TouchDelegate(drawing);
+      touchDelegateRootPanel = new TouchDelegate(RootPanel.get());
       placeholderElement.add(drawing);
 
       nextLoadingMessageId = INITIAL_MESSAGE_ID;
@@ -127,24 +135,10 @@ public class SeriesPlotContainer extends BasePlotContainer {
     	         }
     	  });
           
-    	  drawing.addTouchStartHandler(new TouchStartHandler() {
-    	         @Override
-    	         public void onTouchStart(final TouchStartEvent event) {
-    	            handleTouchStartEvent(event);
-    	         }
-    	  });
-          
     	  drawing.addMouseUpHandler(new MouseUpHandler() {
     	         @Override
     	         public void onMouseUp(final MouseUpEvent event) {
     	            handleMouseUpEvent(event);
-    	         }
-    	  });
-
-    	  drawing.addTouchEndHandler(new TouchEndHandler() {
-    	         @Override
-    	         public void onTouchEnd(final TouchEndEvent event) {
-    	            handleTouchEndEvent(event);
     	         }
     	  });
 
@@ -155,13 +149,6 @@ public class SeriesPlotContainer extends BasePlotContainer {
     				
     		 }
     	  }, MouseUpEvent.getType());
-
-    	  RootPanel.get().addDomHandler(new TouchEndHandler(){
-    		 @Override
-    		 public void onTouchEnd(TouchEndEvent event) {
-                    handleWindowTouchEndEvent(event);
-    		 }
-    	  }, TouchEndEvent.getType());
           
     	  RootPanel.get().addDomHandler(new MouseMoveHandler(){
         	 public void onMouseMove(final MouseMoveEvent event){
@@ -169,13 +156,6 @@ public class SeriesPlotContainer extends BasePlotContainer {
         	 }
         	  
           }, MouseMoveEvent.getType());
-
-    	  RootPanel.get().addDomHandler(new TouchMoveHandler(){
-    		 @Override
-    		 public void onTouchMove(TouchMoveEvent event) {
-                    handleWindowTouchMoveEvent(event);
-    		 }
-    	  }, TouchMoveEvent.getType());          
           
           RootPanel.get().addDomHandler(new MouseOutHandler(){
     		 @Override
@@ -183,13 +163,6 @@ public class SeriesPlotContainer extends BasePlotContainer {
     		    handleWindowMouseOutHandler(event);			
     		 }	  
           }, MouseOutEvent.getType());
-
-    	  RootPanel.get().addDomHandler(new TouchCancelHandler(){
-    		 @Override
-    		 public void onTouchCancel(TouchCancelEvent event) {
-                    handleWindowTouchCancelEvent(event);
-    		 }
-    	  }, TouchCancelEvent.getType());            
       }
 
       drawing.addMouseMoveHandler(new MouseMoveHandler() {
@@ -198,14 +171,7 @@ public class SeriesPlotContainer extends BasePlotContainer {
            handleMouseMoveEvent(event);
          }
       });
-
-      drawing.addTouchMoveHandler(new TouchMoveHandler() {
-         @Override
-         public void onTouchMove(final TouchMoveEvent event) {
-           handleTouchMoveEvent(event);
-         }
-      });
-      
+  
       drawing.addMouseOutHandler(new MouseOutHandler() {
          @Override
          public void onMouseOut(final MouseOutEvent event) {
@@ -213,16 +179,63 @@ public class SeriesPlotContainer extends BasePlotContainer {
          }
       });
       
-      drawing.addTouchCancelHandler(new TouchCancelHandler() {
+      touchDelegateCanvas.addTouchStartHandler(new TouchStartHandler() {
+         @Override
+         public void onTouchStart(final TouchStartEvent event) {
+            handleTouchStartEvent(event);
+         }
+      });
+
+      touchDelegateCanvas.addTouchEndHandler(new TouchEndHandler(){
+         @Override
+         public void onTouchEnd(final TouchEndEvent event) {
+            handleTouchEndEvent(event);
+         }
+      });
+
+      touchDelegateCanvas.addTouchMoveHandler(new TouchMoveHandler(){
+         @Override
+         public void onTouchMove(final TouchMoveEvent event) {
+            handleTouchMoveEvent(event);
+         }
+      });
+
+      touchDelegateCanvas.addTouchCancelHandler(new TouchCancelHandler(){
          @Override
          public void onTouchCancel(final TouchCancelEvent event) {
             handleTouchCancelEvent(event);
          }
-      });    
-   }
+      });
 
+      touchDelegateCanvas.addPinchHandler(new PinchHandler(){
+         @Override
+         public void onPinch(final PinchEvent event) {
+            handlePinchEvent(event);
+         }
+      });     
+   } 
+   
    private void debug(String str) {
       RootPanel.get("title").getElement().setInnerHTML(str);
+   }
+
+   private void handlePinchEvent(final PinchEvent event) {
+      int eventId = SequenceNumber.getNextThrottled();
+      final Vector2 pos = new Vector2(event.getX(), event.getY());
+      
+      // build a Set of axes to eliminate dupes
+      final Set<GraphAxis> axes = new HashSet<GraphAxis>();
+      for (final Plot plot : containedPlots) {
+         axes.add(plot.getXAxis());
+         axes.add(plot.getYAxis());
+      }
+
+      // zoom the axes
+      for (final GraphAxis axis : axes) {
+         axis.zoom(event.getScaleFactor(), axis.unproject(pos), eventId);
+      }
+      debug(Double.toString(event.getScaleFactor()));
+      paint(eventId);
    }
    
    private void handleMouseDownEvent(final MouseDownEvent event) {
@@ -279,7 +292,7 @@ public class SeriesPlotContainer extends BasePlotContainer {
       }
    }
 
-   private void handleWindowTouchMoveEvent(final TouchMoveEvent event){
+   private void handleTouchMoveEvent(final TouchMoveEvent event){
       JsArray<Touch> touches = event.getTouches();
       Touch firstTouch = touches.get(0);       
       final Vector2 pos = new Vector2(firstTouch.getScreenX(), firstTouch.getScreenY());
@@ -358,11 +371,7 @@ public class SeriesPlotContainer extends BasePlotContainer {
 
          paint(SequenceNumber.getNextThrottled());
       }
-   }
-
-   private void handleTouchMoveEvent(final TouchMoveEvent event) {
-
-   }   
+   } 
    
    private void handleWindowMouseUpEvent(final MouseUpEvent event){
          mouseDownInside = false;
@@ -400,7 +409,7 @@ public class SeriesPlotContainer extends BasePlotContainer {
       mouseDragLastPos = null;   
    }
    
-   private void handleWindowTouchEndEvent(final TouchEndEvent event){
+   private void handleTouchEndEvent(final TouchEndEvent event){
       touchStartInside = false;
       if (touchDragLastPos != null) {
          // We are either dragging either one or more plots,
@@ -430,7 +439,7 @@ public class SeriesPlotContainer extends BasePlotContainer {
 	 for (final GraphAxis axis : axes) {
 	    axis.drag(touchDragLastPos, touchDragLastPos, false, SequenceNumber.getNextThrottled());
 	 }
-         event.preventDefault();
+         //event.preventDefault();
       }
       touchDragStartPos = null;
       touchDragLastPos = null;         
@@ -453,10 +462,6 @@ public class SeriesPlotContainer extends BasePlotContainer {
 
       // Want guaranteed update for the axes
       paint(SequenceNumber.getNext());
-   }
-
-   private void handleTouchEndEvent(final TouchEndEvent event) {
-
    }
    
    private void handleWindowMouseOutHandler(final MouseOutEvent event){
@@ -495,7 +500,7 @@ public class SeriesPlotContainer extends BasePlotContainer {
       mouseDragStartPos = null;
    }
    
-   private void handleWindowTouchCancelEvent(final TouchCancelEvent event){
+   private void handleTouchCancelEvent(final TouchCancelEvent event){
       if (touchDragLastPos != null) {
          // We are either dragging either one or more plots,
 	 // or the whole viewing window. If there's one or more
@@ -524,7 +529,7 @@ public class SeriesPlotContainer extends BasePlotContainer {
 	 for (final GraphAxis axis : axes) {
 	    axis.drag(touchDragLastPos, touchDragLastPos, false, SequenceNumber.getNextThrottled());
 	 }
-	 event.preventDefault();
+	 //event.preventDefault();
       }
       touchStartInside = false;
       touchDragLastPos = null;
@@ -541,10 +546,6 @@ public class SeriesPlotContainer extends BasePlotContainer {
 
       // Want guaranteed update for the axes
       paint(SequenceNumber.getNext());
-   }
-
-   private void handleTouchCancelEvent(final TouchCancelEvent event) {
-
    }
    
    private void layout() {

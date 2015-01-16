@@ -11,6 +11,7 @@
       <pathelement location="${gwt-user.jar}"/>
       <pathelement location="${gwt-log.jar}"/>
       <pathelement location="${gwt-maps.jar}"/>
+      <pathelement location="${mgwt.jar}"/>
    </path>
 
    <path id="project-test.classpath">
@@ -28,6 +29,7 @@
       <pathelement location="${gwt-dev.jar}"/>
       <pathelement location="${gwt-user.jar}"/>
       <pathelement location="${gwt-log.jar}"/>
+      <pathelement location="${mgwt.jar}"/>
    </path>
 
    <!-- Compiler resources -->
