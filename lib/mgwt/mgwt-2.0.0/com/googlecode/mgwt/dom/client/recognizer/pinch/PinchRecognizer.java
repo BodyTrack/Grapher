@@ -60,7 +60,6 @@ public class PinchRecognizer implements TouchHandler {
    * @param offsetProvider the offset provider
    */
   public PinchRecognizer(HasHandlers source, OffsetProvider offsetProvider) {
-
     if (source == null) {
       throw new IllegalArgumentException("source can not be null");
     }
@@ -72,9 +71,14 @@ public class PinchRecognizer implements TouchHandler {
     this.offsetProvider = offsetProvider;
     state = State.READY;
   }
-
+  
+   public static native boolean debug(final String s) /*-{
+      console.log(s);
+   }-*/;
+   
   @Override
   public void onTouchStart(TouchStartEvent event) {
+    debug("--- onTouchStart from mgwt: " + state);
     touchCount++;
     switch (state) {
       case READY:
@@ -95,6 +99,7 @@ public class PinchRecognizer implements TouchHandler {
 
   @Override
   public void onTouchMove(TouchMoveEvent event) {
+    debug("--- onTouchMove from mgwt: " + state);
     switch (state) {
       case TWO_FINGER:
 
@@ -117,7 +122,10 @@ public class PinchRecognizer implements TouchHandler {
         distance = newDistance;
 
         break;
-
+      
+      case ONE_FINGER:
+        break;
+          
       default:
         state = State.INVALID;
         break;
@@ -126,6 +134,7 @@ public class PinchRecognizer implements TouchHandler {
 
   @Override
   public void onTouchEnd(TouchEndEvent event) {
+    debug("--- onTouchEnd from mgwt: " + state);
     touchCount--;
     if (touchCount <= 0) {
       reset();

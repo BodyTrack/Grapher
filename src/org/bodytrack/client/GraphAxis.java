@@ -1050,7 +1050,7 @@ public class GraphAxis implements Resizable {
 	 * 	for an axis representing time, other values for another
 	 * 	axis), not in screen pixels
 	 */
-	private void uncheckedDrag(final double motion, final int eventId) {
+	public void uncheckedDrag(final double motion, final int eventId) {
 		uncheckedTranslate(motion);
 		clampToRange();
 		rescale();
