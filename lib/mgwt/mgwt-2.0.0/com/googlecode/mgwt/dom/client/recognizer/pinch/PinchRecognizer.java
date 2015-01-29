@@ -78,7 +78,7 @@ public class PinchRecognizer implements TouchHandler {
    
   @Override
   public void onTouchStart(TouchStartEvent event) {
-    debug("--- onTouchStart from mgwt: " + state);
+    //debug("--- onTouchStart from mgwt: " + state);
     touchCount++;
     switch (state) {
       case READY:
@@ -99,7 +99,7 @@ public class PinchRecognizer implements TouchHandler {
 
   @Override
   public void onTouchMove(TouchMoveEvent event) {
-    debug("--- onTouchMove from mgwt: " + state);
+    //debug("--- onTouchMove from mgwt: " + state);
     switch (state) {
       case TWO_FINGER:
 
@@ -134,7 +134,7 @@ public class PinchRecognizer implements TouchHandler {
 
   @Override
   public void onTouchEnd(TouchEndEvent event) {
-    debug("--- onTouchEnd from mgwt: " + state);
+    //debug("--- onTouchEnd from mgwt: " + state);
     touchCount--;
     if (touchCount <= 0) {
       reset();

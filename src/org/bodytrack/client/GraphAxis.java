@@ -428,7 +428,7 @@ public class GraphAxis implements Resizable {
 	}
 
 	public void paint(final int newPaintEventId) {
-		// guard against redundant paints
+                // guard against redundant paints
 		if (previousPaintEventId != newPaintEventId) {
 			previousPaintEventId = newPaintEventId;
 
@@ -442,10 +442,11 @@ public class GraphAxis implements Resizable {
 				drawingCanvas.setStrokeStyle(HIGHLIGHTED_COLOR);
 			else
 				drawingCanvas.setStrokeStyle(NORMAL_COLOR);
-
+                        
 			drawingCanvas.beginPath();
+                        
 			drawingCanvas.drawLineSegment(project2D(this.min), project2D(this.max));
-
+                        
 			final double majorTickSize = computeTickSize(majorTickMinSpacingPixels);
 			renderTicks(0, majorTickSize, null, drawingCanvas,
 					majorTickWidthPixels, new DefaultLabelFormatter());
@@ -461,6 +462,7 @@ public class GraphAxis implements Resizable {
 
 			// Clean up after ourselves
 			drawingCanvas.setStrokeStyle(GrapherCanvas.DEFAULT_COLOR);
+                        drawingCanvas.stroke();
 		}
 	}
 
@@ -1007,7 +1009,11 @@ public class GraphAxis implements Resizable {
 		// Even if there are no change listeners, should still update the UI
 		paint(eventId);
 	}
-
+        
+        public static native boolean debug(final String s) /*-{
+           console.log(s);
+        }-*/;
+   
 	private void publishAxisChangeEvent(final int eventId) {
 		for (final EventListener listener : eventListeners) {
 			listener.onAxisChange(this, eventId);
@@ -1156,7 +1162,8 @@ public class GraphAxis implements Resizable {
 		}
 
 		private native void makeCallback(JavaScriptObject callback, GraphAxis axis, int eventId) /*-{
-			var cursorPos = axis.@org.bodytrack.client.GraphAxis::getCursorPosition()();
+			console.log('makeCallback ' + eventId);
+                        var cursorPos = axis.@org.bodytrack.client.GraphAxis::getCursorPosition()();
 			if (cursorPos != null)
 				cursorPos = cursorPos.@java.lang.Double::doubleValue()();
 			callback({

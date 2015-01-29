@@ -27,6 +27,7 @@ import com.google.gwt.dom.client.Touch;
 import com.googlecode.mgwt.ui.client.widget.touch.TouchDelegate;
 import com.googlecode.mgwt.dom.client.recognizer.pinch.PinchEvent;
 import com.googlecode.mgwt.dom.client.recognizer.pinch.PinchHandler;
+import com.google.gwt.user.client.Window.Navigator;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -90,6 +91,8 @@ public class SeriesPlotContainer extends BasePlotContainer {
 
    private int width;
    private int height;
+   private int counter = 0;
+   private double accuScale = 1;
 
    private Vector2 mouseDragLastPos;
    private Vector2 mouseDragStartPos;
@@ -105,6 +108,7 @@ public class SeriesPlotContainer extends BasePlotContainer {
    private final String placeholderElementId;
    
    public SeriesPlotContainer(final String placeholderElementId, boolean ignoreClickEvents) {
+      //Log.debug("isMobile: " + Boolean.toString(isMobile()) + " - " + Navigator.getUserAgent());
       if (placeholderElementId == null) {
          throw new NullPointerException("The placeholder element ID cannot be null");
       }
@@ -130,28 +134,28 @@ public class SeriesPlotContainer extends BasePlotContainer {
     	  drawing.addMouseDownHandler(new MouseDownHandler() {
     	         @Override
     	         public void onMouseDown(final MouseDownEvent event) {
-    	            //handleMouseDownEvent(event);
+    	            handleMouseDownEvent(event);
     	         }
     	  });
           
     	  drawing.addMouseUpHandler(new MouseUpHandler() {
     	         @Override
     	         public void onMouseUp(final MouseUpEvent event) {
-    	            //handleMouseUpEvent(event);
+    	            handleMouseUpEvent(event);
     	         }
     	  });
 
     	  RootPanel.get().addDomHandler(new MouseUpHandler(){
     		 @Override
     		 public void onMouseUp(MouseUpEvent event) {
-                    //handleWindowMouseUpEvent(event);
+                    handleWindowMouseUpEvent(event);
     				
     		 }
     	  }, MouseUpEvent.getType());
           
     	  RootPanel.get().addDomHandler(new MouseMoveHandler(){
         	 public void onMouseMove(final MouseMoveEvent event){
-        	    //handleWindowMouseMoveEvent(event);
+        	    handleWindowMouseMoveEvent(event);
         	 }
         	  
           }, MouseMoveEvent.getType());
@@ -159,22 +163,29 @@ public class SeriesPlotContainer extends BasePlotContainer {
           RootPanel.get().addDomHandler(new MouseOutHandler(){
     		 @Override
     		 public void onMouseOut(MouseOutEvent event) {
-    		    //handleWindowMouseOutHandler(event);			
+    		    handleWindowMouseOutHandler(event);		
     		 }	  
           }, MouseOutEvent.getType());
+          
+          RootPanel.get().addDomHandler(new MouseDownHandler(){
+    		 @Override
+    		 public void onMouseDown(MouseDownEvent event) {
+    		    event.preventDefault();	
+    		 }	  
+          }, MouseDownEvent.getType());
       }
-
+      
       drawing.addMouseMoveHandler(new MouseMoveHandler() {
          @Override
          public void onMouseMove(final MouseMoveEvent event) {
-           //handleMouseMoveEvent(event);
+           handleMouseMoveEvent(event);
          }
       });
   
       drawing.addMouseOutHandler(new MouseOutHandler() {
          @Override
          public void onMouseOut(final MouseOutEvent event) {
-            //handleMouseOutEvent(event);
+            handleMouseOutEvent(event);
          }
       });
       
@@ -214,18 +225,24 @@ public class SeriesPlotContainer extends BasePlotContainer {
       });
    } 
 
+   private boolean isMobile() {
+    String userAgent = Navigator.getUserAgent();
+    return (userAgent.contains("Android") 
+            || userAgent.contains("webOS") 
+            || userAgent.contains("iPhone")
+            || userAgent.contains("iPad")
+            || userAgent.contains("iPod")
+            || userAgent.contains("BlackBerry")
+            || userAgent.contains("Windows Phone"));
+  };
+
    private void handlePinchEvent(final PinchEvent event) {
       if(event.getScaleFactor() > 1.005 || event.getScaleFactor() < 0.995) {
-         Log.debug("handlePinchEvent: " + Double.toString(event.getScaleFactor()));
+         //Log.debug("handlePinchEvent: " + Double.toString(event.getScaleFactor()));
          final Vector2 pos = new Vector2(event.getX(), event.getY());
          // zoom the axes
          for (final Plot plot : containedPlots) {
             //double panAmmount = (plot.getXAxis().getMax() - plot.getXAxis().getMin()) / 60 * event.getScaleFactor();
-            Log.debug(Double.toString(plot.getXAxis().getMax()));
-            Log.debug(Double.toString(plot.getXAxis().getMin()));
-            Log.debug(Double.toString(plot.getXAxis().getMax()-plot.getXAxis().getMin()));
-            Log.debug(Double.toString(plot.getXAxis().unproject(pos)));
-            Log.debug(Double.toString(SequenceNumber.getNextThrottled()));
             plot.getXAxis().zoom(event.getScaleFactor(), plot.getXAxis().unproject(pos), SequenceNumber.getNextThrottled());
             //plot.getXAxis().uncheckedDrag(panAmmount, SequenceNumber.getNextThrottled());
             //plot.getXAxis().paint(SequenceNumber.getNextThrottled());
@@ -235,15 +252,16 @@ public class SeriesPlotContainer extends BasePlotContainer {
 
    private void handleTouchStartEvent(final TouchStartEvent event) {
       if(event.getTouches().length() == 1) {
-         Log.debug("handleTouchStartEvent: " + Integer.toString(event.getTouches().length()));
+         //Log.debug("handleTouchStartEvent: " + Integer.toString(event.getTouches().length()));
          Touch touch1 = event.getTouches().get(0);
          touchDragLastPos = new Vector2(touch1.getScreenX(), touch1.getScreenY());
+         event.preventDefault();
       }
    }
  
    private void handleTouchMoveEvent(final TouchMoveEvent event){
       if(event.getTouches().length() == 1) {
-         Log.debug("handleTouchMoveEvent: " + Integer.toString(event.getTouches().length()));
+         //Log.debug("handleTouchMoveEvent: " + Integer.toString(event.getTouches().length()));
          Touch touch1 = event.getTouches().get(0);
          final Vector2 pos = new Vector2(touch1.getScreenX(), touch1.getScreenY());
          if (touchDragLastPos != null) {
@@ -254,12 +272,13 @@ public class SeriesPlotContainer extends BasePlotContainer {
             }
             touchDragLastPos = pos;
          }
+         event.preventDefault();
       }
    }
    
    private void handleTouchEndEvent(final TouchEndEvent event){
       if(event.getTouches().length() == 0) {
-         Log.debug("handleTouchEndEvent: " + Integer.toString(event.getTouches().length()));
+         //Log.debug("handleTouchEndEvent: " + Integer.toString(event.getTouches().length()));
          if (touchDragLastPos != null) {
             for (final Plot plot : containedPlots) {
                plot.getXAxis().drag(touchDragLastPos, touchDragLastPos, false, SequenceNumber.getNextThrottled());
@@ -267,12 +286,13 @@ public class SeriesPlotContainer extends BasePlotContainer {
             }
          }
          touchDragLastPos = null;
+         event.preventDefault();
       }
    }
    
    private void handleTouchCancelEvent(final TouchCancelEvent event){
       if(event.getTouches().length() == 0) {
-         Log.debug("handleTouchCancelEvent: " + Integer.toString(event.getTouches().length()));
+         //Log.debug("handleTouchCancelEvent: " + Integer.toString(event.getTouches().length()));
          if (touchDragLastPos != null) {
             for (final Plot plot : containedPlots) {
                plot.getXAxis().drag(touchDragLastPos, touchDragLastPos, false, SequenceNumber.getNextThrottled());
@@ -280,6 +300,7 @@ public class SeriesPlotContainer extends BasePlotContainer {
             }
          }
          touchDragLastPos = null;
+         event.preventDefault();
       }
    }
    
@@ -523,17 +544,18 @@ public class SeriesPlotContainer extends BasePlotContainer {
             showValueMessages(valueMessages.subList(0, numMessages));
          }
 
-         // Draw the axes
-         for (final Plot plot : containedPlots) {
-            plot.getXAxis().paint(newPaintEventId);
-            plot.getYAxis().paint(newPaintEventId);
-         }
-
          // Now draw the data
          final GrapherCanvas canvas = GrapherCanvas.buildCanvas(drawing);
          for (final Plot plot : containedPlots) {
             plot.paint(canvas, newPaintEventId);
          }
+
+         // Draw the axes
+         // This code freezes Chrome on mobile devices while zooming 
+         //for (final Plot plot : containedPlots) {
+            //plot.getYAxis().paint(newPaintEventId);
+            //plot.getXAxis().paint(newPaintEventId);
+         //}
 
          context.restore();
       }
