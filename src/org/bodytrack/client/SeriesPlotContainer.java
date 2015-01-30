@@ -91,8 +91,6 @@ public class SeriesPlotContainer extends BasePlotContainer {
 
    private int width;
    private int height;
-   private int counter = 0;
-   private double accuScale = 1;
 
    private Vector2 mouseDragLastPos;
    private Vector2 mouseDragStartPos;
@@ -100,7 +98,7 @@ public class SeriesPlotContainer extends BasePlotContainer {
    private Vector2 touchDragLastPos;
    
    private boolean mouseDownInside;
-   private boolean zoomLock = false;
+   private boolean firstPinch;
    
    private int previousPaintEventId = 0;
 
@@ -237,71 +235,63 @@ public class SeriesPlotContainer extends BasePlotContainer {
   };
 
    private void handlePinchEvent(final PinchEvent event) {
-      if(event.getScaleFactor() > 1.005 || event.getScaleFactor() < 0.995) {
-         //Log.debug("handlePinchEvent: " + Double.toString(event.getScaleFactor()));
-         final Vector2 pos = new Vector2(event.getX(), event.getY());
-         // zoom the axes
-         for (final Plot plot : containedPlots) {
-            //double panAmmount = (plot.getXAxis().getMax() - plot.getXAxis().getMin()) / 60 * event.getScaleFactor();
-            plot.getXAxis().zoom(event.getScaleFactor(), plot.getXAxis().unproject(pos), SequenceNumber.getNextThrottled());
-            //plot.getXAxis().uncheckedDrag(panAmmount, SequenceNumber.getNextThrottled());
-            //plot.getXAxis().paint(SequenceNumber.getNextThrottled());
+      if(firstPinch) {
+         // The scale of the first pinch event is always wrong.
+         // So we need to ignore the first one with a threshold.
+         if(event.getScaleFactor() > 1.01 || event.getScaleFactor() < 0.99) {
+            firstPinch = false;
+         }
+      } else {
+         if(event.getScaleFactor() > 1.005 || event.getScaleFactor() < 0.995) {
+            //Log.debug("handlePinchEvent: " + Double.toString(event.getScaleFactor()));
+            final Vector2 pos = new Vector2(event.getX(), event.getY());
+            for (final Plot plot : containedPlots) {
+               //double panAmmount = (plot.getXAxis().getMax() - plot.getXAxis().getMin()) / 60 * event.getScaleFactor();
+               plot.getXAxis().zoom(event.getScaleFactor(), plot.getXAxis().unproject(pos), SequenceNumber.getNextThrottled());
+               //plot.getXAxis().uncheckedDrag(panAmmount, SequenceNumber.getNextThrottled());
+               //plot.getXAxis().paint(SequenceNumber.getNextThrottled());
+            }
          }
       }
    }
 
    private void handleTouchStartEvent(final TouchStartEvent event) {
-      if(event.getTouches().length() == 1) {
-         //Log.debug("handleTouchStartEvent: " + Integer.toString(event.getTouches().length()));
-         Touch touch1 = event.getTouches().get(0);
-         touchDragLastPos = new Vector2(touch1.getScreenX(), touch1.getScreenY());
-         event.preventDefault();
-      }
+      //Log.debug("handleTouchStartEvent: " + Integer.toString(event.getTouches().length()));
+      firstPinch = true;
+      touchDragLastPos = null;
+      event.preventDefault();
    }
  
    private void handleTouchMoveEvent(final TouchMoveEvent event){
+      //Log.debug("handleTouchMoveEvent: " + Integer.toString(event.getTouches().length()));
+      Touch touch1 = event.getTouches().get(0);
+      final Vector2 pos;
       if(event.getTouches().length() == 1) {
-         //Log.debug("handleTouchMoveEvent: " + Integer.toString(event.getTouches().length()));
-         Touch touch1 = event.getTouches().get(0);
-         final Vector2 pos = new Vector2(touch1.getScreenX(), touch1.getScreenY());
-         if (touchDragLastPos != null) {
-            // drag the axes
-            for (final Plot plot : containedPlots) {
-               plot.getXAxis().drag(touchDragLastPos, pos, false, SequenceNumber.getNextThrottled());
-               plot.getYAxis().drag(touchDragLastPos, pos, false, SequenceNumber.getNextThrottled());
-            }
-            touchDragLastPos = pos;
-         }
-         event.preventDefault();
+         pos = new Vector2(touch1.getScreenX(), touch1.getScreenY());
+      } else {
+         Touch touch2 = event.getTouches().get(1);
+         pos = new Vector2((touch1.getScreenX()+touch2.getScreenX())/2, (touch1.getScreenY()+touch2.getScreenY())/2);
       }
+      if (touchDragLastPos != null && touchDragLastPos.distanceSquared(pos) > 1) {
+         for (final Plot plot : containedPlots) {
+            plot.getXAxis().drag(touchDragLastPos, pos, false, SequenceNumber.getNextThrottled());
+            plot.getYAxis().drag(touchDragLastPos, pos, false, SequenceNumber.getNextThrottled());
+         }  
+      }
+      touchDragLastPos = pos;
+      event.preventDefault();
    }
    
    private void handleTouchEndEvent(final TouchEndEvent event){
-      if(event.getTouches().length() == 0) {
-         //Log.debug("handleTouchEndEvent: " + Integer.toString(event.getTouches().length()));
-         if (touchDragLastPos != null) {
-            for (final Plot plot : containedPlots) {
-               plot.getXAxis().drag(touchDragLastPos, touchDragLastPos, false, SequenceNumber.getNextThrottled());
-               plot.getYAxis().drag(touchDragLastPos, touchDragLastPos, false, SequenceNumber.getNextThrottled());
-            }
-         }
-         touchDragLastPos = null;
-         event.preventDefault();
-      }
+      //Log.debug("handleTouchEndEvent: " + Integer.toString(event.getTouches().length()));
+      touchDragLastPos = null;
+      event.preventDefault();
    }
    
    private void handleTouchCancelEvent(final TouchCancelEvent event){
-      if(event.getTouches().length() == 0) {
-         //Log.debug("handleTouchCancelEvent: " + Integer.toString(event.getTouches().length()));
-         if (touchDragLastPos != null) {
-            for (final Plot plot : containedPlots) {
-               plot.getXAxis().drag(touchDragLastPos, touchDragLastPos, false, SequenceNumber.getNextThrottled());
-               plot.getYAxis().drag(touchDragLastPos, touchDragLastPos, false, SequenceNumber.getNextThrottled());
-            }
-         }
-         touchDragLastPos = null;
-         event.preventDefault();
-      }
+      //Log.debug("handleTouchCancelEvent: " + Integer.toString(event.getTouches().length()));
+      touchDragLastPos = null;
+      event.preventDefault();
    }
    
    private void handleMouseDownEvent(final MouseDownEvent event) {
