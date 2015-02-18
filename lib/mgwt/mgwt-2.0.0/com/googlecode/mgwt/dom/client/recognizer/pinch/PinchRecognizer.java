@@ -25,6 +25,9 @@ import com.googlecode.mgwt.dom.client.event.touch.TouchCopy;
 import com.googlecode.mgwt.dom.client.event.touch.TouchHandler;
 import com.googlecode.mgwt.dom.client.recognizer.EventPropagator;
 
+import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.Element;
+
 /**
  * A PinchRecognizer tracks two finger on a screen that perform a zooming / pinching action
  *
@@ -79,12 +82,18 @@ public class PinchRecognizer implements TouchHandler {
   @Override
   public void onTouchStart(TouchStartEvent event) {
     //debug("--- onTouchStart from mgwt: " + state);
-    touchCount++;
+    //debugDiv("onTouchStart:"+event.getTouches().length());
+    touchCount = event.getTouches().length();
+    // Mobile safari only fires onTouchStart once when users put two fingers down simultaneously.
+    // So if we detect two fingers, change the state.
+    if(touchCount == 2 && state == State.READY) {
+       state = State.ONE_FINGER;
+    }
     switch (state) {
       case READY:
         touchStart1 = TouchCopy.copy(event.getTouches().get(0));
         state = State.ONE_FINGER;
-        break;
+        break; 
       case ONE_FINGER:
         touchStart2 = TouchCopy.copy(event.getTouches().get(1));
         distance = (int) Math.sqrt(Math.pow(touchStart1.getPageX() - touchStart2.getPageX(), 2) + Math.pow(touchStart1.getPageY() - touchStart2.getPageY(), 2));
@@ -97,6 +106,11 @@ public class PinchRecognizer implements TouchHandler {
     }
   }
 
+  public void debugDiv(String str) {
+      Element debugDiv = Document.get().getElementById("debug");
+      debugDiv.setInnerHTML(debugDiv.getInnerHTML() + "   " + str);
+  }
+  
   @Override
   public void onTouchMove(TouchMoveEvent event) {
     //debug("--- onTouchMove from mgwt: " + state);
@@ -135,7 +149,7 @@ public class PinchRecognizer implements TouchHandler {
   @Override
   public void onTouchEnd(TouchEndEvent event) {
     //debug("--- onTouchEnd from mgwt: " + state);
-    touchCount--;
+    touchCount = event.getTouches().length();
     if (touchCount <= 0) {
       reset();
     } else {
