@@ -27,7 +27,12 @@ import com.google.gwt.dom.client.Touch;
 import com.googlecode.mgwt.ui.client.widget.touch.TouchDelegate;
 import com.googlecode.mgwt.dom.client.recognizer.pinch.PinchEvent;
 import com.googlecode.mgwt.dom.client.recognizer.pinch.PinchHandler;
+import com.googlecode.mgwt.dom.client.event.tap.TapEvent;
+import com.googlecode.mgwt.dom.client.event.tap.TapHandler;
 import com.google.gwt.user.client.Window.Navigator;
+
+import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.Element;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -94,31 +99,31 @@ public class SeriesPlotContainer extends BasePlotContainer {
 
    private Vector2 mouseDragLastPos;
    private Vector2 mouseDragStartPos;
-   
+
    private Vector2 touchDragLastPos;
-   
+
    private boolean mouseDownInside;
    private boolean firstPinch;
-   
+
    private int previousPaintEventId = 0;
 
    @SuppressWarnings("unused")
    private final String placeholderElementId;
-   
+
    public SeriesPlotContainer(final String placeholderElementId, boolean ignoreClickEvents) {
       //Log.debug("isMobile: " + Boolean.toString(isMobile()) + " - " + Navigator.getUserAgent());
       if (placeholderElementId == null) {
          throw new NullPointerException("The placeholder element ID cannot be null");
       }
       this.placeholderElementId = placeholderElementId;
-      
+
       final RootPanel placeholderElement = RootPanel.get(placeholderElementId);
       this.width = placeholderElement.getElement().getClientWidth();
       this.height = placeholderElement.getElement().getClientHeight();
       drawing = Canvas.createIfSupported();
-      
+
       touchDelegateCanvas = new TouchDelegate(drawing);
-              
+      touchDelegateRootPanel = new TouchDelegate(RootPanel.get());
       placeholderElement.add(drawing);
 
       nextLoadingMessageId = INITIAL_MESSAGE_ID;
@@ -128,111 +133,122 @@ public class SeriesPlotContainer extends BasePlotContainer {
       valueMessages = new ArrayList<DisplayMessage>();
       mouseDownInside = false;
 
-      if (!ignoreClickEvents) {
-    	  drawing.addMouseDownHandler(new MouseDownHandler() {
-    	         @Override
-    	         public void onMouseDown(final MouseDownEvent event) {
-    	            handleMouseDownEvent(event);
-    	         }
-    	  });
-          
-    	  drawing.addMouseUpHandler(new MouseUpHandler() {
-    	         @Override
-    	         public void onMouseUp(final MouseUpEvent event) {
-    	            handleMouseUpEvent(event);
-    	         }
-    	  });
-
-    	  RootPanel.get().addDomHandler(new MouseUpHandler(){
-    		 @Override
-    		 public void onMouseUp(MouseUpEvent event) {
-                    handleWindowMouseUpEvent(event);
-    				
-    		 }
-    	  }, MouseUpEvent.getType());
-          
-    	  RootPanel.get().addDomHandler(new MouseMoveHandler(){
-        	 public void onMouseMove(final MouseMoveEvent event){
-        	    handleWindowMouseMoveEvent(event);
-        	 }
-        	  
-          }, MouseMoveEvent.getType());
-          
-          RootPanel.get().addDomHandler(new MouseOutHandler(){
-    		 @Override
-    		 public void onMouseOut(MouseOutEvent event) {
-    		    handleWindowMouseOutHandler(event);		
-    		 }	  
-          }, MouseOutEvent.getType());
-          
-          RootPanel.get().addDomHandler(new MouseDownHandler(){
-    		 @Override
-    		 public void onMouseDown(MouseDownEvent event) {
-    		    event.preventDefault();	
-    		 }	  
-          }, MouseDownEvent.getType());
+      if(!isMobile()) {
+         if (!ignoreClickEvents) {
+            drawing.addMouseDownHandler(new MouseDownHandler() {
+               @Override
+               public void onMouseDown(final MouseDownEvent event) {
+                  handleMouseDownEvent(event);
+               }
+            });
+            drawing.addMouseUpHandler(new MouseUpHandler() {
+               @Override
+               public void onMouseUp(final MouseUpEvent event) {
+                  handleMouseUpEvent(event);
+               }
+            });
+            RootPanel.get().addDomHandler(new MouseUpHandler(){
+               @Override
+               public void onMouseUp(MouseUpEvent event) {
+                  handleWindowMouseUpEvent(event);
+               }
+            }, MouseUpEvent.getType());
+            RootPanel.get().addDomHandler(new MouseMoveHandler(){
+               public void onMouseMove(final MouseMoveEvent event){
+                  handleWindowMouseMoveEvent(event);
+               }
+            }, MouseMoveEvent.getType());
+            RootPanel.get().addDomHandler(new MouseOutHandler(){
+               @Override
+               public void onMouseOut(MouseOutEvent event) {
+                  handleWindowMouseOutHandler(event);
+               }
+            }, MouseOutEvent.getType());
+            RootPanel.get().addDomHandler(new MouseDownHandler(){
+               @Override
+               public void onMouseDown(MouseDownEvent event) {
+                  event.preventDefault();
+               }
+            }, MouseDownEvent.getType());
+         }
+         drawing.addMouseMoveHandler(new MouseMoveHandler() {
+            @Override
+            public void onMouseMove(final MouseMoveEvent event) {
+              handleMouseMoveEvent(event);
+            }
+         });
+         drawing.addMouseOutHandler(new MouseOutHandler() {
+            @Override
+            public void onMouseOut(final MouseOutEvent event) {
+               handleMouseOutEvent(event);
+            }
+         });
+      } else {
+         drawing.addTouchStartHandler(new TouchStartHandler() {
+            @Override
+            public void onTouchStart(final TouchStartEvent event) {
+               handleTouchStartEvent(event);
+            }
+         });
+         drawing.addTouchEndHandler(new TouchEndHandler(){
+            @Override
+            public void onTouchEnd(final TouchEndEvent event) {
+               handleTouchEndEvent(event);
+            }
+         });
+         drawing.addTouchMoveHandler(new TouchMoveHandler(){
+            @Override
+            public void onTouchMove(final TouchMoveEvent event) {
+               handleTouchMoveEvent(event);
+            }
+         });
+         drawing.addTouchCancelHandler(new TouchCancelHandler(){
+            @Override
+            public void onTouchCancel(final TouchCancelEvent event) {
+               handleTouchCancelEvent(event);
+            }
+         });
+         touchDelegateCanvas.addPinchHandler(new PinchHandler(){
+            @Override
+            public void onPinch(final PinchEvent event) {
+               handlePinchEvent(event);
+            }
+         });
+         touchDelegateRootPanel.addTapHandler(new TapHandler(){
+            @Override
+            public void onTap(final TapEvent event) {
+               handleTapEvent(event);
+            }
+         });
       }
-      
-      drawing.addMouseMoveHandler(new MouseMoveHandler() {
-         @Override
-         public void onMouseMove(final MouseMoveEvent event) {
-           handleMouseMoveEvent(event);
-         }
-      });
-  
-      drawing.addMouseOutHandler(new MouseOutHandler() {
-         @Override
-         public void onMouseOut(final MouseOutEvent event) {
-            handleMouseOutEvent(event);
-         }
-      });
-      
-      drawing.addTouchStartHandler(new TouchStartHandler() {
-         @Override
-         public void onTouchStart(final TouchStartEvent event) {
-            handleTouchStartEvent(event);
-         }
-      });
-
-      drawing.addTouchEndHandler(new TouchEndHandler(){
-         @Override
-         public void onTouchEnd(final TouchEndEvent event) {
-            handleTouchEndEvent(event);
-         }
-      });
-
-      drawing.addTouchMoveHandler(new TouchMoveHandler(){
-         @Override
-         public void onTouchMove(final TouchMoveEvent event) {
-            handleTouchMoveEvent(event);
-         }
-      });
-
-      drawing.addTouchCancelHandler(new TouchCancelHandler(){
-         @Override
-         public void onTouchCancel(final TouchCancelEvent event) {
-            handleTouchCancelEvent(event);
-         }
-      });
-
-      touchDelegateCanvas.addPinchHandler(new PinchHandler(){
-         @Override
-         public void onPinch(final PinchEvent event) {
-            handlePinchEvent(event);
-         }
-      });
-   } 
+   }
 
    private boolean isMobile() {
-    String userAgent = Navigator.getUserAgent();
-    return (userAgent.contains("Android") 
-            || userAgent.contains("webOS") 
-            || userAgent.contains("iPhone")
-            || userAgent.contains("iPad")
-            || userAgent.contains("iPod")
-            || userAgent.contains("BlackBerry")
-            || userAgent.contains("Windows Phone"));
-  };
+      String userAgent = Navigator.getUserAgent();
+      return (userAgent.contains("Android")
+               || userAgent.contains("webOS")
+               || userAgent.contains("iPhone")
+               || userAgent.contains("iPad")
+               || userAgent.contains("iPod")
+               || userAgent.contains("BlackBerry")
+               || userAgent.contains("Windows Phone"));
+   }
+
+   private void debugDiv(String str) {
+      Element debugDiv = Document.get().getElementById("debug");
+      debugDiv.setInnerHTML(debugDiv.getInnerHTML() + "   " + str);
+   }
+
+   private void handleTapEvent(final TapEvent event) {
+      final Vector2 pos = new Vector2(event.getStartX(), event.getStartY());
+      //debugDiv("handleTapEvent:"+Integer.toString(event.getStartX()));
+      for (final Plot plot: containedPlots){
+         final PlottablePoint highlightedPoint = plot.getHighlightedPoint();
+         plot.getXAxis().highlight(highlightedPoint);
+         plot.getYAxis().highlight(highlightedPoint);
+         plot.onClick(pos);
+      }
+   }
 
    private void handlePinchEvent(final PinchEvent event) {
       if(firstPinch) {
@@ -261,7 +277,7 @@ public class SeriesPlotContainer extends BasePlotContainer {
       touchDragLastPos = null;
       event.preventDefault();
    }
- 
+
    private void handleTouchMoveEvent(final TouchMoveEvent event){
       //Log.debug("handleTouchMoveEvent: " + Integer.toString(event.getTouches().length()));
       Touch touch1 = event.getTouches().get(0);
@@ -276,31 +292,31 @@ public class SeriesPlotContainer extends BasePlotContainer {
          for (final Plot plot : containedPlots) {
             plot.getXAxis().drag(touchDragLastPos, pos, false, SequenceNumber.getNextThrottled());
             plot.getYAxis().drag(touchDragLastPos, pos, false, SequenceNumber.getNextThrottled());
-         }  
+         }
       }
       touchDragLastPos = pos;
       event.preventDefault();
    }
-   
+
    private void handleTouchEndEvent(final TouchEndEvent event){
       //Log.debug("handleTouchEndEvent: " + Integer.toString(event.getTouches().length()));
       touchDragLastPos = null;
       event.preventDefault();
    }
-   
+
    private void handleTouchCancelEvent(final TouchCancelEvent event){
       //Log.debug("handleTouchCancelEvent: " + Integer.toString(event.getTouches().length()));
       touchDragLastPos = null;
       event.preventDefault();
    }
-   
+
    private void handleMouseDownEvent(final MouseDownEvent event) {
       mouseDragStartPos = new Vector2(event.getScreenX(), event.getScreenY());
       mouseDragLastPos = new Vector2(event.getScreenX(), event.getScreenY());
       mouseDownInside = true;
       event.preventDefault();
    }
-   
+
    private void handleWindowMouseMoveEvent(final MouseMoveEvent event){
       final Vector2 pos = new Vector2(event.getScreenX(), event.getScreenY());
       // We can be dragging exactly one of: one or
@@ -338,7 +354,7 @@ public class SeriesPlotContainer extends BasePlotContainer {
          mouseDragLastPos = pos;
       }
    }
-   
+
    private void handleMouseMoveEvent(final MouseMoveEvent event) {
       final Vector2 pos = new Vector2(event.getX(), event.getY());
       if (mouseDragLastPos == null) {
@@ -379,7 +395,7 @@ public class SeriesPlotContainer extends BasePlotContainer {
          paint(SequenceNumber.getNextThrottled());
       }
    }
-   
+
    private void handleWindowMouseUpEvent(final MouseUpEvent event){
          mouseDownInside = false;
          if (mouseDragLastPos != null) {
@@ -387,7 +403,7 @@ public class SeriesPlotContainer extends BasePlotContainer {
 	    // or the whole viewing window. If there's one or more
 	    // highlighted plot, then just drag the axes
 	    // for those plots.  Otherwise, drag all axes.
-		
+
 	    // build a set of the highlighted plots
 	    final Set<Plot> highlightedPlots = new HashSet<Plot>();
 	    for (final Plot plot : containedPlots) {
@@ -395,17 +411,17 @@ public class SeriesPlotContainer extends BasePlotContainer {
                highlightedPlots.add(plot);
 	    }
 	 }
-		
+
 	 // determine whether we're dragging only the highlighted plots
 	 final Set<Plot> plots = (highlightedPlots.size() > 0) ? highlightedPlots : containedPlots;
-		
+
 	 // build a Set of axes to eliminate dupes
 	 final Set<GraphAxis> axes = new HashSet<GraphAxis>();
 	 for (final Plot plot : plots) {
 	    axes.add(plot.getXAxis());
 	    axes.add(plot.getYAxis());
 	 }
-		
+
 	 // drag the axes
 	 for (final GraphAxis axis : axes) {
 	    axis.drag(mouseDragLastPos, mouseDragLastPos, false, SequenceNumber.getNextThrottled());
@@ -413,9 +429,9 @@ public class SeriesPlotContainer extends BasePlotContainer {
          event.preventDefault();
       }
       mouseDragStartPos = null;
-      mouseDragLastPos = null;   
+      mouseDragLastPos = null;
    }
-   
+
    private void handleMouseUpEvent(final MouseUpEvent event) {
       if (mouseDownInside)
          event.preventDefault();
@@ -434,14 +450,14 @@ public class SeriesPlotContainer extends BasePlotContainer {
       // Want guaranteed update for the axes
       paint(SequenceNumber.getNext());
    }
-   
+
    private void handleWindowMouseOutHandler(final MouseOutEvent event){
       if (mouseDragLastPos != null) {
          // We are either dragging either one or more plots,
 	 // or the whole viewing window. If there's one or more
 	 // highlighted plot, then just drag the axes
 	 // for those plots.  Otherwise, drag all axes.
-		
+
 	 // build a set of the highlighted plots
 	 final Set<Plot> highlightedPlots = new HashSet<Plot>();
 	 for (final Plot plot : containedPlots) {
@@ -449,17 +465,17 @@ public class SeriesPlotContainer extends BasePlotContainer {
 	       highlightedPlots.add(plot);
 	    }
 	 }
-		
+
 	 // determine whether we're dragging only the highlighted plots
 	 final Set<Plot> plots = (highlightedPlots.size() > 0) ? highlightedPlots : containedPlots;
-		
+
 	 // build a Set of axes to eliminate dupes
 	 final Set<GraphAxis> axes = new HashSet<GraphAxis>();
 	 for (final Plot plot : plots) {
 	    axes.add(plot.getXAxis());
 	    axes.add(plot.getYAxis());
 	 }
-		
+
 	 // drag the axes
 	 for (final GraphAxis axis : axes) {
 	    axis.drag(mouseDragLastPos, mouseDragLastPos, false, SequenceNumber.getNextThrottled());
@@ -470,7 +486,7 @@ public class SeriesPlotContainer extends BasePlotContainer {
       mouseDragLastPos = null;
       mouseDragStartPos = null;
    }
- 
+
    private void handleMouseOutEvent(final MouseOutEvent event) {
       // Ensure that all plots are unhighlighted, as are all axes
       for (final Plot plot : containedPlots) {
@@ -482,7 +498,7 @@ public class SeriesPlotContainer extends BasePlotContainer {
       // Want guaranteed update for the axes
       paint(SequenceNumber.getNext());
    }
-   
+
    private void layout() {
       final Set<GraphAxis> axes = new HashSet<GraphAxis>();
       for (final Plot plot : containedPlots) {
@@ -541,7 +557,7 @@ public class SeriesPlotContainer extends BasePlotContainer {
          }
 
          // Draw the axes
-         // This code freezes Chrome on mobile devices while zooming 
+         // This code freezes Chrome on mobile devices while zooming
          //for (final Plot plot : containedPlots) {
             //plot.getYAxis().paint(newPaintEventId);
             //plot.getXAxis().paint(newPaintEventId);
@@ -800,11 +816,11 @@ public class SeriesPlotContainer extends BasePlotContainer {
    public final int countValueMessages() {
       return valueMessages.size();
    }
-   
+
    public int getHeight(){
 	   return height;
    }
-   
+
    public int getWidth(){
 	   return width;
    }

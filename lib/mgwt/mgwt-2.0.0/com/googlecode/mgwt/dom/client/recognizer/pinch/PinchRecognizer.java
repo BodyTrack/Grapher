@@ -106,7 +106,7 @@ public class PinchRecognizer implements TouchHandler {
     }
   }
 
-  public void debugDiv(String str) {
+  private void debugDiv(String str) {
       Element debugDiv = Document.get().getElementById("debug");
       debugDiv.setInnerHTML(debugDiv.getInnerHTML() + "   " + str);
   }
