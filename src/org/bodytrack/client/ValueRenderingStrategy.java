@@ -5,11 +5,13 @@ import com.google.gwt.i18n.client.NumberFormat;
 public class ValueRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy implements DataPointRenderingStrategy {
    private static final String DEFAULT_FONT = "7pt Helvetica,Arial,Verdana,sans-serif";
    private static final double DEFAULT_VERTICAL_OFFSET = 3;
+   private static final double DEFAULT_HORIZONTAL_OFFSET = 0;
    private static final int DEFAULT_MARGIN_WIDTH = 5;
    private static final NumberFormat DEFAULT_VALUE_FORMAT = NumberFormat.getFormat(PlottablePoint.DEFAULT_VALUE_FORMAT_STRING);
    private final double marginWidth;
    private final String font;
    private final double verticalOffset;
+   private final double horizontalOffset;
    private NumberFormat numberFormat = DEFAULT_VALUE_FORMAT;
 
    public ValueRenderingStrategy(final StyleDescription.StyleType styleType,
@@ -18,6 +20,7 @@ public class ValueRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy 
       final String tempFont = styleType.getValue("font");
       font = (tempFont == null) ? DEFAULT_FONT : tempFont;
       verticalOffset = styleType.getDoubleValue("verticalOffset", DEFAULT_VERTICAL_OFFSET);
+      horizontalOffset = styleType.getDoubleValue("horizontalOffset", DEFAULT_HORIZONTAL_OFFSET);
       marginWidth = styleType.getDoubleValue("marginWidth", DEFAULT_MARGIN_WIDTH);
       final String numberFormatStr = styleType.getValue("numberFormat");
       if (numberFormatStr != null) {
@@ -80,7 +83,7 @@ public class ValueRenderingStrategy extends BaseDataSeriesPlotRenderingStrategy 
       drawing.getCanvas().setFont(font);
       final String valueAsString = numberFormat.format(rawDataPoint.getValue());
       final double widthInPixels = drawing.getCanvas().measureText(valueAsString).getWidth();
-      final double desiredX = x - (widthInPixels / 2);
+      final double desiredX = x - (widthInPixels / 2) + horizontalOffset;
 
       // if we should be considering the previous x value, then check for overlap
       if (!shouldConsiderPrevXValue || desiredX >= (prevX + marginWidth)) {

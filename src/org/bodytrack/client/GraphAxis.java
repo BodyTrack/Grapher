@@ -72,7 +72,7 @@ public class GraphAxis implements Resizable {
 	protected double length;
 	private double scale;
 	private BBox bounds;
-	
+
 	private boolean mouseDownInside;
 
 	private final boolean isXAxis;
@@ -88,7 +88,7 @@ public class GraphAxis implements Resizable {
 	private Vector2 mouseDragLastPos;
 
 	private int previousPaintEventId = 0;
-	
+
 	private boolean isDraggingCursor = false;
 	private boolean wasDragged = false;
 
@@ -121,28 +121,28 @@ public class GraphAxis implements Resizable {
 					final Vector2 pos = new Vector2(event.getX(), event.getY());
 					final double zoomFactor = Math.pow(MOUSE_WHEEL_ZOOM_RATE, wheelDelta.getDeltaY());
 					int eventId = SequenceNumber.getNextThrottled();
-					
+
 					double panAmmount = (GraphAxis.this.getMax() - GraphAxis.this.getMin()) / 60 * wheelDelta.getDeltaX();
-					
-					
+
+
 					zoom(zoomFactor, unproject(pos), eventId);
 					uncheckedDrag(panAmmount, eventId);
 					paint(eventId);
 					event.preventDefault();
 				}
 			});
-			
+
 			drawing.addDoubleClickHandler(new DoubleClickHandler(){
 
 				@Override
 				public void onDoubleClick(DoubleClickEvent event) {
 					final Vector2 pos = new Vector2(event.getX(), event.getY());
-					int eventId = SequenceNumber.getNextThrottled();					
+					int eventId = SequenceNumber.getNextThrottled();
 					zoom(0.5, unproject(pos), eventId);
-					paint(eventId);		
+					paint(eventId);
 					event.preventDefault();
 				}
-				
+
 			});
 
 			drawing.addMouseDownHandler(new MouseDownHandler() {
@@ -152,7 +152,7 @@ public class GraphAxis implements Resizable {
 					mouseDragLastPos = new Vector2(event.getScreenX(), event.getScreenY());
 					wasDragged = false;
 					mouseDownInside = true;
-					
+
 					Double curCursorPosition = getCursorPosition();
 					if (curCursorPosition != null){
 						Vector2 bottom = project2D(curCursorPosition).add(new Vector2(0,drawingCanvas.getHeight()));
@@ -163,10 +163,10 @@ public class GraphAxis implements Resizable {
 					event.preventDefault();
 				}
 			});
-			
+
 			RootPanel.get().addDomHandler(new MouseMoveHandler() {
 				@Override
-				public void onMouseMove(final MouseMoveEvent event){ 
+				public void onMouseMove(final MouseMoveEvent event){
 					// ignore mouse moves if the mouse button isn't being held down
 					if (mouseDragLastPos != null) {
 						final Vector2 pos = new Vector2(event.getScreenX(), event.getScreenY());
@@ -177,23 +177,23 @@ public class GraphAxis implements Resizable {
 						mouseDragLastPos = pos;
 						event.preventDefault();
 					}
-					
+
 				}
 			}, MouseMoveEvent.getType());
-			
+
 			drawing.addMouseUpHandler(new MouseUpHandler(){
 				public void onMouseUp(final MouseUpEvent event){
 					int eventId = SequenceNumber.getNext();
 					publishAxisChangeEvent(eventId);
 					paint(eventId);
-					
+
 					if (mouseDownInside && !wasDragged && getCursorPosition() != null){
 						setCursorPosition(unproject(new Vector2(event.getX(),event.getY())));
 					}
 					event.preventDefault();
-				}				
+				}
 			});
-			
+
 			RootPanel.get().addDomHandler(new MouseUpHandler() {
 				@Override
 				public void onMouseUp(final MouseUpEvent event) {
@@ -205,20 +205,20 @@ public class GraphAxis implements Resizable {
 						int eventId = SequenceNumber.getNext();
 						publishAxisChangeEvent(eventId);
 						paint(eventId);
-						
+
 						event.preventDefault();
 					}
-					
+
 				}
 			}, MouseUpEvent.getType());
-			
+
 			RootPanel.get().addDomHandler(new MouseOutHandler() {
 				@Override
 				public void onMouseOut(final MouseOutEvent event) {
 					mouseDragLastPos = null;
 					mouseDownInside = false;
-					
-					
+
+
 					// Want a guaranteed update of the plots
 					int eventId = SequenceNumber.getNext();
 					publishAxisChangeEvent(eventId);
@@ -238,7 +238,7 @@ public class GraphAxis implements Resizable {
 		this.isXAxis = isXAxis;
 
 		highlightedPoint = null;
-		
+
 		clampToRange();
 		layout();
 	}
@@ -340,7 +340,7 @@ public class GraphAxis implements Resizable {
 	private double project1D(final double value) {
 		return (value - this.min) * scale;
 	}
-	
+
 	public double getScale(){
 		return scale;
 	}
@@ -405,7 +405,7 @@ public class GraphAxis implements Resizable {
 	protected PlottablePoint getHighlightedPoint() {
 		return highlightedPoint;
 	}
-	
+
 	protected void renderCursor(GrapherCanvas canvas){
 		Double curPos = getCursorPosition();
 		if (curPos == null)
@@ -414,16 +414,16 @@ public class GraphAxis implements Resizable {
 		canvas.beginPath();
 		canvas.setFillStyle(ColorUtils.RED);
 		Vector2 bottom = project2D(curPos).add(new Vector2(0,canvas.getHeight()));
-		
+
 		Vector2 left = bottom.add(new Vector2(-8,-16));
 		Vector2 right = bottom.add(new Vector2(8,-16));
-		
+
 		canvas.moveTo(bottom)
 			.lineTo(left)
 			.lineTo(right)
 			.lineTo(bottom)
 			.fill();
-		
+
 		canvas.setFillStyle(oldFill);
 	}
 
@@ -442,11 +442,11 @@ public class GraphAxis implements Resizable {
 				drawingCanvas.setStrokeStyle(HIGHLIGHTED_COLOR);
 			else
 				drawingCanvas.setStrokeStyle(NORMAL_COLOR);
-                        
+
 			drawingCanvas.beginPath();
-                        
+
 			drawingCanvas.drawLineSegment(project2D(this.min), project2D(this.max));
-                        
+
 			final double majorTickSize = computeTickSize(majorTickMinSpacingPixels);
 			renderTicks(0, majorTickSize, null, drawingCanvas,
 					majorTickWidthPixels, new DefaultLabelFormatter());
@@ -710,7 +710,7 @@ public class GraphAxis implements Resizable {
 			}
 		}
 	}
-	
+
 	protected void renderLabels(double offsetPixels,
 			double tickSize,
 			TickGenerator tickGen,
@@ -732,7 +732,7 @@ public class GraphAxis implements Resizable {
 			}
 		}
 	}
-	
+
 	protected void renderRangeLabelInline(double offsetPixels,
 			double tickSize,
 			TickGenerator tickGen,
@@ -769,7 +769,7 @@ public class GraphAxis implements Resizable {
 			double min = tick;
 			double max = nextTick;
 			if (min < this.min) min = this.min;
-			if (max > this.max) max = this.max; 
+			if (max > this.max) max = this.max;
 
 			renderTickLabelWithinBounds(canvas, (min + max) / 2.0, min, max,
 					labelOffsetPixels, formatter);
@@ -812,7 +812,7 @@ public class GraphAxis implements Resizable {
 			double min = tick;
 			double max = nextTick;
 			if (min < this.min) min = this.min;
-			if (max > this.max) max = this.max; 
+			if (max > this.max) max = this.max;
 
 			renderTickLabelWithinBounds(canvas, (min + max) / 2.0, min, max,
 					labelOffsetPixels, formatter);
@@ -865,12 +865,12 @@ public class GraphAxis implements Resizable {
 		if (isXAxis){
 			fromPosition = project2D(tick).add(this.basis.x.scale(canvas.getHeight()));
 			toPosition = fromPosition.subtract(this.basis.x.scale(tickWidthPixels));
-			
+
 		}
 		else{
 			fromPosition = project2D(tick);
 			toPosition = fromPosition.add(this.basis.x.scale(tickWidthPixels));
-			
+
 		}
 		canvas.drawLineSegment(fromPosition, toPosition);
 	}
@@ -880,7 +880,7 @@ public class GraphAxis implements Resizable {
 		renderTickLabel(canvas, tick, labelOffsetPixels,
 				formatter.format(tick));
 	}
-	
+
 	protected void renderTickLabelWithinBounds(GrapherCanvas canvas, double tick, double min, double max,
 			double labelOffsetPixels, LabelFormatter formatter) {
 		String text = formatter.format(tick);
@@ -893,9 +893,9 @@ public class GraphAxis implements Resizable {
 				return;
 			double drawMin = target;
 			double drawMax = target;
-			
+
 			TextAlign originalAlign = canvas.getTextAlign();
-			
+
 			if (originalAlign.equals(TextAlign.CENTER)){
 				drawMin -= width / 2;
 				drawMax += width / 2;
@@ -916,13 +916,13 @@ public class GraphAxis implements Resizable {
 			else{
 				renderTickLabel(canvas,tick,labelOffsetPixels,text);
 			}
-						
+
 		}
 		else{//not parallel text
 			renderTickLabel(canvas, tick, labelOffsetPixels,
-					formatter.format(tick));			
+					formatter.format(tick));
 		}
-		
+
 	}
 
 	protected void renderTickLabel(GrapherCanvas canvas, double y,
@@ -956,7 +956,7 @@ public class GraphAxis implements Resizable {
 
 		return minDelta * (actualDeltaMantissa / minDeltaMantissa);
 	}
-	
+
 	public double computeTickWidth(double unitSize){
 		return project2D(unitSize).distance(project2D(0));
 	}
@@ -982,7 +982,7 @@ public class GraphAxis implements Resizable {
 		// First, try to translate to put in range
 		uncheckedTranslate(Math.max(0, minRange - this.min));
 		uncheckedTranslate(Math.min(0, maxRange - this.max));
-		
+
 		if (this.min == Double.NEGATIVE_INFINITY || Double.isNaN(this.min))
 			this.min = Double.MIN_VALUE;
 		if (this.max == Double.POSITIVE_INFINITY || Double.isNaN(this.max))
@@ -1009,11 +1009,11 @@ public class GraphAxis implements Resizable {
 		// Even if there are no change listeners, should still update the UI
 		paint(eventId);
 	}
-        
+
         public static native boolean debug(final String s) /*-{
            console.log(s);
         }-*/;
-   
+
 	private void publishAxisChangeEvent(final int eventId) {
 		for (final EventListener listener : eventListeners) {
 			listener.onAxisChange(this, eventId);
@@ -1022,27 +1022,27 @@ public class GraphAxis implements Resizable {
 
 	public void drag(final Vector2 from, final Vector2 to, final boolean isCursorDrag, final int eventId) {
 		final double motion = unproject(from) - unproject(to);
-		
+
 		if (isCursorDrag){
-			dragCursor(-motion,eventId);			
+			dragCursor(-motion,eventId);
 		}
 		else{
-			uncheckedDrag(motion, eventId);	
-			
-		}		
+			uncheckedDrag(motion, eventId);
+
+		}
 
 		// Even if there are no change listeners, should still update the UI
 		paint(eventId);
 	}
-	
+
 	private native void consoleLog(String text)/*-{
 		console.log(text);
 	}-*/;
-	
+
 	private void consoleLog(double text){
 		consoleLog("" + text);
 	}
-	
+
 	private void dragCursor(final double motion, final int eventId){
 		setCursorPosition(getCursorPosition() + motion, eventId);
 	}
@@ -1083,10 +1083,10 @@ public class GraphAxis implements Resizable {
 		final double oldMax = getMax();
 
 		final int eventId = SequenceNumber.getNext();
-		
+
 		this.min = newMin;
 		this.max = newMax;
-		
+
 		clampToRange();
 		rescale();
 
@@ -1101,30 +1101,30 @@ public class GraphAxis implements Resizable {
 
 		paint(eventId);
 	}
-	
+
 	protected Double cursorPos = null;
-	
+
 	/**
-	 * Give the position of the cursor. A value of null signifies no cursor is present	
+	 * Give the position of the cursor. A value of null signifies no cursor is present
 	 * @return cursor's position or null if no cursor is present
 	 */
 	public Double getCursorPosition(){
-		return cursorPos;		
+		return cursorPos;
 	}
-	
+
 	public String getCursorPositionString(){
 		return null;
 	}
-	
+
 	public void setCursorPosition(Double position, Integer eventId){
-		cursorPos = position;	
+		cursorPos = position;
 		if (eventId == null){
 			eventId = SequenceNumber.getNext();
 		}
 		publishAxisChangeEvent(eventId);
 		paint(eventId);
 	}
-	
+
 	public void setMaxRange(double min, double max){
 		minRange = min;
 		maxRange = max;
@@ -1134,7 +1134,7 @@ public class GraphAxis implements Resizable {
 		publishAxisChangeEvent(eventId);
 		paint(eventId);
 	}
-	
+
 	public void setCursorPosition(double position){
 		setCursorPosition((Double) position, null);
 	}

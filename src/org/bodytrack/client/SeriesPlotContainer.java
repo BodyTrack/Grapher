@@ -241,12 +241,10 @@ public class SeriesPlotContainer extends BasePlotContainer {
 
    private void handleTapEvent(final TapEvent event) {
       final Vector2 pos = new Vector2(event.getStartX(), event.getStartY());
-      //debugDiv("handleTapEvent:"+Integer.toString(event.getStartX()));
       for (final Plot plot: containedPlots){
-         final PlottablePoint highlightedPoint = plot.getHighlightedPoint();
-         plot.getXAxis().highlight(highlightedPoint);
-         plot.getYAxis().highlight(highlightedPoint);
-         plot.onClick(pos);
+         // Snap the cursor to the nearest feasible point
+         final PlottablePoint highlightedPoint = plot.getClosestPointToXValue(plot.getXAxis().unproject(pos),1000);
+         plot.getXAxis().setCursorPosition(highlightedPoint.getDate());
       }
    }
 
@@ -262,8 +260,9 @@ public class SeriesPlotContainer extends BasePlotContainer {
             //Log.debug("handlePinchEvent: " + Double.toString(event.getScaleFactor()));
             final Vector2 pos = new Vector2(event.getX(), event.getY());
             for (final Plot plot : containedPlots) {
-               //double panAmmount = (plot.getXAxis().getMax() - plot.getXAxis().getMin()) / 60 * event.getScaleFactor();
                plot.getXAxis().zoom(event.getScaleFactor(), plot.getXAxis().unproject(pos), SequenceNumber.getNextThrottled());
+               //plot.getYAxis().zoom(Math.pow(event.getScaleFactor(), 2), plot.getYAxis().unproject(pos), SequenceNumber.getNextThrottled());
+               //double panAmmount = (plot.getXAxis().getMax() - plot.getXAxis().getMin()) / 60 * event.getScaleFactor();
                //plot.getXAxis().uncheckedDrag(panAmmount, SequenceNumber.getNextThrottled());
                //plot.getXAxis().paint(SequenceNumber.getNextThrottled());
             }
