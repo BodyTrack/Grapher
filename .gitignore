@@ -8,6 +8,7 @@ war/WEB-INF/classes-test/
 war/WEB-INF/deploy/
 war/WEB-INF/lib/
 .gwt/
+gwt-unitCache/
 
 # Eclipse information
 .settings/
