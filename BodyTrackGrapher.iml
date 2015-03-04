@@ -5,7 +5,7 @@
       <configuration>
         <setting name="compilerMaxHeapSize" value="256" />
         <setting name="gwtScriptOutputStyle" value="OBF" />
-        <setting name="gwtSdkUrl" value="file://$MODULE_DIR$/lib/gwt-2.3.0" />
+        <setting name="gwtSdkUrl" value="file://$MODULE_DIR$/lib/gwt-2.7.0" />
         <setting name="webFacet" value="Web" />
         <packaging>
           <module name="org.bodytrack.Grapher2Fast" enabled="false" />
@@ -48,7 +48,7 @@
     <orderEntry type="library" name="JUnit" level="project" />
     <orderEntry type="library" name="GWT Log" level="project" />
     <orderEntry type="library" name="GWT Maps" level="project" />
-    <orderEntry type="library" name="gwt-2.3" level="project" />
+    <orderEntry type="library" name="GWT" level="project" />
+    <orderEntry type="library" name="mgwt-2.0.0" level="project" />
   </component>
 </module>
-
