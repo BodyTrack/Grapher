@@ -74,6 +74,7 @@
    <target name="clean-gwt" description="Cleans the compiled GWT code">
       <delete dir="${gwt.deploy.dir}" failonerror="false"/>
       <delete dir="${gwt.module.dir}" failonerror="false"/>
+      <delete dir="${gwt.cache.dir}" failonerror="false"/>
    </target>
 
    <target name="build" depends="build-java, build-gwt" description="Build all Java code then build the GWT code"
