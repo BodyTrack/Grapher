@@ -4,6 +4,15 @@
    <property file="build.properties"/>
 
    <!-- Classpath -->
+   <path id="mgwt.classpath">
+      <pathelement location="${g2d.jar}"/>
+      <pathelement location="${gwt-dev.jar}"/>
+      <pathelement location="${gwt-user.jar}"/>
+      <pathelement location="${gwt-log.jar}"/>
+      <pathelement location="${gwt-maps.jar}"/>
+      <pathelement location="${mgwt-official.jar}"/>
+   </path>
+
    <path id="project.classpath">
       <pathelement location="${fileupload.jar}"/>
       <pathelement location="${g2d.jar}"/>
@@ -11,7 +20,7 @@
       <pathelement location="${gwt-user.jar}"/>
       <pathelement location="${gwt-log.jar}"/>
       <pathelement location="${gwt-maps.jar}"/>
-      <pathelement location="${mgwt.jar}"/>
+      <pathelement location="${mgwt-modified.jar}"/>
    </path>
 
    <path id="project-test.classpath">
@@ -29,7 +38,7 @@
       <pathelement location="${gwt-dev.jar}"/>
       <pathelement location="${gwt-user.jar}"/>
       <pathelement location="${gwt-log.jar}"/>
-      <pathelement location="${mgwt.jar}"/>
+      <pathelement location="${mgwt-modified.jar}"/>
    </path>
 
    <!-- Compiler resources -->
@@ -82,7 +91,7 @@
       <property name="build-is-complete" value="true"/>
    </target>
 
-   <target name="build-java" description="Compiles Java source to bytecode" unless="build-java-is-complete">
+   <target name="build-java" depends="build-mgwt-jar" description="Compiles Java source to bytecode" unless="build-java-is-complete">
       <compile-code-and-copy-resources src.dir="${src.dir}"
                                        build.dir="${java.build.dir}"
                                        classpath-ref="project.classpath"/>
@@ -104,9 +113,39 @@
       <property name="build-java-is-complete" value="true"/>
    </target>
 
-   <target name="build-gwt" depends="clean-gwt, build-java"
-                            description="GWT compile to JavaScript (production mode)"
-                            unless="build-gwt-is-complete">
+   <target name="build-mgwt-jar" depends="" description="Build the MGWT jar" unless="build-mgwt-jar-is-complete">
+
+      <!-- First, expand the official jar -->
+      <delete dir="${mgwt-official.src.dir}" failonerror="false"/>
+      <unjar src="${mgwt-official.jar}" dest="${mgwt-official.src.dir}"/>
+
+      <!-- Now copy our modified files -->
+      <copy todir="${mgwt-official.src.dir}">
+         <fileset dir="${mgwt-modified.src.dir}"/>
+      </copy>
+
+      <!-- Build -->
+      <compile-code-and-copy-resources src.dir="${mgwt-official.src.dir}"
+                                       build.dir="${mgwt-official.src.dir}"
+                                       classpath-ref="mgwt.classpath"/>
+
+      <!-- Now re-jar -->
+      <delete file="${mgwt-modified.jar}" failonerror="false"/>
+      <jar destfile="${mgwt-modified.jar}"
+           basedir="${mgwt-official.src.dir}"
+           manifest="${mgwt-official.src.dir}/META-INF/MANIFEST.MF"/>
+
+      <!-- Clean up -->
+      <delete dir="${mgwt-official.src.dir}" failonerror="false"/>
+
+      <property name="build-mgwt-jar-is-complete" value="true"/>
+   </target>
+
+   <target name="build-gwt" depends=""
+           description="GWT compile to JavaScript (production mode)"
+           unless="build-gwt-is-complete">
+
+      <!-- We made changes to the MGWT source, stored in  -->
       <compile-gwt gwt-module-name="${gwt.module}">
          <extra-compiler-arguments>
             <arg line="-localWorkers ${gwt.localWorkers}"/>
@@ -119,7 +158,8 @@
    </target>
 
    <target name="build-gwt-fast" depends="clean-gwt, build-java"
-           description="Fast GWT compile to JavaScript, only for development--supports only default locale and WebKit/Firefox browsers" unless="build-gwt-fast-is-complete">
+           description="Fast GWT compile to JavaScript, only for development--supports only default locale and WebKit/Firefox browsers"
+           unless="build-gwt-fast-is-complete">
       <compile-gwt gwt-module-name="org.bodytrack.Grapher2Fast">
          <extra-compiler-arguments>
             <arg line="-optimize 0"/>
