@@ -556,7 +556,7 @@ public class GraphAxis implements Resizable {
 			return label;
 		}
 	}
-	
+
 	static class AbbreviatedlabelFormatter extends DefaultLabelFormatter {
 
 		@Override
@@ -575,13 +575,13 @@ public class GraphAxis implements Resizable {
 				return super.format(value / 1000000000) + "G";
 			}
 			else if (absoluteValue < 1000000000000000L &&  !super.format(absoluteValue / 1000000000000L).equals("1,000")){
-				return super.format(value / 1000000000000L) + "T";				
+				return super.format(value / 1000000000000L) + "T";
 			}
 			else{
 				return super.format(value / 1000000000000000L) + "P";
 			}
 		}
-		
+
 	}
 
 	static class TickGenerator {
@@ -910,9 +910,9 @@ public class GraphAxis implements Resizable {
 			double textWidth = canvas.measureText(text).getWidth();
 			double xOffset = project2D(tick).add(this.basis.x.scale(labelOffsetPixels)).getX();
 			if (canvas.getWidth() - textWidth - xOffset < 0) {
-				text = abbreviatedFormatter.format(tick);				
+				text = abbreviatedFormatter.format(tick);
 			}
-			
+
 		}
 		renderTickLabel(canvas, tick, labelOffsetPixels, text);
 	}
@@ -1198,7 +1198,7 @@ public class GraphAxis implements Resizable {
 		}
 
 		private native void makeCallback(JavaScriptObject callback, GraphAxis axis, int eventId) /*-{
-			console.log('makeCallback ' + eventId);
+			//console.log('makeCallback ' + eventId);
                         var cursorPos = axis.@org.bodytrack.client.GraphAxis::getCursorPosition()();
 			if (cursorPos != null)
 				cursorPos = cursorPos.@java.lang.Double::doubleValue()();

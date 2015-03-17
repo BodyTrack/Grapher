@@ -266,6 +266,9 @@ public final class NativeInterface {
 			this.removeDataPointListener = function(listenerFunction) {
 				return this.__backingPlot.@org.bodytrack.client.DataSeriesPlot::removeDataPointListener(Lcom/google/gwt/core/client/JavaScriptObject;)(listenerFunction);
 			};
+			this.getSimpleStatistics = function(xMin, xMax, fieldnames, afterload) {
+				return this.__backingPlot.@org.bodytrack.client.DataSeriesPlot::getSimpleStatistics(DDLcom/google/gwt/core/client/JsArrayString;Lcom/google/gwt/core/client/JavaScriptObject;)(xMin, xMax, fieldnames, afterload);
+			};
 			this.getStatistics = function(xMin, xMax, fieldnames, afterload) {
 				return this.__backingPlot.@org.bodytrack.client.DataSeriesPlot::getStatistics(DDLcom/google/gwt/core/client/JsArrayString;Lcom/google/gwt/core/client/JavaScriptObject;)(xMin, xMax, fieldnames, afterload);
 			};
@@ -355,7 +358,7 @@ public final class NativeInterface {
 			}
 			this.id = __getNextID();
 		};
-		
+
 		$wnd.TimespanSeriesPlot = function(datasource, horizontalAxis, verticalAxis, optionalParams){
 			if (datasource == null) {
 				throw 'Must pass in datasource';

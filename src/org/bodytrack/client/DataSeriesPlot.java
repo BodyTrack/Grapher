@@ -184,15 +184,15 @@ public class DataSeriesPlot extends BaseSeriesPlot {
 
         return closest;
     }
-    
-    public void onClick(final Vector2 pos) { 
+
+    public void onClick(final Vector2 pos) {
     	if (highlightedPoint != null && getXAxis() != null){
-    		getXAxis().setCursorPosition(highlightedPoint.getDate());    
+    		getXAxis().setCursorPosition(highlightedPoint.getDate());
     		publishDataPoint(highlightedPoint, TriggerAction.CLICK);
     	}
-    	
+
     }
-    
+
     public void doCursorClick(){
     	PlottablePoint cursorPoint = getCursorHighlightedPoint();
     	if (cursorPoint != null){
@@ -308,25 +308,38 @@ public class DataSeriesPlot extends BaseSeriesPlot {
      */
     @Override
     public boolean highlightIfNear(final Vector2 pos) {
-    	
+
         setHighlightedPoint(closest(pos, HIGHLIGHT_DISTANCE_THRESHOLD));
         publishHighlightedValue();
         return isHighlighted();
     }
-    
+
     private native void callAfterload(final JavaScriptObject afterload, final JavaScriptObject arg)/*-{
     	if (typeof afterload == "function")
     		afterload(arg);
-    	
+
     }-*/;
+
+    public static native boolean debug(final String s) /*-{
+       console.log(s);
+    }-*/;
+
+    public final JavaScriptObject getSimpleStatistics(final double xMin, final double xMax,
+            final JsArrayString fieldnames, final JavaScriptObject afterload) {
+        if (xMin > xMax) {
+            return JavaScriptObject.createObject();
+        }
+
+        final Dynamic result = (Dynamic)calculateStatistics(xMin, xMax, null);
+
+        return result;
+    }
 
     public final JavaScriptObject getStatistics(final double xMin, final double xMax,
             final JsArrayString fieldnames, final JavaScriptObject afterload) {
         if (xMin > xMax) {
             return JavaScriptObject.createObject();
         }
-        
-        
 
         final boolean dataPending = checkForData(xMin, xMax,
                 new TileLoader.EventListener() {
@@ -344,29 +357,29 @@ public class DataSeriesPlot extends BaseSeriesPlot {
         final Dynamic result = (Dynamic)calculateStatistics(xMin, xMax, fieldnames);
         result.set("data_pending", JsUtils.convertBoolean(dataPending));
         if (!dataPending){
-        	callAfterload(afterload,result);        	
+        	callAfterload(afterload,result);
         }
-        
+
         return result;
     }
 
     private JavaScriptObject calculateStatistics(final double xMin, final double xMax,
             final JsArrayString fieldnames) {
         final Map<String,Object> stats = getStatsForTimespan(xMin, xMax);
-        
+
 		return fillStatisticsDictionary(stats);
     }
 
     private native JavaScriptObject fillStatisticsDictionary(Map<String,Object> stats) /*-{
-    	
+
     	var result = {};
     	result.count = stats.@java.util.Map::get(Ljava/lang/Object;)("count").@java.lang.Integer::intValue()();
     	result.has_data = result.count != 0;
     	if (result.has_data){
     		result.y_min = stats.@java.util.Map::get(Ljava/lang/Object;)("yMin").@java.lang.Double::doubleValue()();
     		result.y_max = stats.@java.util.Map::get(Ljava/lang/Object;)("yMax").@java.lang.Double::doubleValue()();
-    	} 
-    	
+    	}
+
     	var sideChannelCounts = stats.@java.util.Map::get(Ljava/lang/Object;)("sideChannelCounts");
     	var sideChannelKeys = sideChannelCounts.@java.util.Map::keySet()();
     	sideChannelKeys = sideChannelKeys.@java.util.Set::toArray()();
@@ -374,14 +387,14 @@ public class DataSeriesPlot extends BaseSeriesPlot {
     	for (var i = 0, li = sideChannelKeys.length; i < li; i++){
     		result.sideChannelCounts[sideChannelKeys[i]] = sideChannelCounts.@java.util.Map::get(Ljava/lang/Object;)(sideChannelKeys[i]).@java.lang.Integer::intValue()();
     	}
-    	
-    	
+
+
         return result;
     }-*/;
 
     private Map<String,Object> getStatsForTimespan(final double xMin, final double xMax) {
         final List<GrapherTile> tiles = getTileLoader().getBestResolutionTiles(xMin, xMax);
-        
+
         Map<String,Object> stats = new HashMap<String,Object>();
         Map<String,Integer> extraCounts = new HashMap<String,Integer>();
 
@@ -391,7 +404,7 @@ public class DataSeriesPlot extends BaseSeriesPlot {
 
         for (final GrapherTile tile : tiles) {
             for (final PlottablePoint pt : getDataPoints(tile)) {
-            	
+
                 final double time = pt.getDate();
                 if (time < xMin || time > xMax) {
                     continue;
@@ -419,7 +432,7 @@ public class DataSeriesPlot extends BaseSeriesPlot {
                 }
             }
         }
-        
+
         stats.put("yMin", yMin);
         stats.put("yMax", yMax);
         stats.put("count", count);
