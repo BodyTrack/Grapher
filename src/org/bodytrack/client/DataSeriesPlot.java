@@ -324,15 +324,12 @@ public class DataSeriesPlot extends BaseSeriesPlot {
        console.log(s);
     }-*/;
 
-    public final JavaScriptObject getSimpleStatistics(final double xMin, final double xMax,
-            final JsArrayString fieldnames, final JavaScriptObject afterload) {
+    public final JavaScriptObject getSimpleStatistics(final double xMin, final double xMax) {
         if (xMin > xMax) {
             return JavaScriptObject.createObject();
         }
 
-        final Dynamic result = (Dynamic)calculateStatistics(xMin, xMax, null);
-
-        return result;
+        return calculateStatistics(xMin, xMax, null);
     }
 
     public final JavaScriptObject getStatistics(final double xMin, final double xMax,
