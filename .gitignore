@@ -24,3 +24,6 @@ war/grapher2/
 *.swp       # vim and some other programs
 *~          # emacs
 *.DS_Store
+
+# The modified MGWT jar (we rebuild every time during the build, so no need to keep it in git)
+lib/mgwt/mgwt-2.0.0-modified.jar
