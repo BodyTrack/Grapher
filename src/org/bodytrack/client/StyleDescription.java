@@ -45,14 +45,14 @@ public final class StyleDescription extends JavaScriptObject {
 		}-*/;
 
 		/**
-		 * Returns a {@link Color} built from the value of the
+		 * Returns a {@link CssColor} built from the value of the
 		 * <code>color</code> field, if one exists and its value is parseable.
 		 * 
 		 * @param defaultColor
 		 *            The color to return if this style has no
 		 *            <code>color</code> field or the field has a value that
 		 *            can't be parsed by {@link ColorUtils#buildColor(String)}
-		 * @return The {@link Color} object that this style's <code>color</code>
+		 * @return The {@link CssColor} object that this style's <code>color</code>
 		 *         field holds, if such a field exists, or
 		 *         <code>defaultColor</code> if this style either has no such
 		 *         field or has a color that
@@ -63,7 +63,7 @@ public final class StyleDescription extends JavaScriptObject {
 		}
 
 		/**
-		 * Returns a {@link Color} built from the value of the
+		 * Returns a {@link CssColor} built from the value of the
 		 * <code>fillColor</code> field, if one exists and its value is
 		 * parseable.
 		 * 
@@ -71,7 +71,7 @@ public final class StyleDescription extends JavaScriptObject {
 		 *            The color to return if this style has no
 		 *            <code>fillColor</code> field or the field has a value that
 		 *            can't be parsed by {@link ColorUtils#buildColor(String)}
-		 * @return The {@link Color} object that this style's
+		 * @return The {@link CssColor} object that this style's
 		 *         <code>fillColor</code> field holds, if such a field exists,
 		 *         or <code>defaultColor</code> if this style either has no such
 		 *         field or has a color that
@@ -82,7 +82,7 @@ public final class StyleDescription extends JavaScriptObject {
 		}
 
 		/**
-		 * Returns a {@link Color} built from the value of the field specified
+		 * Returns a {@link CssColor} built from the value of the field specified
 		 * by the <code>fieldName</code> parameter, if such a field exists and
 		 * its value is parseable.
 		 * 
@@ -92,7 +92,7 @@ public final class StyleDescription extends JavaScriptObject {
 		 *            <code>fieldName</code> parameter or the field has a value
 		 *            that can't be parsed by
 		 *            {@link ColorUtils#buildColor(String)}
-		 * @return The {@link Color} object held by the field specified by the
+		 * @return The {@link CssColor} object held by the field specified by the
 		 *         <code>fieldName</code> parameter, if such a field exists, or
 		 *         <code>defaultColor</code> if this style either has no such
 		 *         field or has a color that
