@@ -142,6 +142,9 @@ public final class NativeInterface {
 						timeZoneMap = @org.bodytrack.client.ModalTimeZoneMap::new(Lorg/bodytrack/client/TimeZoneMap;Z)(this.__backingAxis.@org.bodytrack.client.GraphAxis::getTimeZoneMap()(), false);
 					return timeZoneMap.@org.bodytrack.client.ModalTimeZoneMap::reverseConvert(D)(value);
 				}
+				this.setCursorColor = function(color){
+					this.__backingAxis.@org.bodytrack.client.GraphAxis::setCursorColor(Ljava/lang/String;)(color);
+				}
 				this.setCursorPosition = function(position){
 					if (position == null)
 						this.__backingAxis.@org.bodytrack.client.GraphAxis::setCursorPosition(Ljava/lang/Double;Ljava/lang/Integer;)(position,null);

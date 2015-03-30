@@ -6,12 +6,24 @@ public class CursorRenderingStrategy implements DataIndependentRenderingStrategy
 
 	private static final double STROKE_WIDTH = 2;
 	private static final CssColor STROKE_COLOR = ColorUtils.RED;
+	private final double strokeWidth;
+	private final CssColor strokeColor;
+
+	public CursorRenderingStrategy(final StyleDescription.CursorDescription cursorDescription) {
+		Double specifiedStrokeWidth = STROKE_WIDTH;
+		CssColor specifiedStrokeColor = STROKE_COLOR;
+		if (cursorDescription != null) {
+			specifiedStrokeWidth = cursorDescription.getLineWidth();
+			specifiedStrokeColor = cursorDescription.getColor();
+		}
+		strokeWidth = (specifiedStrokeWidth == null) ? STROKE_WIDTH : specifiedStrokeWidth;
+		strokeColor = (specifiedStrokeColor == null) ? STROKE_COLOR : specifiedStrokeColor;
+	}
 
 	@Override
-	public void beforeRender(GrapherCanvas canvas, BoundedDrawingBox drawing,
-			boolean isAnyPointHighlighted) {
-		canvas.setLineWidth(STROKE_WIDTH);
-		canvas.setStrokeStyle(STROKE_COLOR);
+	public void beforeRender(GrapherCanvas canvas, BoundedDrawingBox drawing, boolean isAnyPointHighlighted) {
+		canvas.setLineWidth(strokeWidth);
+		canvas.setStrokeStyle(strokeColor);
 
 		drawing.beginClippedPath();		
 	}

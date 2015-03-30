@@ -406,13 +406,13 @@ public class GraphAxis implements Resizable {
 		return highlightedPoint;
 	}
 
-	protected void renderCursor(GrapherCanvas canvas){
+	protected final void renderCursor(GrapherCanvas canvas){
 		Double curPos = getCursorPosition();
 		if (curPos == null)
 			return;
 		FillStrokeStyle oldFill = canvas.getFillStyle();
 		canvas.beginPath();
-		canvas.setFillStyle(ColorUtils.RED);
+		canvas.setFillStyle(cursorColor);
 		Vector2 bottom = project2D(curPos).add(new Vector2(0,canvas.getHeight()));
 
 		Vector2 left = bottom.add(new Vector2(-8,-16));
@@ -1139,6 +1139,7 @@ public class GraphAxis implements Resizable {
 	}
 
 	protected Double cursorPos = null;
+	private CssColor cursorColor = ColorUtils.RED;
 
 	/**
 	 * Give the position of the cursor. A value of null signifies no cursor is present
@@ -1150,6 +1151,15 @@ public class GraphAxis implements Resizable {
 
 	public String getCursorPositionString(){
 		return null;
+	}
+
+	protected final CssColor geCursorColor(){
+		return cursorColor;
+	}
+
+	public final void setCursorColor(final String color) {
+		cursorColor = ColorUtils.getColor(color, ColorUtils.RED);	// TODO: the default color given to getColor isn't actually used
+		paint(SequenceNumber.getNext());
 	}
 
 	public void setCursorPosition(Double position, Integer eventId){

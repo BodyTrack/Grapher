@@ -74,39 +74,27 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
 		if (styleDescription != null) {
 			willShowComments = styleDescription.willShowComments();
 
-			final HighlightDescription highlightDescription =
-				styleDescription.getHighlightDescription();
-			final Double highlightLineWidth =
-				(highlightDescription == null)
-					? null
-					: highlightDescription.getLineWidth();
+			final HighlightDescription highlightDescription = styleDescription.getHighlightDescription();
+			final Double highlightLineWidth = (highlightDescription == null) ? null : highlightDescription.getLineWidth();
 
-			final List<SeriesPlotRenderingStrategy> newPlotRenderingStrategies =
-				buildSeriesPlotRenderingStrategies(styleDescription.getStyleTypes(),
-						highlightLineWidth);
+			final List<SeriesPlotRenderingStrategy> newPlotRenderingStrategies = buildSeriesPlotRenderingStrategies(styleDescription.getStyleTypes(), highlightLineWidth);
 			if (newPlotRenderingStrategies != null) {
 				plotRenderingStrategies.addAll(newPlotRenderingStrategies);
 			}
 
 			if (highlightDescription != null) {
-				final List<DataPointRenderingStrategy> newHighlightRenderingStrategies =
-					buildPointRenderingStrategies(highlightDescription.getStyleTypes(),
-							highlightLineWidth);
+				final List<DataPointRenderingStrategy> newHighlightRenderingStrategies = buildPointRenderingStrategies(highlightDescription.getStyleTypes(), highlightLineWidth);
 				if (newHighlightRenderingStrategies != null) {
 					highlightRenderingStrategies.addAll(newHighlightRenderingStrategies);
 				}
 			}
 
-			final CommentsDescription commentsDescription =
-				styleDescription.getCommentsDescription();
+			final CommentsDescription commentsDescription = styleDescription.getCommentsDescription();
 			if (commentsDescription != null) {
-				commentVerticalMargin = commentsDescription.getVerticalMargin(
-						DEFAULT_COMMENT_VERTICAL_MARGIN);
+				commentVerticalMargin = commentsDescription.getVerticalMargin(DEFAULT_COMMENT_VERTICAL_MARGIN);
 				commentContainerCssClass = commentsDescription.getCommentContainerCssClass();
 				commentCssClass = commentsDescription.getCommentCssClass();
-				final List<DataPointRenderingStrategy> newCommentRenderingStrategies =
-					buildPointRenderingStrategies(commentsDescription.getStyleTypes(),
-							highlightLineWidth);
+				final List<DataPointRenderingStrategy> newCommentRenderingStrategies = buildPointRenderingStrategies(commentsDescription.getStyleTypes(), highlightLineWidth);
 				if (newCommentRenderingStrategies != null) {
 					commentRenderingStrategies.addAll(newCommentRenderingStrategies);
 				}
@@ -116,7 +104,7 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
 		// Mandatory midnight lines
 		dataIndependentStrategies.add(new MidnightLineRenderingStrategy());
 		// Mandatory cursor lines
-		dataIndependentStrategies.add(new CursorRenderingStrategy());
+		dataIndependentStrategies.add(new CursorRenderingStrategy(styleDescription.getCursorDescription()));
 	}
 
 	protected abstract List<SeriesPlotRenderingStrategy> buildSeriesPlotRenderingStrategies(

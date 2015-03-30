@@ -21,6 +21,10 @@ public final class StyleDescription extends JavaScriptObject {
       return this['highlight'];
    }-*/;
 
+   public native CursorDescription getCursorDescription() /*-{
+      return this['cursor'];
+   }-*/;
+
    public boolean willShowComments() {
       final CommentsDescription commentsDescription = getCommentsDescription();
       return commentsDescription != null && commentsDescription.willShow();
@@ -294,6 +298,43 @@ public final class StyleDescription extends JavaScriptObject {
 
       public native JsArray<StyleType> getStyleTypes() /*-{
          return this['styles'];
+      }-*/;
+   }
+
+   public static final class CursorDescription extends JavaScriptObject {
+      // JavaScript overlay types always have protected, no-arg constructors
+      protected CursorDescription() {
+      }
+
+      public CssColor getColor() {
+         final String color = getStringValue("color");
+         if (color == null) {
+            return null;
+         }
+         return CssColor.make(color);
+      }
+
+      /**
+       * Returns the value of the <code>lineWidth</code> field, if defined,
+       * otherwise returns <code>null</code>.
+       */
+      public Double getLineWidth() {
+         if (isLineWidthDefined()) {
+            return getDoubleValue("lineWidth");
+         }
+         return null;
+      }
+
+      private native String getStringValue(String element)/*-{
+         return this[element];
+      }-*/;
+
+      private native double getDoubleValue(final String fieldName) /*-{
+         return this[fieldName];
+      }-*/;
+
+      private native boolean isLineWidthDefined() /*-{
+         return (typeof this["lineWidth"] !== 'undefined');
       }-*/;
    }
 }
