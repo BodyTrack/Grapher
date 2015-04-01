@@ -372,37 +372,81 @@ public abstract class BaseSeriesPlot implements Plot {
    public PlottablePoint getPointClosestToXCursor(){
 	   if (getXAxis() == null || getXAxis().getCursorPosition() == null)
 		   return null;
-	   return getClosestPointToXValue(getXAxis().getCursorPosition(),5);
+	   return getClosestPointToXValue(getXAxis().getCursorPosition(), 5);
    }
    
    public PlottablePoint getClosestPointToXValue(double xValue, double threshHold){
 	   Vector2 projectedPosition = getXAxis().project2D(xValue);
 	   double xMin = getXAxis().unproject(projectedPosition.add(new Vector2(-threshHold,0)));
 	   double xMax = getXAxis().unproject(projectedPosition.add(new Vector2(threshHold,0)));
-	   
-	   double yMin = getYAxis().getMin();
-	   double yMax = getYAxis().getMax();
-	   
-	   List<GrapherTile> tiles = getTileLoader().getBestResolutionTiles(xMin, xMax);
-	   
-	   PlottablePoint bestPoint = null;
-	   double bestDistanceSquared = -1;
-	   
-	   for (GrapherTile tile : tiles){
-		   for (PlottablePoint point : tile.getDataPoints()){
-			   if (point.getDate() < xMin || point.getDate() > xMax || point.getValue() < yMin || point.getValue() > yMax)
-				   continue;
-			   double distance = xValue - point.getDate();
-			   double distanceSquared = distance * distance;
-			   if (bestDistanceSquared < 0 || distanceSquared < bestDistanceSquared){
-				   bestPoint = point;
-				   bestDistanceSquared = distanceSquared;
-			   }
-		   }
-	   }
-	   
-	   return bestPoint; 
+
+      return getClosestPointToXValue(xValue, xMin, xMax);
    }
+
+   private PlottablePoint getClosestPointToXValue(double timeInSecs, final double minTimeSecs, final double maxTimeSecs){
+      double yMin = getYAxis().getMin();
+  	   double yMax = getYAxis().getMax();
+
+  	   List<GrapherTile> tiles = getTileLoader().getBestResolutionTiles(minTimeSecs, maxTimeSecs);
+
+  	   PlottablePoint bestPoint = null;
+  	   double bestDistanceSquared = -1;
+
+  	   for (GrapherTile tile : tiles){
+  		   for (PlottablePoint point : tile.getDataPoints()){
+  			   if (point.getDate() < minTimeSecs || point.getDate() > maxTimeSecs || point.getValue() < yMin || point.getValue() > yMax)
+  				   continue;
+  			   double distance = timeInSecs - point.getDate();
+  			   double distanceSquared = distance * distance;
+  			   if (bestDistanceSquared < 0 || distanceSquared < bestDistanceSquared){
+  				   bestPoint = point;
+  				   bestDistanceSquared = distanceSquared;
+  			   }
+  		   }
+  	   }
+
+  	   return bestPoint;
+   }
+
+   public final JavaScriptObject getClosestDataPointToTime(final double timeInSecs) {
+      final PlottablePoint plottablePoint = getClosestPointToXValue(timeInSecs, 5);
+      if (plottablePoint == null) {
+         return null;
+      }
+
+      return createPlottablePointObject(plottablePoint.getDate(),
+                                        plottablePoint.getDateAsString(),
+                                        plottablePoint.getValue(),
+                                        plottablePoint.getValueAsString(),
+                                        plottablePoint.getComment());
+   }
+
+   public final JavaScriptObject getClosestDataPointToTimeWithinWindow(final double timeInSecs, final double numSecsBefore, final double numSecsAfter) {
+      final PlottablePoint plottablePoint = getClosestPointToXValue(timeInSecs, timeInSecs - numSecsBefore, timeInSecs + numSecsAfter);
+      if (plottablePoint == null) {
+         return null;
+      }
+
+      return createPlottablePointObject(plottablePoint.getDate(),
+                                        plottablePoint.getDateAsString(),
+                                        plottablePoint.getValue(),
+                                        plottablePoint.getValueAsString(),
+                                        plottablePoint.getComment());
+   }
+
+   private native JavaScriptObject createPlottablePointObject(final double date,
+                                                              final String dateString,
+                                                              final double value,
+                                                              final String valueString,
+                                                              final String comment) /*-{
+      return {
+         date: date,
+         dateString: dateString,
+         value: value,
+         valueString: valueString,
+         comment: comment
+      }
+   }-*/;
 
    public final void setHighlightedPoint(final PlottablePoint highlightedPoint) {
       this.highlightedPoint = highlightedPoint;

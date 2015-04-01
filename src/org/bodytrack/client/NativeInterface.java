@@ -275,6 +275,12 @@ public final class NativeInterface {
 			this.getStatistics = function(xMin, xMax, fieldnames, afterload) {
 				return this.__backingPlot.@org.bodytrack.client.DataSeriesPlot::getStatistics(DDLcom/google/gwt/core/client/JsArrayString;Lcom/google/gwt/core/client/JavaScriptObject;)(xMin, xMax, fieldnames, afterload);
 			};
+			this.getClosestDataPointToTime = function(timeInSecs){
+				return this.__backingPlot.@org.bodytrack.client.DataSeriesPlot::getClosestDataPointToTime(D)(timeInSecs);
+			};
+			this.getClosestDataPointToTimeWithinWindow = function(timeInSecs, numSecsBefore, numSecsAfter){
+				return this.__backingPlot.@org.bodytrack.client.DataSeriesPlot::getClosestDataPointToTimeWithinWindow(DDD)(timeInSecs, numSecsBefore, numSecsAfter);
+			};
 			this.doCursorClick = function(){
 				this.__backingPlot.@org.bodytrack.client.Plot::doCursorClick()();
 			}
