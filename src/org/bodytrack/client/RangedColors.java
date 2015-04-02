@@ -15,7 +15,7 @@ final class RangedColors {
 
    RangedColors(final String colorRangesStr) {
       final List<Double> rangeBoundsList = new ArrayList<Double>();
-      final List<CssColor> colorsList = new ArrayList<CssColor>();
+      final List<String> colorsList = new ArrayList<String>();
 
       // parse the color ranges string into colors and range bounds
       if (colorRangesStr != null) {
@@ -25,7 +25,7 @@ final class RangedColors {
             // parse even numbered elements as colors, and odd ones as range bounds
             final String part = parts[i].trim();
             if (i % 2 == 0) {
-               colorsList.add(parseColor(part));
+               colorsList.add(part);
             } else {
                final Double value = parseDouble(part);
                // abort if the value can't be parsed as a double or the series is not strictly increasing
@@ -42,7 +42,15 @@ final class RangedColors {
       }
 
       rangeBounds = rangeBoundsList.toArray(new Double[rangeBoundsList.size()]);
-      colors = colorsList.toArray(new CssColor[colorsList.size()]);
+      colors = new CssColor[colorsList.size()];
+
+      // Populate the colors array.  Yes, I know I should be able to just do colorsList.toArray(new CssColor[colorsList.size()]);
+      // above to create and populate the array.  That's exactly what we used to do, but it stopped working when we
+      // upgraded GWT.  Perhaps related to this issue: https://code.google.com/p/google-web-toolkit/issues/detail?id=6263
+      // Regardless, the following works...
+      for (int i = 0; i < colors.length; i++) {
+         colors[i] = parseColor(colorsList.get(i));
+      }
 
       Log.debug("Range Bounds");
       for (int i = 0; i < rangeBounds.length; i++) {
