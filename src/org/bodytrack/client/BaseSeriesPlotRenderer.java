@@ -49,7 +49,9 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
 		new ArrayList<DataPointRenderingStrategy>();
 	private final List<DataPointRenderingStrategy> commentRenderingStrategies =
 		new ArrayList<DataPointRenderingStrategy>();
-	private final List<DataIndependentRenderingStrategy> dataIndependentStrategies =
+	private final List<DataIndependentRenderingStrategy> dataIndependentStrategiesOnBottom =
+		new ArrayList<DataIndependentRenderingStrategy>();
+	private final List<DataIndependentRenderingStrategy> dataIndependentStrategiesOnTop =
 		new ArrayList<DataIndependentRenderingStrategy>();
 
 	/**
@@ -66,7 +68,8 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
 		commentVerticalMargin = DEFAULT_COMMENT_VERTICAL_MARGIN;
 		commentContainerCssClass = null;
 		commentCssClass = null;
-		dataIndependentStrategies.clear();
+		dataIndependentStrategiesOnBottom.clear();
+		dataIndependentStrategiesOnTop.clear();
 		plotRenderingStrategies.clear();
 		highlightRenderingStrategies.clear();
 		commentRenderingStrategies.clear();
@@ -102,9 +105,9 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
 		}
 
 		// Mandatory midnight lines
-		dataIndependentStrategies.add(new MidnightLineRenderingStrategy());
+		dataIndependentStrategiesOnBottom.add(new MidnightLineRenderingStrategy());
 		// Mandatory cursor lines
-		dataIndependentStrategies.add(new CursorRenderingStrategy(styleDescription.getCursorDescription()));
+		dataIndependentStrategiesOnTop.add(new CursorRenderingStrategy(styleDescription != null ? styleDescription.getCursorDescription() : null));
 	}
 
 	protected abstract List<SeriesPlotRenderingStrategy> buildSeriesPlotRenderingStrategies(
@@ -125,19 +128,22 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
 		final boolean isAnyPointHighlighted = highlightedPoint != null;
 
 		renderDataIndependentStrategies(canvas, drawing, xAxis, yAxis,
-				isAnyPointHighlighted);
+				isAnyPointHighlighted, dataIndependentStrategiesOnBottom);
 		renderPlotStrategies(canvas, drawing, tiles, xAxis, yAxis,
 				highlightedPoint);
 		renderHighlightedPointsAndComments(canvas, drawing, tiles, xAxis, yAxis,
 				highlightedPoint);
+		renderDataIndependentStrategies(canvas, drawing, xAxis, yAxis,
+				isAnyPointHighlighted, dataIndependentStrategiesOnTop);
 	}
 
 	private void renderDataIndependentStrategies(final GrapherCanvas canvas,
-			final BoundedDrawingBox drawing,
-			final GraphAxis xAxis,
-			final GraphAxis yAxis,
-			final boolean isAnyPointHighlighted) {
-		for (final DataIndependentRenderingStrategy strategy: dataIndependentStrategies) {
+																final BoundedDrawingBox drawing,
+																final GraphAxis xAxis,
+																final GraphAxis yAxis,
+																final boolean isAnyPointHighlighted,
+																final List<DataIndependentRenderingStrategy> dataIndependentRenderingStrategies) {
+		for (final DataIndependentRenderingStrategy strategy: dataIndependentRenderingStrategies) {
 			strategy.beforeRender(canvas, drawing, isAnyPointHighlighted);
 			strategy.render(drawing, xAxis, yAxis);
 			strategy.afterRender(canvas, drawing);
