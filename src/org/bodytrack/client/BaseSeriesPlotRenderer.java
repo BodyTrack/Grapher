@@ -127,14 +127,10 @@ public abstract class BaseSeriesPlotRenderer implements SeriesPlotRenderer {
 			final PlottablePoint highlightedPoint) {
 		final boolean isAnyPointHighlighted = highlightedPoint != null;
 
-		renderDataIndependentStrategies(canvas, drawing, xAxis, yAxis,
-				isAnyPointHighlighted, dataIndependentStrategiesOnBottom);
-		renderPlotStrategies(canvas, drawing, tiles, xAxis, yAxis,
-				highlightedPoint);
-		renderHighlightedPointsAndComments(canvas, drawing, tiles, xAxis, yAxis,
-				highlightedPoint);
-		renderDataIndependentStrategies(canvas, drawing, xAxis, yAxis,
-				isAnyPointHighlighted, dataIndependentStrategiesOnTop);
+		renderDataIndependentStrategies(canvas, drawing, xAxis, yAxis, isAnyPointHighlighted, dataIndependentStrategiesOnBottom);
+		renderPlotStrategies(canvas, drawing, tiles, xAxis, yAxis, highlightedPoint);
+		renderDataIndependentStrategies(canvas, drawing, xAxis, yAxis, isAnyPointHighlighted, dataIndependentStrategiesOnTop);
+		renderHighlightedPointsAndComments(canvas, drawing, tiles, xAxis, yAxis, highlightedPoint);
 	}
 
 	private void renderDataIndependentStrategies(final GrapherCanvas canvas,
