@@ -164,12 +164,13 @@ public class SeriesPlotContainer extends BasePlotContainer {
                   handleWindowMouseOutHandler(event);
                }
             }, MouseOutEvent.getType());
+            /*
             RootPanel.get().addDomHandler(new MouseDownHandler(){
                @Override
                public void onMouseDown(MouseDownEvent event) {
                   event.preventDefault();
                }
-            }, MouseDownEvent.getType());
+            }, MouseDownEvent.getType());*/
          }
          drawing.addMouseMoveHandler(new MouseMoveHandler() {
             @Override
